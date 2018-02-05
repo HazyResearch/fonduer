@@ -2,7 +2,7 @@ import json
 import os
 import re
 import lxml.etree as et
-from fonduer.snorkel.utils import corenlp_cleaner
+from snorkel.utils import corenlp_cleaner
 
 APP_HOME = os.environ['FONDUERHOME']
 
