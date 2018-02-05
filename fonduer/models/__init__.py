@@ -1,6 +1,6 @@
-from fonduer.snorkel.models.meta import SnorkelSession, SnorkelBase, snorkel_engine
-from fonduer.snorkel.models.context import Document
-from fonduer.snorkel.models.candidate import candidate_subclass
+from snorkel.models.meta import SnorkelSession, SnorkelBase, snorkel_engine
+from snorkel.models.context import Document
+from snorkel.models.candidate import candidate_subclass
 
 from fonduer.models.context import Webpage, Table, Cell, Phrase, Figure, TemporaryImplicitSpan, ImplicitSpan, TemporaryImage, Image
 
