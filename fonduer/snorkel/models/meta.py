@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from builtins import *
 
 import getpass
@@ -9,10 +11,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 # Sets connection string
 snorkel_conn_string = os.environ['SNORKELDB'] if 'SNORKELDB' in os.environ and os.environ['SNORKELDB'] != '' \
@@ -24,7 +23,6 @@ DBPORT = urlparse(snorkel_conn_string).port
 
 # Sets global variable indicating whether we are using Postgres
 snorkel_postgres = snorkel_conn_string.startswith('postgres')
-
 
 # Automatically turns on foreign key enforcement for SQLite
 @event.listens_for(Engine, "connect")
