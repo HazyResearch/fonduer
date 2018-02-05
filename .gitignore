@@ -1,5 +1,9 @@
 ### Python ###
 
+# Downloaded Tutorial Data
+pdf/
+html/
+
 # Dependencies
 phantomjs/
 poppler/
