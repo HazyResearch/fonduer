@@ -59,3 +59,14 @@ The tutorials are available in the following directory:
 ```
 tutorials/
 ```
+
+## For Developers
+
+### Testing
+
+You can run unit tests locally by running
+
+```
+source ./set_env.sh
+pytest tests -rs
+```

@@ -1,6 +1,6 @@
 from __future__ import division
-from ....models.context import TemporarySpan
-from .models import Phrase
+from snorkel.models.context import TemporarySpan
+from fonduer.models import Phrase
 from collections import namedtuple
 
 

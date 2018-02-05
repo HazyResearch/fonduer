@@ -8,7 +8,6 @@ import subprocess
 import tempfile
 from collections import namedtuple
 
-
 import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame, Series

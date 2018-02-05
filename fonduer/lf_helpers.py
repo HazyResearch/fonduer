@@ -9,12 +9,12 @@ from lxml import etree
 from lxml.html import fromstring
 import numpy as np
 
-from snorkel.utils import tokens_to_ngrams
-from .utils_visual import bbox_from_span, bbox_from_phrase, bbox_horz_aligned, bbox_vert_aligned, bbox_vert_aligned_left, bbox_vert_aligned_right, bbox_vert_aligned_center
-from .utils_table import min_row_diff, min_col_diff, is_row_aligned, is_col_aligned, is_axis_aligned
-from ....models.context import TemporarySpan
-from .models import Phrase
-from snorkel.candidates import Ngrams
+from fonduer.snorkel.utils import tokens_to_ngrams
+from fonduer.utils_visual import bbox_from_span, bbox_from_phrase, bbox_horz_aligned, bbox_vert_aligned, bbox_vert_aligned_left, bbox_vert_aligned_right, bbox_vert_aligned_center
+from fonduer.utils_table import min_row_diff, min_col_diff, is_row_aligned, is_col_aligned, is_axis_aligned
+from fonduer.snorkel.models.context import TemporarySpan
+from fonduer.models import Phrase
+from fonduer.snorkel.candidates import Ngrams
 
 
 def get_between_ngrams(c, attrib='words', n_min=1, n_max=1, lower=True):
