@@ -13,11 +13,11 @@ import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame, Series
 
-from snorkel.annotations import FeatureAnnotator
-from snorkel.models import Candidate
-from snorkel.models.meta import *
-from snorkel.udf import UDF, UDFRunner
-from snorkel.utils import (
+from fonduer.snorkel.annotations import FeatureAnnotator
+from fonduer.snorkel.models import Candidate
+from fonduer.snorkel.models.meta import *
+from fonduer.snorkel.udf import UDF, UDFRunner
+from fonduer.snorkel.utils import (
     matrix_conflicts,
     matrix_coverage,
     matrix_overlaps,
@@ -26,8 +26,8 @@ from snorkel.utils import (
     matrix_fn,
     matrix_tn
 )
-from snorkel.utils import remove_files
-from .features.features import get_all_feats
+from fonduer.snorkel.utils import remove_files
+from fonduer.features.features import get_all_feats
 
 # Used to conform to existing annotation key API call
 # Note that this anontation matrix class can not be replaced with snorkel one

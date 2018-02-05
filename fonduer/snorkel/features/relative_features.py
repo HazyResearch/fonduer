@@ -8,8 +8,6 @@ import os
 import re
 import sys
 
-sys.path.append(os.path.join(os.environ['SNORKELHOME'], 'treedlib'))
-
 from collections import defaultdict
 from snorkel.features.entity_features import compile_entity_feature_generator, get_ddlib_feats
 from functools import partial
@@ -152,7 +150,7 @@ def get_entity_type_counts(context, entity_types):
 
 
 def get_relative_frequency_feats(candidate, context):
-    """Base getting relative frequency of @candidate entities among 
+    """Base getting relative frequency of @candidate entities among
        entities in @context
     candidate: @Candidate to extract features for
     context: @Context over which to get relative frequency
