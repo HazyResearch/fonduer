@@ -1,7 +1,7 @@
 # Fonduer
 
 `Fonduer` is a framework for building KBC applications from _richy formatted
-data_, and is implemented as a library on top of a modified version of
+data_ and is implemented as a library on top of a modified version of
 [Snorkel](https://hazyresearch.github.io/snorkel/).
 
 ## Installation / dependencies
