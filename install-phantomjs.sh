@@ -1,16 +1,14 @@
-system=$(python -c "from sys import platform; print platform")
+#!/usr/bin/env bash
+
+system=$(python -c "from sys import platform; print(platform)")
 rm -rf phantomjs
-if [ $system == "darwin" ]; then
+
+if [[ $system == "darwin" ]]; then
     phantomjs="phantomjs-2.1.1-macosx"
-elif [ $system == "win32" ]; then
+elif [[ $system == "win32" ]]; then
     phantomjs="phantomjs-2.1.1-windows"
-elif [ $system == "linux2" ]; then
-    linuxbits=$(uname -m)
-    if [ $linuxbits == "i686" ]; then
-        phantomjs="phantomjs-2.1.1-linux-i686"
-    else
-        phantomjs="phantomjs-2.1.1-linux-x86_64"
-    fi
+elif [[ $system == "linux"* ]]; then
+    phantomjs="phantomjs"
 else
     echo "
     Your OS does not support phantomjs static build.
@@ -18,8 +16,8 @@ else
     exit
 fi
 
-if [ $system == "linux2" ]; then
-    url=https://bitbucket.org/ariya/phantomjs/downloads/$phantomjs.tar.bz2
+if [[ $system == "linux"* ]]; then
+    url=https://github.com/ariya/phantomjs/releases/download/2.1.3/$phantomjs
 else
     url=https://bitbucket.org/ariya/phantomjs/downloads/$phantomjs.zip
 fi
@@ -30,13 +28,15 @@ elif type wget &>/dev/null; then
     wget -N -nc $url
 fi
 
-if [ $system == "linux2" ]; then
-    tar jxf $phantomjs.tar.bz2
-    rm $phantomjs.tar.bz2
+if [[ $system == "linux"* ]]; then
+    # Can't have file and directory w/ same name. Using temp name.
+    mv $phantomjs temp
+    mkdir -p phantomjs/bin
+    mv temp phantomjs/bin
+    mv phantomjs/bin/temp phantomjs/bin/$phantomjs
 else
     unzip $phantomjs.zip
     rm $phantomjs.zip
+    mv $phantomjs phantomjs
 fi
-
-mv $phantomjs phantomjs
 
