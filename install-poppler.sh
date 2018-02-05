@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Build from source
 POPPLER="poppler-0.53.0"
 rm -rf poppler
