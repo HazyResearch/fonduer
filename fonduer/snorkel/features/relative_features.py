@@ -14,7 +14,7 @@ from functools import partial
 from snorkel.models import Span
 from snorkel.utils import get_as_dict
 from string import punctuation
-from tree_structs import corenlp_to_xmltree
+from snorkel.tree_structs import corenlp_to_xmltree
 from treedlib import compile_relation_feature_generator
 
 
