@@ -5,15 +5,15 @@ from __future__ import unicode_literals
 from builtins import *
 
 import sys, os
-sys.path.append(os.environ['SNORKELHOME'] + '/treedlib/treedlib')
-from templates import *
+from treedlib.templates import *
+
 
 def compile_entity_feature_generator():
   """
   Given optional arguments, returns a generator function which accepts an xml root
   and a list of indexes for a mention, and will generate relation features for this entity
   """
-  
+
   BASIC_ATTRIBS_REL = ['lemma', 'dep_label']
 
   m = Mention(0)
@@ -39,7 +39,7 @@ def get_ddlib_feats(context, idxs):
   """
   for seq_feat in _get_seq_features(context, idxs):
     yield seq_feat
-  
+
   for window_feat in _get_window_features(context, idxs):
     yield window_feat
 
