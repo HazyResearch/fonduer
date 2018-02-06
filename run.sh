@@ -1,6 +1,8 @@
-# Set & move to Snorkel home directory
+# Set environment variables 
 source set_env.sh
-cd "$SNORKELHOME"
+
+# Move to Fonduer home directory
+cd "$FONDUERHOME"
 
 # Make sure the submodules are installed
 git submodule update --init --recursive
@@ -15,8 +17,6 @@ if [ ! -f "$PARSER" ]; then
     esac
 fi
 
-# Move to Fonduer home directory
-cd "$FONDUERHOME"
 
 # Make sure phantomjs is installed
 PHANTOMJS="phantomjs/bin/phantomjs"
@@ -37,9 +37,6 @@ if [ ! -f "$POPPLER" ]; then
         [Nn]* ) ;;
     esac
 fi
-
-# Move to snorkel directory
-cd "$FONDUERHOME"
 
 # Launch jupyter notebook!
 echo "Launching Jupyter Notebook..."
