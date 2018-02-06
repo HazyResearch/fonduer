@@ -4,19 +4,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
-from .models import GoldLabel, StableLabel, GoldLabelKey
+from traitlets import Unicode, Int, List
+import getpass
+import ipywidgets as widgets
+import os
+import warnings
+
+from snorkel.models import GoldLabel, StableLabel, GoldLabelKey
 try:
     from IPython.core.display import display, Javascript
 except:
     raise Exception("This module must be run in IPython.")
-import os
-import ipywidgets as widgets
-from traitlets import Unicode, Int, List
-import getpass
-import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-HOME = os.environ['SNORKELHOME']
+HOME = os.environ['FONDUERHOME']
 
 
 # PAGE LAYOUT TEMPLATES
@@ -78,7 +79,7 @@ class Viewer(widgets.DOMWidget):
         self.gold       = list(gold)
         self.candidates = sorted(list(candidates), key=lambda c : c[0].char_start)
         self.contexts   = list(set(c[0].get_parent() for c in self.candidates + self.gold))
-        
+
         # If committed, sort contexts by id
         try:
             self.contexts = sorted(self.contexts, key=lambda c : c.id)

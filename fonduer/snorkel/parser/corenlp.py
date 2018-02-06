@@ -6,20 +6,20 @@ from __future__ import unicode_literals
 from builtins import *
 from future.utils import iteritems
 
-import os
-import sys
 import json
+import os
 import signal
 import socket
 import string
+import sys
 import warnings
 
 from subprocess import Popen,PIPE
 from collections import defaultdict
 
-from .parser import Parser, URLParserConnection
-from ..models import Candidate, Context, Document, Sentence, construct_stable_id
-from ..utils import sort_X_on_Y
+from snorkel.models import Candidate, Context, Document, Sentence, construct_stable_id
+from snorkel.parser.parser import Parser, URLParserConnection
+from snorkel.utils import sort_X_on_Y
 
 
 class StanfordCoreNLPServer(Parser):
@@ -103,7 +103,7 @@ class StanfordCoreNLPServer(Parser):
         :param force_load:  Force server to pre-load models vs. on-demand
         :return:
         '''
-        loc = os.path.join(os.environ['SNORKELHOME'], 'parser')
+        loc = os.path.join(os.environ['FONDUERHOME'], 'parser')
         cmd = 'java -Xmx%s -cp "%s/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --port %d --timeout %d --threads %d > /dev/null'
         cmd = [cmd % (self.java_xmx, loc, self.port, self.timeout, self.num_threads)]
 

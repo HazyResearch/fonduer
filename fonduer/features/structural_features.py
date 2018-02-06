@@ -1,5 +1,5 @@
 from builtins import str
-from ..lf_helpers import *
+from fonduer.lf_helpers import *
 
 FEAT_PRE = 'STR_'
 DEF_VALUE = 1

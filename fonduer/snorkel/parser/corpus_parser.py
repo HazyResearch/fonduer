@@ -4,18 +4,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
-from .corenlp import StanfordCoreNLPServer
-from ..models import Candidate, Context, Sentence
-from ..udf import UDF, UDFRunner
+from snorkel.parser.corenlp import StanfordCoreNLPServer
+from snorkel.models import Candidate, Context, Sentence
+from snorkel.udf import UDF, UDFRunner
 
 
 class CorpusParser(UDFRunner):
-
     def __init__(self, parser=None, fn=None):
         self.parser = parser or StanfordCoreNLPServer()
-        super(CorpusParser, self).__init__(CorpusParserUDF,
-                                           parser=self.parser,
-                                           fn=fn)
+        super(CorpusParser, self).__init__(
+            CorpusParserUDF, parser=self.parser, fn=fn)
+
     def clear(self, session, **kwargs):
         session.query(Context).delete()
         # We cannot cascade up from child contexts to parent Candidates,
@@ -24,7 +23,6 @@ class CorpusParser(UDFRunner):
 
 
 class CorpusParserUDF(UDF):
-
     def __init__(self, parser, fn, **kwargs):
         super(CorpusParserUDF, self).__init__(**kwargs)
         self.parser = parser
