@@ -8,7 +8,7 @@ notifications:
 
 install:
   - sudo apt-get -qq update
-  - pip install -r requirements.txt
+  - pip install -r python-package-requirement.txt
 
 script:
   - source ./set_env.sh
