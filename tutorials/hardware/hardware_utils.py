@@ -1,26 +1,20 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import range
-from snorkel.contrib.fonduer.fonduer.models import TemporaryImplicitSpan
-from snorkel.models import Label
-from snorkel.matchers import RegexMatchSpan, Union
-from snorkel.utils import ProgressBar
-from snorkel.contrib.fonduer.fonduer.lf_helpers import *
-from snorkel.contrib.fonduer.fonduer.candidates import OmniNgrams
-from hardware_spaces import OmniNgramsPart
-import csv
 import codecs
-import re
-import os
-from collections import defaultdict
+import csv
 
-from itertools import chain
-
-
-from snorkel.db_helpers import reload_annotator_labels
+from fonduer.lf_helpers import *
 from snorkel.models import GoldLabel, GoldLabelKey
+from snorkel.utils import ProgressBar
 
-def get_gold_dict(filename, doc_on=True, part_on=True, val_on=True, attribute=None, docs=None):
+
+def get_gold_dict(filename,
+                  doc_on=True,
+                  part_on=True,
+                  val_on=True,
+                  attribute=None,
+                  docs=None):
     with codecs.open(filename, encoding="utf-8") as csvfile:
         gold_reader = csv.reader(csvfile)
         gold_dict = set()
@@ -33,15 +27,21 @@ def get_gold_dict(filename, doc_on=True, part_on=True, val_on=True, attribute=No
                     continue
                 else:
                     key = []
-                    if doc_on:  key.append(doc.upper())
+                    if doc_on: key.append(doc.upper())
                     if part_on: key.append(part.upper())
-                    if val_on:  key.append(val.upper())
+                    if val_on: key.append(val.upper())
                     gold_dict.add(tuple(key))
     return gold_dict
 
-def load_hardware_labels(session, candidate_class, filename, attrib, annotator_name='gold'):
 
-    ak = session.query(GoldLabelKey).filter(GoldLabelKey.name == annotator_name).first()
+def load_hardware_labels(session,
+                         candidate_class,
+                         filename,
+                         attrib,
+                         annotator_name='gold'):
+
+    ak = session.query(GoldLabelKey).filter(
+        GoldLabelKey.name == annotator_name).first()
     if ak is None:
         ak = GoldLabelKey(name=annotator_name)
         session.add(ak)
@@ -52,14 +52,15 @@ def load_hardware_labels(session, candidate_class, filename, attrib, annotator_n
     cand_total = len(candidates)
     print('Loading', cand_total, 'candidate labels')
     pb = ProgressBar(cand_total)
-    labels=[]
+    labels = []
     for i, c in enumerate(candidates):
         pb.bar(i)
         doc = (c[0].sentence.document.name).upper()
         part = (c[0].get_span()).upper()
         val = (''.join(c[1].get_span().split())).upper()
         context_stable_ids = '~~'.join([i.stable_id for i in c.get_contexts()])
-        label = session.query(GoldLabel).filter(GoldLabel.key == ak).filter(GoldLabel.candidate == c).first()
+        label = session.query(GoldLabel).filter(GoldLabel.key == ak).filter(
+            GoldLabel.candidate == c).first()
         if label is None:
             if (doc, part, val) in gold_dict:
                 label = GoldLabel(candidate=c, key=ak, value=1)
@@ -71,7 +72,7 @@ def load_hardware_labels(session, candidate_class, filename, attrib, annotator_n
     pb.close()
 
     session.commit()
-    print("AnnotatorLabels created: %s" % (len(labels),))
+    print("AnnotatorLabels created: %s" % (len(labels), ))
 
 
 def entity_confusion_matrix(pred, gold):
@@ -85,7 +86,11 @@ def entity_confusion_matrix(pred, gold):
     return (TP, FP, FN)
 
 
-def entity_level_f1(candidates, gold_file, attribute=None, corpus=None, parts_by_doc=None):
+def entity_level_f1(candidates,
+                    gold_file,
+                    attribute=None,
+                    corpus=None,
+                    parts_by_doc=None):
     """Checks entity-level recall of candidates compared to gold.
 
     Turns a CandidateSet into a normal set of entity-level tuples
@@ -95,13 +100,18 @@ def entity_level_f1(candidates, gold_file, attribute=None, corpus=None, parts_by
     Example Usage:
         from hardware_utils import entity_level_total_recall
         candidates = # CandidateSet of all candidates you want to consider
-        gold_file = os.environ['SNORKELHOME'] + '/tutorials/tables/data/hardware/hardware_gold.csv'
+        gold_file = os.environ['FONDUERHOME'] + '/tutorials/tables/data/hardware/hardware_gold.csv'
         entity_level_total_recall(candidates, gold_file, 'stg_temp_min')
     """
     docs = [(doc.name).upper() for doc in corpus] if corpus else None
     val_on = (attribute is not None)
-    gold_set = get_gold_dict(gold_file, docs=docs, doc_on=True, part_on=True,
-                             val_on=val_on, attribute=attribute)
+    gold_set = get_gold_dict(
+        gold_file,
+        docs=docs,
+        doc_on=True,
+        part_on=True,
+        val_on=val_on,
+        attribute=attribute)
     if len(gold_set) == 0:
         print("Gold set is empty.")
         return
@@ -128,8 +138,8 @@ def entity_level_f1(candidates, gold_file, attribute=None, corpus=None, parts_by
     FN = len(FN_set)
 
     prec = TP / (TP + FP) if TP + FP > 0 else float('nan')
-    rec  = TP / (TP + FN) if TP + FN > 0 else float('nan')
-    f1   = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float('nan')
+    rec = TP / (TP + FN) if TP + FN > 0 else float('nan')
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float('nan')
     print("========================================")
     print("Scoring on Entity-Level Gold Data")
     print("========================================")
@@ -149,10 +159,12 @@ def get_implied_parts(part, doc, parts_by_doc):
             if p.startswith(part) and len(part) >= 4:
                 yield p
 
+
 def entity_to_candidates(entity, candidate_subset):
     matches = []
     for c in candidate_subset:
-        c_entity = tuple([c[0].sentence.document.name.upper()] + [c[i].get_span().upper() for i in range(len(c))])
+        c_entity = tuple([c[0].sentence.document.name.upper()] +
+                         [c[i].get_span().upper() for i in range(len(c))])
         c_entity = tuple([str(x) for x in c_entity])
         if c_entity == entity:
             matches.append(c)

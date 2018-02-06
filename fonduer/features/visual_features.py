@@ -1,4 +1,4 @@
-from ..lf_helpers import *
+from fonduer.lf_helpers import *
 
 FEAT_PRE = 'VIZ_'
 DEF_VALUE = 1
