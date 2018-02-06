@@ -8,7 +8,6 @@ import subprocess
 import tempfile
 from collections import namedtuple
 
-
 import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame, Series
@@ -27,7 +26,7 @@ from snorkel.utils import (
     matrix_tn
 )
 from snorkel.utils import remove_files
-from .features.features import get_all_feats
+from fonduer.features.features import get_all_feats
 
 # Used to conform to existing annotation key API call
 # Note that this anontation matrix class can not be replaced with snorkel one

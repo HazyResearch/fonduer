@@ -15,13 +15,13 @@ from lxml import etree
 from lxml.html import fromstring
 import numpy as np
 
-from ....models import Candidate, Context, Document, construct_stable_id, split_stable_id
-from .models import Table, Cell, Figure, Phrase
+from snorkel.models import Candidate, Context, Document, construct_stable_id, split_stable_id
+from fonduer.models import Table, Cell, Figure, Phrase
 
-from ....udf import UDF, UDFRunner
-from .visual import VisualLinker
+from snorkel.udf import UDF, UDFRunner
+from fonduer.visual import VisualLinker
 
-from ....parser import DocPreprocessor, StanfordCoreNLPServer
+from snorkel.parser import DocPreprocessor, StanfordCoreNLPServer
 
 
 class HTMLPreprocessor(DocPreprocessor):

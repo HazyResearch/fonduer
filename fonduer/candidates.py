@@ -1,17 +1,14 @@
 from builtins import map
 from builtins import range
-from ....candidates import CandidateSpace, Ngrams
-from ....models.context import Document
-
-from .models import TemporaryImage
-
 from copy import deepcopy
 from itertools import product
 from sqlalchemy.sql import select
 
-from ....models import Candidate
-from ....udf import UDF, UDFRunner
-
+from fonduer.models import TemporaryImage
+from snorkel.candidates import CandidateSpace, Ngrams
+from snorkel.models import Candidate
+from snorkel.models.context import Document
+from snorkel.udf import UDF, UDFRunner
 
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.

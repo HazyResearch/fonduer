@@ -1,8 +1,23 @@
 ### Python ###
+
+# Downloaded Tutorial Data
+pdf/
+html/
+
+# Dependencies
+phantomjs/
+poppler/
+parser/
+*corenlp.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+
+# DBs
+*.db
 
 # C extensions
 *.so
