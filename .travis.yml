@@ -26,6 +26,7 @@ notifications:
 install:
   - sudo apt-get -qq update
   - pip install -r python-package-requirement.txt
+  - python -m spacy download en
   - ./install-poppler.sh
   - ./install-phantomjs.sh
 
