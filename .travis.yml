@@ -1,22 +1,17 @@
 sudo: false
 dist: trusty
 
-language:
-  - python
-  - java
+language: python
 
 python:
   - "2.7"
   - "3.5"
   - "3.6"
 
-jdk:
-  - oraclejdk8
 
 # Avoid repeatedly downloading these
 cache:
   directories:
-    - parser
     - phantomjs
     - poppler
 
@@ -24,9 +19,6 @@ services:
   - postgresql
 
 addons:
-  apt:
-    packages:
-      - oracle-java8-installer  # for CoreNLP
   postgresql: "9.6"
 
 notifications:
@@ -35,7 +27,6 @@ notifications:
 install:
   - sudo apt-get -qq update
   - pip install -r python-package-requirement.txt
-  - ./install-parser.sh
   - ./install-poppler.sh
   - ./install-phantomjs.sh
 
@@ -45,6 +36,3 @@ before_script:
 
 script:
   - travis_wait pytest tests -rs
-
-after_script:
-  - killall java
