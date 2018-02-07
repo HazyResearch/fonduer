@@ -9,7 +9,9 @@ import logging
 import os
 import pytest
 
-@pytest.mark.skip(reason="Don't to install CoreNLP on Travis. Will be decprecated.")
+
+@pytest.mark.skip(
+    reason="Don't want to install CoreNLP on Travis. Will be deprecated.")
 def test_corenlp(caplog):
     """Run a simple parse using CoreNLP as our parser."""
     caplog.set_level(logging.INFO)
@@ -64,7 +66,6 @@ def test_spacy(caplog):
 
     session = SnorkelSession()
 
-    from snorkel.parser.spacy_parser import Spacy
     from fonduer import HTMLPreprocessor, OmniParser
 
     docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
@@ -74,11 +75,7 @@ def test_spacy(caplog):
     doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
     corpus_parser = OmniParser(
-        structural=True,
-        lingual=True,
-        visual=False,
-        pdf_path=pdf_path,
-        lingual_parser=Spacy())
+        structural=True, lingual=True, visual=False, pdf_path=pdf_path)
     corpus_parser.apply(doc_preprocessor, parallel=PARALLEL)
 
     from fonduer.models import Document, Phrase
