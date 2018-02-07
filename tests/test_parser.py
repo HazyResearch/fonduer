@@ -7,8 +7,9 @@ If you are testing locally, you will need to create this db.
 """
 import logging
 import os
+import pytest
 
-
+@pytest.mark.skip(reason="Don't to install CoreNLP on Travis. Will be decprecated.")
 def test_corenlp(caplog):
     """Run a simple parse using CoreNLP as our parser."""
     caplog.set_level(logging.INFO)
