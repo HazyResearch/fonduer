@@ -1,7 +1,17 @@
+sudo: required
+dist: trusty
+
 language: python
 python:
   - "2.7"
+  - "3.5"
   - "3.6"
+
+services:
+  - postgresql
+
+addons:
+  postgresql: "9.6"
 
 notifications:
   email: false
@@ -10,6 +20,9 @@ install:
   - sudo apt-get -qq update
   - pip install -r python-package-requirement.txt
 
+before_script:
+  - psql -c 'create database parser_test;' -U postgres
+
 script:
   - source ./set_env.sh
-  - pytest tests -rs
+  - travis_wait pytest tests -rs
