@@ -11,7 +11,7 @@ import os
 
 def test_corenlp(caplog):
     """Run a simple parse using CoreNLP as our parser."""
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.DEBUG)
     logger = logging.getLogger()
     PARALLEL = 2  # Travis only gives 2 cores
     ATTRIBUTE = "parser_test"
@@ -40,9 +40,9 @@ def test_corenlp(caplog):
     docs = session.query(Document).order_by(Document.name).all()
 
     for doc in docs:
-        logger.info("Doc: {}".format(doc.name))
+        logger.debug("Doc: {}".format(doc.name))
         for phrase in doc.phrases:
-            logger.info("  Phrase: {}".format(phrase.text))
+            logger.debug("  Phrase: {}".format(phrase.text))
 
     assert session.query(Document).count() == 2
     assert session.query(Phrase).count() == 51
@@ -50,7 +50,7 @@ def test_corenlp(caplog):
 
 def test_spacy(caplog):
     """Run a simple parse using spaCy as our parser."""
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.DEBUG)
     logger = logging.getLogger()
 
     PARALLEL = 2  # Travis only gives 2 cores
@@ -85,9 +85,9 @@ def test_spacy(caplog):
     docs = session.query(Document).order_by(Document.name).all()
 
     for doc in docs:
-        logger.info("Doc: {}".format(doc.name))
+        logger.debug("Doc: {}".format(doc.name))
         for phrase in doc.phrases:
-            logger.info("  Phrase: {}".format(phrase.text))
+            logger.debug("  Phrase: {}".format(phrase.text))
 
     assert session.query(Document).count() == 2
     assert session.query(Phrase).count() == 51
