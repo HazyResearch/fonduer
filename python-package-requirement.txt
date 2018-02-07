@@ -24,4 +24,4 @@ tika
 wand
 git+https://github.com/HazyResearch/pdftotree@master
 git+https://github.com/HazyResearch/numbskull@master
-git+https://github.com/lukehsiao/treedlib@master
+git+https://github.com/HazyResearch/treedlib@master
