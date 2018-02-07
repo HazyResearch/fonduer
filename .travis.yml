@@ -35,4 +35,4 @@ before_script:
   - source ./set_env.sh
 
 script:
-  - travis_wait 30 pytest tests -rs
+  - travis_wait pytest tests -rs
