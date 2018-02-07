@@ -21,7 +21,7 @@ from fonduer.models import Table, Cell, Figure, Phrase
 from snorkel.udf import UDF, UDFRunner
 from fonduer.visual import VisualLinker
 
-from snorkel.parser import DocPreprocessor, StanfordCoreNLPServer
+from snorkel.parser import DocPreprocessor, Spacy
 
 
 class HTMLPreprocessor(DocPreprocessor):
@@ -81,7 +81,6 @@ class OmniParser(UDFRunner):
             flatten=['span', 'br'],  # flatten tag types, default: span, br
             flatten_delim='',
             lingual=True,  # lingual information
-            lingual_parser=None,
             strip=True,
             replacements=[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]',
                            '-')],
@@ -91,26 +90,8 @@ class OmniParser(UDFRunner):
 
         self.delim = "<NB>"  # NB = New Block
 
-        # Either use the provided parser (e.g. Spacy) or CoreNLP.
-        self.lingual_parser = lingual_parser or StanfordCoreNLPServer(
-            annotator_opts={
-                "tokenize": {
-                    "normalizeSpace": False,
-                    "normalizeFractions": False,
-                    "normalizeParentheses": False,
-                    "normalizeOtherBrackets": False,
-                    "normalizeCurrency": False,
-                    "asciiQuotes": False,
-                    "latexQuotes": False,
-                    "unicodeQuotes": False,
-                    "ptb3Ellipsis": False,
-                    "unicodeEllipsis": False,
-                    "ptb3Dashes": False,
-                    "escapeForwardSlashAsterisk": False,
-                    "strictTreebank3": True
-                }
-            },
-            delimiter=self.delim[1:-1])
+        # Use spaCy as our lingual parser
+        self.lingual_parser = Spacy()
 
         super(OmniParser, self).__init__(
             OmniParserUDF,
