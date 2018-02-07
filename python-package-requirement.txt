@@ -11,7 +11,7 @@ numba
 numpy>=1.11
 pandas
 psycopg2
-pytest
+pytest>=3.4.0
 pyyaml
 requests
 scipy>=0.18
