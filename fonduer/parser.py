@@ -270,9 +270,6 @@ class OmniParserUDF(UDF):
                         self.contents += self.delim
                         block_lengths.append(len(text) + len(self.delim))
 
-                        import pdb
-                        pdb.set_trace()
-
                         for parts in self.lingual_parse(document, text):
                             (_, _, _, char_end) = split_stable_id(
                                 parts['stable_id'])
@@ -310,19 +307,17 @@ class OmniParserUDF(UDF):
 
             for child in node:
                 if child.tag == 'table':
-                    for p in parse_node(
-                            child,
-                            TableInfo(document=table_info.document),
-                            figure_info):
-                        yield p
+                    yield from parse_node(
+                        child,
+                        TableInfo(document=table_info.document),
+                        figure_info)
                 elif child.tag == 'img':
-                    for p in parse_node(
-                            child,
-                            table_info,
-                            FigureInfo(document=figure_info.document)):
-                        yield p
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        FigureInfo(document=figure_info.document))
                 else:
-                    parse_node(child, table_info, figure_info)
+                    yield from parse_node(child, table_info, figure_info)
 
             if self.tabular:
                 table_info.exit_tabular(node)
@@ -333,8 +328,7 @@ class OmniParserUDF(UDF):
         root = fromstring(text)  # lxml.html.fromstring()
         tree = etree.ElementTree(root)
         document.text = text
-        for p in parse_node(root, table_info, figure_info):
-            yield p
+        yield from parse_node(root, table_info, figure_info)
 
 
 class TableInfo(object):
