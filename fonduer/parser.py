@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 from builtins import str
 from builtins import range
 from builtins import object
@@ -7,6 +6,7 @@ from bs4 import BeautifulSoup
 import codecs
 from collections import defaultdict
 import itertools
+import logging
 import os
 import re
 import warnings
@@ -22,6 +22,8 @@ from snorkel.udf import UDF, UDFRunner
 from fonduer.visual import VisualLinker
 
 from snorkel.parser import DocPreprocessor, Spacy
+
+logger = logging.getLogger()
 
 
 class HTMLPreprocessor(DocPreprocessor):
@@ -344,7 +346,7 @@ class OmniParserUDF(UDF):
                     position += 1
                     phrase_num += 1
                 except Exception as e:
-                    print("[ERROR]" + str(e))
+                    logger.error(str(e))
                     import pdb
                     pdb.set_trace()
             parsed = batch_end

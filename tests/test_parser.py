@@ -51,6 +51,43 @@ def test_corenlp(caplog):
     assert session.query(Phrase).count() == 80
 
 
+def test_parse_structure(caplog):
+    """Unit test of parser.py:parse_structure.
+
+    We do not need to touch the database for this unit test.
+    """
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger()
+
+    from fonduer import HTMLPreprocessor
+    from fonduer.parser import OmniParserUDF
+
+    max_docs = 1
+    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
+    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+
+    from fonduer.models import Document, Phrase
+
+    # Grab one document, text tuple from the preprocessor
+    doc, text = next(preprocessor.generate())
+    logger.info("Doc: {}".format(doc))
+    logger.info("    Text: {}".format(text))
+
+    from snorkel.parser import Spacy
+    omni_udf = OmniParserUDF(
+        True, ["style"], ["span", "br"], '', True, True,
+        [(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')], True, False,
+        pdf_path, Spacy())
+
+    phrases = list(omni_udf.parse_structure(doc, text))
+
+    # 44 phrases expected in the "md" document.
+    assert len(phrases) == 44
+
+
 def test_spacy(caplog):
     """Run a simple parse using spaCy as our parser."""
     caplog.set_level(logging.INFO)

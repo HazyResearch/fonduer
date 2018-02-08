@@ -8,12 +8,6 @@ python:
   - "3.5"
   - "3.6"
 
-# Avoid repeatedly downloading these
-cache:
-  directories:
-    - phantomjs
-    - poppler
-
 services:
   - postgresql
 

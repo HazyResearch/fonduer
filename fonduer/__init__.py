@@ -1,3 +1,6 @@
+import logging
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 # If we want to directly expose any subclasses at the package level, include
 # them here. For example, this allows the user to write
 # `from fonduer import HTMLPreprocessor` rather than having
