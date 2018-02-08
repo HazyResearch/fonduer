@@ -58,10 +58,7 @@ def test_parse_structure(caplog):
 
     We do not need to touch the database for this unit test.
     """
-    caplog.set_level(logging.INFO)
     logger = logging.getLogger()
-
-    session = SnorkelSession()
 
     max_docs = 1
     docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
@@ -90,8 +87,7 @@ def test_parse_structure(caplog):
         Spacy())  # lingual parser
 
     # Grab the phrases parsed by the OmniParser
-    omni_udf.parse_structure(doc, text)
-    phrases = list(session.query(Phrase).all())
+    phrases = list(omni_udf.parse_structure(doc, text))
 
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 44
