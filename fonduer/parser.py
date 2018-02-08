@@ -230,17 +230,17 @@ class OmniParserUDF(UDF):
         figure_info = FigureInfo(document, parent=document)
         self.figure_idx = -1
 
-        if self.structural:
-            xpaths = []
-            html_attrs = []
-            html_tags = []
-
         if self.tabular:
             table_info = TableInfo(document, parent=document)
             self.table_idx = -1
-            parents = []
         else:
             table_info = None
+
+        self.parsed = 0
+        self.parent_idx = 0
+        self.position = 0
+        self.phrase_num = 0
+        self.abs_phrase_offset = 0
 
         def parse_node(node, table_info=None, figure_info=None):
             if node.tag is etree.Comment:
@@ -270,30 +270,57 @@ class OmniParserUDF(UDF):
                         self.contents += self.delim
                         block_lengths.append(len(text) + len(self.delim))
 
-                        if self.tabular:
-                            parents.append(table_info.parent)
+                        import pdb
+                        pdb.set_trace()
 
-                        if self.structural:
-                            context_node = node.getparent(
-                            ) if field == 'tail' else node
-                            xpaths.append(tree.getpath(context_node))
-                            html_tags.append(context_node.tag)
-                            html_attrs.append([
-                                '='.join(x)
-                                for x in list(context_node.attrib.items())
-                            ])
+                        for parts in self.lingual_parse(document, text):
+                            (_, _, _, char_end) = split_stable_id(
+                                parts['stable_id'])
+                            try:
+                                parts['document'] = document
+                                parts['phrase_num'] = self.phrase_num
+                                abs_phrase_offset_end = (
+                                    self.abs_phrase_offset +
+                                    parts['char_offsets'][-1] + len(
+                                        parts['words'][-1]))
+                                parts['stable_id'] = construct_stable_id(
+                                    document, 'phrase', self.abs_phrase_offset,
+                                    abs_phrase_offset_end)
+                                self.abs_phrase_offset = abs_phrase_offset_end
+                                if self.structural:
+                                    context_node = node.getparent(
+                                    ) if field == 'tail' else node
+                                    parts['xpath'] = tree.getpath(context_node)
+                                    parts['html_tag'] = context_node.tag
+                                    parts['html_attrs'] = [
+                                        '='.join(x) for x in list(
+                                            context_node.attrib.items())
+                                    ]
+                                if self.tabular:
+                                    parent = table_info.parent
+                                    parts = table_info.apply_tabular(
+                                        parts, parent, self.position)
+                                yield Phrase(**parts)
+                                self.position += 1
+                                self.phrase_num += 1
+                            except Exception as e:
+                                logger.error(str(e))
+                                import pdb
+                                pdb.set_trace()
 
             for child in node:
                 if child.tag == 'table':
-                    parse_node(
-                        child,
-                        TableInfo(document=table_info.document),
-                        figure_info)
+                    for p in parse_node(
+                            child,
+                            TableInfo(document=table_info.document),
+                            figure_info):
+                        yield p
                 elif child.tag == 'img':
-                    parse_node(
-                        child,
-                        table_info,
-                        FigureInfo(document=figure_info.document))
+                    for p in parse_node(
+                            child,
+                            table_info,
+                            FigureInfo(document=figure_info.document)):
+                        yield p
                 else:
                     parse_node(child, table_info, figure_info)
 
@@ -306,50 +333,8 @@ class OmniParserUDF(UDF):
         root = fromstring(text)  # lxml.html.fromstring()
         tree = etree.ElementTree(root)
         document.text = text
-        parse_node(root, table_info, figure_info)
-        block_char_end = np.cumsum(block_lengths)
-
-        content_length = len(self.contents)
-        parsed = 0
-        parent_idx = 0
-        position = 0
-        phrase_num = 0
-        abs_phrase_offset = 0
-        while parsed < content_length:
-            batch_end = parsed + \
-                        self.contents[parsed:parsed + self.batch_size].rfind(self.delim) + \
-                        len(self.delim)
-            for parts in self.lingual_parse(document,
-                                            self.contents[parsed:batch_end]):
-                (_, _, _, char_end) = split_stable_id(parts['stable_id'])
-                try:
-                    while parsed + char_end > block_char_end[parent_idx]:
-                        parent_idx += 1
-                        position = 0
-                    parts['document'] = document
-                    parts['phrase_num'] = phrase_num
-                    abs_phrase_offset_end = abs_phrase_offset + parts['char_offsets'][-1] + len(
-                        parts['words'][-1])
-                    parts['stable_id'] = construct_stable_id(
-                        document, 'phrase', abs_phrase_offset,
-                        abs_phrase_offset_end)
-                    abs_phrase_offset = abs_phrase_offset_end
-                    if self.structural:
-                        parts['xpath'] = xpaths[parent_idx]
-                        parts['html_tag'] = html_tags[parent_idx]
-                        parts['html_attrs'] = html_attrs[parent_idx]
-                    if self.tabular:
-                        parent = parents[parent_idx]
-                        parts = table_info.apply_tabular(
-                            parts, parent, position)
-                    yield Phrase(**parts)
-                    position += 1
-                    phrase_num += 1
-                except Exception as e:
-                    logger.error(str(e))
-                    import pdb
-                    pdb.set_trace()
-            parsed = batch_end
+        for p in parse_node(root, table_info, figure_info):
+            yield p
 
 
 class TableInfo(object):
