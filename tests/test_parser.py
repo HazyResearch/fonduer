@@ -56,11 +56,12 @@ def test_parse_structure(caplog):
 
     We do not need to touch the database for this unit test.
     """
-    caplog.set_level(logging.INFO)
-    logger = logging.getLogger()
-
     from fonduer import HTMLPreprocessor
     from fonduer.parser import OmniParserUDF
+    from snorkel.parser import Spacy
+
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger()
 
     max_docs = 1
     docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
@@ -69,27 +70,38 @@ def test_parse_structure(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
-    from fonduer.models import Document, Phrase
-
     # Grab one document, text tuple from the preprocessor
     doc, text = next(preprocessor.generate())
     logger.info("Doc: {}".format(doc))
     logger.info("    Text: {}".format(text))
 
-    from snorkel.parser import Spacy
+    # Create an OmniParserUDF
     omni_udf = OmniParserUDF(
-        True, ["style"], ["span", "br"], '', True, True,
-        [(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')], True, False,
-        pdf_path, Spacy())
+        True,  # structural
+        ["style"],  # blacklist
+        ["span", "br"],  # flatten
+        '',  # flatten delim
+        True,  # lingual
+        True,  # strip
+        [(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],  # replace
+        True,  # tabular
+        False,  # visual
+        pdf_path,  # pdf path
+        Spacy())  # lingual parser
 
+    # Grab the phrases parsed by the OmniParser
     phrases = list(omni_udf.parse_structure(doc, text))
 
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 44
 
 
-def test_spacy(caplog):
-    """Run a simple parse using spaCy as our parser."""
+def test_spacy_integration(caplog):
+    """Run a simple e2e parse using spaCy as our parser.
+
+    The point of this test is to actually use the DB just as would be
+    done in a notebook by a user.
+    """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger()
 
