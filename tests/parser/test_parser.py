@@ -54,9 +54,9 @@ def test_corenlp(caplog):
 
 
 def test_parse_structure(caplog):
-    """Unit test of parser.py:parse_structure.
+    """Unit test of OmniParserUDF.parse_structure().
 
-    We do not need to touch the database for this unit test.
+    This only tests the structural parse of the document.
     """
     logger = logging.getLogger()
 
@@ -81,7 +81,7 @@ def test_parse_structure(caplog):
         True,  # strip
         [(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],  # replace
         True,  # tabular
-        False,  # visual
+        True,  # visual
         pdf_path,  # pdf path
         Spacy())  # lingual parser
 
@@ -92,8 +92,64 @@ def test_parse_structure(caplog):
     for phrase in phrases:
         logger.warning("    Phrase: {}".format(phrase.text))
 
+    header = phrases[0]
+    # Test structural attributes
+    assert header.xpath == '/html/body/h1'
+    assert header.html_tag == 'h1'
+    assert header.html_attrs == ['id=sample-markdown']
+
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 44
+
+
+def test_parse_document(caplog):
+    """Unit test of OmniParser on a single document.
+
+    This tests both the structural and visual parse of the document.
+    """
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger()
+    session = SnorkelSession()
+
+    PARALLEL = 2
+    max_docs = 2
+    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
+    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+
+    # Create an OmniParser and parse the md document
+    omni = OmniParser(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    omni.apply(preprocessor, parallel=PARALLEL)
+
+    # Grab the phrases parsed by the OmniParser
+    doc = session.query(Document).order_by(Document.name).all()[1]
+
+    logger.info("Doc: {}".format(doc))
+    for phrase in doc.phrases:
+        logger.info("    Phrase: {}".format(phrase.text))
+
+    header = doc.phrases[0]
+    # Test structural attributes
+    assert header.xpath == '/html/body/h1'
+    assert header.html_tag == 'h1'
+    assert header.html_attrs == ['id=sample-markdown']
+
+    # Test visual attributes
+    assert header.page == [1, 1]
+    assert header.top == [35, 35]
+    assert header.bottom == [61, 61]
+    assert header.right == [111, 231]
+    assert header.left == [35, 117]
+
+    # Test lingual attributes
+    assert header.ner_tags == ['ORG', 'ORG']
+    assert header.dep_labels == ['compound', 'ROOT']
+
+    # 44 phrases expected in the "md" document.
+    assert len(doc.phrases) == 44
 
 
 def test_spacy_integration(caplog):
