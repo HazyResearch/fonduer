@@ -69,7 +69,6 @@ def test_parse_structure(caplog):
 
     # Grab one document, text tuple from the preprocessor
     doc, text = next(preprocessor.generate())
-    logger.info("Doc: {}".format(doc))
     logger.info("    Text: {}".format(text))
 
     # Create an OmniParserUDF
@@ -88,6 +87,10 @@ def test_parse_structure(caplog):
 
     # Grab the phrases parsed by the OmniParser
     phrases = list(omni_udf.parse_structure(doc, text))
+
+    logger.warning("Doc: {}".format(doc))
+    for phrase in phrases:
+        logger.warning("    Phrase: {}".format(phrase.text))
 
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 44
