@@ -61,8 +61,8 @@ def test_parse_structure(caplog):
     logger = logging.getLogger()
 
     max_docs = 1
-    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
-    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/md.html'
+    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/md.pdf'
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
