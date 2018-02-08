@@ -10,6 +10,17 @@ import logging
 import os
 import pytest
 
+ATTRIBUTE = "parser_test"
+os.environ['FONDUERDBNAME'] = ATTRIBUTE
+os.environ[
+    'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
+
+from fonduer import HTMLPreprocessor, OmniParser
+from fonduer import SnorkelSession
+from fonduer.models import Document, Phrase
+from fonduer.parser import OmniParserUDF
+from snorkel.parser import Spacy
+
 
 @pytest.mark.skip(
     reason="Don't want to install CoreNLP on Travis. Will be deprecated.")
@@ -18,16 +29,8 @@ def test_corenlp(caplog):
     caplog.set_level(logging.INFO)
     logger = logging.getLogger()
     PARALLEL = 2  # Travis only gives 2 cores
-    ATTRIBUTE = "parser_test"
-    os.environ['FONDUERDBNAME'] = ATTRIBUTE
-    os.environ[
-        'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
-
-    from fonduer import SnorkelSession
 
     session = SnorkelSession()
-
-    from fonduer import HTMLPreprocessor, OmniParser
 
     docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
     pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
@@ -38,8 +41,6 @@ def test_corenlp(caplog):
     corpus_parser = OmniParser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path)
     corpus_parser.apply(doc_preprocessor, parallel=PARALLEL)
-
-    from fonduer.models import Document, Phrase
 
     docs = session.query(Document).order_by(Document.name).all()
 
@@ -57,12 +58,10 @@ def test_parse_structure(caplog):
 
     We do not need to touch the database for this unit test.
     """
-    from fonduer import HTMLPreprocessor
-    from fonduer.parser import OmniParserUDF
-    from snorkel.parser import Spacy
-
     caplog.set_level(logging.INFO)
     logger = logging.getLogger()
+
+    session = SnorkelSession()
 
     max_docs = 1
     docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
@@ -91,7 +90,8 @@ def test_parse_structure(caplog):
         Spacy())  # lingual parser
 
     # Grab the phrases parsed by the OmniParser
-    phrases = list(omni_udf.parse_structure(doc, text))
+    omni_udf.parse_structure(doc, text)
+    phrases = list(session.query(Phrase).all())
 
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 44
@@ -107,16 +107,8 @@ def test_spacy_integration(caplog):
     logger = logging.getLogger()
 
     PARALLEL = 2  # Travis only gives 2 cores
-    ATTRIBUTE = "parser_test"
-    os.environ['FONDUERDBNAME'] = ATTRIBUTE
-    os.environ[
-        'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
-
-    from fonduer import SnorkelSession
 
     session = SnorkelSession()
-
-    from fonduer import HTMLPreprocessor, OmniParser
 
     docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
     pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
@@ -127,8 +119,6 @@ def test_spacy_integration(caplog):
     corpus_parser = OmniParser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path)
     corpus_parser.apply(doc_preprocessor, parallel=PARALLEL)
-
-    from fonduer.models import Document, Phrase
 
     docs = session.query(Document).order_by(Document.name).all()
 
