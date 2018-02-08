@@ -253,10 +253,9 @@ class OmniParserUDF(UDF):
             if self.tabular:
                 self.table_idx = table_info.enter_tabular(node, self.table_idx)
 
+            # flattens children of node that are in the 'flatten' list
             if self.flatten:
-                self._flatten(
-                    node
-                )  # flattens children of node that are in the 'flatten' list
+                self._flatten(node)
 
             for field in ['text', 'tail']:
                 text = getattr(node, field)
