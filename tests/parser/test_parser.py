@@ -102,7 +102,7 @@ def test_parse_structure(caplog):
     assert len(phrases) == 44
 
 
-def test_parse_document(caplog):
+def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
 
     This tests both the structural and visual parse of the document.
@@ -124,7 +124,7 @@ def test_parse_document(caplog):
         structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallel=PARALLEL)
 
-    # Grab the phrases parsed by the OmniParser
+    # Grab the md document
     doc = session.query(Document).order_by(Document.name).all()[1]
 
     logger.info("Doc: {}".format(doc))
@@ -151,6 +151,53 @@ def test_parse_document(caplog):
     # 44 phrases expected in the "md" document.
     assert len(doc.phrases) == 44
 
+def test_parse_document_diseases(caplog):
+    """Unit test of OmniParser on a single document.
+
+    This tests both the structural and visual parse of the document.
+    """
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger()
+    session = SnorkelSession()
+
+    PARALLEL = 2
+    max_docs = 2
+    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
+    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+
+    # Create an OmniParser and parse the md document
+    omni = OmniParser(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    omni.apply(preprocessor, parallel=PARALLEL)
+
+    # Grab the diseases document
+    doc = session.query(Document).order_by(Document.name).all()[0]
+
+    logger.info("Doc: {}".format(doc))
+    #  for phrase in doc.phrases:
+    #      logger.info("    Phrase: {}".format(phrase.text))
+
+    phrase = doc.phrases[13]
+    logger.info("  {}".format(phrase))
+    # Test structural attributes
+    assert phrase.xpath == '/html/body/table[1]/tbody/tr[3]/td[1]/p'
+    assert phrase.html_tag == 'p'
+    assert phrase.html_attrs == ['class=s6', 'style=padding-top: 1pt']
+
+    # Test visual attributes
+    assert phrase.page == [1, 1, 1]
+    assert phrase.top == [342, 296, 356]
+    assert phrase.left == [315, 369, 315]
+
+    # Test lingual attributes
+    assert phrase.ner_tags == ['O', 'O', 'GPE']
+    assert phrase.dep_labels == ['ROOT', 'prep', 'pobj']
+
+    # 44 phrases expected in the "diseases" document.
+    assert len(doc.phrases) == 36
 
 def test_spacy_integration(caplog):
     """Run a simple e2e parse using spaCy as our parser.
