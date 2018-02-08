@@ -15,8 +15,8 @@ os.environ['FONDUERDBNAME'] = ATTRIBUTE
 os.environ[
     'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
 
-from fonduer import HTMLPreprocessor, OmniParser
 from fonduer import SnorkelSession
+from fonduer import HTMLPreprocessor, OmniParser
 from fonduer.models import Document, Phrase
 from fonduer.parser import OmniParserUDF
 from snorkel.parser import Spacy
