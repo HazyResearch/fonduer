@@ -22,37 +22,6 @@ from fonduer.parser import OmniParserUDF
 from snorkel.parser import Spacy
 
 
-@pytest.mark.skip(
-    reason="Don't want to install CoreNLP on Travis. Will be deprecated.")
-def test_corenlp(caplog):
-    """Run a simple parse using CoreNLP as our parser."""
-    caplog.set_level(logging.INFO)
-    logger = logging.getLogger()
-    PARALLEL = 2  # Travis only gives 2 cores
-
-    session = SnorkelSession()
-
-    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
-    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
-
-    max_docs = 2
-    doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
-
-    corpus_parser = OmniParser(
-        structural=True, lingual=True, visual=False, pdf_path=pdf_path)
-    corpus_parser.apply(doc_preprocessor, parallel=PARALLEL)
-
-    docs = session.query(Document).order_by(Document.name).all()
-
-    for doc in docs:
-        logger.info("Doc: {}".format(doc.name))
-        for phrase in doc.phrases:
-            logger.info("  Phrase: {}".format(phrase.text))
-
-    assert session.query(Document).count() == 2
-    assert session.query(Phrase).count() == 80
-
-
 def test_parse_structure(caplog):
     """Unit test of OmniParserUDF.parse_structure().
 
@@ -151,6 +120,7 @@ def test_parse_document_md(caplog):
     # 44 phrases expected in the "md" document.
     assert len(doc.phrases) == 44
 
+
 def test_parse_document_diseases(caplog):
     """Unit test of OmniParser on a single document.
 
@@ -198,6 +168,7 @@ def test_parse_document_diseases(caplog):
 
     # 44 phrases expected in the "diseases" document.
     assert len(doc.phrases) == 36
+
 
 def test_spacy_integration(caplog):
     """Run a simple e2e parse using spaCy as our parser.
