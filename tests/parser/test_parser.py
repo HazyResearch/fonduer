@@ -114,7 +114,7 @@ def test_parse_document_md(caplog):
     assert header.left == [35, 117]
 
     # Test lingual attributes
-    assert header.ner_tags == ['ORG', 'ORG']
+    assert header.ner_tags == ['O', 'O']
     assert header.dep_labels == ['compound', 'ROOT']
 
     # 44 phrases expected in the "md" document.
