@@ -150,7 +150,7 @@ def test_parse_document_diseases(caplog):
     for phrase in doc.phrases:
         logger.info("    Phrase: {}".format(phrase.text))
 
-    phrase = doc.phrases[13]
+    phrase = sorted(doc.phrases)[11]
     logger.info("  {}".format(phrase))
     # Test structural attributes
     assert phrase.xpath == '/html/body/table[1]/tbody/tr[3]/td[1]/p'
