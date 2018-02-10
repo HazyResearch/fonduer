@@ -147,8 +147,8 @@ def test_parse_document_diseases(caplog):
     doc = session.query(Document).order_by(Document.name).all()[0]
 
     logger.info("Doc: {}".format(doc))
-    #  for phrase in doc.phrases:
-    #      logger.info("    Phrase: {}".format(phrase.text))
+    for phrase in doc.phrases:
+        logger.info("    Phrase: {}".format(phrase.text))
 
     phrase = doc.phrases[13]
     logger.info("  {}".format(phrase))
