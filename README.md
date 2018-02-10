@@ -87,11 +87,13 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    PGPASSWORD=<pass> psql -h <host> -U <user>
    ```
-2. Using a [.pgpass file to store the password](http://www.postgresql.org/docs/current/static/libpq-pgpass.html).
-3. Setting the users to [trust authentication] in the pg_hba.conf file. This
-   makes local development easy, but probably isn't suitable for multiuser
-   environments. You can find your hba file location by running `psql`, then
-   querying
+2. Using a [.pgpass file to store the
+   password](http://www.postgresql.org/docs/current/static/libpq-pgpass.html).
+3. Setting the users to [trust
+   authentication](https://www.postgresql.org/docs/current/static/auth-methods.html#AUTH-TRUST)
+   in the pg_hba.conf file. This makes local development easy, but probably
+   isn't suitable for multiuser environments. You can find your hba file
+   location by running `psql`, then querying
    ```
    SHOW hba_file;
    ```
