@@ -114,7 +114,7 @@ def test_parse_document_md(caplog):
     assert header.left == [35, 117]
 
     # Test lingual attributes
-    assert header.ner_tags == ['ORG', 'ORG']
+    assert header.ner_tags == ['O', 'O']
     assert header.dep_labels == ['compound', 'ROOT']
 
     # 44 phrases expected in the "md" document.
@@ -147,10 +147,10 @@ def test_parse_document_diseases(caplog):
     doc = session.query(Document).order_by(Document.name).all()[0]
 
     logger.info("Doc: {}".format(doc))
-    #  for phrase in doc.phrases:
-    #      logger.info("    Phrase: {}".format(phrase.text))
+    for phrase in doc.phrases:
+        logger.info("    Phrase: {}".format(phrase.text))
 
-    phrase = doc.phrases[13]
+    phrase = sorted(doc.phrases)[11]
     logger.info("  {}".format(phrase))
     # Test structural attributes
     assert phrase.xpath == '/html/body/table[1]/tbody/tr[3]/td[1]/p'
