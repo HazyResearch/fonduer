@@ -74,3 +74,20 @@ You can run unit tests locally by running
 source ./set_env.sh
 pytest tests -rs
 ```
+
+## FAQs
+
+<details><summary>How do I connect to PostgreSQL?</summary>
+
+There are [four main
+ways](https://dba.stackexchange.com/questions/14740/how-to-use-psql-with-no-password-prompt)
+to deal with entering passwords when you connect to your PostgreSQL database:
+
+1. Set the `PGPASSWORD` environment variable
+```
+PGPASSWORD=<pass> psql -h <host> -U <user>
+```
+2.TODO finish filling this out...
+
+<details>
+

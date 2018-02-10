@@ -29,4 +29,4 @@ fi
 
 # Launch jupyter notebook!
 echo "Launching Jupyter Notebook..."
-jupyter notebook --notebook-dir="$FONDUERHOME"
+jupyter notebook --notebook-dir="$FONDUERHOME" --no-browser --port=8899
