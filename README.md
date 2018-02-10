@@ -34,12 +34,10 @@ installation which can be installed using `pip`:
 pip install -r python-package-requirement.txt
 ```
 
-By default (e.g. in the tutorials, etc.) we also use [Stanford
-CoreNLP](http://stanfordnlp.github.io/CoreNLP/) for pre-processing text; you
-will be prompted to install this when you run `run.sh`. In addition, we also
-use [`poppler`](https://poppler.freedesktop.org/) utilities for working with
-PDFs along with [PhantomJS](http://phantomjs.org/). You will also be prompted
-to install both of these when you run `run.sh`.
+By default (e.g. in the tutorials, etc.) we also use use
+[`poppler`](https://poppler.freedesktop.org/) utilities for working with PDFs
+along with [PhantomJS](http://phantomjs.org/). You will also be prompted to
+install both of these when you run `run.sh`.
 
 ## Running
 
