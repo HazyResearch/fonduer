@@ -10,7 +10,7 @@ nltk
 numba
 numpy>=1.11
 pandas
-psycopg2
+psycopg2-binary
 pytest
 pyyaml
 requests
