@@ -77,7 +77,7 @@ pytest tests -rs
 
 ## FAQs
 
-<details><summary>How do I connect to PostgreSQL?</summary>
+<details><summary>How do I connect to PostgreSQL?</summary><br>
 
 There are [four main
 ways](https://dba.stackexchange.com/questions/14740/how-to-use-psql-with-no-password-prompt)
