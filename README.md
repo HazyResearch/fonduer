@@ -77,7 +77,8 @@ pytest tests -rs
 
 ## FAQs
 
-<details><summary>How do I connect to PostgreSQL?</summary><br>
+<details><summary>How do I connect to PostgreSQL? I'm getting "fe_sendauth no
+password supplied".</summary><br>
 
 There are [four main
 ways](https://dba.stackexchange.com/questions/14740/how-to-use-psql-with-no-password-prompt)
@@ -101,5 +102,38 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    postgres://user:pw@localhost:5432/...
    ```
+
+</details>
+
+<details><summary>I'm seeing errors during the poppler
+installation.</summary><br>
+
+You may run into errors that look like this:
+
+```
+checking for FONTCONFIG... no
+configure: error: in `/home/lwhsiao/repos/fonduer/poppler':
+configure: error: The pkg-config script could not be found or is too old.  Make
+sure it is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+```
+
+or this:
+
+```
+checking for FONTCONFIG... no
+configure: error: Package requirements (fontconfig >= 2.0.0) were not met:
+
+No package 'fontconfig' found
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+```
+
+Fear not. You just need to make sure these packages are installed:
+
+```
+sudo apt-get install pkg-config libfontconfig1-dev
+```
 
 </details>
