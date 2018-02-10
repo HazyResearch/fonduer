@@ -1,8 +1,8 @@
 # Fonduer
 
- **_v0.0.1_**
+**_v0.0.1_**
 
- [![Build Status](https://travis-ci.com/SenWu/fonduer.svg?token=3mETsMEqfcpP23yhpsr4&branch=master)](https://travis-ci.com/SenWu/fonduer)
+[![Build Status](https://travis-ci.com/SenWu/fonduer.svg?token=3mETsMEqfcpP23yhpsr4&branch=master)](https://travis-ci.com/SenWu/fonduer)
 
 `Fonduer` is a framework for building KBC applications from _richy formatted
 data_ and is implemented as a library on top of a modified version of
@@ -84,10 +84,20 @@ ways](https://dba.stackexchange.com/questions/14740/how-to-use-psql-with-no-pass
 to deal with entering passwords when you connect to your PostgreSQL database:
 
 1. Set the `PGPASSWORD` environment variable
-```
-PGPASSWORD=<pass> psql -h <host> -U <user>
-```
-2.TODO finish filling this out...
+   ```
+   PGPASSWORD=<pass> psql -h <host> -U <user>
+   ```
+2. Using a [.pgpass file to store the password](http://www.postgresql.org/docs/current/static/libpq-pgpass.html).
+3. Setting the users to [trust authentication] in the pg_hba.conf file. This
+   makes local development easy, but probably isn't suitable for multiuser
+   environments. You can find your hba file location by running `psql`, then
+   querying
+   ```
+   SHOW hba_file;
+   ```
+4. Put the username and password in the connection URI:
+   ```
+   postgres://user:pw@localhost:5432/...
+   ```
 
-<details>
-
+</details>
