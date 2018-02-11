@@ -10,7 +10,6 @@ from pandas import DataFrame, Series
 import scipy.sparse as sparse
 from sqlalchemy.sql import bindparam, select
 
-from .features import get_span_feats
 from .models import (
     GoldLabel, GoldLabelKey, Label, LabelKey, Feature, FeatureKey, Candidate,
     Marginal
@@ -456,7 +455,7 @@ class LabelAnnotator(Annotator):
 
 class FeatureAnnotator(Annotator):
     """Apply feature generators to the candidates, generating Feature annotations"""
-    def __init__(self, f=get_span_feats):
+    def __init__(self, f):
         super(FeatureAnnotator, self).__init__(Feature, FeatureKey, f)
 
     def load_matrix(self, session, **kwargs):
