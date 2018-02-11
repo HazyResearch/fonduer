@@ -188,9 +188,6 @@ class VisualLinker(object):
             total = len(self.html_word_list)
             print("({:d}/{:d}) = {:.2f}".format(matches, total,
                                                 matches / total))
-            #  Code below can be used to print the word lists
-            #  from pprint import pprint
-            #  pprint([(self.html_word_list[i][1], self.pdf_word_list[i][1]) for i in range(len(self.html_word_list))])
             return matches
 
         N = len(self.html_word_list)
