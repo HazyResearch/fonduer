@@ -20,7 +20,6 @@ six
 spacy>=2.0.7
 sqlalchemy>=1.0.14
 tensorflow>=1.0
-tika
 wand
 git+https://github.com/HazyResearch/pdftotree@master
 git+https://github.com/HazyResearch/numbskull@master
