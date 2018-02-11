@@ -37,7 +37,7 @@ class VisualLinker(object):
         self.phrases = phrases
         self.pdf_file = pdf_path + document_name + '.pdf'
         if not os.path.isfile(self.pdf_file):
-            self.pdf_file = self.pdf_file[:-3]+"PDF"
+            self.pdf_file = self.pdf_file[:-3] + "PDF"
         try:
             self.extract_pdf_words()
         except RuntimeError as e:
@@ -50,24 +50,31 @@ class VisualLinker(object):
 
     def extract_pdf_words(self):
         num_pages = subprocess.check_output(
-                "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file), shell=True)
+            "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(
+                self.pdf_file),
+            shell=True)
         pdf_word_list = []
         coordinate_map = {}
         for i in range(1, int(num_pages) + 1):
             html_content = subprocess.check_output(
-                    "pdftotext -f {} -l {} -bbox-layout '{}' -".format(str(i), str(i), self.pdf_file), shell=True)
+                "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
+                    str(i), str(i), self.pdf_file),
+                shell=True)
             soup = BeautifulSoup(html_content, "html.parser")
             pages = soup.find_all('page')
-            pdf_word_list_i, coordinate_map_i = self._coordinates_from_HTML(pages[0], i)
+            pdf_word_list_i, coordinate_map_i = self._coordinates_from_HTML(
+                pages[0], i)
             pdf_word_list += pdf_word_list_i
             # update coordinate map
             coordinate_map.update(coordinate_map_i)
         self.pdf_word_list = pdf_word_list
         self.coordinate_map = coordinate_map
         if len(self.pdf_word_list) == 0:
-            raise RuntimeError("Words could not be extracted from PDF: %s" % self.pdf_file)
+            raise RuntimeError(
+                "Words could not be extracted from PDF: %s" % self.pdf_file)
         # take last page dimensions
-        page_width, page_height = int(float(pages[0].get('width'))), int(float(pages[0].get('height')))
+        page_width, page_height = int(float(pages[0].get('width'))), int(
+            float(pages[0].get('height')))
         self.pdf_dim = (page_width, page_height)
         if self.verbose:
             print("Extracted %d pdf words" % len(self.pdf_word_list))
@@ -93,13 +100,17 @@ class VisualLinker(object):
                         if len(content) > 0:  # Ignore empty characters
                             word_id = (page_num, i)
                             pdf_word_list.append((word_id, content))
-                            coordinate_map[word_id] = (page_num, y_min_line, xmin, y_max_line,
-                                                       xmax)
-                            block_coordinates[word_id] = (y_min_block, x_min_block)
+                            coordinate_map[word_id] = (page_num, y_min_line,
+                                                       xmin, y_max_line, xmax)
+                            block_coordinates[word_id] = (y_min_block,
+                                                          x_min_block)
                             i += 1
         # sort pdf_word_list by page, block top then block left, top, then left
-        pdf_word_list = sorted(pdf_word_list,
-                               key=lambda word_id__: block_coordinates[word_id__[0]] + coordinate_map[word_id__[0]][1:3])
+        pdf_word_list = sorted(
+            pdf_word_list,
+            key=
+            lambda word_id__: block_coordinates[word_id__[0]] + coordinate_map[word_id__[0]][1:3]
+        )
         return pdf_word_list, coordinate_map
 
     def extract_html_words(self):
@@ -141,18 +152,21 @@ class VisualLinker(object):
             cost = [0] * search_max
             for j, k in enumerate(searchIndices):
                 other = self.pdf_word_list[k][1]
-                if (word.startswith(other) or word.endswith(other) or
-                        other.startswith(word) or other.endswith(word)):
+                if (word.startswith(other) or word.endswith(other)
+                        or other.startswith(word) or other.endswith(word)):
                     html_to_pdf[i] = k
                     return
                 else:
-                    cost[j] = int(editdist(word, other)) * edit_cost + j * offset_cost
+                    cost[j] = int(editdist(
+                        word, other)) * edit_cost + j * offset_cost
             html_to_pdf[i] = searchIndices[np.argmin(cost)]
             return
 
         def get_anchors(l, u):
-            while l >= 0 and html_to_pdf[l] is None: l -= 1
-            while u < N and html_to_pdf[u] is None: u += 1
+            while l >= 0 and html_to_pdf[l] is None:
+                l -= 1
+            while u < N and html_to_pdf[u] is None:
+                u += 1
             if l < 0:
                 l = 0
                 L = 0
@@ -166,11 +180,14 @@ class VisualLinker(object):
             return l, u, L, U
 
         def display_match_counts():
-            matches = sum([html_to_pdf[i] is not None and
-                           self.html_word_list[i][1] == self.pdf_word_list[html_to_pdf[i]][1] for i in
-                           range(len(self.html_word_list))])
+            matches = sum([
+                html_to_pdf[i] is not None and self.html_word_list[i][1] ==
+                self.pdf_word_list[html_to_pdf[i]][1]
+                for i in range(len(self.html_word_list))
+            ])
             total = len(self.html_word_list)
-            print("(%d/%d) = %0.2f (%d)" % (matches, total, matches / total))
+            print("({:d}/{:d}) = {:.2f}".format(matches, total,
+                                                matches / total))
             return matches
 
         N = len(self.html_word_list)
@@ -188,42 +205,58 @@ class VisualLinker(object):
 
         # second pass: local search for exact matches
         for i in range(((N + 2) // search_radius) + 1):
-            link_exact(max(0, i * search_radius - search_radius), min(N, i * search_radius + search_radius))
+            link_exact(
+                max(0, i * search_radius - search_radius),
+                min(N, i * search_radius + search_radius))
         if self.verbose:
             print("Local exact matching:")
+            display_match_counts()
 
         # third pass: local search for approximate matches
-        search_order = np.array([(-1) ** (i % 2) * (i // 2) for i in range(1, search_max + 1)])
+        search_order = np.array(
+            [(-1)**(i % 2) * (i // 2) for i in range(1, search_max + 1)])
         for i in range(len(html_to_pdf)):
             if html_to_pdf[i] is None:
                 link_fuzzy(i)
         if self.verbose:
             print("Local approximate matching:")
-            display_match_counts
+            display_match_counts()
 
         # convert list to dict
-        matches = sum([html_to_pdf[i] is not None and
-                       self.html_word_list[i][1] == self.pdf_word_list[html_to_pdf[i]][1] for i in
-                       range(len(self.html_word_list))])
+        matches = sum([
+            html_to_pdf[i] is not None and
+            self.html_word_list[i][1] == self.pdf_word_list[html_to_pdf[i]][1]
+            for i in range(len(self.html_word_list))
+        ])
         total = len(self.html_word_list)
         if self.verbose:
-            print("Linked %d/%d (%0.2f) html words exactly" % (matches, total, matches / total))
-        self.links = OrderedDict((self.html_word_list[i][0], self.pdf_word_list[html_to_pdf[i]][0]) for i in
-                                 range(len(self.html_word_list)))
+            print("Linked {:d}/{:d} ({:.2f}) html words exactly".format(
+                matches, total, matches / total))
+        self.links = OrderedDict((self.html_word_list[i][0],
+                                  self.pdf_word_list[html_to_pdf[i]][0])
+                                 for i in range(len(self.html_word_list)))
 
-    def link_lists_old(self, search_max=200, editCost=20, offsetCost=1, offsetInertia=5):
+    def link_lists_old(self,
+                       search_max=200,
+                       editCost=20,
+                       offsetCost=1,
+                       offsetInertia=5):
         DEBUG = False
         if DEBUG:
             offsetHist = []
             jHist = []
             editDistHist = 0
-        offset = self._calculate_offset(self.html_word_list, self.pdf_word_list, max((search_max // 10), 5), search_max)
+        offset = self._calculate_offset(self.html_word_list,
+                                        self.pdf_word_list,
+                                        max((search_max // 10), 5), search_max)
         offsets = [offset] * offsetInertia
-        searchOrder = np.array([(-1) ** (i % 2) * (i // 2) for i in range(1, search_max + 1)])
+        searchOrder = np.array(
+            [(-1)**(i % 2) * (i // 2) for i in range(1, search_max + 1)])
         links = OrderedDict()
         for i, a in enumerate(self.html_word_list):
             j = 0
-            searchIndices = np.clip(offset + searchOrder, 0, len(self.pdf_word_list) - 1)
+            searchIndices = np.clip(offset + searchOrder, 0,
+                                    len(self.pdf_word_list) - 1)
             jMax = len(searchIndices)
             matched = False
             # Search first for exact matches
@@ -242,8 +275,9 @@ class VisualLinker(object):
             if not matched:
                 cost = [0] * search_max
                 for k, m in enumerate(searchIndices):
-                    cost[k] = (editdist(a[1], self.pdf_word_list[m][1]) * editCost +
-                               k * offsetCost)
+                    cost[k] = (
+                        editdist(a[1], self.pdf_word_list[m][1]) * editCost +
+                        k * offsetCost)
                 nearest = np.argmin(cost)
                 links[a[0]] = self.pdf_word_list[searchIndices[nearest]][0]
                 if DEBUG:
@@ -257,7 +291,8 @@ class VisualLinker(object):
             self.offsetHist = offsetHist
         self.links = links
         if self.verbose:
-            print("Linked %d words to %d bounding boxes" % (len(self.html_word_list), len(self.pdf_word_list)))
+            print("Linked {:d} words to {:d} bounding boxes".format(
+                len(self.html_word_list), len(self.pdf_word_list)))
 
     def _calculate_offset(self, listA, listB, seedSize, maxOffset):
         wordsA = zip(*listA[:seedSize])[1]
@@ -297,14 +332,17 @@ class VisualLinker(object):
             'pdf': pdf,
             'j': j,
         }
-        pd.set_option('display.max_rows', max_rows);
+        pd.set_option('display.max_rows', max_rows)
         print(pd.DataFrame(data, columns=['html', 'pdf', 'j']))
-        pd.reset_option('display.max_rows');
+        pd.reset_option('display.max_rows')
 
     def update_coordinates(self):
         for phrase in self.phrases:
-            (page, top, left, bottom, right) = list(zip(
-                    *[self.coordinate_map[self.links[((phrase.stable_id), i)]] for i in range(len(phrase.words))]))
+            (page, top, left, bottom, right) = list(
+                zip(*[
+                    self.coordinate_map[self.links[((phrase.stable_id), i)]]
+                    for i in range(len(phrase.words))
+                ]))
             phrase.page = list(page)
             phrase.top = list(top)
             phrase.left = list(left)
@@ -312,7 +350,7 @@ class VisualLinker(object):
             phrase.right = list(right)
             yield phrase
         if self.verbose:
-            print("Updated coordinates in snorkel.db")
+            print("Updated coordinates in database")
 
     def create_pdf(self, document_name, text, page_dim=None, split=True):
         """
@@ -338,15 +376,23 @@ class VisualLinker(object):
         if split:
             if page_dim:
                 width, height = page_dim
-                jscode = jscode.format('page.paperSize = {{ width: "{}", height: "{}", margin: "1cm"}};'.format(width, height))
+                jscode = jscode.format(
+                    'page.paperSize = {{ width: "{}", height: "{}", margin: "1cm"}};'.
+                    format(width, height))
             else:
-                jscode = jscode.format('page.paperSize = {format: "Letter", orientation: "portrait", margin: "1cm"};')
+                jscode = jscode.format(
+                    'page.paperSize = {format: "Letter", orientation: "portrait", margin: "1cm"};'
+                )
         else:
             jscode = jscode.format('')
-        driver = webdriver.PhantomJS('phantomjs', service_log_path=os.path.devnull)
+        driver = webdriver.PhantomJS(
+            'phantomjs', service_log_path=os.path.devnull)
         driver.command_executor._commands['executePhantomScript'] = (
             'POST', '/session/{}/phantom/execute'.format(driver.session_id))
-        driver.execute('executePhantomScript', {'script': jscode, 'args': [text, pdf_file]})
+        driver.execute('executePhantomScript', {
+            'script': jscode,
+            'args': [text, pdf_file]
+        })
         try:
             driver.close()
         except http.client.BadStatusLine:

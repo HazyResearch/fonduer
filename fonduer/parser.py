@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 from builtins import str
 from builtins import range
 from builtins import object
@@ -7,6 +6,7 @@ from bs4 import BeautifulSoup
 import codecs
 from collections import defaultdict
 import itertools
+import logging
 import os
 import re
 import warnings
@@ -21,19 +21,27 @@ from fonduer.models import Table, Cell, Figure, Phrase
 from snorkel.udf import UDF, UDFRunner
 from fonduer.visual import VisualLinker
 
-from snorkel.parser import DocPreprocessor, StanfordCoreNLPServer
+from snorkel.parser import DocPreprocessor, Spacy
+
+logger = logging.getLogger()
 
 
 class HTMLPreprocessor(DocPreprocessor):
     """Simple parsing of files into html documents"""
+
     def parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as f:
             soup = BeautifulSoup(f, 'lxml')
             for text in soup.find_all('html'):
                 name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
                 stable_id = self.get_stable_id(name)
-                yield Document(name=name, stable_id=stable_id, text=str(text),
-                               meta={'file_name' : file_name}), str(text)
+                yield Document(
+                    name=name,
+                    stable_id=stable_id,
+                    text=str(text),
+                    meta={
+                        'file_name': file_name
+                    }), str(text)
 
     def _can_read(self, fpath):
         return fpath.endswith('html')  # includes both .html and .xhtml
@@ -44,6 +52,7 @@ class SimpleTokenizer(object):
     A trivial alternative to CoreNLP which parses (tokenizes) text on
     whitespace only using the split() command.
     """
+
     def __init__(self, delim):
         self.delim = delim
 
@@ -53,45 +62,52 @@ class SimpleTokenizer(object):
             if not len(text.strip()):
                 continue
             words = text.split()
-            char_offsets = [0] + list(np.cumsum([len(x) + 1 for x in words]))[:-1]
+            char_offsets = [0] + list(np.cumsum([len(x) + 1
+                                                 for x in words]))[:-1]
             text = ' '.join(words)
             stable_id = construct_stable_id(document, 'phrase', i, i)
-            yield {'text': text,
-                   'words': words,
-                   'char_offsets': char_offsets,
-                   'stable_id': stable_id}
+            yield {
+                'text': text,
+                'words': words,
+                'char_offsets': char_offsets,
+                'stable_id': stable_id
+            }
             i += 1
 
 
 class OmniParser(UDFRunner):
-    def __init__(self,
-                 structural=True,                    # structural information
-                 blacklist=["style"],                # ignore tag types, default: style
-                 flatten=['span', 'br'],             # flatten tag types, default: span, br
-                 flatten_delim='',
-                 lingual=True,                       # lingual information
-                 strip=True,
-                 replacements=[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],
-                 tabular=True,                       # tabular information
-                 visual=False,                       # visual information
-                 pdf_path=None):
+    def __init__(
+            self,
+            structural=True,  # structural information
+            blacklist=["style"],  # ignore tag types, default: style
+            flatten=['span', 'br'],  # flatten tag types, default: span, br
+            flatten_delim='',
+            lingual=True,  # lingual information
+            strip=True,
+            replacements=[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]',
+                           '-')],
+            tabular=True,  # tabular information
+            visual=False,  # visual information
+            pdf_path=None):
 
         self.delim = "<NB>"  # NB = New Block
 
-        self.lingual_parser = StanfordCoreNLPServer(delimiter=self.delim[1:-1])
+        # Use spaCy as our lingual parser
+        self.lingual_parser = Spacy()
 
-        super(OmniParser, self).__init__(OmniParserUDF,
-                                         structural=structural,
-                                         blacklist=blacklist,
-                                         flatten=flatten,
-                                         flatten_delim=flatten_delim,
-                                         lingual=lingual, strip=strip,
-                                         replacements=replacements,
-                                         tabular=tabular,
-                                         visual=visual,
-                                         pdf_path=pdf_path,
-                                         lingual_parser=self.lingual_parser)
-
+        super(OmniParser, self).__init__(
+            OmniParserUDF,
+            structural=structural,
+            blacklist=blacklist,
+            flatten=flatten,
+            flatten_delim=flatten_delim,
+            lingual=lingual,
+            strip=strip,
+            replacements=replacements,
+            tabular=tabular,
+            visual=visual,
+            pdf_path=pdf_path,
+            lingual_parser=self.lingual_parser)
 
     def clear(self, session, **kwargs):
         session.query(Context).delete()
@@ -101,19 +117,20 @@ class OmniParser(UDFRunner):
 
 
 class OmniParserUDF(UDF):
-    def __init__(self,
-                 structural,              # structural
-                 blacklist,
-                 flatten,
-                 flatten_delim,
-                 lingual,                 # lingual
-                 strip,
-                 replacements,
-                 tabular,                 # tabular
-                 visual,                  # visual
-                 pdf_path,
-                 lingual_parser,
-                 **kwargs):
+    def __init__(
+            self,
+            structural,  # structural
+            blacklist,
+            flatten,
+            flatten_delim,
+            lingual,  # lingual
+            strip,
+            replacements,
+            tabular,  # tabular
+            visual,  # visual
+            pdf_path,
+            lingual_parser,
+            **kwargs):
         """
         :param visual: boolean, if True visual features are used in the model
         :param pdf_path: directory where pdf are saved, if a pdf file is not found,
@@ -128,7 +145,8 @@ class OmniParserUDF(UDF):
 
         # structural (html) setup
         self.structural = structural
-        self.blacklist = blacklist if isinstance(blacklist, list) else [blacklist]
+        self.blacklist = blacklist if isinstance(blacklist,
+                                                 list) else [blacklist]
         self.flatten = flatten if isinstance(flatten, list) else [flatten]
         self.flatten_delim = flatten_delim
 
@@ -137,9 +155,9 @@ class OmniParserUDF(UDF):
         self.strip = strip
         self.replacements = []
         for (pattern, replace) in replacements:
-            self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
+            self.replacements.append((re.compile(pattern, flags=re.UNICODE),
+                                      replace))
         if self.lingual:
-            self.batch_size = 7000 # character limit for CoreNLP, see issue #840
             self.lingual_parser = lingual_parser
             self.req_handler = lingual_parser.connect()
             self.lingual_parse = self.req_handler.parse
@@ -161,19 +179,47 @@ class OmniParserUDF(UDF):
         document, text = x
         if self.visual:
             if not self.pdf_path:
-                warnings.warn("Visual parsing failed: pdf_path is required", RuntimeWarning)
+                warnings.warn("Visual parsing failed: pdf_path is required",
+                              RuntimeWarning)
             for _ in self.parse_structure(document, text):
                 pass
             # Add visual attributes
             filename = self.pdf_path + document.name
-            create_pdf = not os.path.isfile(filename + '.pdf') and not os.path.isfile(filename + '.PDF')
+            create_pdf = not os.path.isfile(
+                filename + '.pdf') and not os.path.isfile(
+                    filename + '.PDF') and not os.path.isfile(filename)
             if create_pdf:  # PDF file does not exist
                 self.vizlink.create_pdf(document.name, text)
-            for phrase in self.vizlink.parse_visual(document.name, document.phrases, self.pdf_path):
+            for phrase in self.vizlink.parse_visual(
+                    document.name, document.phrases, self.pdf_path):
                 yield phrase
         else:
             for phrase in self.parse_structure(document, text):
                 yield phrase
+
+    def _flatten(self, node):
+        # if a child of this node is in self.flatten, construct a string
+        # containing all text/tail results of the tree based on that child
+        # and append that to the tail of the previous child or head of node
+        num_children = len(node)
+        for i, child in enumerate(node[::-1]):
+            if child.tag in self.flatten:
+                j = num_children - 1 - i  # child index walking backwards
+                contents = ['']
+                for descendant in child.getiterator():
+                    if descendant.text and descendant.text.strip():
+                        contents.append(descendant.text)
+                    if descendant.tail and descendant.tail.strip():
+                        contents.append(descendant.tail)
+                if j == 0:
+                    if node.text is None:
+                        node.text = ''
+                    node.text += self.flatten_delim.join(contents)
+                else:
+                    if node[j - 1].tail is None:
+                        node[j - 1].tail = ''
+                    node[j - 1].tail += self.flatten_delim.join(contents)
+                node.remove(child)
 
     def parse_structure(self, document, text):
         self.contents = ""
@@ -183,41 +229,17 @@ class OmniParserUDF(UDF):
         figure_info = FigureInfo(document, parent=document)
         self.figure_idx = -1
 
-        if self.structural:
-            xpaths = []
-            html_attrs = []
-            html_tags = []
-
         if self.tabular:
             table_info = TableInfo(document, parent=document)
             self.table_idx = -1
-            parents = []
         else:
             table_info = None
 
-        def flatten(node):
-            # if a child of this node is in self.flatten, construct a string
-            # containing all text/tail results of the tree based on that child
-            # and append that to the tail of the previous child or head of node
-            num_children = len(node)
-            for i, child in enumerate(node[::-1]):
-                if child.tag in self.flatten:
-                    j = num_children - 1 - i  # child index walking backwards
-                    contents = ['']
-                    for descendant in child.getiterator():
-                        if descendant.text and descendant.text.strip():
-                            contents.append(descendant.text)
-                        if descendant.tail and descendant.tail.strip():
-                            contents.append(descendant.tail)
-                    if j == 0:
-                        if node.text is None:
-                            node.text = ''
-                        node.text += self.flatten_delim.join(contents)
-                    else:
-                        if node[j - 1].tail is None:
-                            node[j - 1].tail = ''
-                        node[j - 1].tail += self.flatten_delim.join(contents)
-                    node.remove(child)
+        self.parsed = 0
+        self.parent_idx = 0
+        self.position = 0
+        self.phrase_num = 0
+        self.abs_phrase_offset = 0
 
         def parse_node(node, table_info=None, figure_info=None):
             if node.tag is etree.Comment:
@@ -230,8 +252,9 @@ class OmniParserUDF(UDF):
             if self.tabular:
                 self.table_idx = table_info.enter_tabular(node, self.table_idx)
 
+            # flattens children of node that are in the 'flatten' list
             if self.flatten:
-                flatten(node)  # flattens children of node that are in the 'flatten' list
+                self._flatten(node)
 
             for field in ['text', 'tail']:
                 text = getattr(node, field)
@@ -245,22 +268,54 @@ class OmniParserUDF(UDF):
                         self.contents += self.delim
                         block_lengths.append(len(text) + len(self.delim))
 
-                        if self.tabular:
-                            parents.append(table_info.parent)
-
-                        if self.structural:
-                            context_node = node.getparent() if field == 'tail' else node
-                            xpaths.append(tree.getpath(context_node))
-                            html_tags.append(context_node.tag)
-                            html_attrs.append(['='.join(x) for x in list(context_node.attrib.items())])
+                        for parts in self.lingual_parse(document, text):
+                            (_, _, _, char_end) = split_stable_id(
+                                parts['stable_id'])
+                            try:
+                                parts['document'] = document
+                                parts['phrase_num'] = self.phrase_num
+                                abs_phrase_offset_end = (
+                                    self.abs_phrase_offset +
+                                    parts['char_offsets'][-1] + len(
+                                        parts['words'][-1]))
+                                parts['stable_id'] = construct_stable_id(
+                                    document, 'phrase', self.abs_phrase_offset,
+                                    abs_phrase_offset_end)
+                                self.abs_phrase_offset = abs_phrase_offset_end
+                                if self.structural:
+                                    context_node = node.getparent(
+                                    ) if field == 'tail' else node
+                                    parts['xpath'] = tree.getpath(context_node)
+                                    parts['html_tag'] = context_node.tag
+                                    parts['html_attrs'] = [
+                                        '='.join(x) for x in list(
+                                            context_node.attrib.items())
+                                    ]
+                                if self.tabular:
+                                    parent = table_info.parent
+                                    parts = table_info.apply_tabular(
+                                        parts, parent, self.position)
+                                yield Phrase(**parts)
+                                self.position += 1
+                                self.phrase_num += 1
+                            except Exception as e:
+                                logger.error(str(e))
+                                import pdb
+                                pdb.set_trace()
 
             for child in node:
                 if child.tag == 'table':
-                    parse_node(child, TableInfo(document=table_info.document), figure_info)
+                    yield from parse_node(
+                        child,
+                        TableInfo(document=table_info.document),
+                        figure_info)
                 elif child.tag == 'img':
-                    parse_node(child, table_info, FigureInfo(document=figure_info.document))
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        FigureInfo(document=figure_info.document))
                 else:
-                    parse_node(child, table_info, figure_info)
+                    yield from parse_node(child, table_info, figure_info)
 
             if self.tabular:
                 table_info.exit_tabular(node)
@@ -271,52 +326,18 @@ class OmniParserUDF(UDF):
         root = fromstring(text)  # lxml.html.fromstring()
         tree = etree.ElementTree(root)
         document.text = text
-        parse_node(root, table_info, figure_info)
-        block_char_end = np.cumsum(block_lengths)
+        yield from parse_node(root, table_info, figure_info)
 
-        content_length = len(self.contents)
-        parsed = 0
-        parent_idx = 0
-        position = 0
-        phrase_num = 0
-        abs_phrase_offset = 0
-        while parsed < content_length:
-            batch_end = parsed + \
-                        self.contents[parsed:parsed + self.batch_size].rfind(self.delim) + \
-                        len(self.delim)
-            for parts in self.lingual_parse(document,
-                                            self.contents[parsed:batch_end]):
-                (_, _, _, char_end) = split_stable_id(parts['stable_id'])
-                try:
-                    while parsed + char_end > block_char_end[parent_idx]:
-                        parent_idx += 1
-                        position = 0
-                    parts['document'] = document
-                    parts['phrase_num'] = phrase_num
-                    abs_phrase_offset_end = abs_phrase_offset + parts['char_offsets'][-1] + len(parts['words'][-1])
-                    parts['stable_id'] = construct_stable_id(document, 'phrase', abs_phrase_offset, abs_phrase_offset_end)
-                    abs_phrase_offset = abs_phrase_offset_end
-                    if self.structural:
-                        parts['xpath'] = xpaths[parent_idx]
-                        parts['html_tag'] = html_tags[parent_idx]
-                        parts['html_attrs'] = html_attrs[parent_idx]
-                    if self.tabular:
-                        parent = parents[parent_idx]
-                        parts = table_info.apply_tabular(parts, parent, position)
-                    yield Phrase(**parts)
-                    position += 1
-                    phrase_num += 1
-                except Exception as e:
-                    print("[ERROR]" + str(e))
-                    import pdb
-                    pdb.set_trace()
-            parsed = batch_end
 
 class TableInfo(object):
-    def __init__(self, document,
-                 table=None, table_grid=defaultdict(int),
-                 cell=None, cell_idx=0,
-                 row_idx=0, col_idx=0,
+    def __init__(self,
+                 document,
+                 table=None,
+                 table_grid=defaultdict(int),
+                 cell=None,
+                 cell_idx=0,
+                 row_idx=0,
+                 col_idx=0,
                  parent=None):
         self.document = document
         self.table = table
@@ -335,7 +356,10 @@ class TableInfo(object):
             self.cell_position = 0
             stable_id = "%s::%s:%s:%s" % \
                 (self.document.name, "table", table_idx, table_idx)
-            self.table = Table(document=self.document, stable_id=stable_id, position=table_idx)
+            self.table = Table(
+                document=self.document,
+                stable_id=stable_id,
+                position=table_idx)
             self.parent = self.table
         elif node.tag == "tr":
             self.col_idx = 0
@@ -355,8 +379,9 @@ class TableInfo(object):
                 col_end += int(node.get("colspan")) - 1
 
             # update table_grid with occupied cells
-            for r, c in itertools.product(list(range(row_start, row_end + 1)),
-                                            list(range(col_start, col_end + 1))):
+            for r, c in itertools.product(
+                    list(range(row_start, row_end + 1)),
+                    list(range(col_start, col_end + 1))):
                 self.table_grid[r, c] = 1
 
             # construct cell
@@ -402,7 +427,8 @@ class TableInfo(object):
             parts['col_start'] = parent.col_start
             parts['col_end'] = parent.col_end
         else:
-            raise NotImplementedError("Phrase parent must be Document, Table, or Cell")
+            raise NotImplementedError(
+                "Phrase parent must be Document, Table, or Cell")
         return parts
 
 
@@ -417,7 +443,11 @@ class FigureInfo(object):
             figure_idx += 1
             stable_id = "%s::%s:%s:%s" % \
                 (self.document.name, "figure", figure_idx, figure_idx)
-            self.figure = Figure(document=self.document, stable_id=stable_id, position=figure_idx, url=node.get('src'))
+            self.figure = Figure(
+                document=self.document,
+                stable_id=stable_id,
+                position=figure_idx,
+                url=node.get('src'))
             self.parent = self.figure
         return figure_idx
 

@@ -4,6 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
+import pkg_resources
+from pathlib import Path
 from collections import defaultdict
 from snorkel.models import construct_stable_id
 from snorkel.parser import Parser, ParserConnection
@@ -12,7 +14,6 @@ try:
     import spacy
     from spacy.cli import download
     from spacy import util
-    from spacy.deprecated import resolve_model_name
 except:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
@@ -56,21 +57,47 @@ class Spacy(Parser):
         self.model = Spacy.load_lang_model(lang)
         self.num_threads = num_threads
 
-        self.pipeline = []
-        for proc in annotators:
-            self.pipeline += [self.model.__dict__[proc]]
+        self.pipeline = [proc for _, proc in self.model.__dict__['pipeline']]
+
+
+    @staticmethod
+    def is_package(name):
+        """Check if string maps to a package installed via pip.
+        name (unicode): Name of package.
+        RETURNS (bool): True if installed package, False if not.
+
+        From https://github.com/explosion/spaCy/blob/master/spacy/util.py
+
+        """
+        name = name.lower()  # compare package name against lowercase name
+        packages = pkg_resources.working_set.by_key.keys()
+        for package in packages:
+            if package.lower().replace('-', '_') == name:
+                return True
+        return False
+
 
     @staticmethod
     def model_installed(name):
         '''
         Check if spaCy language model is installed
+
+        From https://github.com/explosion/spaCy/blob/master/spacy/util.py
+
         :param name:
         :return:
         '''
         data_path = util.get_data_path()
-        model_name = resolve_model_name(name)
-        model_path = data_path / model_name
-        return model_path.exists()
+        if not data_path or not data_path.exists():
+            raise IOError("Can't find spaCy data path: %s" % str(data_path))
+        if name in set([d.name for d in data_path.iterdir()]):
+            return True
+        if Spacy.is_package(name):  # installed as package
+            return True
+        if Path(name).exists():  # path to model data directory
+            return True
+        return False
+
 
     @staticmethod
     def load_lang_model(lang):
