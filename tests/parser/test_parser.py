@@ -160,7 +160,7 @@ def test_parse_document_diseases(caplog):
     # Test visual attributes
     assert phrase.page == [1, 1, 1]
     assert phrase.top == [342, 296, 356]
-    assert phrase.left == [315, 369, 315]
+    assert phrase.left == [318, 369, 318]
 
     # Test lingual attributes
     assert phrase.ner_tags == ['O', 'O', 'GPE']
