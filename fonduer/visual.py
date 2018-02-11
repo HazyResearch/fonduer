@@ -210,6 +210,7 @@ class VisualLinker(object):
                 min(N, i * search_radius + search_radius))
         if self.verbose:
             print("Local exact matching:")
+            display_match_counts()
 
         # third pass: local search for approximate matches
         search_order = np.array(
