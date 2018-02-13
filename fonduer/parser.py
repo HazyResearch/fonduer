@@ -13,7 +13,8 @@ from lxml import etree
 from lxml.html import fromstring
 from pprint import pformat
 
-from fonduer.models import Table, Cell, Figure, Phrase
+from fonduer.models import (Table, Cell, Figure, Phrase, Para, Section, Header,
+        FigureCaption, TableCaption, RefList)
 from fonduer.visual import VisualLinker
 from fonduer.snorkel.models import (Candidate, Context, Document,
                                     construct_stable_id, split_stable_id)
@@ -225,6 +226,33 @@ class OmniParserUDF(UDF):
         figure_info = FigureInfo(document, parent=document)
         self.figure_idx = -1
 
+        para_info = ParaInfo(document, parent=document)
+        self.para_idx = -1
+        parents_para = []
+
+        section_info = SectionInfo(document, parent=document)
+        self.section_idx = -1
+        parents_section = []
+
+        header_info = HeaderInfo(document, parent=document)
+        self.header_idx = -1
+        parents_header = []
+
+        figCaption_info = FigureCaptionInfo(document, parent=document)
+        self.figCaption_idx = -1
+        parents_figCaption = []
+
+        tabCaption_info = TableCaptionInfo(document, parent=document)
+        self.tabCaption_idx = -1
+        parents_tabCaption = []
+
+        refList_info = RefListInfo(document, parent=document)
+        self.refList_idx = -1
+        parents_refList = []
+
+        self.coordinates = {}
+        self.char_idx = {}
+
         if self.tabular:
             table_info = TableInfo(document, parent=document)
             self.table_idx = -1
@@ -237,16 +265,60 @@ class OmniParserUDF(UDF):
         self.phrase_num = 0
         self.abs_phrase_offset = 0
 
-        def parse_node(node, table_info=None, figure_info=None):
+        def parse_node(node,
+                       table_info=None,
+                       figure_info=None,
+                       para_info=None,
+                       section_info=None,
+                       header_info=None,
+                       figCaption_info=None,
+                       tabCaption_info=None,
+                       refList_info=None):
             if node.tag is etree.Comment:
                 return
             if self.blacklist and node.tag in self.blacklist:
                 return
 
+            self.para_idx, coordinates = para_info.enter_para(
+                node, self.para_idx, {})
+            if len(coordinates) > 0:
+                self.coordinates[self.para_idx] = coordinates
+                self.char_idx[self.para_idx] = 0
+
             self.figure_idx = figure_info.enter_figure(node, self.figure_idx)
 
+            self.section_idx, self.para_idx, coordinates = section_info.enter_section(
+                node, self.section_idx, self.para_idx, {})
+            if len(coordinates) > 0:
+                self.coordinates[self.para_idx] = coordinates
+                self.char_idx[self.para_idx] = 0
+            self.header_idx, self.para_idx, coordinates = header_info.enter_header(
+                node, self.header_idx, self.para_idx, {})
+            if len(coordinates) > 0:
+                self.coordinates[self.para_idx] = coordinates
+                self.char_idx[self.para_idx] = 0
+            self.figCaption_idx, self.para_idx, coordinates = figCaption_info.enter_figCaption(
+                node, self.figCaption_idx, self.para_idx, {})
+            if len(coordinates) > 0:
+                self.coordinates[self.para_idx] = coordinates
+                self.char_idx[self.para_idx] = 0
+            self.tabCaption_idx, self.para_idx, coordinates = tabCaption_info.enter_tabCaption(
+                node, self.tabCaption_idx, self.para_idx, {})
+            if len(coordinates) > 0:
+                self.coordinates[self.para_idx] = coordinates
+                self.char_idx[self.para_idx] = 0
+            self.refList_idx, self.para_idx, coordinates = refList_info.enter_refList(
+                node, self.refList_idx, self.para_idx, {})
+            if len(coordinates) > 0:
+                self.coordinates[self.para_idx] = coordinates
+                self.char_idx[self.para_idx] = 0
+
             if self.tabular:
-                self.table_idx = table_info.enter_tabular(node, self.table_idx)
+                self.table_idx, self.para_idx, coordinates = table_info.enter_tabular(
+                    node, self.table_idx, self.para_idx, {})
+                if len(coordinates) > 0:
+                    self.coordinates[self.para_idx] = coordinates
+                    self.char_idx[self.para_idx] = 0
 
             # flattens children of node that are in the 'flatten' list
             if self.flatten:
@@ -263,6 +335,13 @@ class OmniParserUDF(UDF):
                         self.contents += text
                         self.contents += self.delim
                         block_lengths.append(len(text) + len(self.delim))
+
+                        parents_para.append(para_info.parent)
+                        parents_section.append(section_info.parent)
+                        parents_header.append(header_info.parent)
+                        parents_figCaption.append(figCaption_info.parent)
+                        parents_tabCaption.append(tabCaption_info.parent)
+                        parents_refList.append(refList_info.parent)
 
                         for parts in self.lingual_parse(document, text):
                             (_, _, _, char_end) = split_stable_id(
@@ -287,10 +366,42 @@ class OmniParserUDF(UDF):
                                         '='.join(x) for x in list(
                                             context_node.attrib.items())
                                     ]
+
+                                parent = parents_para[self.parent_idx]
+                                parts, self.char_idx = para_info.apply_para(
+                                    parts, parent, self.position,
+                                    self.coordinates, self.char_idx)
+
+                                parent = parents_section[self.parent_idx]
+                                parts, self.char_idx = section_info.apply_section(
+                                    parts, parent, self.position,
+                                    self.coordinates, self.char_idx)
+
+                                parent = parents_header[self.parent_idx]
+                                parts, self.char_idx = header_info.apply_header(
+                                    parts, parent, self.position,
+                                    self.coordinates, self.char_idx)
+
+                                parent = parents_figCaption[self.parent_idx]
+                                parts, self.char_idx = figCaption_info.apply_figCaption(
+                                    parts, parent, self.position,
+                                    self.coordinates, self.char_idx)
+
+                                parent = parents_tabCaption[self.parent_idx]
+                                parts, self.char_idx = tabCaption_info.apply_tabCaption(
+                                    parts, parent, self.position,
+                                    self.coordinates, self.char_idx)
+
+                                parent = parents_refList[self.parent_idx]
+                                parts, self.char_idx = refList_info.apply_refList(
+                                    parts, parent, self.position,
+                                    self.coordinates, self.char_idx)
+
                                 if self.tabular:
                                     parent = table_info.parent
                                     parts = table_info.apply_tabular(
-                                        parts, parent, self.position)
+                                        parts, parent, self.position,
+                                        self.coordinates)
                                 yield Phrase(**parts)
                                 self.position += 1
                                 self.phrase_num += 1
@@ -298,30 +409,120 @@ class OmniParserUDF(UDF):
                                 # This should never happen
                                 logger.exception(str(e))
 
+
             for child in node:
                 if child.tag == 'table':
                     yield from parse_node(
                         child,
                         TableInfo(document=table_info.document),
-                        figure_info)
-                elif child.tag == 'img':
+                        figure_info,
+                        para_info,
+                        section_info,
+                        header_info,
+                        figCaption_info,
+                        tabCaption_info,
+                        refList_info)
+                elif child.tag == 'img' or child.tag == 'figure':
                     yield from parse_node(
                         child,
                         table_info,
-                        FigureInfo(document=figure_info.document))
+                        FigureInfo(document=figure_info.document),
+                        para_info,
+                        section_info,
+                        header_info,
+                        figCaption_info,
+                        tabCaption_info,
+                        refList_info)
+                elif child.tag == 'paragraph':
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        figure_info,
+                        ParaInfo(document=para_info.document),
+                        section_info,
+                        header_info,
+                        figCaption_info,
+                        tabCaption_info,
+                        refList_info)
+                elif child.tag == 'section_header':
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        figure_info,
+                        para_info,
+                        SectionInfo(document=section_info.document),
+                        header_info,
+                        figCaption_info,
+                        tabCaption_info,
+                        refList_info)
+                elif child.tag == 'header':
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        figure_info,
+                        para_info,
+                        section_info,
+                        HeaderInfo(document=header_info.document),
+                        figCaption_info,
+                        tabCaption_info,
+                        refList_info)
+                elif child.tag == 'figure_caption':
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        figure_info,
+                        para_info,
+                        section_info,
+                        header_info,
+                        FigureCaptionInfo(document=figCaption_info.document),
+                        tabCaption_info,
+                        refList_info)
+                elif child.tag == 'table_caption':
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        figure_info,
+                        para_info,
+                        section_info,
+                        header_info,
+                        figCaption_info,
+                        TableCaptionInfo(document=tabCaption_info.document),
+                        refList_info)
+                elif child.tag == 'list':
+                    yield from parse_node(
+                        child,
+                        table_info,
+                        figure_info,
+                        para_info,
+                        section_info,
+                        header_info,
+                        figCaption_info,
+                        tabCaption_info,
+                        RefListInfo(document=refList_info.document))
                 else:
-                    yield from parse_node(child, table_info, figure_info)
+                    yield from parse_node(child, table_info, figure_info,
+                                          para_info, section_info, header_info,
+                                          figCaption_info, tabCaption_info,
+                                          refList_info)
 
             if self.tabular:
                 table_info.exit_tabular(node)
 
+            refList_info.exit_refList(node)
+            tabCaption_info.exit_tabCaption(node)
+            figCaption_info.exit_figCaption(node)
+            header_info.exit_header(node)
+            section_info.exit_section(node)
+            para_info.exit_para(node)
             figure_info.exit_figure(node)
 
         # Parse document and store text in self.contents, padded with self.delim
         root = fromstring(text)  # lxml.html.fromstring()
         tree = etree.ElementTree(root)
         document.text = text
-        yield from parse_node(root, table_info, figure_info)
+        yield from parse_node(root, table_info, figure_info, para_info,
+                              section_info, header_info, figCaption_info,
+                              tabCaption_info, refList_info)
 
 
 class TableInfo(object):
@@ -343,7 +544,7 @@ class TableInfo(object):
         self.col_idx = col_idx
         self.parent = parent
 
-    def enter_tabular(self, node, table_idx):
+    def enter_tabular(self, node, table_idx, para_idx, coordinates):
         if node.tag == "table":
             table_idx += 1
             self.table_grid.clear()
@@ -379,10 +580,18 @@ class TableInfo(object):
                     list(range(col_start, col_end + 1))):
                 self.table_grid[r, c] = 1
 
+            # construct para
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para_cell", para_idx, para_idx)
+            self.para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+
             # construct cell
             parts = defaultdict(list)
             parts["document"] = self.document
             parts["table"] = self.table
+            parts["para"] = self.para
             parts["row_start"] = row_start
             parts["row_end"] = row_end
             parts["col_start"] = col_start
@@ -393,7 +602,16 @@ class TableInfo(object):
                                      self.table.position, row_start, col_start)
             self.cell = Cell(**parts)
             self.parent = self.cell
-        return table_idx
+
+            # coordinates
+            coordinates = {}
+            coordinates["word"] = node.get('word')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+
+        return table_idx, para_idx, coordinates
 
     def exit_tabular(self, node):
         if node.tag == "table":
@@ -408,7 +626,7 @@ class TableInfo(object):
             self.cell_position += 1
             self.parent = self.table
 
-    def apply_tabular(self, parts, parent, position):
+    def apply_tabular(self, parts, parent, position, coordinates):
         parts['position'] = position
         if isinstance(parent, Document):
             pass
@@ -417,10 +635,13 @@ class TableInfo(object):
         elif isinstance(parent, Cell):
             parts['table'] = parent.table
             parts['cell'] = parent
+            parts['para'] = parent.para
             parts['row_start'] = parent.row_start
             parts['row_end'] = parent.row_end
             parts['col_start'] = parent.col_start
             parts['col_end'] = parent.col_end
+            parts = update_coordinates_table(parts,
+                                             coordinates[parent.para.position])
         else:
             raise NotImplementedError(
                 "Phrase parent must be Document, Table, or Cell")
@@ -434,7 +655,7 @@ class FigureInfo(object):
         self.parent = parent
 
     def enter_figure(self, node, figure_idx):
-        if node.tag == "img":
+        if node.tag == "img" or node.tag == "figure":
             figure_idx += 1
             stable_id = "%s::%s:%s:%s" % \
                 (self.document.name, "figure", figure_idx, figure_idx)
@@ -447,6 +668,459 @@ class FigureInfo(object):
         return figure_idx
 
     def exit_figure(self, node):
-        if node.tag == "img":
+        if node.tag == "img" or node.tag == "figure":
             self.figure = None
             self.parent = self.document
+
+
+class ParaInfo(object):
+    def __init__(self, document, para=None, parent=None):
+        self.document = document
+        self.para = para
+        self.parent = parent
+
+    def enter_para(self, node, para_idx, coordinates):
+        if node.tag == "paragraph":
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para", para_idx, para_idx)
+            self.para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+            self.parent = self.para
+            #coordinates
+            coordinates = {}
+            coordinates["char"] = node.get('char')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+        return para_idx, coordinates
+
+    def exit_para(self, node):
+        if node.tag == "paragraph":
+            self.para = None
+            self.parent = self.document
+
+    def apply_para(self, parts, parent, position, coordinates, char_idx):
+        parts['position'] = position
+        if isinstance(parent, Document):
+            pass
+        elif isinstance(parent, Para):
+            parts['para'] = parent
+            parts, char_idx[parent.position] = update_coordinates(
+                parts, coordinates[parent.position], char_idx[parent.position])
+        else:
+            raise NotImplementedError("Phrase parent must be Document or Para")
+        return parts, char_idx
+
+
+def update_coordinates_table(parts, coordinates):
+    sep = " "
+    words = coordinates["word"][:-1].split(sep)
+    top = [float(_) for _ in coordinates["top"][:-1].split(sep)]
+    left = [float(_) for _ in coordinates["left"][:-1].split(sep)]
+    bottom = [float(_) for _ in coordinates["bottom"][:-1].split(sep)]
+    right = [float(_) for _ in coordinates["right"][:-1].split(sep)]
+    max_len = len(words)
+    i = 0
+    for word in parts["words"]:
+        parts['top'].append(top)
+        parts['left'].append(left)
+        parts['bottom'].append(bottom)
+        parts['right'].append(right)
+        i += 1
+        if i == max_len:
+            break
+    return parts
+
+
+def lcs(X, Y):
+    m = len(X)
+    n = len(Y)
+
+    L = [[None] * (n + 1) for i in xrange(m + 1)]
+    d = [[None] * (n + 1) for i in xrange(m + 1)]
+    """Following steps build L[m+1][n+1] in bottom up fashion
+    Note: L[i][j] contains length of LCS of X[0..i-1]
+    and Y[0..j-1]"""
+    matches = []
+    for i in range(m + 1):
+        for j in range(n + 1):
+            if i == 0 or j == 0:
+                L[i][j] = 0
+            elif X[i - 1] == Y[j - 1] and (L[i - 1][j - 1] + 1) > max(
+                    L[i - 1][j], L[i][j - 1]):
+                L[i][j] = L[i - 1][j - 1] + 1
+                d[i][j] = 'd'
+            else:
+                if L[i][j - 1] > L[i - 1][j]:
+                    d[i][j] = 'u'
+                    L[i][j] = L[i][j - 1]
+                else:
+                    d[i][j] = 'l'
+                    L[i][j] = L[i - 1][j]
+    i = m
+    j = n
+    while i >= 0 and j >= 0:
+        if d[i][j] == 'u':
+            j -= 1
+        elif d[i][j] == 'l':
+            i -= 1
+        else:
+            matches.append((i, j))
+            i -= 1
+            j -= 1
+    return matches
+
+
+def update_coordinates(parts, coordinates, char_idx):
+    sep = " "
+    chars = coordinates["char"][:-1].split(sep)
+    top = [float(_) for _ in coordinates["top"][:-1].split(sep)]
+    left = [float(_) for _ in coordinates["left"][:-1].split(sep)]
+    bottom = [float(_) for _ in coordinates["bottom"][:-1].split(sep)]
+    right = [float(_) for _ in coordinates["right"][:-1].split(sep)]
+    words = []
+    new_chars = []
+    new_top = []
+    new_left = []
+    new_bottom = []
+    new_right = []
+    for i, char in enumerate(chars):
+        if len(char) > 0:
+            new_chars.append(char)
+            new_top.append(top[i])
+            new_left.append(left[i])
+            new_bottom.append(bottom[i])
+            new_right.append(right[i])
+    chars = new_chars
+    top = new_top
+    left = new_left
+    right = new_right
+    bottom = new_bottom
+    words = []
+    #print "".join(chars)
+    matches = lcs("".join(chars[char_idx:]), "".join(parts["words"]))
+    word_lens = [len(words) for words in parts["words"]]
+    for i, word in enumerate(parts["words"]):
+        curr_word = [
+            word,
+            float("Inf"),
+            float("Inf"),
+            float("-Inf"),
+            float("-Inf")
+        ]
+        word_len = 0
+        word_len += sum(word_lens[:i])
+        word_begin = -1
+        word_end = -1
+        for match in matches:
+            if match[1] == word_len:
+                word_begin = match[0]
+            if match[1] == word_len + word_lens[i]:
+                word_end = match[0]
+        if word_begin == -1 or word_end == -1:
+            print("no match found")
+        else:
+            for char_iter in range(word_begin, word_end):
+                curr_word[1] = int(
+                    min(curr_word[1], top[char_idx + char_iter]))
+                curr_word[2] = int(
+                    min(curr_word[2], left[char_idx + char_iter]))
+                curr_word[3] = int(
+                    max(curr_word[3], bottom[char_idx + char_iter]))
+                curr_word[4] = int(
+                    max(curr_word[4], right[char_idx + char_iter]))
+        parts['top'].append(curr_word[1])
+        parts['left'].append(curr_word[2])
+        parts['bottom'].append(curr_word[3])
+        parts['right'].append(curr_word[4])
+    #print char_idx, max([x[0] for x in matches])
+    char_idx += max([x[0] for x in matches])
+    '''
+    for word in parts["words"]:
+        curr_word = [word, float("Inf"), float("Inf"), float("-Inf"), float("-Inf")]
+        len_idx = 0
+        while len_idx<len(word):
+            while word[len_idx] == " ":
+                len_idx += 1
+            if chars[char_idx].decode("utf-8") == u'\u204e':
+                char_idx += 1
+            if word[len_idx]!=chars[char_idx].replace('"',"'") and word[len_idx]!=chars[char_idx]:
+                print "Out of order", word, word[len_idx], chars[char_idx]
+                len_idx += 1
+            else:
+                curr_word[1] = min(curr_word[1], top[char_idx])
+                curr_word[2] = min(curr_word[2], left[char_idx])
+                curr_word[3] = max(curr_word[3], bottom[char_idx])
+                curr_word[4] = max(curr_word[4], right[char_idx])
+                len_idx += len(chars[char_idx])
+                char_idx += 1
+        words.append(curr_word)
+        parts['top'].append(curr_word[1])
+        parts['left'].append(curr_word[2])
+        parts['bottom'].append(curr_word[3])
+        parts['right'].append(curr_word[4])
+    '''
+    return parts, char_idx
+
+
+class SectionInfo(object):
+    def __init__(self, document, section=None, parent=None):
+        self.document = document
+        self.section = section
+        self.parent = parent
+
+    def enter_section(self, node, section_idx, para_idx, coordinates):
+        if node.tag == "section_header":
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para_section", para_idx, para_idx)
+            para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+
+            section_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "section", section_idx, section_idx)
+            self.section = Section(
+                document=self.document,
+                stable_id=stable_id,
+                position=section_idx,
+                para=para,
+                para_id=para_idx)
+            self.parent = self.section
+            #coordinates
+            coordinates = {}
+            coordinates["char"] = node.get('char')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+        return section_idx, para_idx, coordinates
+
+    def exit_section(self, node):
+        if node.tag == "section_header":
+            self.section = None
+            self.parent = self.document
+
+    def apply_section(self, parts, parent, position, coordinates, char_idx):
+        parts['position'] = position
+        if isinstance(parent, Document):
+            pass
+        elif isinstance(parent, Section):
+            parts['para'] = parent.para
+            parts, char_idx[parent.para.position] = update_coordinates(
+                parts, coordinates[parent.para.position],
+                char_idx[parent.para.position])
+        else:
+            raise NotImplementedError(
+                "Phrase parent must be Document or Section")
+        return parts, char_idx
+
+
+class HeaderInfo(object):
+    def __init__(self, document, header=None, parent=None):
+        self.document = document
+        self.header = header
+        self.parent = parent
+
+    def enter_header(self, node, header_idx, para_idx, coordinates):
+        if node.tag == "header":
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para_header", para_idx, para_idx)
+            para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+
+            header_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "header", header_idx, header_idx)
+            self.header = Header(
+                document=self.document,
+                stable_id=stable_id,
+                position=header_idx,
+                para=para)
+            self.parent = self.header
+            #coordinates
+            coordinates = {}
+            coordinates["char"] = node.get('char')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+        return header_idx, para_idx, coordinates
+
+    def exit_header(self, node):
+        if node.tag == "header":
+            self.header = None
+            self.parent = self.document
+
+    def apply_header(self, parts, parent, position, coordinates, char_idx):
+        parts['position'] = position
+        if isinstance(parent, Document):
+            pass
+        elif isinstance(parent, Header):
+            parts['para'] = parent.para
+            parts, char_idx[parent.para.position] = update_coordinates(
+                parts, coordinates[parent.para.position],
+                char_idx[parent.para.position])
+        else:
+            raise NotImplementedError(
+                "Phrase parent must be Document or Header")
+        return parts, char_idx
+
+
+class FigureCaptionInfo(object):
+    def __init__(self, document, figCaption=None, parent=None):
+        self.document = document
+        self.figCaption = figCaption
+        self.parent = parent
+
+    def enter_figCaption(self, node, figCaption_idx, para_idx, coordinates):
+        if node.tag == "figure_caption":
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para_figCaption", para_idx, para_idx)
+            para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+
+            figCaption_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "figCaption", figCaption_idx, figCaption_idx)
+            self.figCaption = FigureCaption(
+                document=self.document,
+                stable_id=stable_id,
+                position=figCaption_idx,
+                para=para)
+            self.parent = self.figCaption
+            #coordinates
+            coordinates = {}
+            coordinates["char"] = node.get('char')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+        return figCaption_idx, para_idx, coordinates
+
+    def exit_figCaption(self, node):
+        if node.tag == "figure_caption":
+            self.figCaption = None
+            self.parent = self.document
+
+    def apply_figCaption(self, parts, parent, position, coordinates, char_idx):
+        parts['position'] = position
+        if isinstance(parent, Document):
+            pass
+        elif isinstance(parent, FigureCaption):
+            parts['para'] = parent.para
+            parts, char_idx[parent.para.position] = update_coordinates(
+                parts, coordinates[parent.para.position],
+                char_idx[parent.para.position])
+        else:
+            raise NotImplementedError(
+                "Phrase parent must be Document or FigureCaption")
+        return parts, char_idx
+
+
+class TableCaptionInfo(object):
+    def __init__(self, document, tabCaption=None, parent=None):
+        self.document = document
+        self.tabCaption = tabCaption
+        self.parent = parent
+
+    def enter_tabCaption(self, node, tabCaption_idx, para_idx, coordinates):
+        if node.tag == "table_caption":
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para_tabCaption", para_idx, para_idx)
+            para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+
+            tabCaption_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "tabCaption", tabCaption_idx, tabCaption_idx)
+            self.tabCaption = TableCaption(
+                document=self.document,
+                stable_id=stable_id,
+                position=tabCaption_idx,
+                para=para)
+            self.parent = self.tabCaption
+            #coordinates
+            coordinates = {}
+            coordinates["char"] = node.get('char')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+        return tabCaption_idx, para_idx, coordinates
+
+    def exit_tabCaption(self, node):
+        if node.tag == "table_caption":
+            self.tabCaption = None
+            self.parent = self.document
+
+    def apply_tabCaption(self, parts, parent, position, coordinates, char_idx):
+        parts['position'] = position
+        if isinstance(parent, Document):
+            pass
+        elif isinstance(parent, TableCaption):
+            parts['para'] = parent.para
+            parts, char_idx[parent.para.position] = update_coordinates(
+                parts, coordinates[parent.para.position],
+                char_idx[parent.para.position])
+        else:
+            raise NotImplementedError(
+                "Phrase parent must be Document or TableCaption")
+        return parts, char_idx
+
+
+class RefListInfo(object):
+    def __init__(self, document, refList=None, parent=None):
+        self.document = document
+        self.refList = refList
+        self.parent = parent
+
+    def enter_refList(self, node, refList_idx, para_idx, coordinates):
+        if node.tag == "list":
+            para_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "para_refList", para_idx, para_idx)
+            para = Para(
+                document=self.document, stable_id=stable_id, position=para_idx)
+
+            refList_idx += 1
+            stable_id = "%s::%s:%s:%s" % \
+                (self.document.name, "refList", refList_idx, refList_idx)
+            self.refList = RefList(
+                document=self.document,
+                stable_id=stable_id,
+                position=refList_idx,
+                para=para)
+            self.parent = self.refList
+            #coordinates
+            coordinates = {}
+            coordinates["char"] = node.get('char')
+            coordinates["top"] = node.get('top')
+            coordinates["left"] = node.get('left')
+            coordinates["bottom"] = node.get('bottom')
+            coordinates["right"] = node.get('right')
+        return refList_idx, para_idx, coordinates
+
+    def exit_refList(self, node):
+        if node.tag == "list":
+            self.refList = None
+            self.parent = self.document
+
+    def apply_refList(self, parts, parent, position, coordinates, char_idx):
+        parts['position'] = position
+        if isinstance(parent, Document):
+            pass
+        elif isinstance(parent, RefList):
+            parts['para'] = parent.para
+            parts, char_idx[parent.para.position] = update_coordinates(
+                parts, coordinates[parent.para.position],
+                char_idx[parent.para.position])
+        else:
+            raise NotImplementedError(
+                "Phrase parent must be Document or RefList")
+        return parts, char_idx

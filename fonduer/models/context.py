@@ -1,6 +1,12 @@
 from builtins import map
 from builtins import object
-from sqlalchemy import Column, String, Integer, Text, ForeignKey, UniqueConstraint
+from sqlalchemy import Column
+from sqlalchemy import Float
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship, backref
@@ -14,6 +20,7 @@ from fonduer.snorkel.models.context import TemporarySpan
 from fonduer.snorkel.models.context import split_stable_id
 from fonduer.snorkel.models.meta import snorkel_postgres
 
+FLT_ARRAY_TYPE = postgresql.ARRAY(Float) if snorkel_postgres else PickleType
 INT_ARRAY_TYPE = postgresql.ARRAY(Integer) if snorkel_postgres else PickleType
 STR_ARRAY_TYPE = postgresql.ARRAY(String)  if snorkel_postgres else PickleType
 
@@ -73,7 +80,7 @@ class Figure(Context):
     document_id   = Column(Integer, ForeignKey('document.id', ondelete='CASCADE'))
     position      = Column(Integer, nullable=False)
     document      = relationship('Document', backref=backref('figures', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
-    url = Column(String)
+    url           = Column(String)
 
     __mapper_args__ = {
         'polymorphic_identity': 'figure',
@@ -90,6 +97,161 @@ class Figure(Context):
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
+class Section(Context):
+    """A section Context in a Document."""
+    __tablename__ = 'section'
+    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
+    document_id   = Column(Integer, ForeignKey('document.id'))
+    para_id       = Column(Integer, ForeignKey('para.id'))
+    position      = Column(Integer, nullable=False)
+    document      = relationship('Document', backref=backref('sections', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+    para          = relationship('Para', backref=backref('sections', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'section',
+    }
+
+    __table_args__ = (
+        UniqueConstraint(document_id, position),
+    )
+
+    def __repr__(self):
+        return "Section(Doc: %s, Position: %s)" % (self.document.name.encode('utf-8'), self.position)
+
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
+
+class Header(Context):
+    """A section Context in a Document."""
+    __tablename__ = 'header'
+    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
+    document_id   = Column(Integer, ForeignKey('document.id'))
+    para_id       = Column(Integer, ForeignKey('para.id'))
+    position      = Column(Integer, nullable=False)
+    document      = relationship('Document', backref=backref('headers', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+    para          = relationship('Para', backref=backref('headers', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'header',
+    }
+
+    __table_args__ = (
+        UniqueConstraint(document_id, position),
+    )
+
+    def __repr__(self):
+        return "Header(Doc: %s, Position: %s)" % (self.document.name.encode('utf-8'), self.position)
+
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
+
+class FigureCaption(Context):
+    """A section Context in a Document."""
+    __tablename__ = 'figCaption'
+    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
+    document_id   = Column(Integer, ForeignKey('document.id'))
+    para_id       = Column(Integer, ForeignKey('para.id'))
+    position      = Column(Integer, nullable=False)
+    document      = relationship('Document', backref=backref('figCaptions', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+    para          = relationship('Para', backref=backref('figCaptions', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'figCaption',
+    }
+
+    __table_args__ = (
+        UniqueConstraint(document_id, position),
+    )
+
+    def __repr__(self):
+        return "FigureCaption(Doc: %s, Position: %s)" % (self.document.name.encode('utf-8'), self.position)
+
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
+
+class TableCaption(Context):
+    """A section Context in a Document."""
+    __tablename__ = 'tabCaption'
+    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
+    document_id   = Column(Integer, ForeignKey('document.id'))
+    para_id       = Column(Integer, ForeignKey('para.id'))
+    position      = Column(Integer, nullable=False)
+    document      = relationship('Document', backref=backref('tabCaptions', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+    para          = relationship('Para', backref=backref('tabCaptions', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'tabCaption',
+    }
+
+    __table_args__ = (
+        UniqueConstraint(document_id, position),
+    )
+
+    def __repr__(self):
+        return "TableCaption(Doc: %s, Position: %s)" % (self.document.name.encode('utf-8'), self.position)
+
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
+
+class RefList(Context):
+    """A section Context in a Document."""
+    __tablename__ = 'refList'
+    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
+    document_id   = Column(Integer, ForeignKey('document.id'))
+    para_id       = Column(Integer, ForeignKey('para.id'))
+    position      = Column(Integer, nullable=False)
+    document      = relationship('Document', backref=backref('refLists', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+    para          = relationship('Para', backref=backref('refLists', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'refList',
+    }
+
+    __table_args__ = (
+        UniqueConstraint(document_id, position),
+    )
+
+    def __repr__(self):
+        return "RefList(Doc: %s, Position: %s)" % (self.document.name.encode('utf-8'), self.position)
+
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
+
+
+class Para(Context):
+    """A para Context in a Document."""
+    __tablename__ = 'para'
+    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
+    document_id   = Column(Integer, ForeignKey('document.id'))
+    position      = Column(Integer, nullable=False)
+    document      = relationship('Document', backref=backref('paras', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'para',
+    }
+
+    __table_args__ = (
+        UniqueConstraint(document_id, position),
+    )
+
+    def __repr__(self):
+        return "Para(Doc: %s, Position: %s)" % (self.document.name.encode('utf-8'), self.position)
+
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
+
 
 class Cell(Context):
     """A cell Context in a Document."""
@@ -97,9 +259,11 @@ class Cell(Context):
     id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
     document_id   = Column(Integer, ForeignKey('document.id'))
     table_id      = Column(Integer, ForeignKey('table.id'))
+    para_id       = Column(Integer, ForeignKey('para.id'))
     position      = Column(Integer, nullable=False)
     document      = relationship('Document', backref=backref('cells', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
     table         = relationship('Table', backref=backref('cells', order_by=position, cascade='all, delete-orphan'), foreign_keys=table_id)
+    para          = relationship('Para', backref=backref('cells', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
     row_start = Column(Integer)
     row_end = Column(Integer)
     col_start = Column(Integer)
@@ -221,10 +385,10 @@ class TabularMixin(object):
 class VisualMixin(object):
     """A collection of visual attributes."""
     page   = Column(INT_ARRAY_TYPE)
-    top    = Column(INT_ARRAY_TYPE)
-    left   = Column(INT_ARRAY_TYPE)
-    bottom = Column(INT_ARRAY_TYPE)
-    right  = Column(INT_ARRAY_TYPE)
+    top    = Column(FLT_ARRAY_TYPE)
+    left   = Column(FLT_ARRAY_TYPE)
+    bottom = Column(FLT_ARRAY_TYPE)
+    right  = Column(FLT_ARRAY_TYPE)
 
     def is_visual(self):
         return self.page is not None and self.page[0] is not None
@@ -259,7 +423,9 @@ class Phrase(Context, TabularMixin, LingualMixin, VisualMixin, StructuralMixin, 
     __tablename__    = 'phrase'
     id               = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
     document_id      = Column(Integer, ForeignKey('document.id'))
+    para_id          = Column(Integer, ForeignKey('para.id'))
     document         = relationship('Document', backref=backref('phrases', cascade='all, delete-orphan'), foreign_keys=document_id)
+    para             = relationship('Para', backref=backref('phrases', cascade='all, delete-orphan'), foreign_keys=para_id)
     phrase_num       = Column(Integer, nullable=False)  # unique Phrase number per document
     text             = Column(Text, nullable=False)
     words            = Column(STR_ARRAY_TYPE)
