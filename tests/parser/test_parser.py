@@ -31,7 +31,7 @@ def test_parse_structure(caplog):
     logger = logging.getLogger(__name__)
 
     max_docs = 1
-    docs_path = 'tests/data/html_simple/md.html'
+    docs_path = 'tests/data/html_pdftotree/md.html'
     pdf_path = 'tests/data/pdf_simple/md.pdf'
 
     # Preprocessor for the Docs
@@ -76,12 +76,13 @@ def test_parse_document_md(caplog):
 
     This tests both the structural and visual parse of the document.
     """
+    caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
     session = SnorkelSession()
 
     PARALLEL = 2
     max_docs = 2
-    docs_path = 'tests/data/html_simple/'
+    docs_path = 'tests/data/html_pdftotree/'
     pdf_path = 'tests/data/pdf_simple/'
 
     # Preprocessor for the Docs
@@ -130,7 +131,7 @@ def test_parse_document_diseases(caplog):
 
     PARALLEL = 2
     max_docs = 2
-    docs_path = 'tests/data/html_simple/'
+    docs_path = 'tests/data/html_pdftotree/'
     pdf_path = 'tests/data/pdf_simple/'
 
     # Preprocessor for the Docs
@@ -180,7 +181,7 @@ def test_spacy_integration(caplog):
 
     session = SnorkelSession()
 
-    docs_path = 'tests/data/html_simple/'
+    docs_path = 'tests/data/html_pdftotree/'
     pdf_path = 'tests/data/pdf_simple/'
 
     max_docs = 2

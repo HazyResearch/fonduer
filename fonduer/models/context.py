@@ -264,11 +264,11 @@ class Cell(Context):
     document      = relationship('Document', backref=backref('cells', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
     table         = relationship('Table', backref=backref('cells', order_by=position, cascade='all, delete-orphan'), foreign_keys=table_id)
     para          = relationship('Para', backref=backref('cells', order_by=position, cascade='all, delete-orphan'), foreign_keys=para_id)
-    row_start = Column(Integer)
-    row_end = Column(Integer)
-    col_start = Column(Integer)
-    col_end = Column(Integer)
-    html_tag = Column(Text)
+    row_start     = Column(Integer)
+    row_end       = Column(Integer)
+    col_start     = Column(Integer)
+    col_end       = Column(Integer)
+    html_tag      = Column(Text)
     if snorkel_postgres:
         html_attrs = Column(postgresql.ARRAY(String))
         # html_anc_tags = Column(postgresql.ARRAY(String))
@@ -592,24 +592,24 @@ class TemporaryImplicitSpan(TemporarySpan):
             :meta)"""
 
     def _get_insert_args(self):
-        return {'sentence_id'   : self.sentence.id,
-                'char_start'    : self.char_start,
-                'char_end'      : self.char_end,
-                'expander_key'  : self.expander_key,
-                'position'      : self.position,
-                'text'          : self.text,
-                'words'         : self.words,
-                'lemmas'        : self.lemmas,
-                'pos_tags'      : self.pos_tags,
-                'ner_tags'      : self.ner_tags,
-                'dep_parents'   : self.dep_parents,
-                'dep_labels'    : self.dep_labels,
-                'page'          : self.page,
-                'top'           : self.top,
-                'left'          : self.left,
-                'bottom'        : self.bottom,
-                'right'         : self.right,
-                'meta'          : self.meta
+        return {'sentence_id'  : self.sentence.id,
+                'char_start'   : self.char_start,
+                'char_end'     : self.char_end,
+                'expander_key' : self.expander_key,
+                'position'     : self.position,
+                'text'         : self.text,
+                'words'        : self.words,
+                'lemmas'       : self.lemmas,
+                'pos_tags'     : self.pos_tags,
+                'ner_tags'     : self.ner_tags,
+                'dep_parents'  : self.dep_parents,
+                'dep_labels'   : self.dep_labels,
+                'page'         : self.page,
+                'top'          : self.top,
+                'left'         : self.left,
+                'bottom'       : self.bottom,
+                'right'        : self.right,
+                'meta'         : self.meta
                 }
 
     def get_attrib_tokens(self, a='words'):
@@ -764,9 +764,9 @@ class TemporaryImage(TemporaryContext):
         return """INSERT INTO image VALUES(:id, :document_id, :image_id, :url)"""
 
     def _get_insert_args(self):
-        return {'document_id': self.figure.document.id,
-                'image_id' : self.figure.position,
-                'url'      : self.figure.url}
+        return {'document_id' : self.figure.document.id,
+                'image_id'    : self.figure.position,
+                'url'         : self.figure.url}
 
     def __repr__(self):
         return '%s(document=%s, position=%s, url=%s)' \
