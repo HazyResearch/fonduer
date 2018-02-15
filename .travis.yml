@@ -48,4 +48,4 @@ before_script:
   - source ./set_env.sh
 
 script:
-  - travis_wait pytest tests -v -rsXx
+  - travis_wait pytest tests -v -rxXs
