@@ -154,6 +154,7 @@ def test_parse_document_diseases(caplog):
     assert phrase.html_tag == 'p'
     assert phrase.html_attrs == ['class=s6', 'style=padding-top: 1pt']
 
+
     # Test visual attributes
     assert phrase.page == [1, 1, 1]
     assert phrase.top == [342, 296, 356]
@@ -162,9 +163,6 @@ def test_parse_document_diseases(caplog):
     # Test lingual attributes
     assert phrase.ner_tags == ['O', 'O', 'GPE']
     assert phrase.dep_labels == ['ROOT', 'prep', 'pobj']
-
-    # 44 phrases expected in the "diseases" document.
-    assert len(doc.phrases) == 36
 
 def test_spacy_integration(caplog):
     """Run a simple e2e parse using spaCy as our parser.
@@ -178,6 +176,7 @@ def test_spacy_integration(caplog):
     PARALLEL = 2  # Travis only gives 2 cores
 
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+
 
     docs_path = 'tests/data/html_pdftotree/'
     pdf_path = 'tests/data/pdf_simple/'
