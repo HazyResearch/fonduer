@@ -736,8 +736,8 @@ def lcs(X, Y):
     m = len(X)
     n = len(Y)
 
-    L = [[None] * (n + 1) for i in xrange(m + 1)]
-    d = [[None] * (n + 1) for i in xrange(m + 1)]
+    L = [[None] * (n + 1) for i in range(m + 1)]
+    d = [[None] * (n + 1) for i in range(m + 1)]
     """Following steps build L[m+1][n+1] in bottom up fashion
     Note: L[i][j] contains length of LCS of X[0..i-1]
     and Y[0..j-1]"""
