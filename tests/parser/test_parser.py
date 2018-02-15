@@ -172,7 +172,6 @@ def test_spacy_integration(caplog):
     """
     #  caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-
     PARALLEL = 2  # Travis only gives 2 cores
 
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
