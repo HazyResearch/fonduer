@@ -11,8 +11,8 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from lxml.html import fromstring
 
-from fonduer.models import (Cell, Figure, FigureCaption, Header, Para, Phrase,
-                            RefList, Section, Table, TableCaption)
+from fonduer.models import (Table, Cell, Figure, Phrase, Para, Section, Header,
+                            FigureCaption, TableCaption, RefList)
 from fonduer.snorkel.models import (Candidate, Context, Document,
                                     construct_stable_id, split_stable_id)
 from fonduer.snorkel.parser import DocPreprocessor, Spacy
@@ -407,7 +407,6 @@ class OmniParserUDF(UDF):
                                 # This should never happen
                                 logger.exception(str(e))
 
-
             for child in node:
                 if child.tag == 'table':
                     yield from parse_node(
@@ -798,7 +797,6 @@ def update_coordinates(parts, coordinates, char_idx):
     right = new_right
     bottom = new_bottom
     words = []
-    #print "".join(chars)
     matches = lcs("".join(chars[char_idx:]), "".join(parts["words"]))
     word_lens = [len(words) for words in parts["words"]]
     for i, word in enumerate(parts["words"]):
@@ -819,7 +817,7 @@ def update_coordinates(parts, coordinates, char_idx):
             if match[1] == word_len + word_lens[i]:
                 word_end = match[0]
         if word_begin == -1 or word_end == -1:
-            print("no match found")
+            log.warning("no match found")
         else:
             for char_iter in range(word_begin, word_end):
                 curr_word[1] = int(
@@ -834,7 +832,6 @@ def update_coordinates(parts, coordinates, char_idx):
         parts['left'].append(curr_word[2])
         parts['bottom'].append(curr_word[3])
         parts['right'].append(curr_word[4])
-    #print char_idx, max([x[0] for x in matches])
     char_idx += max([x[0] for x in matches])
     '''
     for word in parts["words"]:
@@ -846,7 +843,7 @@ def update_coordinates(parts, coordinates, char_idx):
             if chars[char_idx].decode("utf-8") == u'\u204e':
                 char_idx += 1
             if word[len_idx]!=chars[char_idx].replace('"',"'") and word[len_idx]!=chars[char_idx]:
-                print "Out of order", word, word[len_idx], chars[char_idx]
+                log.warning("Out of order: {} {} {}".format(word, word[len_idx], chars[char_idx]))
                 len_idx += 1
             else:
                 curr_word[1] = min(curr_word[1], top[char_idx])
