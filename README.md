@@ -2,7 +2,7 @@
 
 **_v0.0.1_**
 
-[![Build Status](https://travis-ci.com/SenWu/fonduer.svg?token=3mETsMEqfcpP23yhpsr4&branch=master)](https://travis-ci.com/SenWu/fonduer)
+[![Build Status](https://travis-ci.com/SenWu/fonduer.svg?branch=master)](https://travis-ci.com/SenWu/fonduer)
 
 `Fonduer` is a framework for building KBC applications from _richy formatted
 data_ and is implemented as a library on top of a modified version of
