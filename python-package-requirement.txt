@@ -10,6 +10,7 @@ nltk
 numba
 numpy>=1.11
 pandas
+pdftotree
 psycopg2-binary
 pytest>=3.4.0
 pyyaml
@@ -21,6 +22,5 @@ spacy>=2.0.7
 sqlalchemy>=1.0.14
 tensorflow>=1.0
 wand
-git+https://github.com/HazyResearch/pdftotree@master
 git+https://github.com/HazyResearch/numbskull@master
 git+https://github.com/HazyResearch/treedlib@master
