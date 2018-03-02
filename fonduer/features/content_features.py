@@ -9,7 +9,17 @@ from snorkel.models import TemporarySpan
 from snorkel.tree_structs import corenlp_to_xmltree
 from snorkel.utils import get_as_dict
 
-from treedlib import compile_relation_feature_generator
+from treedlib import Compile
+from treedlib import Children
+from treedlib import Indicator
+from treedlib import LeftNgrams
+from treedlib import LeftSiblings
+from treedlib import Mention
+from treedlib import Ngrams
+from treedlib import Parents
+from treedlib import RightNgrams
+from treedlib import RightSiblings
+
 
 DEF_VALUE = 1
 
@@ -31,7 +41,7 @@ def get_content_feats(candidates):
             span = args[0]
             if span.sentence.is_lingual():
                 get_tdl_feats = compile_entity_feature_generator()
-                sent = get_as_dict(span.parent)
+                sent = get_as_dict(span.sentence)
                 xmltree = corenlp_to_xmltree(sent)
                 sidxs = list(range(span.get_word_start(), span.get_word_end() + 1))
                 if len(sidxs) > 0:
