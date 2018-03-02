@@ -9,6 +9,7 @@ from snorkel.models import TemporarySpan
 from snorkel.tree_structs import corenlp_to_xmltree
 from snorkel.utils import get_as_dict
 
+from treedlib import compile_relation_feature_generator
 from treedlib import Compile
 from treedlib import Children
 from treedlib import Indicator
