@@ -19,24 +19,38 @@ _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv
 }
 ```
 
-## Installation / dependencies
+## Installation
 
-We recommend using a [virtualenv](https://virtualenv.pypa.io/en/stable/). Once
-you have cloned the repository, change directories to the root of the repository
-and run
+### Dependencies
+We use a few applications that you'll need to install and be sure are on your
+PATH.
 
+For OS X using [homebrew](https://brew.sh):
+```bash
+brew install poppler
 ```
+
+On Debian-based distros:
+```bash
+sudo apt-get install poppler-utils
+```
+
+For the Python dependencies, we recommend using a
+[virtualenv](https://virtualenv.pypa.io/en/stable/). Once you have cloned the
+repository, change directories to the root of the repository and run
+
+```bash
 virtualenv -p python3 .venv
 ```
 
 Once the virtual environment is created, activate it by running
 
-```
+```bash
 source .venv/bin/activate
 ```
 
-Any Python libraries installed will now be contained within this virtual environment.
-To deactivate the environment, simply run `deactivate`.
+Any Python libraries installed will now be contained within this virtual
+environment. To deactivate the environment, simply run `deactivate`.
 
 `Fonduer` adds some additional python packages to the default Snorkel
 installation which can be installed using `pip`:
