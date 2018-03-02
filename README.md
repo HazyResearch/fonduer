@@ -8,6 +8,17 @@
 data_ and is implemented as a library on top of a modified version of
 [Snorkel](https://hazyresearch.github.io/snorkel/).
 
+## Reference
+_[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)_
+```
+@article{wu2017fonduer,
+  title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
+  author={Wu, Sen and Hsiao, Luke and Cheng, Xiao and Hancock, Braden and Rekatsinas, Theodoros and Levis, Philip and R{\'e}, Christopher},
+  journal={arXiv preprint arXiv:1703.05028},
+  year={2017}
+}
+```
+
 ## Installation / dependencies
 
 We recommend using a [virtualenv](https://virtualenv.pypa.io/en/stable/). Once
