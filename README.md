@@ -9,7 +9,9 @@ data_ and is implemented as a library on top of a modified version of
 [Snorkel](https://hazyresearch.github.io/snorkel/).
 
 ## Reference
+
 _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)_
+
 ```
 @article{wu2017fonduer,
   title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
@@ -22,16 +24,19 @@ _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv
 ## Installation
 
 ### Dependencies
+
 We use a few applications that you'll need to install and be sure are on your
 PATH.
 
 For OS X using [homebrew](https://brew.sh):
+
 ```bash
 brew install poppler
 brew install postgresql
 ```
 
 On Debian-based distros:
+
 ```bash
 sudo apt-get install poppler-utils
 sudo apt-get install postgresql
@@ -92,7 +97,7 @@ You can run unit tests locally by running
 
 ```
 source ./set_env.sh
-pytest tests -rs
+pytest tests -rsXx
 ```
 
 ## FAQs
@@ -122,5 +127,25 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    postgres://user:pw@localhost:5432/...
    ```
+</details>
 
+<details>
+<summary>I'm getting a CalledProcessError for command 'pdftotext -f 1 -l 1
+-bbox-layout'?</summary><br>
+
+Are you using Ubuntu 14.04 (or older)? Fonduer requires `poppler-utils` to be
+[version `0.36.0` or greater](https://poppler.freedesktop.org/releases.html).
+Otherwise, the `-bbox-layout` option is not available for `pdftotext`.
+
+If you must use Ubuntu 14.04, you can [install
+manually](https://poppler.freedesktop.org). As an example, to install `0.62.0`:
+```bash
+sudo apt-get install build-essential checkinstall
+wget poppler.freedesktop.org/poppler-0.62.0.tar.xz
+tar -xf ./poppler-0.62.0.tar.xz
+cd poppler-0.62.0
+./configure
+make
+sudo checkinstall
+```
 </details>

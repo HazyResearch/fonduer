@@ -1,4 +1,4 @@
-sudo: false
+sudo: false 
 dist: trusty
 
 language: python
@@ -18,14 +18,27 @@ notifications:
 
 install:
   - sudo apt-get -qq update
+
+    # Install Poppler manually for Ubuntu 14.04 on Travis
+  - sudo apt-get install build-essential checkinstall
+  - wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
+  - tar -xf ./poppler-0.53.0.tar.xz
+  - cd poppler-0.53.0
+  - ./configure
+  - make
+  - sudo checkinstall -y
+  - cd ..
+  - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+  - echo "Using LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+
   - pip install -r python-package-requirement.txt
   - python -m spacy download en
-  - ./install-poppler.sh
   - ./install-phantomjs.sh
 
 before_script:
+  - pdftotext --help
   - psql -c 'create database parser_test;' -U postgres
   - source ./set_env.sh
 
 script:
-  - travis_wait pytest tests -v -rs
+  - travis_wait pytest tests -v -rsXx
