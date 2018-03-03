@@ -27,12 +27,12 @@ PATH.
 
 For OS X using [homebrew](https://brew.sh):
 ```bash
-brew install poppler
+brew install poppler postgresql
 ```
 
 On Debian-based distros:
 ```bash
-sudo apt-get install poppler-utils
+sudo apt-get install poppler-utils postgresql
 ```
 
 For the Python dependencies, we recommend using a
