@@ -127,6 +127,7 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    postgres://user:pw@localhost:5432/...
    ```
+
 </details>
 
 <details>
@@ -139,6 +140,7 @@ Otherwise, the `-bbox-layout` option is not available for `pdftotext`.
 
 If you must use Ubuntu 14.04, you can [install
 manually](https://poppler.freedesktop.org). As an example, to install `0.53.0`:
+
 ```bash
 sudo apt-get install build-essential checkinstall
 wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
@@ -148,4 +150,6 @@ cd poppler-0.53.0
 make
 sudo checkinstall
 ```
+We highly recommend using at least Ubuntu 16.04 though, as we haven't done
+testing on 14.04 or older.
 </details>
