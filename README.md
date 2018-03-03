@@ -59,11 +59,6 @@ installation which can be installed using `pip`:
 pip install -r python-package-requirement.txt
 ```
 
-By default (e.g. in the tutorials, etc.) we also use use
-[`poppler`](https://poppler.freedesktop.org/) utilities for working with PDFs
-along with [PhantomJS](http://phantomjs.org/). You will also be prompted to
-install both of these when you run `run.sh`.
-
 ## Running
 
 After installing Fonduer, and the additional python dependencies, just run:
@@ -125,38 +120,5 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    postgres://user:pw@localhost:5432/...
    ```
-
-</details>
-
-<details><summary>I'm seeing errors during the poppler
-installation.</summary><br>
-
-You may run into errors that look like this:
-
-```
-checking for FONTCONFIG... no
-configure: error: in `/home/lwhsiao/repos/fonduer/poppler':
-configure: error: The pkg-config script could not be found or is too old.  Make
-sure it is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-```
-
-or this:
-
-```
-checking for FONTCONFIG... no
-configure: error: Package requirements (fontconfig >= 2.0.0) were not met:
-
-No package 'fontconfig' found
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-```
-
-Fear not. You just need to make sure these packages are installed:
-
-```
-sudo apt-get install pkg-config libfontconfig1-dev
-```
 
 </details>
