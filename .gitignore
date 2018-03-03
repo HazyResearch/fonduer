@@ -6,7 +6,6 @@ html/
 
 # Dependencies
 phantomjs/
-poppler/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -9,7 +9,9 @@ data_ and is implemented as a library on top of a modified version of
 [Snorkel](https://hazyresearch.github.io/snorkel/).
 
 ## Reference
+
 _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)_
+
 ```
 @article{wu2017fonduer,
   title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
@@ -19,24 +21,43 @@ _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv
 }
 ```
 
-## Installation / dependencies
+## Installation
 
-We recommend using a [virtualenv](https://virtualenv.pypa.io/en/stable/). Once
-you have cloned the repository, change directories to the root of the repository
-and run
+### Dependencies
 
+We use a few applications that you'll need to install and be sure are on your
+PATH.
+
+For OS X using [homebrew](https://brew.sh):
+
+```bash
+brew install poppler
+brew install postgresql
 ```
+
+On Debian-based distros:
+
+```bash
+sudo apt-get install poppler-utils
+sudo apt-get install postgresql
+```
+
+For the Python dependencies, we recommend using a
+[virtualenv](https://virtualenv.pypa.io/en/stable/). Once you have cloned the
+repository, change directories to the root of the repository and run
+
+```bash
 virtualenv -p python3 .venv
 ```
 
 Once the virtual environment is created, activate it by running
 
-```
+```bash
 source .venv/bin/activate
 ```
 
-Any Python libraries installed will now be contained within this virtual environment.
-To deactivate the environment, simply run `deactivate`.
+Any Python libraries installed will now be contained within this virtual
+environment. To deactivate the environment, simply run `deactivate`.
 
 `Fonduer` adds some additional python packages to the default Snorkel
 installation which can be installed using `pip`:
@@ -44,11 +65,6 @@ installation which can be installed using `pip`:
 ```bash
 pip install -r python-package-requirement.txt
 ```
-
-By default (e.g. in the tutorials, etc.) we also use use
-[`poppler`](https://poppler.freedesktop.org/) utilities for working with PDFs
-along with [PhantomJS](http://phantomjs.org/). You will also be prompted to
-install both of these when you run `run.sh`.
 
 ## Running
 
@@ -81,7 +97,7 @@ You can run unit tests locally by running
 
 ```
 source ./set_env.sh
-pytest tests -rs
+pytest tests -rsXx
 ```
 
 ## FAQs
@@ -114,35 +130,26 @@ to deal with entering passwords when you connect to your PostgreSQL database:
 
 </details>
 
-<details><summary>I'm seeing errors during the poppler
-installation.</summary><br>
+<details>
+<summary>I'm getting a CalledProcessError for command 'pdftotext -f 1 -l 1
+-bbox-layout'?</summary><br>
 
-You may run into errors that look like this:
+Are you using Ubuntu 14.04 (or older)? Fonduer requires `poppler-utils` to be
+[version `0.36.0` or greater](https://poppler.freedesktop.org/releases.html).
+Otherwise, the `-bbox-layout` option is not available for `pdftotext`.
 
+If you must use Ubuntu 14.04, you can [install
+manually](https://poppler.freedesktop.org). As an example, to install `0.53.0`:
+
+```bash
+sudo apt-get install build-essential checkinstall
+wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
+tar -xf ./poppler-0.53.0.tar.xz
+cd poppler-0.53.0
+./configure
+make
+sudo checkinstall
 ```
-checking for FONTCONFIG... no
-configure: error: in `/home/lwhsiao/repos/fonduer/poppler':
-configure: error: The pkg-config script could not be found or is too old.  Make
-sure it is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-```
-
-or this:
-
-```
-checking for FONTCONFIG... no
-configure: error: Package requirements (fontconfig >= 2.0.0) were not met:
-
-No package 'fontconfig' found
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-```
-
-Fear not. You just need to make sure these packages are installed:
-
-```
-sudo apt-get install pkg-config libfontconfig1-dev
-```
-
+We highly recommend using at least Ubuntu 16.04 though, as we haven't done
+testing on 14.04 or older.
 </details>
