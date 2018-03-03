@@ -138,12 +138,12 @@ Are you using Ubuntu 14.04 (or older)? Fonduer requires `poppler-utils` to be
 Otherwise, the `-bbox-layout` option is not available for `pdftotext`.
 
 If you must use Ubuntu 14.04, you can [install
-manually](https://poppler.freedesktop.org). As an example, to install `0.62.0`:
+manually](https://poppler.freedesktop.org). As an example, to install `0.53.0`:
 ```bash
 sudo apt-get install build-essential checkinstall
-wget poppler.freedesktop.org/poppler-0.62.0.tar.xz
-tar -xf ./poppler-0.62.0.tar.xz
-cd poppler-0.62.0
+wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
+tar -xf ./poppler-0.53.0.tar.xz
+cd poppler-0.53.0
 ./configure
 make
 sudo checkinstall
