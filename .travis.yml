@@ -1,4 +1,4 @@
-sudo: false 
+sudo: false
 dist: trusty
 
 language: python
