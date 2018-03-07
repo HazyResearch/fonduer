@@ -19,7 +19,7 @@ from fonduer import SnorkelSession
 from fonduer import HTMLPreprocessor, OmniParser
 from fonduer.models import Document, Phrase
 from fonduer.parser import OmniParserUDF
-from snorkel.parser import Spacy
+from fonduer.snorkel.parser import Spacy
 
 
 def test_parse_structure(caplog):
@@ -27,11 +27,12 @@ def test_parse_structure(caplog):
 
     This only tests the structural parse of the document.
     """
-    logger = logging.getLogger()
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
 
     max_docs = 1
-    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/md.html'
-    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/md.pdf'
+    docs_path = 'tests/data/html_pdftotree/md.html'
+    pdf_path = 'tests/data/pdf_simple/md.pdf'
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
@@ -70,20 +71,18 @@ def test_parse_structure(caplog):
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 44
 
-
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
 
     This tests both the structural and visual parse of the document.
     """
-    caplog.set_level(logging.INFO)
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     session = SnorkelSession()
 
     PARALLEL = 2
     max_docs = 2
-    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
-    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+    docs_path = 'tests/data/html_pdftotree/'
+    pdf_path = 'tests/data/pdf_simple/'
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
@@ -120,20 +119,19 @@ def test_parse_document_md(caplog):
     # 44 phrases expected in the "md" document.
     assert len(doc.phrases) == 44
 
-
 def test_parse_document_diseases(caplog):
     """Unit test of OmniParser on a single document.
 
     This tests both the structural and visual parse of the document.
     """
     caplog.set_level(logging.INFO)
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     session = SnorkelSession()
 
     PARALLEL = 2
     max_docs = 2
-    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
-    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+    docs_path = 'tests/data/html_pdftotree/'
+    pdf_path = 'tests/data/pdf_simple/'
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
@@ -169,7 +167,6 @@ def test_parse_document_diseases(caplog):
     # 44 phrases expected in the "diseases" document.
     assert len(doc.phrases) == 36
 
-
 def test_spacy_integration(caplog):
     """Run a simple e2e parse using spaCy as our parser.
 
@@ -177,14 +174,14 @@ def test_spacy_integration(caplog):
     done in a notebook by a user.
     """
     caplog.set_level(logging.INFO)
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
 
     PARALLEL = 2  # Travis only gives 2 cores
 
     session = SnorkelSession()
 
-    docs_path = os.environ['FONDUERHOME'] + '/tests/data/html_simple/'
-    pdf_path = os.environ['FONDUERHOME'] + '/tests/data/pdf_simple/'
+    docs_path = 'tests/data/html_pdftotree/'
+    pdf_path = 'tests/data/pdf_simple/'
 
     max_docs = 2
     doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)

@@ -4,12 +4,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
-import re
 import pkg_resources
-from pathlib import Path
+import re
 from collections import defaultdict
-from snorkel.models import construct_stable_id
-from snorkel.parser import Parser, ParserConnection
+from fonduer.snorkel.models import construct_stable_id
+from fonduer.snorkel.parser import Parser, ParserConnection
+from pathlib import Path
 
 try:
     import spacy

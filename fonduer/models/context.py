@@ -7,8 +7,12 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import text
 from sqlalchemy.types import PickleType
 
-from snorkel.models.meta import snorkel_postgres
-from snorkel.models.context import Context, Document, TemporaryContext, TemporarySpan, split_stable_id
+from fonduer.snorkel.models.context import Context
+from fonduer.snorkel.models.context import Document
+from fonduer.snorkel.models.context import TemporaryContext
+from fonduer.snorkel.models.context import TemporarySpan
+from fonduer.snorkel.models.context import split_stable_id
+from fonduer.snorkel.models.meta import snorkel_postgres
 
 INT_ARRAY_TYPE = postgresql.ARRAY(Integer) if snorkel_postgres else PickleType
 STR_ARRAY_TYPE = postgresql.ARRAY(String)  if snorkel_postgres else PickleType

@@ -5,9 +5,9 @@ import sys
 
 from fonduer.config import settings
 from fonduer.lf_helpers import get_left_ngrams, get_right_ngrams, tokens_to_ngrams
-from snorkel.models import TemporarySpan
-from snorkel.tree_structs import corenlp_to_xmltree
-from snorkel.utils import get_as_dict
+from fonduer.snorkel.models import TemporarySpan
+from fonduer.snorkel.tree_structs import corenlp_to_xmltree
+from fonduer.snorkel.utils import get_as_dict
 
 from treedlib import compile_relation_feature_generator
 from treedlib import Compile

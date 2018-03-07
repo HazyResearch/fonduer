@@ -7,11 +7,11 @@ from builtins import *
 import numpy as np
 import tensorflow as tf
 
-from snorkel.learning.disc_learning import TFNoiseAwareModel
+from fonduer.snorkel.learning.disc_learning import TFNoiseAwareModel
+from fonduer.snorkel.learning.utils import LabelBalancer, reshape_marginals
 from scipy.sparse import csr_matrix, issparse
-from time import time
 from six.moves.cPickle import dump, load
-from snorkel.learning.utils import LabelBalancer, reshape_marginals
+from time import time
 
 SD = 0.1
 
@@ -22,7 +22,7 @@ class LogisticRegression(TFNoiseAwareModel):
     def _build_model(self, d=None, **kwargs):
         """
         Build model, setting logits and marginals ops.
-        
+
         :param d: Number of features
         """
         s1, s2 = self.seed, (self.seed + 1 if self.seed is not None else None)
@@ -62,12 +62,12 @@ class LogisticRegression(TFNoiseAwareModel):
     def _build_training_ops(self, l1_penalty=0.0, l2_penalty=0.0, **kwargs):
         """
         Build training ops, setting loss and train ops
-        
+
         :param l1_penalty: L1 reg. coefficient
         :param l2_penalty: L2 reg. coefficient
         """
-        super(LogisticRegression, self)._build_training_ops()   
-        
+        super(LogisticRegression, self)._build_training_ops()
+
         # Add L1 and L2 penalties
         if l1_penalty > 0:
             self.loss += l1_penalty * tf.reduce_sum(tf.abs(self.w))
@@ -97,7 +97,7 @@ class SparseLogisticRegression(LogisticRegression):
 
     def _build_model(self, d=None, **kwargs):
         # Define sparse input placeholders + sparse tensors
-        self.indices = tf.placeholder(tf.int64) 
+        self.indices = tf.placeholder(tf.int64)
         self.shape   = tf.placeholder(tf.int64, (2,))
         self.ids     = tf.placeholder(tf.int64)
         self.weights = tf.placeholder(tf.float32)
@@ -111,7 +111,7 @@ class SparseLogisticRegression(LogisticRegression):
         k = self.cardinality if self.cardinality > 2 else 1
         self.w = tf.Variable(tf.random_normal((d, k), stddev=SD, seed=s1))
         self.b = tf.Variable(tf.random_normal((k,), stddev=SD, seed=s2))
-        
+
         if self.deterministic:
             # TODO: Implement for categorical as well...
             if self.cardinality > 2:
@@ -119,7 +119,7 @@ class SparseLogisticRegression(LogisticRegression):
                     "Deterministic mode not implemented for categoricals.")
 
             # Try to make deterministic...
-            f_w = tf.nn.embedding_lookup_sparse(params=self.w, 
+            f_w = tf.nn.embedding_lookup_sparse(params=self.w,
                 sp_ids=sparse_ids, sp_weights=sparse_vals, combiner=None)
             f_w_temp = tf.concat([f_w, tf.ones_like(f_w)], axis=1)
             b_temp = tf.stack([tf.ones_like(self.b), self.b], axis=0)
@@ -128,7 +128,7 @@ class SparseLogisticRegression(LogisticRegression):
             z = tf.nn.embedding_lookup_sparse(params=self.w, sp_ids=sparse_ids,
                 sp_weights=sparse_vals, combiner='sum')
             self.logits = tf.nn.bias_add(z, self.b)
-        
+
         if self.cardinality == 2:
             self.logits = tf.squeeze(self.logits)
 

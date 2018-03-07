@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-from builtins import str
-from builtins import range
-from builtins import object
-from bs4 import BeautifulSoup
 import codecs
-from collections import defaultdict
 import itertools
 import logging
+import numpy as np
 import os
 import re
 import warnings
-
+from bs4 import BeautifulSoup
+from builtins import object
+from builtins import range
+from builtins import str
+from collections import defaultdict
 from lxml import etree
 from lxml.html import fromstring
-import numpy as np
+from pprint import pformat
 
-from snorkel.models import Candidate, Context, Document, construct_stable_id, split_stable_id
-from fonduer.models import Table, Cell, Figure, Phrase
-
-from snorkel.udf import UDF, UDFRunner
+from fonduer.models import (Table, Cell, Figure, Phrase, Para, Section, Header,
+                            FigureCaption, TableCaption, RefList)
 from fonduer.visual import VisualLinker
-
-from snorkel.parser import DocPreprocessor, Spacy
+from fonduer.snorkel.models import (Candidate, Context, Document,
+                                    construct_stable_id, split_stable_id)
+from fonduer.snorkel.parser import DocPreprocessor, Spacy
+from fonduer.snorkel.udf import UDF, UDFRunner
 
 logger = logging.getLogger()
 
@@ -298,9 +298,8 @@ class OmniParserUDF(UDF):
                                 self.position += 1
                                 self.phrase_num += 1
                             except Exception as e:
-                                logger.error(str(e))
-                                import pdb
-                                pdb.set_trace()
+                                # This should never happen
+                                log.exception(str(e))
 
             for child in node:
                 if child.tag == 'table':

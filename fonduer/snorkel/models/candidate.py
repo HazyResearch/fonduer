@@ -82,7 +82,7 @@ def candidate_subclass(class_name, args, table_name=None, cardinality=None,
 
     .. code-block:: python
 
-        from snorkel.models import candidate_subclass
+        from fonduer.snorkel.models import candidate_subclass
 
     :param class_name: The name of the class, should be "camel case" e.g.
         NewCandidate

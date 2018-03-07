@@ -10,7 +10,7 @@ import ipywidgets as widgets
 import os
 import warnings
 
-from snorkel.models import GoldLabel, StableLabel, GoldLabelKey
+from fonduer.snorkel.models import GoldLabel, StableLabel, GoldLabelKey
 try:
     from IPython.core.display import display, Javascript
 except:

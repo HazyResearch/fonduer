@@ -10,9 +10,9 @@ import tensorflow as tf
 # import tensorflow.contrib.rnn as rnn
 import warnings
 
-from snorkel.learning.utils import LabelBalancer
-from snorkel.learning.disc_learning import TFNoiseAwareModel
-from snorkel.models import Candidate
+from fonduer.snorkel.learning.utils import LabelBalancer
+from fonduer.snorkel.learning.disc_learning import TFNoiseAwareModel
+from fonduer.snorkel.models import Candidate
 from .utils import get_bi_rnn_output, SymbolTable
 from time import time
 
@@ -54,11 +54,11 @@ class RNNBase(TFNoiseAwareModel):
         return x_batch, len_batch
 
     def _build_model(self, dim=50, attn_window=None, max_len=20,
-        cell_type=tf.contrib.rnn.BasicLSTMCell, word_dict=SymbolTable(), 
+        cell_type=tf.contrib.rnn.BasicLSTMCell, word_dict=SymbolTable(),
         **kwargs):
         """
         Build RNN model
-        
+
         :param dim: embedding dimension
         :param attn_window: attention window length (no attention if 0 or None)
         :param cell_type: subclass of tensorflow.python.ops.rnn_cell_impl._RNNCell
@@ -83,7 +83,7 @@ class RNNBase(TFNoiseAwareModel):
             tf.random_normal((vocab_size - 1, dim), stddev=SD, seed=s1))
         embedding = tf.concat([tf.zeros([1, dim]), emb_var], axis=0)
         inputs = tf.nn.embedding_lookup(embedding, self.sentences)
-        
+
         # Build RNN graph
         batch_size = tf.shape(self.sentences)[0]
         init = tf.contrib.layers.xavier_initializer(seed=s2)
@@ -107,10 +107,10 @@ class RNNBase(TFNoiseAwareModel):
                 sequence_length=self.sentence_lengths,
                 initial_state_fw=initial_state_fw,
                 initial_state_bw=initial_state_bw,
-                time_major=False               
+                time_major=False
             )
         potentials = get_bi_rnn_output(rnn_out, dim, self.sentence_lengths)
-        
+
         # Add dropout layer
         self.keep_prob = tf.placeholder(tf.float32)
         potentials_dropout = tf.nn.dropout(potentials, self.keep_prob, seed=s3)
@@ -118,7 +118,7 @@ class RNNBase(TFNoiseAwareModel):
         # Build activation layer
         if self.cardinality > 2:
             self.Y = tf.placeholder(tf.float32, [None, self.cardinality])
-            W = tf.Variable(tf.random_normal((2*dim, self.cardinality), 
+            W = tf.Variable(tf.random_normal((2*dim, self.cardinality),
                 stddev=SD, seed=s4))
             b = tf.Variable(np.zeros(self.cardinality), dtype=tf.float32)
             self.logits = tf.matmul(potentials, W) + b
@@ -157,7 +157,7 @@ class RNNBase(TFNoiseAwareModel):
             self.lr:               lr
         }
 
-    def train(self, X_train, Y_train, X_dev=None, max_sentence_length=None, 
+    def train(self, X_train, Y_train, X_dev=None, max_sentence_length=None,
         **kwargs):
         """
         Perform preprocessing of data, construct dataset-specific model, then
@@ -167,11 +167,11 @@ class RNNBase(TFNoiseAwareModel):
         X_train, ends = self._preprocess_data(X_train, extend=True)
         if X_dev is not None:
             X_dev, _ = self._preprocess_data(X_dev, extend=False)
-        
+
         # Get max sentence size
         max_len = max_sentence_length or max(len(x) for x in X_train)
         self._check_max_sentence_length(ends, max_len=max_len)
-        
+
         # Train model- note we pass word_dict through here so it gets saved...
         super(RNNBase, self).train(X_train, Y_train, X_dev=X_dev,
             word_dict=self.word_dict, max_len=max_len, **kwargs)

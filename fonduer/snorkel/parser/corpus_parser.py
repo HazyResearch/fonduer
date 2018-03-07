@@ -4,8 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
-from snorkel.models import Candidate, Context, Sentence
-from snorkel.udf import UDF, UDFRunner
+from fonduer.snorkel.models import Candidate, Context, Sentence
+from fonduer.snorkel.udf import UDF, UDFRunner
 
 
 class CorpusParser(UDFRunner):

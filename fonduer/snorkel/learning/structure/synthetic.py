@@ -10,7 +10,7 @@ from numbskull.numbskulltypes import Weight, Variable, Factor, FactorToVar
 import numpy as np
 import random
 import scipy.sparse as sparse
-from snorkel.learning import GenerativeModel, GenerativeModelWeights
+from fonduer.snorkel.learning import GenerativeModel, GenerativeModelWeights
 
 
 def generate_model(n, dep_density, class_prior=False, lf_propensity=False, lf_prior=False, lf_class_propensity=False,
