@@ -36,7 +36,7 @@ setup(
         'scipy>=0.18',
         'selenium',
         'six',
-        'spacy'>=2.0.7,
+        'spacy>=2.0.7',
         'sqlalchemy>=1.0.14',
         'tensorflow>=1.0',
         'wand',
