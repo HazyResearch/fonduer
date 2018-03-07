@@ -22,7 +22,9 @@ SD = 0.1
 
 class RNNBase(TFNoiseAwareModel):
     representation = True
-    self.logger = logging.getLogger(__name__)
+
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
 
     def _preprocess_data(self, candidates, extend):
         """Build @self.word_dict to encode and process data for extraction

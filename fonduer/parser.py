@@ -5,7 +5,6 @@ import logging
 import numpy as np
 import os
 import re
-import warnings
 from bs4 import BeautifulSoup
 from builtins import object
 from builtins import range
