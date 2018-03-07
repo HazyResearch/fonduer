@@ -15,8 +15,7 @@ from lxml import etree
 from lxml.html import fromstring
 from pprint import pformat
 
-from fonduer.models import (Table, Cell, Figure, Phrase, Para, Section, Header,
-                            FigureCaption, TableCaption, RefList)
+from fonduer.models import Table, Cell, Figure, Phrase
 from fonduer.visual import VisualLinker
 from fonduer.snorkel.models import (Candidate, Context, Document,
                                     construct_stable_id, split_stable_id)
