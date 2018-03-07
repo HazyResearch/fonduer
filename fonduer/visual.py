@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
-from selenium import webdriver
 
 
 class VisualLinker(object):
@@ -351,49 +350,3 @@ class VisualLinker(object):
             yield phrase
         if self.verbose:
             print("Updated coordinates in database")
-
-    def create_pdf(self, document_name, text, page_dim=None, split=True):
-        """
-        Creates a pdf file given an html string
-        :param document_name: html file to convert
-        :param split: if False, return pdf as one page
-        :param text: html content to convert to pdf
-        :param page_dim: pdf page dimensions in 'mm', 'cm', 'in' or 'px' (ex: page_dim=('5in', '7in')),
-        if not specified, Letter is the default format
-        """
-        pdf_file = os.path.join(self.pdf_path, document_name + '.pdf')
-        jscode = """
-            var text = arguments[0];
-            var pdf_file = arguments[1];
-            var webPage = require("webpage");
-            var page = webPage.create();
-            {}
-            var expectedContent = text;
-            page.setContent(expectedContent, "");
-            page.render(pdf_file);
-            phantom.exit();
-        """
-        if split:
-            if page_dim:
-                width, height = page_dim
-                jscode = jscode.format(
-                    'page.paperSize = {{ width: "{}", height: "{}", margin: "1cm"}};'.
-                    format(width, height))
-            else:
-                jscode = jscode.format(
-                    'page.paperSize = {format: "Letter", orientation: "portrait", margin: "1cm"};'
-                )
-        else:
-            jscode = jscode.format('')
-        driver = webdriver.PhantomJS(
-            'phantomjs', service_log_path=os.path.devnull)
-        driver.command_executor._commands['executePhantomScript'] = (
-            'POST', '/session/{}/phantom/execute'.format(driver.session_id))
-        driver.execute('executePhantomScript', {
-            'script': jscode,
-            'args': [text, pdf_file]
-        })
-        try:
-            driver.close()
-        except http.client.BadStatusLine:
-            pass

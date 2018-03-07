@@ -179,8 +179,7 @@ class OmniParserUDF(UDF):
         document, text = x
         if self.visual:
             if not self.pdf_path:
-                warnings.warn("Visual parsing failed: pdf_path is required",
-                              RuntimeWarning)
+                logger.error("Visual parsing failed: pdf_path is required")
             for _ in self.parse_structure(document, text):
                 pass
             # Add visual attributes
@@ -189,7 +188,7 @@ class OmniParserUDF(UDF):
                 filename + '.pdf') and not os.path.isfile(
                     filename + '.PDF') and not os.path.isfile(filename)
             if create_pdf:  # PDF file does not exist
-                self.vizlink.create_pdf(document.name, text)
+                logger.error("Visual parsing failed: pdf files are required")
             for phrase in self.vizlink.parse_visual(
                     document.name, document.phrases, self.pdf_path):
                 yield phrase
