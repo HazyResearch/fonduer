@@ -16,9 +16,9 @@ except:
 
 class XMLTree:
     """
-  A generic tree representation which takes XML as input
-  Includes subroutines for conversion to JSON & for visualization based on js form
-  """
+    A generic tree representation which takes XML as input
+    Includes subroutines for conversion to JSON & for visualization based on js form
+    """
 
     def __init__(self, xml_root, words=None):
         """Calls subroutines to generate JSON form of XML input"""
@@ -42,9 +42,9 @@ class XMLTree:
 
     def render_tree(self, highlight=[]):
         """
-    Renders d3 visualization of the d3 tree, for IPython notebook display
-    Depends on html/js files in vis/ directory, which is assumed to be in same dir...
-    """
+        Renders d3 visualization of the d3 tree, for IPython notebook display
+        Depends on html/js files in vis/ directory, which is assumed to be in same dir...
+        """
         # HTML
         WORD = '<span class="word-' + self.id + '-%s">%s</span>'
         words = ' '.join(WORD % (i, w) for i, w in enumerate(
@@ -63,10 +63,10 @@ class XMLTree:
 
 def corenlp_to_xmltree(s, prune_root=True):
     """
-  Transforms an object with CoreNLP dep_path and dep_parent attributes into an XMLTree
-  Will include elements of any array having the same dimensiion as dep_* as node attributes
-  Also adds special word_idx attribute corresponding to original sequence order in sentence
-  """
+    Transforms an object with CoreNLP dep_path and dep_parent attributes into an XMLTree
+    Will include elements of any array having the same dimensiion as dep_* as node attributes
+    Also adds special word_idx attribute corresponding to original sequence order in sentence
+    """
     # Convert input object to dictionary
     if isinstance(s, dict) == False:
         try:
