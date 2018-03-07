@@ -38,7 +38,7 @@ install:
   - python -m spacy download en
 
 before_script:
-  - pdftotext --help
+  - pdftotext --help  # Just for checking version in Travis
   - psql -c 'create database parser_test;' -U postgres
   - source ./set_env.sh
 
