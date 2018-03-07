@@ -33,7 +33,6 @@ install:
 
   - pip install -r python-package-requirement.txt
   - python -m spacy download en
-  - ./install-phantomjs.sh
 
 before_script:
   - pdftotext --help
