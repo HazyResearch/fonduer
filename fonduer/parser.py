@@ -22,7 +22,7 @@ from fonduer.snorkel.models import (Candidate, Context, Document,
 from fonduer.snorkel.parser import DocPreprocessor, Spacy
 from fonduer.snorkel.udf import UDF, UDFRunner
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class HTMLPreprocessor(DocPreprocessor):
@@ -298,7 +298,7 @@ class OmniParserUDF(UDF):
                                 self.phrase_num += 1
                             except Exception as e:
                                 # This should never happen
-                                log.exception(str(e))
+                                logger.exception(str(e))
 
             for child in node:
                 if child.tag == 'table':

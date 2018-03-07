@@ -4,11 +4,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
+# import tensorflow.contrib.rnn as rnn
+import logging
 import numpy as np
 import random
 import tensorflow as tf
-# import tensorflow.contrib.rnn as rnn
-import warnings
 
 from fonduer.snorkel.learning.utils import LabelBalancer
 from fonduer.snorkel.learning.disc_learning import TFNoiseAwareModel
@@ -22,6 +22,7 @@ SD = 0.1
 
 class RNNBase(TFNoiseAwareModel):
     representation = True
+    self.logger = logging.getLogger(__name__)
 
     def _preprocess_data(self, candidates, extend):
         """Build @self.word_dict to encode and process data for extraction
@@ -37,7 +38,7 @@ class RNNBase(TFNoiseAwareModel):
             if end >= mx:
                 w = "Candidate {0} has argument past max length for model:"
                 info = "[arg ends at index {0}; max len {1}]".format(end, mx)
-                warnings.warn('\t'.join([w.format(i), info]))
+                self.logger.warning('\t'.join([w.format(i), info]))
 
     def _make_tensor(self, x):
         """Construct input tensor with padding
