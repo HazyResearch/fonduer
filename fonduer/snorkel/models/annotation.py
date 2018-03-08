@@ -55,7 +55,7 @@ class FeatureKey(AnnotationKeyMixin, SnorkelBase):
 
 
 class PredictionKey(AnnotationKeyMixin, SnorkelBase):
-    pass    
+    pass
 
 
 class AnnotationMixin(object):
@@ -67,15 +67,15 @@ class AnnotationMixin(object):
 
     .. code-block:: python
 
-        from snorkel.models.annotation import AnnotationMixin
-        from snorkel.models.meta import SnorkelBase
+        from fonduer.snorkel.models.annotation import AnnotationMixin
+        from fonduer.snorkel.models.meta import SnorkelBase
 
         class NewAnnotation(AnnotationMixin, SnorkelBase):
             value = Column(Float, nullable=False)
 
 
         # The entire storage schema, including NewAnnotation, can now be initialized with the following import
-        import snorkel.models
+        import fonduer.snorkel.models
 
     The annotation class should include a Column attribute named value.
     """

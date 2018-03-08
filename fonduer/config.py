@@ -16,6 +16,7 @@ def dict2obj(d):
     else:
         return d
 
-
-with open(os.environ.get('FONDUERHOME', '') + "/" + "settings.yaml", "r") as f:
-    settings = dict2obj(yaml.load(f))
+# Load the settings relative to this config file.
+directory = os.path.dirname(__file__)
+with open(directory + "/" + "settings.yaml", "r") as f:
+    settings = dict2obj(yaml.safe_load(f))

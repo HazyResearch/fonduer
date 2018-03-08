@@ -1,4 +1,4 @@
-from snorkel.matchers import Matcher
+from fonduer.snorkel.matchers import Matcher
 
 
 class FigureMatcher(Matcher):

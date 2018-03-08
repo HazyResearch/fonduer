@@ -1,3 +1,5 @@
+from fonduer._version import __version__
+
 import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -5,9 +7,18 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 # them here. For example, this allows the user to write
 # `from fonduer import HTMLPreprocessor` rather than having
 # `from fonduer.parser import HTMLPreprocessor`
-from models import SnorkelSession
-from parser import HTMLPreprocessor, OmniParser
-from async_annotations import BatchFeatureAnnotator, BatchLabelAnnotator
+from fonduer.async_annotations import BatchFeatureAnnotator
+from fonduer.async_annotations import BatchLabelAnnotator
+from fonduer.candidates import CandidateExtractor, OmniNgrams, OmniFigures
+from fonduer.matchers import LambdaFunctionFigureMatcher
+from fonduer.models import (SnorkelSession, Document, Phrase, Figure,
+                            candidate_subclass)
+from fonduer.parser import HTMLPreprocessor
+from fonduer.parser import OmniParser
+from fonduer.snorkel.annotations import load_gold_labels
+from fonduer.snorkel.learning import GenerativeModel, SparseLogisticRegression
+from fonduer.snorkel.matchers import (RegexMatchSpan, DictionaryMatch,
+                                      LambdaFunctionMatcher, Intersect, Union)
 
 # Raise the visibility of these subpackages to the package level for cleaner
 # syntax. The key idea here is when we do `from package.submodule1 import foo`

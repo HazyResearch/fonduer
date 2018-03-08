@@ -1,12 +1,10 @@
 # Fonduer
 
-**_v0.0.1_**
-
 [![Build Status](https://travis-ci.com/SenWu/fonduer.svg?token=T3shSHjcJk8kMbzHEY7Z&branch=master)](https://travis-ci.com/SenWu/fonduer)
 
-`Fonduer` is a framework for building KBC applications from _richy formatted
-data_ and is implemented as a library on top of a modified version of
-[Snorkel](https://hazyresearch.github.io/snorkel/).
+`Fonduer` is a framework for building knowledge base construction (KBC)
+applications from _richy formatted data_ and is implemented as a library on
+top of a modified version of [Snorkel](https://hazyresearch.github.io/snorkel/).
 
 ## Reference
 

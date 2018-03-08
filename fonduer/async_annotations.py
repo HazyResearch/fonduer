@@ -4,19 +4,18 @@ from builtins import str
 from builtins import zip
 from builtins import range
 import codecs
+import numpy as np
+import scipy.sparse as sparse
 import subprocess
 import tempfile
 from collections import namedtuple
-
-import numpy as np
-import scipy.sparse as sparse
 from pandas import DataFrame, Series
 
-from snorkel.annotations import FeatureAnnotator
-from snorkel.models import Candidate
-from snorkel.models.meta import *
-from snorkel.udf import UDF, UDFRunner
-from snorkel.utils import (
+from fonduer.snorkel.annotations import FeatureAnnotator
+from fonduer.snorkel.models import Candidate
+from fonduer.snorkel.models.meta import *
+from fonduer.snorkel.udf import UDF, UDFRunner
+from fonduer.snorkel.utils import (
     matrix_conflicts,
     matrix_coverage,
     matrix_overlaps,
@@ -25,7 +24,7 @@ from snorkel.utils import (
     matrix_fn,
     matrix_tn
 )
-from snorkel.utils import remove_files
+from fonduer.snorkel.utils import remove_files
 from fonduer.features.features import get_all_feats
 
 # Used to conform to existing annotation key API call

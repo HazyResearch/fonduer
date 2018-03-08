@@ -1,6 +1,5 @@
-from snorkel.models import TemporarySpan
 from fonduer.models import ImplicitSpan
-
+from fonduer.snorkel.models import TemporarySpan
 
 FEAT_PRE = "CORE_"
 DEF_VALUE = 1
@@ -13,7 +12,8 @@ def get_core_feats(candidates):
     for candidate in candidates:
         args = candidate.get_contexts()
         if not (isinstance(args[0], TemporarySpan)):
-            raise ValueError("Accepts Span-type arguments, %s-type found." % type(candidate))
+            raise ValueError("Accepts Span-type arguments, %s-type found." %
+                             type(candidate))
 
         # Unary candidates
         if len(args) == 1:
@@ -39,11 +39,13 @@ def get_core_feats(candidates):
                 for f in unary_feats[span.stable_id]:
                     yield candidate.id, FEAT_PRE + pre + f, DEF_VALUE
         else:
-            raise NotImplementedError("Only handles unary and binary candidates currently")
+            raise NotImplementedError(
+                "Only handles unary and binary candidates currently")
 
 
 def _generate_core_feats(span):
-    yield "SPAN_TYPE_[%s]" % ('IMPLICIT' if isinstance(span, ImplicitSpan) else 'EXPLICIT')
+    yield "SPAN_TYPE_[%s]" % (
+        'IMPLICIT' if isinstance(span, ImplicitSpan) else 'EXPLICIT')
 
     if span.get_span()[0].isupper():
         yield "STARTS_WITH_CAPITAL"

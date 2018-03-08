@@ -4,15 +4,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
+import logging
 import os
 import re
-import warnings
+
 # Travis will not import the PorterStemmer
 if 'CI' not in os.environ:
     try:
         from nltk.stem.porter import PorterStemmer
     except ImportError:
-        warnings.warn("nltk not installed- some default functionality may be absent.")
+        logger = logging.getLogger(__name__)
+        logger.warning("nltk not installed- some default functionality may be absent.")
 
 
 class Matcher(object):
@@ -131,7 +133,7 @@ class LambdaFunctionMatcher(NgramMatcher):
             self.func = self.opts['func']
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
-    
+
     def _f(self, c):
         """The internal (non-composed) version of filter function f"""
         return self.func(c)

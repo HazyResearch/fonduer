@@ -1,13 +1,13 @@
 bs4
 editdistance
 future
-futures
 ipywidgets>=7.0
 jupyter
 lxml==3.6.4
 matplotlib
 nltk
 numba
+numbskull
 numpy>=1.11
 pandas
 pdftotree
@@ -20,6 +20,5 @@ six
 spacy>=2.0.7
 sqlalchemy>=1.0.14
 tensorflow>=1.0
+treedlib
 wand
-git+https://github.com/HazyResearch/numbskull@master
-git+https://github.com/HazyResearch/treedlib@master

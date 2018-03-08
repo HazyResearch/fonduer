@@ -9,7 +9,6 @@ import os
 import math
 import numpy as np
 import scipy.sparse as sparse
-import warnings
 import inspect
 from itertools import product
 from multiprocessing import Process, Queue, JoinableQueue
@@ -312,7 +311,7 @@ class GridSearch(object):
     :param X_train: The training datapoints
     :param Y_train: If applicable, the training labels / marginals
     :param model_class_params: Keyword arguments to pass into model_class
-        construction. Note that a new model is constructed for each new 
+        construction. Note that a new model is constructed for each new
         combination of hyperparameters.
     :param model_hyperparams: Hyperparameters for the model- all must be
             keyword arguments to the `model_class.train` method. Any that are
@@ -333,7 +332,7 @@ class GridSearch(object):
     def search_space(self):
         return product(*[self.parameter_dict[pn] for pn in self.param_names])
 
-    def fit(self, X_valid, Y_valid, b=0.5, beta=1, set_unlabeled_as_neg=True, 
+    def fit(self, X_valid, Y_valid, b=0.5, beta=1, set_unlabeled_as_neg=True,
         n_threads=1, eval_batch_size=None):
         """
         Runs grid search, constructing a new instance of model_class for each
@@ -352,7 +351,7 @@ class GridSearch(object):
                 beta=beta, set_unlabeled_as_neg=set_unlabeled_as_neg,
                 n_threads=n_threads, eval_batch_size=eval_batch_size)
         else:
-            opt_model, run_stats = self._fit_st(X_valid, Y_valid, b=b, 
+            opt_model, run_stats = self._fit_st(X_valid, Y_valid, b=b,
                 beta=beta, set_unlabeled_as_neg=set_unlabeled_as_neg,
                 eval_batch_size=eval_batch_size)
         return opt_model, run_stats
@@ -388,13 +387,13 @@ class GridSearch(object):
             train_args = [self.X_train]
             if self.Y_train is not None:
                 train_args.append(self.Y_train)
-            
+
             # Pass in the dev set to the train method if applicable, for dev set
             # score printing, best-score checkpointing
             # Note: Need to set the save directory since passing in
             # (X_dev, Y_dev) will by default trigger checkpoint saving
             try:
-                model.train(*train_args, X_dev=X_valid, Y_dev=Y_valid, 
+                model.train(*train_args, X_dev=X_valid, Y_dev=Y_valid,
                     save_dir=self.save_dir, **hps)
             except:
                 model.train(*train_args, **hps)
@@ -416,7 +415,7 @@ class GridSearch(object):
             if run_score > run_score_opt or k == 0:
                 model.save(model_name=model_name, save_dir=self.save_dir)
                 # Also save a separate file for easier access
-                model.save(model_name="{0}_best".format(model.name), 
+                model.save(model_name="{0}_best".format(model.name),
                     save_dir=self.save_dir)
                 opt_model_name = model_name
                 run_score_opt = run_score
@@ -424,7 +423,7 @@ class GridSearch(object):
         # Set optimal parameter in the learner model
         opt_model = self.model_class(**self.model_class_params)
         opt_model.load(opt_model_name, save_dir=self.save_dir)
-        
+
         # Return optimal model & DataFrame of scores
         f_score = 'F-{0}'.format(beta)
         run_score_labels = ['Acc.'] if opt_model.cardinality > 2 else \
@@ -435,7 +434,7 @@ class GridSearch(object):
         ).sort_values(by=sort_by, ascending=False)
         return opt_model, self.results
 
-    def _fit_mt(self, X_valid, Y_valid, b=0.5, beta=1, 
+    def _fit_mt(self, X_valid, Y_valid, b=0.5, beta=1,
         set_unlabeled_as_neg=True, n_threads=2, eval_batch_size=None):
         """Multi-threaded implementation of `GridSearch.fit`."""
         # First do a preprocessing pass over the data to make sure it is all
@@ -498,7 +497,7 @@ class GridSearch(object):
         model.load('{0}_{1}'.format(model.name, k_opt), save_dir=self.save_dir)
 
         # Also save the best model as separate file
-        model.save(model_name="{0}_best".format(model.name), 
+        model.save(model_name="{0}_best".format(model.name),
             save_dir=self.save_dir)
 
         # Return model and DataFrame of scores
@@ -516,7 +515,7 @@ class GridSearch(object):
 QUEUE_TIMEOUT = 3
 
 class ModelTester(Process):
-    def __init__(self, model_class, model_class_params, params_queue, 
+    def __init__(self, model_class, model_class_params, params_queue,
         scores_queue, X_train, X_valid, Y_valid, Y_train=None, b=0.5, beta=1,
         set_unlabeled_as_neg=True, save_dir='checkpoints',
         eval_batch_size=None):
@@ -548,7 +547,7 @@ class ModelTester(Process):
                 model = self.model_class(**self.model_class_params)
                 model_name = '{0}_{1}'.format(model.name, k)
 
-                # Pass in the dev set to the train method if applicable, for dev 
+                # Pass in the dev set to the train method if applicable, for dev
                 # set score printing, best-score checkpointing
                 if 'X_dev' in inspect.getargspec(model.train):
                     hps['X_dev'] = self.X_valid
@@ -567,7 +566,7 @@ class ModelTester(Process):
                 model.save(model_name=model_name, save_dir=self.save_dir)
 
                 # Test the model
-                run_scores = model.score(self.X_valid, self.Y_valid, 
+                run_scores = model.score(self.X_valid, self.Y_valid,
                     **self.scorer_params)
                 run_scores = [run_scores] if model.cardinality > 2 else \
                     list(run_scores)
@@ -585,7 +584,7 @@ class RandomSearch(GridSearch):
     :param seed: A seed for the GridSearch instance
     """
     def __init__(self, model_class, parameter_dict, X_train, Y_train=None, n=10,
-        model_class_params={}, model_hyperparams={}, seed=123, 
+        model_class_params={}, model_hyperparams={}, seed=123,
         save_dir='checkpoints'):
         """Search a random sample of size n from a parameter grid"""
         self.rand_state = np.random.RandomState()

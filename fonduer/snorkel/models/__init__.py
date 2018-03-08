@@ -6,7 +6,7 @@ For example, the correct way to define a new type of Context is:
 
 .. code-block:: python
 
-    from snorkel.models.context import Context
+    from fonduer.snorkel.models.context import Context
     from sqlalchemy import Column, String, ForeignKey
 
     class NewType(Context):
@@ -23,7 +23,7 @@ For example, the correct way to define a new type of Context is:
         # Rest of class definition here
 
     # Adds the corresponding table to the underlying database's schema
-    from snorkel.models.meta import SnorkelBase, snorkel_engine
+    from fonduer.snorkel.models.meta import SnorkelBase, snorkel_engine
     SnorkelBase.metadata.create_all(snorkel_engine)
 """
 from __future__ import absolute_import
