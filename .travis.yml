@@ -38,9 +38,12 @@ install:
   - python -m spacy download en
 
 before_script:
-  - pdftotext --help  # Just for checking version in Travis
   - psql -c 'create database parser_test;' -U postgres
+  - psql -c 'create database e2e_test;' -U postgres
+  - cd tests/e2e/
+  - ./download_data.sh
+  - cd ../..
   - source ./set_env.sh
 
 script:
-  - travis_wait pytest tests -v -rsXx
+  - travis_wait 40 pytest tests -v -rsXx
