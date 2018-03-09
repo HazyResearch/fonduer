@@ -3,6 +3,8 @@ dist: trusty
 
 language: python
 
+cache: pip
+
 python:
   - "3.5"
   - "3.6"
@@ -38,8 +40,11 @@ install:
   - python -m spacy download en
 
 before_script:
-  - pdftotext --help  # Just for checking version in Travis
   - psql -c 'create database parser_test;' -U postgres
+  - psql -c 'create database e2e_test;' -U postgres
+  - cd tests/e2e/
+  - ./download_data.sh
+  - cd ../..
   - source ./set_env.sh
 
 script:

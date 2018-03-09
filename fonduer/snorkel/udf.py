@@ -1,14 +1,12 @@
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
 from future import standard_library
 standard_library.install_aliases()
 from builtins import *
-
+import logging
 from multiprocessing import Process, JoinableQueue
 from queue import Empty
-
 from .models.meta import new_sessionmaker, snorkel_conn_string
 from .utils import ProgressBar
 
@@ -19,6 +17,7 @@ QUEUE_TIMEOUT = 3
 class UDFRunner(object):
     """Class to run UDFs in parallel using simple queue-based multiprocessing setup"""
     def __init__(self, udf_class, **udf_init_kwargs):
+        self.logger = logging.getLogger(__name__)
         self.udf_class       = udf_class
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs            = []
@@ -30,12 +29,12 @@ class UDFRunner(object):
 
     def apply(self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs):
         """
-        Apply the given UDF to the set of objects xs, either single or multi-threaded, 
+        Apply the given UDF to the set of objects xs, either single or multi-threaded,
         and optionally calling clear() first.
         """
         # Clear everything downstream of this UDF if requested
         if clear:
-            print("Clearing existing...")
+            self.logger.info("Clearing existing...")
             SnorkelSession = new_sessionmaker()
             session = SnorkelSession()
             self.clear(session, **kwargs)
@@ -43,7 +42,7 @@ class UDFRunner(object):
             session.close()
 
         # Execute the UDF
-        print("Running UDF...")
+        self.logger.info("Running UDF...")
         if parallelism is None or parallelism < 2:
             self.apply_st(xs, progress_bar, clear=clear, count=count, **kwargs)
         else:
@@ -61,7 +60,7 @@ class UDFRunner(object):
         if progress_bar and hasattr(xs, '__len__') or count is not None:
             n = count if count is not None else len(xs)
             pb = ProgressBar(n)
-        
+
         # Run single-thread
         for i, x in enumerate(xs):
             if pb:
@@ -69,7 +68,7 @@ class UDFRunner(object):
 
             # Apply UDF and add results to the session
             for y in udf.apply(x, **kwargs):
-                
+
                 # Uf UDF has a reduce step, this will take care of the insert; else add to session
                 if hasattr(self.udf_class, 'reduce'):
                     udf.reduce(y, **kwargs)
@@ -80,7 +79,7 @@ class UDFRunner(object):
         udf.session.commit()
         if pb:
             pb.close()
-        
+
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if snorkel_conn_string.startswith('sqlite'):
