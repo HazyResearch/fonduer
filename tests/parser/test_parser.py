@@ -64,12 +64,12 @@ def test_parse_structure(caplog):
 
     header = phrases[0]
     # Test structural attributes
-    assert header.xpath == '/html/body/h1'
-    assert header.html_tag == 'h1'
-    assert header.html_attrs == ['id=sample-markdown']
+    assert header.xpath == '/html/body/div/header'
+    assert header.html_tag == 'header'
+    #  assert header.html_attrs == ['id=sample-markdown']
 
     # 44 phrases expected in the "md" document.
-    assert len(phrases) == 44
+    assert len(phrases) == 17
 
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
@@ -102,9 +102,8 @@ def test_parse_document_md(caplog):
 
     header = doc.phrases[0]
     # Test structural attributes
-    assert header.xpath == '/html/body/h1'
-    assert header.html_tag == 'h1'
-    assert header.html_attrs == ['id=sample-markdown']
+    assert header.xpath == '/html/body/div/header'
+    #  assert header.html_attrs == ['id=sample-markdown']
 
     # Test visual attributes
     assert header.page == [1, 1]
