@@ -151,9 +151,9 @@ def test_parse_document_diseases(caplog):
     phrase = sorted(doc.phrases)[11]
     logger.info("  {}".format(phrase))
     # Test structural attributes
-    assert phrase.xpath == '/html/body/table[1]/tbody/tr[3]/td[1]/p'
-    assert phrase.html_tag == 'p'
-    assert phrase.html_attrs == ['class=s6', 'style=padding-top: 1pt']
+    assert phrase.xpath == '/html/body/div/paragraph[4]'
+    assert phrase.html_tag == 'paragraph'
+    #  assert phrase.html_attrs == ['class=s6', 'style=padding-top: 1pt']
 
 
     # Test visual attributes
@@ -177,7 +177,6 @@ def test_spacy_integration(caplog):
 
     session = SnorkelSession()
 
-
     docs_path = 'tests/data/html_pdftotree/'
     pdf_path = 'tests/data/pdf_simple/'
 
@@ -196,4 +195,4 @@ def test_spacy_integration(caplog):
             logger.info("  Phrase: {}".format(phrase.text))
 
     assert session.query(Document).count() == 2
-    assert session.query(Phrase).count() == 80
+    assert session.query(Phrase).count() == 40
