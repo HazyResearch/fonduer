@@ -818,7 +818,7 @@ def update_coordinates(parts, coordinates, char_idx):
             if match[1] == word_len + word_lens[i]:
                 word_end = match[0]
         if word_begin == -1 or word_end == -1:
-            log.warning("no match found")
+            logger.warning("no match found")
         else:
             for char_iter in range(word_begin, word_end):
                 curr_word[1] = int(
@@ -844,7 +844,7 @@ def update_coordinates(parts, coordinates, char_idx):
             if chars[char_idx].decode("utf-8") == u'\u204e':
                 char_idx += 1
             if word[len_idx]!=chars[char_idx].replace('"',"'") and word[len_idx]!=chars[char_idx]:
-                log.warning("Out of order: {} {} {}".format(word, word[len_idx], chars[char_idx]))
+                logger.warning("Out of order: {} {} {}".format(word, word[len_idx], chars[char_idx]))
                 len_idx += 1
             else:
                 curr_word[1] = min(curr_word[1], top[char_idx])
