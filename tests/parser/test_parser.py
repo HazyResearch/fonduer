@@ -16,10 +16,37 @@ os.environ[
     'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
 
 from fonduer import SnorkelSession
-from fonduer import HTMLPreprocessor, OmniParser
+from fonduer import HTMLPreprocessor, OmniParser, PDFPreprocessor
 from fonduer.models import Document, Phrase
 from fonduer.parser import OmniParserUDF
 from fonduer.snorkel.parser import Spacy
+
+
+def test_pdftotree_integration(caplog):
+    """Test that pdftotree is used to convert PDF to HTML on the fly.
+
+    We want to just be able to input a PDF directory as a parameter, and not
+    require the user to convert all PDFs into HTML at the start.
+    """
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    session = SnorkelSession()
+
+    max_docs = 2
+    pdf_path = "tests/data/pdf_simple/"
+
+    # Preprocessor for the Docs
+    preprocessor = PDFPreprocessor(pdf_path, max_docs=max_docs)
+
+    corpus_parser = OmniParser(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    corpus_parser.apply(preprocessor)
+
+    num_docs = session.query(Document).count()
+    num_phrases = session.query(Phrase).count()
+    assert num_docs == 2
+    assert num_phrases == 40
 
 
 def test_parse_structure(caplog):
@@ -71,6 +98,7 @@ def test_parse_structure(caplog):
     # 44 phrases expected in the "md" document.
     assert len(phrases) == 17
 
+
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
 
@@ -119,6 +147,7 @@ def test_parse_document_md(caplog):
     # 44 phrases expected in the "md" document.
     assert len(doc.phrases) == 17
 
+
 def test_parse_document_diseases(caplog):
     """Unit test of OmniParser on a single document.
 
@@ -155,7 +184,6 @@ def test_parse_document_diseases(caplog):
     assert phrase.html_tag == 'paragraph'
     #  assert phrase.html_attrs == ['class=s6', 'style=padding-top: 1pt']
 
-
     # Test visual attributes
     assert phrase.page == [1, 1, 1]
     #  assert phrase.top == [342, 296, 356]
@@ -164,6 +192,7 @@ def test_parse_document_diseases(caplog):
     # Test lingual attributes
     assert phrase.ner_tags == ['ORG', 'ORG', 'O']
     assert phrase.dep_labels == ['compound', 'compound', 'ROOT']
+
 
 def test_spacy_integration(caplog):
     """Run a simple e2e parse using spaCy as our parser.
