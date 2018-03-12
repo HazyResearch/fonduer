@@ -13,6 +13,7 @@ from fonduer.matchers import LambdaFunctionFigureMatcher
 from fonduer.models import (Meta, Document, Phrase, Figure, candidate_subclass)
 from fonduer.parser import HTMLPreprocessor
 from fonduer.parser import OmniParser
+from fonduer.parser import PDFPreprocessor
 from fonduer.snorkel.annotations import load_gold_labels
 from fonduer.snorkel.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.snorkel.matchers import (RegexMatchSpan, DictionaryMatch,

@@ -2,6 +2,7 @@ import codecs
 import itertools
 import logging
 import os
+import pdftotree
 import re
 from builtins import object, range, str
 from collections import defaultdict
@@ -20,6 +21,30 @@ from fonduer.snorkel.udf import UDF, UDFRunner
 from fonduer.visual import VisualLinker
 
 logger = logging.getLogger(__name__)
+
+
+class PDFPreprocessor(DocPreprocessor):
+    """Convert all PDF files into HTML using pdftotree.
+
+    Then, yield a Document for each resulting HTML.
+    """
+    def parse_file(self, fp, file_name):
+        # Use pdftotree to convert the file to HTML
+        logger.debug("Converting {} to HTML using pdftotree...".format(fp))
+        html = pdftotree.parse(fp)
+        name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
+        stable_id = self.get_stable_id(name)
+        logger.debug("Yielding {}.".format(stable_id))
+        yield Document(
+            name=name,
+            stable_id=stable_id,
+            text=str(html),
+            meta={
+                'file_name': file_name
+            }), str(html)
+
+    def _can_read(self, fpath):
+        return fpath.upper().endswith('.PDF')
 
 
 class HTMLPreprocessor(DocPreprocessor):
