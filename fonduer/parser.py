@@ -217,7 +217,7 @@ class OmniParserUDF(UDF):
             for phrase in self.parse_structure(document, text):
                 yield phrase
 
-    def _get_word_coordinates(self, parts):
+    def _add_word_coordinates(self, parts):
         """Get word-level coordinates for each word.
 
         pdftotree outputs character level coordinates. This function updates
@@ -454,7 +454,7 @@ class OmniParserUDF(UDF):
 
                                 # Update the coordinates using information from
                                 # pdftotree directly when parsing the text.
-                                parts = self._get_word_coordinates(parts)
+                                parts = self._add_word_coordinates(parts)
 
                                 parent = parents_para[self.parent_idx]
                                 parts, self.char_idx = para_info.apply_para(
