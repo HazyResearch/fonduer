@@ -143,6 +143,7 @@ def test_parse_document_md(caplog):
 
     # 44 phrases expected in the "md" document.
     assert len(doc.phrases) == 17
+    assert len(doc.figures) == 1
 
 
 def test_parse_document_diseases(caplog):
