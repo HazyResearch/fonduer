@@ -28,6 +28,7 @@ class PDFPreprocessor(DocPreprocessor):
 
     Then, yield a Document for each resulting HTML.
     """
+
     def parse_file(self, fp, file_name):
         # Use pdftotree to convert the file to HTML
         logger.debug("Converting {} to HTML using pdftotree...".format(fp))
@@ -105,8 +106,7 @@ class OmniParser(UDFRunner):
             flatten_delim='',
             lingual=True,  # lingual information
             strip=True,
-            replacements=[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]',
-                           '-')],
+            replacements=[], #[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],
             tabular=True,  # tabular information
             visual=False,  # visual information
             pdf_path=None):
@@ -216,6 +216,68 @@ class OmniParserUDF(UDF):
         else:
             for phrase in self.parse_structure(document, text):
                 yield phrase
+
+    def _get_word_coordinates(self, parts):
+        """Get word-level coordinates for each word.
+
+        pdftotree outputs character level coordinates. This function updates
+        adds word-level coordinates to match the words output by spaCy.
+        """
+        # Turn the html_attributes into a more usable dictionary of lists. We
+        # only split on the first leftmost equal sign to allow '=' to appear as
+        # a char itself.
+        coords = dict()
+        for html_attr in [_.split('=', 1) for _ in parts['html_attrs']]:
+            coords[html_attr[0]] = html_attr[1].strip().split(' ')
+
+        # Simple approach to matching up words with their characters. We
+        # advance this idx as we parse through the string. For example,
+        # parts['words'] = ['Types', 'of', 'viruses', ',', 'coughs', ',', 'and', 'colds']
+        # char=T y p e s \xa0 o f \xa0 v i r u s e s , \xa0 c o u g h s , \xa0 a n d \xa0 c o l d s '
+        char_idx = 0
+        for word in parts['words']:
+            # pdftotree switches all single quotes (') to double quotes (") in
+            # the character html_attrs, so we swap them here to so we can
+            # match correctly.
+            curr_word = [
+                word.replace('\'','\"'),
+                float('Inf'),
+                float('Inf'),
+                float('-Inf'),
+                float('-Inf')
+            ]
+            # We don't use parts['text'] here because it is not exactly mapped
+            # to the coordinates provided by pdftotree. For example, '\xa0' is
+            # given a coordinate, while a normal space is not.
+            char_str = ''.join(coords['char'])
+            start = char_str.find(curr_word[0], char_idx)
+            end = start + len(curr_word[0])
+
+            if start == -1:
+                msg = "\"{}\" was not found in \"{}\"".format(
+                    curr_word[0], char_str[char_idx:])
+                raise ValueError(msg)
+
+            for char_iter in range(start, end):
+                curr_word[1] = int(
+                    min(curr_word[1], float(coords['top'][char_iter])))
+                curr_word[2] = int(
+                    min(curr_word[2], float(coords['left'][char_iter])))
+                curr_word[3] = int(
+                    max(curr_word[3], float(coords['bottom'][char_iter])))
+                curr_word[4] = int(
+                    max(curr_word[4], float(coords['right'][char_iter])))
+            char_idx = end
+
+            parts['top'].append(curr_word[1])
+            parts['left'].append(curr_word[2])
+            parts['bottom'].append(curr_word[3])
+            parts['right'].append(curr_word[4])
+
+        # TODO(lwhsiao): I think this actually is uncessesary, as the parts
+        # object gets modified by this function directly. But, it might be nice
+        # in that it's a bit more clear this way.
+        return parts
 
     def _flatten(self, node):
         # if a child of this node is in self.flatten, construct a string
@@ -389,6 +451,10 @@ class OmniParserUDF(UDF):
                                         '='.join(x) for x in list(
                                             context_node.attrib.items())
                                     ]
+
+                                # Update the coordinates using information from
+                                # pdftotree directly when parsing the text.
+                                parts = self._get_word_coordinates(parts)
 
                                 parent = parents_para[self.parent_idx]
                                 parts, self.char_idx = para_info.apply_para(
@@ -663,8 +729,8 @@ class TableInfo(object):
             parts['row_end'] = parent.row_end
             parts['col_start'] = parent.col_start
             parts['col_end'] = parent.col_end
-            parts = update_coordinates_table(parts,
-                                             coordinates[parent.para.position])
+            #  parts = update_coordinates_table(parts,
+            #                                   coordinates[parent.para.position])
         else:
             raise NotImplementedError(
                 "Phrase parent must be Document, Table, or Cell")
@@ -730,8 +796,8 @@ class ParaInfo(object):
             pass
         elif isinstance(parent, Para):
             parts['para'] = parent
-            parts, char_idx[parent.position] = update_coordinates(
-                parts, coordinates[parent.position], char_idx[parent.position])
+            #  parts, char_idx[parent.position] = update_coordinates(
+            #      parts, coordinates[parent.position], char_idx[parent.position])
         else:
             raise NotImplementedError("Phrase parent must be Document or Para")
         return parts, char_idx
@@ -798,11 +864,11 @@ def lcs(X, Y):
 
 def update_coordinates(parts, coordinates, char_idx):
     sep = " "
-    chars = coordinates["char"][:-1].split(sep)
-    top = [float(_) for _ in coordinates["top"][:-1].split(sep)]
-    left = [float(_) for _ in coordinates["left"][:-1].split(sep)]
-    bottom = [float(_) for _ in coordinates["bottom"][:-1].split(sep)]
-    right = [float(_) for _ in coordinates["right"][:-1].split(sep)]
+    chars = coordinates['char'][:-1].split(sep)
+    top = [float(_) for _ in coordinates['top'][:-1].split(sep)]
+    left = [float(_) for _ in coordinates['left'][:-1].split(sep)]
+    bottom = [float(_) for _ in coordinates['bottom'][:-1].split(sep)]
+    right = [float(_) for _ in coordinates['right'][:-1].split(sep)]
     words = []
     new_chars = []
     new_top = []
@@ -822,15 +888,16 @@ def update_coordinates(parts, coordinates, char_idx):
     right = new_right
     bottom = new_bottom
     words = []
-    matches = lcs("".join(chars[char_idx:]), "".join(parts["words"]))
-    word_lens = [len(words) for words in parts["words"]]
-    for i, word in enumerate(parts["words"]):
+    matches = lcs("".join(chars[char_idx:]), "".join(parts['words']))
+    word_lens = [len(words) for words in parts['words']]
+    logger.debug("parts['words'] = {}".format(parts['words']))
+    for i, word in enumerate(parts['words']):
         curr_word = [
             word,
-            float("Inf"),
-            float("Inf"),
-            float("-Inf"),
-            float("-Inf")
+            float('Inf'),
+            float('Inf'),
+            float('-Inf'),
+            float('-Inf')
         ]
         word_len = 0
         word_len += sum(word_lens[:i])
@@ -858,31 +925,6 @@ def update_coordinates(parts, coordinates, char_idx):
         parts['bottom'].append(curr_word[3])
         parts['right'].append(curr_word[4])
     char_idx += max([x[0] for x in matches])
-    '''
-    for word in parts["words"]:
-        curr_word = [word, float("Inf"), float("Inf"), float("-Inf"), float("-Inf")]
-        len_idx = 0
-        while len_idx<len(word):
-            while word[len_idx] == " ":
-                len_idx += 1
-            if chars[char_idx].decode("utf-8") == u'\u204e':
-                char_idx += 1
-            if word[len_idx]!=chars[char_idx].replace('"',"'") and word[len_idx]!=chars[char_idx]:
-                logger.warning("Out of order: {} {} {}".format(word, word[len_idx], chars[char_idx]))
-                len_idx += 1
-            else:
-                curr_word[1] = min(curr_word[1], top[char_idx])
-                curr_word[2] = min(curr_word[2], left[char_idx])
-                curr_word[3] = max(curr_word[3], bottom[char_idx])
-                curr_word[4] = max(curr_word[4], right[char_idx])
-                len_idx += len(chars[char_idx])
-                char_idx += 1
-        words.append(curr_word)
-        parts['top'].append(curr_word[1])
-        parts['left'].append(curr_word[2])
-        parts['bottom'].append(curr_word[3])
-        parts['right'].append(curr_word[4])
-    '''
     return parts, char_idx
 
 
@@ -930,9 +972,9 @@ class SectionInfo(object):
             pass
         elif isinstance(parent, Section):
             parts['para'] = parent.para
-            parts, char_idx[parent.para.position] = update_coordinates(
-                parts, coordinates[parent.para.position],
-                char_idx[parent.para.position])
+            #  parts, char_idx[parent.para.position] = update_coordinates(
+            #      parts, coordinates[parent.para.position],
+            #      char_idx[parent.para.position])
         else:
             raise NotImplementedError(
                 "Phrase parent must be Document or Section")
@@ -982,9 +1024,9 @@ class HeaderInfo(object):
             pass
         elif isinstance(parent, Header):
             parts['para'] = parent.para
-            parts, char_idx[parent.para.position] = update_coordinates(
-                parts, coordinates[parent.para.position],
-                char_idx[parent.para.position])
+            #  parts, char_idx[parent.para.position] = update_coordinates(
+            #      parts, coordinates[parent.para.position],
+            #      char_idx[parent.para.position])
         else:
             raise NotImplementedError(
                 "Phrase parent must be Document or Header")
@@ -1034,9 +1076,9 @@ class FigureCaptionInfo(object):
             pass
         elif isinstance(parent, FigureCaption):
             parts['para'] = parent.para
-            parts, char_idx[parent.para.position] = update_coordinates(
-                parts, coordinates[parent.para.position],
-                char_idx[parent.para.position])
+            #  parts, char_idx[parent.para.position] = update_coordinates(
+            #      parts, coordinates[parent.para.position],
+            #      char_idx[parent.para.position])
         else:
             raise NotImplementedError(
                 "Phrase parent must be Document or FigureCaption")
@@ -1086,9 +1128,9 @@ class TableCaptionInfo(object):
             pass
         elif isinstance(parent, TableCaption):
             parts['para'] = parent.para
-            parts, char_idx[parent.para.position] = update_coordinates(
-                parts, coordinates[parent.para.position],
-                char_idx[parent.para.position])
+            #  parts, char_idx[parent.para.position] = update_coordinates(
+            #      parts, coordinates[parent.para.position],
+            #      char_idx[parent.para.position])
         else:
             raise NotImplementedError(
                 "Phrase parent must be Document or TableCaption")
