@@ -1,9 +1,9 @@
 from __future__ import division, print_function
 
+import logging
 import os
 import re
 import subprocess
-import warnings
 from builtins import object, range, str, zip
 from collections import OrderedDict, defaultdict
 
@@ -16,8 +16,12 @@ from future import standard_library
 standard_library.install_aliases()
 
 
+standard_library.install_aliases()
+
+
 class VisualLinker(object):
     def __init__(self, time=False, verbose=False):
+        self.logger = logging.getLogger(__name__)
         self.pdf_file = None
         self.verbose = verbose
         self.time = time
@@ -37,10 +41,16 @@ class VisualLinker(object):
         try:
             self.extract_pdf_words()
         except RuntimeError as e:
-            warnings.warn(e.message, RuntimeWarning)
+            self.logger.warning(e.message)
             return
         self.extract_html_words()
-        self.link_lists(search_max=200)
+        try:
+            self.link_lists(search_max=200)
+        except AssertionError as ae:
+            self.logger.warning(
+                "{} AssertionError in visual.py".format(document_name))
+            return
+
         for phrase in self.update_coordinates():
             yield phrase
 
