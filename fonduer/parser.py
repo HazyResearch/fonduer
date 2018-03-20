@@ -32,17 +32,20 @@ class PDFPreprocessor(DocPreprocessor):
     def parse_file(self, fp, file_name):
         # Use pdftotree to convert the file to HTML
         logger.debug("Converting {} to HTML using pdftotree...".format(fp))
-        html = pdftotree.parse(fp)
-        name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
-        stable_id = self.get_stable_id(name)
-        logger.debug("Yielding {}.".format(stable_id))
-        yield Document(
-            name=name,
-            stable_id=stable_id,
-            text=str(html),
-            meta={
-                'file_name': file_name
-            }), str(html)
+        try:
+            html = pdftotree.parse(fp)
+            name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
+            stable_id = self.get_stable_id(name)
+            logger.debug("Yielding {}.".format(stable_id))
+            yield Document(
+                name=name,
+                stable_id=stable_id,
+                text=str(html),
+                meta={
+                    'file_name': file_name
+                }), str(html)
+        except Exception as e:
+            print("{}".format(fp))
 
     def _can_read(self, fpath):
         return fpath.upper().endswith('.PDF')
@@ -106,7 +109,7 @@ class OmniParser(UDFRunner):
             flatten_delim='',
             lingual=True,  # lingual information
             strip=True,
-            replacements=[], #[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],
+            replacements=[('\(cid:\d+\)', '$')],  #[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],
             tabular=True,  # tabular information
             visual=False,  # visual information
             pdf_path=None):
@@ -228,7 +231,11 @@ class OmniParserUDF(UDF):
         # a char itself.
         coords = dict()
         for html_attr in [_.split('=', 1) for _ in parts['html_attrs']]:
-            coords[html_attr[0]] = html_attr[1].strip().split(' ')
+            # NOTE: The replacing of double spaces is used when a ' ' is a
+            # character itself. Otherwise '  '.split() = ['', '']
+            temp = html_attr[1].strip().replace('  ', ' ').split(' ')
+            # Next, we need to replace the '' for spaces with a space
+            coords[html_attr[0]] = [' ' if _ == '' else _ for _ in temp]
 
         # Simple approach to matching up words with their characters. We
         # advance this idx as we parse through the string. For example,
@@ -236,11 +243,8 @@ class OmniParserUDF(UDF):
         # char=T y p e s \xa0 o f \xa0 v i r u s e s , \xa0 c o u g h s , \xa0 a n d \xa0 c o l d s '
         char_idx = 0
         for word in parts['words']:
-            # pdftotree switches all single quotes (') to double quotes (") in
-            # the character html_attrs, so we swap them here to so we can
-            # match correctly.
             curr_word = [
-                word.replace('\'','\"'),
+                word,
                 float('Inf'),
                 float('Inf'),
                 float('-Inf'),
@@ -249,30 +253,36 @@ class OmniParserUDF(UDF):
             # We don't use parts['text'] here because it is not exactly mapped
             # to the coordinates provided by pdftotree. For example, '\xa0' is
             # given a coordinate, while a normal space is not.
-            char_str = ''.join(coords['char'])
-            start = char_str.find(curr_word[0], char_idx)
-            end = start + len(curr_word[0])
+            try:
+                char_str = ''.join(coords['char'])
+                for (rgx, replace) in self.replacements:
+                    char_str = rgx.sub(replace, char_str)
+                start = char_str.find(curr_word[0], char_idx)
+                end = start + len(curr_word[0])
 
-            if start == -1:
-                msg = "\"{}\" was not found in \"{}\"".format(
-                    curr_word[0], char_str[char_idx:])
-                raise ValueError(msg)
+                if start == -1:
+                    msg = "\"{}\" was not found in \"{}\"".format(
+                        curr_word[0], char_str[char_idx:])
+                    raise ValueError(msg)
 
-            for char_iter in range(start, end):
-                curr_word[1] = int(
-                    min(curr_word[1], float(coords['top'][char_iter])))
-                curr_word[2] = int(
-                    min(curr_word[2], float(coords['left'][char_iter])))
-                curr_word[3] = int(
-                    max(curr_word[3], float(coords['bottom'][char_iter])))
-                curr_word[4] = int(
-                    max(curr_word[4], float(coords['right'][char_iter])))
-            char_idx = end
+                for char_iter in range(start, end):
+                    curr_word[1] = int(
+                        min(curr_word[1], float(coords['top'][char_iter])))
+                    curr_word[2] = int(
+                        min(curr_word[2], float(coords['left'][char_iter])))
+                    curr_word[3] = int(
+                        max(curr_word[3], float(coords['bottom'][char_iter])))
+                    curr_word[4] = int(
+                        max(curr_word[4], float(coords['right'][char_iter])))
+                char_idx = end
 
-            parts['top'].append(curr_word[1])
-            parts['left'].append(curr_word[2])
-            parts['bottom'].append(curr_word[3])
-            parts['right'].append(curr_word[4])
+                parts['top'].append(curr_word[1])
+                parts['left'].append(curr_word[2])
+                parts['bottom'].append(curr_word[3])
+                parts['right'].append(curr_word[4])
+            except Exception as e:
+                logger.exception(e)
+
 
         # TODO(lwhsiao): I think this actually is uncessesary, as the parts
         # object gets modified by this function directly. But, it might be nice
@@ -496,7 +506,8 @@ class OmniParserUDF(UDF):
                                 self.phrase_num += 1
                             except Exception as e:
                                 # This should never happen
-                                logger.exception(str(e))
+                                logger.warning("{}".format(document))
+                                logger.exception(e)
 
             for child in node:
                 if child.tag == 'table':
