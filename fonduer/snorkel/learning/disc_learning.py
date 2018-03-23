@@ -229,8 +229,8 @@ class TFNoiseAwareModel(Classifier):
         batch_size = min(batch_size, n)
         if verbose:
             st = time()
-            self.logging.info("[{0}] Training model".format(self.name))
-            self.logging.info("[{0}] n_train={1}  #epochs={2}  batch size={3}".format(
+            self.logger.info("[{0}] Training model".format(self.name))
+            self.logger.info("[{0}] n_train={1}  #epochs={2}  batch size={3}".format(
                 self.name, n, n_epochs, batch_size
             ))
         dev_score_opt = 0.0
@@ -263,7 +263,7 @@ class TFNoiseAwareModel(Classifier):
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
                     msg += '\tDev {0}={1:.2f}'.format(score_label, 100. * score)
-                self.logging.info(msg)
+                self.logger.info(msg)
 
                 # If best score on dev set so far and dev checkpointing is
                 # active, save checkpoint
@@ -275,7 +275,7 @@ class TFNoiseAwareModel(Classifier):
 
         # Conclude training
         if verbose:
-            self.logging.info("[{0}] Training done ({1:.2f}s)".format(self.name, time()-st))
+            self.logger.info("[{0}] Training done ({1:.2f}s)".format(self.name, time()-st))
 
         # If checkpointing on, load last checkpoint (i.e. best on dev set)
         if dev_ckpt and X_dev is not None and verbose and dev_score_opt > 0:
@@ -333,7 +333,7 @@ class TFNoiseAwareModel(Classifier):
             os.path.join(model_dir, model_name),
             global_step=global_step)
         if verbose:
-            self.logging.info("[{0}] Model saved as <{1}>".format(self.name, model_name))
+            self.logger.info("[{0}] Model saved as <{1}>".format(self.name, model_name))
 
     def load(self, model_name=None, save_dir='checkpoints', verbose=True):
         """Load model from file and rebuild in new graph / session."""
@@ -358,7 +358,7 @@ class TFNoiseAwareModel(Classifier):
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(self.session, ckpt.model_checkpoint_path)
             if verbose:
-                self.logging.info("[{0}] Loaded model <{1}>".format(self.name, model_name))
+                self.logger.info("[{0}] Loaded model <{1}>".format(self.name, model_name))
         else:
             raise Exception("[{0}] No model found at <{1}>".format(
                 self.name, model_name))
