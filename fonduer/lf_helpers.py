@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import logging
 from builtins import range, str
 from collections import defaultdict
 from itertools import chain
@@ -131,12 +132,13 @@ def get_matches(lf, candidate_set, match_values=[1, -1]):
     :param match_values: An option list of the values to consider as matched. [1, -1] by default.
     :rtype: a list of candidates
     """
+    logger = logging.getLogger(__name__)
     matches = []
     for c in candidate_set:
         label = lf(c)
         if label in match_values:
             matches.append(c)
-    print(("%s matches") % len(matches))
+    logger.info(("%s matches") % len(matches))
     return matches
 
 

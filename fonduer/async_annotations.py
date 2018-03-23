@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 
 import codecs
+import logging
 import os
 import subprocess
 import tempfile
@@ -27,7 +28,7 @@ _TempKey = namedtuple('TempKey', ['id', 'name'])
 
 # Grab a pointer to the global vars
 _meta = Meta.init()
-
+logger = logging.getLogger(__name__)
 
 def _to_annotation_generator(fns):
     """"
@@ -159,7 +160,7 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
     @var tsv_columns: a string listing column names in the segment files
     separated by comma. e.g. "name, age, income"
     """
-    print('Copying %s to postgres' % table_name)
+    logger.info('Copying {} to postgres'.format(table_name))
 
     username = "-U " + _meta.DBUSER if _meta.DBUSER is not None else ""
     password = "PGPASSWORD=" + _meta.DBPWD if _meta.DBPWD is not None else ""
@@ -173,7 +174,7 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
                                                       table_name,
                                                       tsv_columns)
     _out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    print(_out)
+    logger.info(_out)
 
 
 def _segment_filename(db_name, table_name, job_id, start=None, end=None):
@@ -496,8 +497,8 @@ def load_annotation_matrix(con, candidates, split, table_name, key_table_name,
     # TODO: move this for-loop computation to database for automatic parallelization,
     # avoid communication overhead etc. Try to avoid the log sorting factor using unnest
     if storage == 'COO':
-        print('key size', len(keys))
-        print('candidate size', len(candidates))
+        logger.info('key size: {}'.format(len(keys)))
+        logger.info('candidate size {}'.format(len(candidates)))
         iterator_sql = 'SELECT candidate_id, key, value FROM %s '
         'WHERE candidate_id IN '
         '(SELECT id FROM candidate WHERE split=%d) '

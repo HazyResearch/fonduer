@@ -2,6 +2,8 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import inspect
+import logging
+import math
 import os
 from itertools import product
 from multiprocessing import JoinableQueue, Process
@@ -12,12 +14,13 @@ import scipy.sparse as sparse
 from future import standard_library
 from pandas import DataFrame
 
+logger = logging.getLogger(__name__)
+
 standard_library.install_aliases()
 
 # ###########################################################
 # # General Learning Utilities
 # ###########################################################
-
 
 def reshape_marginals(marginals):
     """Returns correctly shaped marginals as np array"""
@@ -210,6 +213,7 @@ class MentionScorer(Scorer):
 
             # If gold candidate set is provided calculate recall-adjusted scores
             if self.gold_candidate_set is not None:
+<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
                 gold_fn = [
                     c for c in self.gold_candidate_set
                     if c not in self.test_candidates
@@ -220,14 +224,26 @@ class MentionScorer(Scorer):
                     len(fp),
                     len(tn),
                     len(fn) + len(gold_fn),
+=======
+                gold_fn = [c for c in self.gold_candidate_set
+                    if c not in self.test_candidates]
+                logger.info("\n")
+                print_scores(len(tp), len(fp), len(tn), len(fn)+len(gold_fn),
+>>>>>>> Remove print statements to switch to logging
                     title="Corpus Recall-adjusted Scores")
 
             # If training and test marginals provided print calibration plots
             if train_marginals is not None and test_marginals is not None:
+<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
                 raise NotImplementedError("Invalid code here.")
                 #  print("\nCalibration plot:")
                 #  calibration_plots(train_marginals, test_marginals,
                 #                    np.asarray(test_label_array))
+=======
+                logger.info("\nCalibration plot:")
+                calibration_plots(train_marginals, test_marginals,
+                    np.asarray(test_label_array))
+>>>>>>> Remove print statements to switch to logging
         return tp, fp, tn, fn
 
     def _score_categorical(self,
@@ -268,15 +284,21 @@ class MentionScorer(Scorer):
                     incorrect.add(candidate)
         if display:
             nc, ni = len(correct), len(incorrect)
-            print("Accuracy:", nc / float(nc + ni))
+            logger.info("Accuracy: {}".format(nc / float(nc + ni)))
 
             # If gold candidate set is provided calculate recall-adjusted scores
             if self.gold_candidate_set is not None:
+<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
                 gold_missed = [
                     c for c in self.gold_candidate_set
                     if c not in self.test_candidates
                 ]
                 print("Coverage:", (nc + ni) / (nc + ni + len(gold_missed)))
+=======
+                gold_missed = [c for c in self.gold_candidate_set
+                    if c not in self.test_candidates]
+                logger.info("Coverage: {}".format((nc + ni) / (nc + ni + len(gold_missed))))
+>>>>>>> Remove print statements to switch to logging
         return correct, incorrect
 
     def summary_score(self, test_marginals, **kwargs):
@@ -309,17 +331,17 @@ def print_scores(ntp, nfp, ntn, nfn, title='Scores'):
     prec, rec, f1 = binary_scores_from_counts(ntp, nfp, ntn, nfn)
     pos_acc = ntp / float(ntp + nfn) if ntp + nfn > 0 else 0.0
     neg_acc = ntn / float(ntn + nfp) if ntn + nfp > 0 else 0.0
-    print("========================================")
-    print(title)
-    print("========================================")
-    print("Pos. class accuracy: {:.3}".format(pos_acc))
-    print("Neg. class accuracy: {:.3}".format(neg_acc))
-    print("Precision            {:.3}".format(prec))
-    print("Recall               {:.3}".format(rec))
-    print("F1                   {:.3}".format(f1))
-    print("----------------------------------------")
-    print("TP: {} | FP: {} | TN: {} | FN: {}".format(ntp, nfp, ntn, nfn))
-    print("========================================\n")
+    logger.info("========================================")
+    logger.info(title)
+    logger.info("========================================")
+    logger.info("Pos. class accuracy: {:.3}".format(pos_acc))
+    logger.info("Neg. class accuracy: {:.3}".format(neg_acc))
+    logger.info("Precision            {:.3}".format(prec))
+    logger.info("Recall               {:.3}".format(rec))
+    logger.info("F1                   {:.3}".format(f1))
+    logger.info("----------------------------------------")
+    logger.info("TP: {} | FP: {} | TN: {} | FN: {}".format(ntp, nfp, ntn, nfn))
+    logger.info("========================================\n")
 
 
 # ##########################################################
@@ -427,14 +449,22 @@ class GridSearch(object):
             # Set the new hyperparam configuration to test
             for pn, pv in zip(self.param_names, param_vals):
                 hps[pn] = pv
-            print("=" * 60)
+            logger.info("=" * 60)
             NUMTYPES = float, int, np.float64
+<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
             print("[%d] Testing %s" % (k + 1, ', '.join([
                 "%s = %s" % (pn, ("%0.2e" % pv)
                              if isinstance(pv, NUMTYPES) else pv)
                 for pn, pv in zip(self.param_names, param_vals)
+=======
+            logger.info("[%d] Testing %s" % (k+1, ', '.join([
+                "%s = %s" % (
+                    pn,
+                    ("%0.2e" % pv) if isinstance(pv, NUMTYPES) else pv)
+                for pn,pv in zip(self.param_names, param_vals)
+>>>>>>> Remove print statements to switch to logging
             ])))
-            print("=" * 60)
+            logger.info("=" * 60)
 
             # Train the model
             train_args = [self.X_train]
@@ -471,8 +501,12 @@ class GridSearch(object):
                 run_score_label = "F-{0} Score".format(beta)
 
             # Add scores to running stats, print, and set as optimal if best
+<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
             print("[{0}] {1}: {2}".format(model.name, run_score_label,
                                           run_score))
+=======
+            logger.info("[{0}] {1}: {2}".format(model.name,run_score_label,run_score))
+>>>>>>> Remove print statements to switch to logging
             run_stats.append(list(param_vals) + list(run_scores))
             if run_score > run_score_opt or k == 0:
                 model.save(model_name=model_name, save_dir=self.save_dir)
@@ -510,13 +544,13 @@ class GridSearch(object):
         # First do a preprocessing pass over the data to make sure it is all
         # non-lazily loaded
         # TODO: Better way to go about it than this!!
-        print("Loading data...")
+        logger.info("Loading data...")
         model = self.model_class(**self.model_class_params)
         model._preprocess_data(self.X_train)
         model._preprocess_data(X_valid)
 
         # Create queue of hyperparameters to test
-        print("Launching jobs...")
+        logger.info("Launching jobs...")
         params_queue = JoinableQueue()
         param_val_sets = []
         for k, param_vals in enumerate(self.search_space()):
@@ -557,7 +591,7 @@ class GridSearch(object):
                     k = scores[0]
                     param_vals = param_val_sets[k]
                     run_stats.append([k] + list(param_vals) + list(scores[1:]))
-                    print("Model {0} Done; score: {1}".format(k, scores[-1]))
+                    logger.info("Model {0} Done; score: {1}".format(k, scores[-1]))
                     scores_queue.task_done()
                 except Empty:
                     break
@@ -798,6 +832,7 @@ def training_set_summary_stats(L, return_vals=True, verbose=False):
     coverage, overlap, conflict = candidate_coverage(L), candidate_overlap(
         L), candidate_conflict(L)
     if verbose:
+<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
         print("=" * 60)
         print("LF Summary Statistics: %s LFs applied to %s candidates" % (M,
                                                                           N))
@@ -809,5 +844,14 @@ def training_set_summary_stats(L, return_vals=True, verbose=False):
         print("Conflict (candidates w/ conflicting labels):\t%0.2f%%" %
               (conflict * 100, ))
         print("=" * 60)
+=======
+        logger.info("=" * 60)
+        logger.info("LF Summary Statistics: %s LFs applied to %s candidates" % (M, N))
+        logger.info("-" * 60)
+        logger.info("Coverage (candidates w/ > 0 labels):\t\t%0.2f%%" % (coverage*100,))
+        logger.info("Overlap (candidates w/ > 1 labels):\t\t%0.2f%%" % (overlap*100,))
+        logger.info("Conflict (candidates w/ conflicting labels):\t%0.2f%%" % (conflict*100,))
+        logger.info("=" * 60)
+>>>>>>> Remove print statements to switch to logging
     if return_vals:
         return coverage, overlap, conflict

@@ -48,6 +48,7 @@ class GenerativeModel(Classifier):
                  seed=271828,
                  name=None):
         self.name = name or self.__class__.__name__
+        self.logger = logging.getLogger(__name__)
         try:
             numbskull_version = numbskull.__version__
         except Exception as e:
@@ -182,7 +183,7 @@ class GenerativeModel(Classifier):
                 else:
                     raise ValueError(
                         "L.max() == %s, cannot infer cardinality." % lmax)
-            print("Inferred cardinality: %s" % cardinality)
+            self.logger.info("Inferred cardinality: %s" % cardinality)
         self.cardinality = cardinality
 
         # Priors for LFs default to fixed prior value
@@ -885,7 +886,8 @@ class GenerativeModel(Classifier):
             }, f)
 
         if verbose:
-            print("[{0}] Model saved as <{1}>.".format(self.name, model_name))
+            self.logger.info("[{0}] Model saved as <{1}>.".format(
+                self.name, model_name))
 
     def load(self, model_name=None, save_dir='checkpoints', verbose=True):
         """Load model."""
@@ -900,7 +902,8 @@ class GenerativeModel(Classifier):
             for k, v in iteritems(hps):
                 setattr(self, k, v)
         if verbose:
-            print("[{0}] Model <{1}> loaded.".format(self.name, model_name))
+            self.logger.info("[{0}] Model <{1}> loaded.".format(
+                self.name, model_name))
 
 
 class GenerativeModelWeights(object):

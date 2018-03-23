@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import logging
 
 
 def create_serialized_candidate_view(session, C, verbose=False):
@@ -12,6 +13,7 @@ def create_serialized_candidate_view(session, C, verbose=False):
     NOTE: This limited functionality should be expanded for arbitrary context
     trees. Also this should be made more dialect-independent.
     """
+    logger = logging.getLogger(__name__)
     selects, froms, joins = [], [], []
     for i, arg in enumerate(C.__argnames__):
         # Select the context CID
@@ -40,6 +42,6 @@ def create_serialized_candidate_view(session, C, verbose=False):
     """.format(C.__tablename__, ", ".join(selects), ", ".join(froms),
                " AND ".join(joins))
     if verbose:
-        print("Creating view...")
-        print(sql)
+        logger.debug("Creating view...")
+        logger.debug(sql)
     session.execute(sql)

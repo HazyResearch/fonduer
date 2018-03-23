@@ -45,7 +45,7 @@ class PDFPreprocessor(DocPreprocessor):
                     'file_name': file_name
                 }), str(html)
         except Exception as e:
-            print("{}".format(fp))
+            logger.warning("Unable to preprocess {}".format(fp))
 
     def _can_read(self, fpath):
         return fpath.upper().endswith('.PDF')

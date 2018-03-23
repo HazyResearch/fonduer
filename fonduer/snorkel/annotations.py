@@ -1,6 +1,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
+import logging
 import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame, Series
@@ -21,6 +22,7 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
     """
 
     def __init__(self, arg1, **kwargs):
+        self.logger = logging.getLogger(__name__)
         # Note: Currently these need to return None if unset, otherwise matrix copy operations break...
         self.candidate_index = kwargs.pop('candidate_index', None)
         self.row_index = kwargs.pop('row_index', None)
@@ -410,7 +412,7 @@ def load_matrix(matrix_class,
 
     # Iteratively construct row index and output sparse matrix
     # Cycles through the entire table to load the data.
-    # Perfornamce may slow down based on table size; however, negligible since
+    # Performance may slow down based on table size; however, negligible since
     # it takes 8min to go throuh 245M rows (pretty fast).
     for res in session.execute(annot_select_query):
         # NOTE: The order of return seems to be switched in Python 3???
@@ -527,6 +529,7 @@ def save_marginals(session, X, marginals, training=True):
 
     Note: The marginals for k=0 are not stored, only for k = 1,...,K
     """
+    logger = logging.getLogger(__name__)
     # Make sure that we are working with a numpy array
     try:
         shape = marginals.shape
@@ -573,7 +576,7 @@ def save_marginals(session, X, marginals, training=True):
     # Execute update
     session.execute(q, insert_vals)
     session.commit()
-    print("Saved %s marginals" % len(marginals))
+    logger.info("Saved {%d} marginals".format(len(marginals)))
 
 
 def load_marginals(session, X=None, split=0, cids_query=None, training=True):

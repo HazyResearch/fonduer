@@ -27,11 +27,12 @@ def get_all_deps(n,
                  dep_similar=False,
                  dep_exclusive=False):
     """
-    Convenience method for getting a list of all dependencies to consider learning for a given number of labeling
-    functions.
+    Convenience method for getting a list of all dependencies to consider
+    learning for a given number of labeling functions.
 
-    No self dependencies are included, i.e., (i, i, _). In cases of symmetric dependencies, e.g., DEP_SIMILAR, only the
-    first case, (i, j, _) where i < j, is included.
+    No self dependencies are included, i.e., (i, i, _). In cases of symmetric
+    dependencies, e.g., DEP_SIMILAR, only the first case, (i, j, _) where i <
+    j, is included.
 
     :param n: number of labeling functions
     :param dep_fixing: whether to include DEP_FIXING dependencies. Default is False.
