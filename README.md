@@ -19,7 +19,7 @@ to submit your contributions as a pull request._
 
 ## Reference
 
-_[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)_
+[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)
 
 ```
 @article{wu2017fonduer,
