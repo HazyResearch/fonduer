@@ -55,7 +55,7 @@ script:
 after_success:
   - coveralls
 
-deloy:
+deploy:
   provider: pypi
   user: lukehsiao
   password:
@@ -66,3 +66,4 @@ deloy:
     tags: true
     branch: master
     python: '3.6' # only deploy once from the latest tested version
+
