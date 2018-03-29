@@ -16,6 +16,34 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
+# Mock imports for troublesome modules (i.e. any that use C code)
+# See: http://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
+import mock
+MOCK_MODULES = [
+    'matplotlib',
+    'matplotlib.pyplot',
+    'nltk',
+    'nltk.stem.porter',
+    'np',
+    'numba',
+    'numbskull',
+    'numbskull.inference',
+    'numbskull.numbskulltypes',
+    'numpy',
+    'pandas',
+    'plt',
+    'scipy',
+    'scipy.sparse',
+    'spacy',
+    'spacy.cli',
+    'spacy.deprecated',
+    'sparse',
+    'sparse.csr_matrix',
+    'tensorflow',
+    'tensorflow.contrib.rnn',
+]
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # -- Project information -----------------------------------------------------
 
@@ -27,7 +55,6 @@ author = 'HazyResearch'
 version = ''
 # The full version, including alpha/beta/rc tags
 release = ''
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -70,7 +97,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -99,12 +125,10 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
-
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Fonduerdoc'
-
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -130,20 +154,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Fonduer.tex', 'Fonduer Documentation',
-     'Sen Wu', 'manual'),
+    (master_doc, 'Fonduer.tex', 'Fonduer Documentation', 'Sen Wu', 'manual'),
 ]
-
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'fonduer', 'Fonduer Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'fonduer', 'Fonduer Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -151,10 +169,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Fonduer', 'Fonduer Documentation',
-     author, 'Fonduer', 'One line description of project.',
-     'Miscellaneous'),
+    (master_doc, 'Fonduer', 'Fonduer Documentation', author, 'Fonduer',
+     'One line description of project.', 'Miscellaneous'),
 ]
-
 
 # -- Extension configuration -------------------------------------------------
