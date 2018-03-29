@@ -19,6 +19,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Documentation
+_build/
+
 # Distribution / packaging
 README.rst
 .Python
