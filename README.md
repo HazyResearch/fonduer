@@ -9,6 +9,12 @@
 applications from _richy formatted data_ and is implemented as a library on
 top of a modified version of [Snorkel](https://hazyresearch.github.io/snorkel/).
 
+_Note that Fonduer is still actively under development, so feedback and
+contributions are welcome. Let us know in the
+[Issues](https://github.com/HazyResearch/fonduer/issues) section or feel free
+to submit your contributions as a pull request._
+
+
 ## Reference
 
 _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)_
