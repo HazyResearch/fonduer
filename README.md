@@ -1,6 +1,11 @@
 # Fonduer
 
-[![Build Status](https://travis-ci.com/SenWu/fonduer.svg?token=T3shSHjcJk8kMbzHEY7Z&branch=master)](https://travis-ci.com/SenWu/fonduer)
+[![GitHub license](https://img.shields.io/github/license/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/stargazers)
+<!-- [![PyPI](https://img.shields.io/pypi/v/fonduer.svg)](https://pypi.python.org/pypi/fonduer) -->
+<!-- [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fonduer.svg)](https://pypi.python.org/pypi/fonduer) -->
+[![GitHub issues](https://img.shields.io/github/issues/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/issues)
+[![Travis](https://img.shields.io/travis/HazyResearch/fonduer.svg)](https://travis-ci.org/HazyResearch/fonduer)
 
 `Fonduer` is a framework for building knowledge base construction (KBC)
 applications from _richy formatted data_ and is implemented as a library on
@@ -77,7 +82,7 @@ which will finish installing the external libraries we use.
 ## Learning how to use `Fonduer`
 
 The [`Fonduer`
-tutorials](https://github.com/SenWu/fonduer/tree/master/tutorials) cover the
+tutorials](https://github.com/hazyresearch/fonduer/tree/master/tutorials) cover the
 `Fonduer` workflow, showing how to extract relations from hardware datasheets
 and scientific literature.
 
