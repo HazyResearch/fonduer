@@ -24,4 +24,3 @@ submit your contributions as a pull request.
    lf_helpers
    faqs
 
-
