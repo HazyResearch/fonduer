@@ -3,7 +3,7 @@ TESTDATA=tests/input
 dev: docs
 		pip install -e .
 
-test: docs 
+test: docs dev
 	  pytest tests -v -rsXx	
 
 docs:

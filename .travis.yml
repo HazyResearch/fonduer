@@ -37,13 +37,12 @@ install:
 - python -m spacy download en
 
 before_script:
-- make docs
 - psql -c 'create database parser_test;' -U postgres
 - psql -c 'create database e2e_test;' -U postgres
 - cd tests/e2e/
 - "./download_data.sh"
 - cd ../..
-- source ./set_env.sh
+- make dev  # install package locally for tests
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
