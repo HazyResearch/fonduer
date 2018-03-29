@@ -17,7 +17,6 @@ contributions are welcome. Let us know in the
 [Issues](https://github.com/HazyResearch/fonduer/issues) section or feel free
 to submit your contributions as a pull request._
 
-
 ## Reference
 
 _[Fonduer: Knowledge Base Construction from Richly Formatted Data](https://arxiv.org/abs/1703.05028)_
@@ -69,46 +68,18 @@ source .venv/bin/activate
 Any Python libraries installed will now be contained within this virtual
 environment. To deactivate the environment, simply run `deactivate`.
 
-`Fonduer` adds some additional python packages to the default Snorkel
-installation which can be installed using `pip`:
+Then, install `Fonduer` by running
 
 ```bash
-pip install -r python-package-requirement.txt
+pip install fonduer
 ```
-
-## Running
-
-After installing Fonduer, and the additional python dependencies, just run:
-
-```
-./run.sh
-```
-
-which will finish installing the external libraries we use.
 
 ## Learning how to use `Fonduer`
 
 The [`Fonduer`
-tutorials](https://github.com/hazyresearch/fonduer/tree/master/tutorials) cover the
+tutorials](https://github.com/hazyresearch/fonduer-tutorials) cover the
 `Fonduer` workflow, showing how to extract relations from hardware datasheets
 and scientific literature.
-
-The tutorials are available in the following directory:
-
-```
-tutorials/
-```
-
-## For Developers
-
-### Testing
-
-You can run unit tests locally by running
-
-```
-source ./set_env.sh
-pytest tests -rsXx
-```
 
 ## FAQs
 
@@ -137,10 +108,11 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    postgres://user:pw@localhost:5432/...
    ```
+
 </details>
 
-<details><summary>I'm getting a CalledProcessError for command 'pdftotext -f 1 -l 1
--bbox-layout'?</summary><br>
+<details><summary>I'm getting a CalledProcessError for command 'pdftotext -f 1
+-l 1 -bbox-layout'?</summary><br>
 
 Are you using Ubuntu 14.04 (or older)? Fonduer requires `poppler-utils` to be
 [version `0.36.0` or greater](https://poppler.freedesktop.org/releases.html).
@@ -158,6 +130,40 @@ cd poppler-0.53.0
 make
 sudo checkinstall
 ```
+
 We highly recommend using at least Ubuntu 16.04 though, as we haven't done
 testing on 14.04 or older.
+
 </details>
+
+## For Developers
+
+We are following [Semantic Versioning 2.0.0](https://semver.org/) conventions.
+The maintainers will create a git tag for each release and increment the
+version number found in
+[fonduer/\_version.py](https://github.com/HazyResearch/fonduer/blob/master/fonduer/_version.py)
+accordingly. We deploy tags to PyPI automatically using Travis-CI.
+
+To install locally, you'll need to install `pandoc`:
+
+```
+sudo apt-get install pandoc
+```
+
+which is used to create the reStructuredText file that the setuptools expects.
+
+### Tests
+
+To test changes in the package, you install it in [editable
+mode](https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode)
+locally in your virtualenv by running:
+
+```
+make dev
+```
+
+Then you can run our tests
+
+```
+make test
+```
