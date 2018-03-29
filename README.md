@@ -137,11 +137,9 @@ to deal with entering passwords when you connect to your PostgreSQL database:
    ```
    postgres://user:pw@localhost:5432/...
    ```
-
 </details>
 
-<details>
-<summary>I'm getting a CalledProcessError for command 'pdftotext -f 1 -l 1
+<details><summary>I'm getting a CalledProcessError for command 'pdftotext -f 1 -l 1
 -bbox-layout'?</summary><br>
 
 Are you using Ubuntu 14.04 (or older)? Fonduer requires `poppler-utils` to be
