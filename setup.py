@@ -2,19 +2,13 @@
 from setuptools import setup
 from setuptools import find_packages
 
-try:
-    from pypandoc import convert
-    long_description = convert('README.md', 'rst')
-except (IOError, ImportError):
-    print("warning: pypandoc module not found. Could not convert MD to RST.")
-    long_description = open('README.md').read()
 
 exec(open('fonduer/_version.py').read())
 setup(
     name='fonduer',
     version=__version__,
     description="Knowledge base construction system for richly formatted data.",
-    long_description=long_description,
+    long_description=open("README.rst").read(),
     packages=find_packages(),
     install_requires=[
         'bs4',
@@ -41,7 +35,7 @@ setup(
         'treedlib',
         'wand',
     ],
-    keywords=['pdf', 'parsing', 'html'],
+    keywords=['fonduer', 'knowledge base construction', 'richly formatted data'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest>=3.4.0'],
     include_package_data=True,
