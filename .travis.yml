@@ -50,7 +50,7 @@ before_script:
   - source ./set_env.sh
 
 script:
-  - travis_wait coverage run --source=fonduer setup.py test
+  - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
 
 after_success:
   - coveralls
