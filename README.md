@@ -2,8 +2,6 @@
 
 [![GitHub license](https://img.shields.io/github/license/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/stargazers)
-<!-- [![PyPI](https://img.shields.io/pypi/v/fonduer.svg)](https://pypi.python.org/pypi/fonduer) -->
-<!-- [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fonduer.svg)](https://pypi.python.org/pypi/fonduer) -->
 [![GitHub issues](https://img.shields.io/github/issues/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/issues)
 [![Travis](https://img.shields.io/travis/HazyResearch/fonduer.svg)](https://travis-ci.org/HazyResearch/fonduer)
 
