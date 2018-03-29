@@ -4,7 +4,7 @@ dev: docs
 		pip install -e .
 
 test: docs 
-		python setup.py test
+	  pytest tests -v -rsXx	
 
 docs:
 		pandoc --from=markdown --to=rst --output=README.rst README.md
