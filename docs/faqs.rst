@@ -8,9 +8,8 @@ run into anything not covered in this section, feel free to open an Issue_.
 
 How do I connect to PostgreSQL? I'm getting "fe\_sendauth no password supplied".
 --------------------------------------------------------------------------------
-There are `four main ways`_
-<>`__
-to deal with entering passwords when you connect to your PostgreSQL database:
+There are `four main ways`_ to deal with entering passwords when you connect to
+your PostgreSQL database:
 
 1. Set the ``PGPASSWORD`` environment variable
    ``PGPASSWORD=<pass> psql -h <host> -U <user>``
