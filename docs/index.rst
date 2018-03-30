@@ -25,7 +25,6 @@ submit your contributions as a pull request.
     user/lf_helpers
     user/faqs
 
-  
 .. toctree::
     :maxdepth: 2
     :caption: Developer Documentation
@@ -33,7 +32,6 @@ submit your contributions as a pull request.
     dev/changelog
     dev/install
     dev/tests
-
 
 Acknowledgements
 ----------------
@@ -54,4 +52,3 @@ findings, and conclusions or recommendations expressed in this material are
 those of the authors and do not necessarily reflect the views, policies, or
 endorsements, either expressed or implied, of DARPA, DOE, NIH, ONR, or the U.S.
 Government.
-

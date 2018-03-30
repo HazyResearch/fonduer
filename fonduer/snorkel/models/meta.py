@@ -7,7 +7,6 @@ from builtins import object
 
 import getpass
 import logging
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -22,17 +21,16 @@ def new_sessionmaker():
     # http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/
     # Otherwise any e.g. query starts a transaction, locking tables... very
     # bad for e.g. multiple notebooks open, multiple processes, etc.
-    if Meta.snorkel_postgres and Meta.ready:
-        snorkel_engine = create_engine(
-            Meta.conn_string, isolation_level="AUTOCOMMIT")
+    if Meta.postgres and Meta.ready:
+        engine = create_engine(Meta.conn_string, isolation_level="AUTOCOMMIT")
     else:
         raise ValueError(
             "Meta variables have not been initialized with a postgres connection string."
         )
 
     # New sessionmaker
-    SnorkelSession = sessionmaker(bind=snorkel_engine)
-    return SnorkelSession
+    session = sessionmaker(bind=engine)
+    return session
 
 
 class Meta(object):
@@ -47,10 +45,10 @@ class Meta(object):
     DBNAME = None
     DBUSER = None
     DBPORT = None
-    SnorkelSession = None
-    snorkel_engine = None
-    SnorkelBase = declarative_base(name='SnorkelBase', cls=object)
-    snorkel_postgres = False
+    Session = None
+    engine = None
+    Base = declarative_base(name='Base', cls=object)
+    postgres = False
     ready = False
 
     @classmethod
@@ -59,14 +57,14 @@ class Meta(object):
         if conn_string and not Meta.ready:
             Meta.conn_string = conn_string
             Meta.DBNAME = conn_string.split('/')[-1]
-            Meta.DBUSER = os.environ.get('SNORKELDBUSER', getpass.getuser())
+            Meta.DBUSER = getpass.getuser()
             Meta.DBPORT = urlparse(conn_string).port
-            Meta.snorkel_postgres = conn_string.startswith('postgres')
+            Meta.postgres = conn_string.startswith('postgres')
             # We initialize the engine within the models module because models'
             # schema can depend on which data types are supported by the engine
-            Meta.ready = Meta.snorkel_postgres
-            Meta.SnorkelSession = new_sessionmaker()
-            Meta.snorkel_engine = Meta.SnorkelSession.kw['bind']
+            Meta.ready = Meta.postgres
+            Meta.Session = new_sessionmaker()
+            Meta.engine = Meta.Session.kw['bind']
             if Meta.ready:
                 Meta._init_db()
             else:
@@ -81,10 +79,10 @@ class Meta(object):
         """ Initialize the storage schema.
 
         This call must be performed after all classes that extend
-        SnorkelBase are declared to ensure the storage schema is initialized.
+        Base are declared to ensure the storage schema is initialized.
         """
         if Meta.ready:
             logger.info("Initializing the storage schema")
-            Meta.SnorkelBase.metadata.create_all(Meta.snorkel_engine)
+            Meta.Base.metadata.create_all(Meta.engine)
         else:
             raise ValueError("The Meta variables haven't been initialized.")

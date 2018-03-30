@@ -15,7 +15,7 @@ from sqlalchemy.types import PickleType
 # Grab pointer to global metadata
 _meta = Meta.init()
 
-class Context(_meta.SnorkelBase):
+class Context(_meta.Base):
     """
     A piece of content from which Candidates are composed.
     """

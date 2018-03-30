@@ -30,7 +30,6 @@ On Debian-based distros::
     Otherwise, the ``-bbox-layout`` option is not available for ``pdftotext``
     (`see changelog`_).
 
-
 Installing the Fonduer Package
 ------------------------------
 

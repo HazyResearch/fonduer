@@ -9,6 +9,5 @@ locally.
  
     make test
 
-
 .. _pytest: https://docs.pytest.org/en/latest/
 .. _installing: install.html

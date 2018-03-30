@@ -42,7 +42,7 @@ def test_e2e(caplog):
     PARALLEL = 2
     max_docs = 12
 
-    session = Meta.init('postgres://localhost:5432/' + DB).SnorkelSession()
+    session = Meta.init('postgres://localhost:5432/' + DB).Session()
 
     Part_Attr = candidate_subclass('Part_Attr', ['part', 'attr'])
 

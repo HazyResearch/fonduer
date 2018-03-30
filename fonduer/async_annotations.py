@@ -50,8 +50,8 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
     """
 
     def __init__(self, arg1, **kwargs):
-        # # Note: Currently these need to return None if unset, otherwise matrix copy operations break...
-        # self.session = SnorkelSession()
+        # Note: Currently these need to return None if unset, otherwise matrix
+        # copy operations break...
         # Map candidate id to row id
         self.candidate_index = kwargs.pop('candidate_index', {})
         # Map row id to candidate id
@@ -272,8 +272,8 @@ class BatchAnnotator(UDFRunner):
               **kwargs):
         if update_keys: replace_key_set = False
         # Get the cids based on the split, and also the count
-        SnorkelSession = new_sessionmaker()
-        session = SnorkelSession()
+        Session = new_sessionmaker()
+        session = Session()
         # Note: In the current UDFRunner implementation, we load all these into memory and fill a
         # multiprocessing JoinableQueue with them before starting... so might as well load them here and pass in.
         # Also, if we try to pass in a query iterator instead, with AUTOCOMMIT on, we get a TXN error...
@@ -294,7 +294,7 @@ class BatchAnnotator(UDFRunner):
         old_table_name = None
         table_name = self.table_name
         # Run the Annotator
-        with _meta.snorkel_engine.connect() as con:
+        with _meta.engine.connect() as con:
             table_already_exists = table_exists(con, table_name)
             if update_values and table_already_exists:
                 # Now we extract under a temporary name for merging
@@ -370,7 +370,7 @@ class BatchAnnotator(UDFRunner):
         If replace_key_set=True, deletes *all* Annotations (of this Annotation sub-class)
         and also deletes all AnnotationKeys (of this sub-class)
         """
-        with _meta.snorkel_engine.connect() as con:
+        with _meta.engine.connect() as con:
             if split is None:
                 con.execute('DROP TABLE IF EXISTS %s' % self.table_name)
             elif table_exists(con, self.table_name):
@@ -386,11 +386,11 @@ class BatchAnnotator(UDFRunner):
             split, key_group=key_group, replace_key_set=False, **kwargs)
 
     def load_matrix(self, split, ignore_keys=[]):
-        SnorkelSession = new_sessionmaker()
-        session = SnorkelSession()
+        Session = new_sessionmaker()
+        session = Session()
         candidates = session.query(Candidate).filter(
             Candidate.split == split).all()
-        with _meta.snorkel_engine.connect() as con:
+        with _meta.engine.connect() as con:
             return load_annotation_matrix(con, candidates, split,
                                           self.table_name, self.key_table_name,
                                           False, None, False, ignore_keys)

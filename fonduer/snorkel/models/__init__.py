@@ -1,9 +1,9 @@
 """
 Subpackage for all built-in Snorkel data models.
 
-After creating additional models that extend
-snorkel.models.meta.Meta.SnorkelBase, they must be added to the database
-schema. For example, the correct way to define a new type of Context is:
+After creating additional models that extend snorkel.models.meta.Meta.Base,
+they must be added to the database schema. For example, the correct way to
+define a new type of Context is:
 
 .. code:: python
 

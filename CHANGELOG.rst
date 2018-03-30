@@ -21,7 +21,7 @@ Version 0.1.5
     .. code:: python
 
         from fonduer import Meta       
-        session = Meta.init("postgres://localhost:5432/" + DBNAME).SnorkelSession()
+        session = Meta.init("postgres://localhost:5432/" + DBNAME).Session()
       
     No side-effects occur until ``Meta`` is initialized.
 

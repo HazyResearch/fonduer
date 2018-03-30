@@ -15,7 +15,7 @@ from ..utils import camel_to_under
 
 _meta = Meta.init()
 
-class Candidate(_meta.SnorkelBase):
+class Candidate(_meta.Base):
     """
     An abstract candidate relation.
 
@@ -181,15 +181,15 @@ def candidate_subclass(class_name, args, table_name=None, cardinality=None,
         C = type(class_name, (Candidate,), class_attribs)
 
         # Create table in DB
-        if not _meta.snorkel_engine.dialect.has_table(_meta.snorkel_engine, table_name):
-            C.__table__.create(bind=_meta.snorkel_engine)
+        if not _meta.engine.dialect.has_table(_meta.engine, table_name):
+            C.__table__.create(bind=_meta.engine)
 
         candidate_subclasses[class_name] = C, class_spec
 
         return C
 
 
-class Marginal(_meta.SnorkelBase):
+class Marginal(_meta.Base):
     """
     A marginal probability corresponding to a (Candidate, value) pair.
 

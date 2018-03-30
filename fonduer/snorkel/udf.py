@@ -10,7 +10,6 @@ from queue import Empty
 from .models.meta import new_sessionmaker, Meta
 from .utils import ProgressBar
 
-
 QUEUE_TIMEOUT = 3
 
 # Grab pointer to global metadata
@@ -19,18 +18,25 @@ _meta = Meta.init()
 
 class UDFRunner(object):
     """Class to run UDFs in parallel using simple queue-based multiprocessing setup"""
+
     def __init__(self, udf_class, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
-        self.udf_class       = udf_class
+        self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
-        self.udfs            = []
+        self.udfs = []
 
         if hasattr(self.udf_class, 'reduce'):
             self.reducer = self.udf_class(**self.udf_init_kwargs)
         else:
             self.reducer = None
 
-    def apply(self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs):
+    def apply(self,
+              xs,
+              clear=True,
+              parallelism=None,
+              progress_bar=True,
+              count=None,
+              **kwargs):
         """
         Apply the given UDF to the set of objects xs, either single or multi-threaded,
         and optionally calling clear() first.
@@ -38,8 +44,8 @@ class UDFRunner(object):
         # Clear everything downstream of this UDF if requested
         if clear:
             self.logger.info("Clearing existing...")
-            SnorkelSession = new_sessionmaker()
-            session = SnorkelSession()
+            Session = new_sessionmaker()
+            session = Session()
             self.clear(session, **kwargs)
             session.commit()
             session.close()
@@ -86,8 +92,9 @@ class UDFRunner(object):
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if _meta.conn_string.startswith('sqlite'):
-            raise ValueError('Multiprocessing with SQLite is not supported. Please use a different database backend,'
-                             ' such as PostgreSQL.')
+            raise ValueError(
+                'Multiprocessing with SQLite is not supported. Please use a different database backend,'
+                ' such as PostgreSQL.')
 
         # Fill a JoinableQueue with input objects
         in_queue = JoinableQueue()
@@ -101,7 +108,11 @@ class UDFRunner(object):
 
         # Start UDF Processes
         for i in range(parallelism):
-            udf              = self.udf_class(in_queue=in_queue, out_queue=out_queue, worker_id = i, **self.udf_init_kwargs)
+            udf = self.udf_class(
+                in_queue=in_queue,
+                out_queue=out_queue,
+                worker_id=i,
+                **self.udf_init_kwargs)
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
@@ -139,15 +150,15 @@ class UDF(Process):
         in_queue: A Queue of input objects to process; primarily for running in parallel
         """
         Process.__init__(self)
-        self.daemon       = True
-        self.in_queue     = in_queue
-        self.out_queue    = out_queue
-        self.worker_id    = worker_id
+        self.daemon = True
+        self.in_queue = in_queue
+        self.out_queue = out_queue
+        self.worker_id = worker_id
 
         # Each UDF starts its own Engine
         # See http://docs.sqlalchemy.org/en/latest/core/pooling.html#using-connection-pools-with-multiprocessing
-        SnorkelSession = new_sessionmaker()
-        self.session   = SnorkelSession()
+        Session = new_sessionmaker()
+        self.session = Session()
 
         # We use a workaround to pass in the apply kwargs
         self.apply_kwargs = {}
