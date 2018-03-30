@@ -1,10 +1,11 @@
 """
 Subpackage for all built-in Snorkel data models.
 
-After creating additional models that extend snorkel.models.meta.SnorkelBase, they must be added to the database schema.
-For example, the correct way to define a new type of Context is:
+After creating additional models that extend snorkel.models.meta.Meta.Base,
+they must be added to the database schema. For example, the correct way to
+define a new type of Context is:
 
-.. code-block:: python
+.. code:: python
 
     from fonduer.snorkel.models.context import Context
     from sqlalchemy import Column, String, ForeignKey
@@ -23,12 +24,12 @@ For example, the correct way to define a new type of Context is:
         # Rest of class definition here
 
     # Adds the corresponding table to the underlying database's schema
-    from fonduer.snorkel.models.meta import SnorkelBase, snorkel_engine
-    SnorkelBase.metadata.create_all(snorkel_engine)
+    from fonduer.snorkel.models.meta import Meta
+    Meta.init_db()
 """
 from __future__ import absolute_import
 
-from .meta import SnorkelBase, SnorkelSession, snorkel_engine, snorkel_postgres
+from .meta import Meta
 from .context import Context, Document, Sentence, TemporarySpan, Span
 from .context import construct_stable_id, split_stable_id
 from .candidate import Candidate, candidate_subclass, Marginal
@@ -36,7 +37,3 @@ from .annotation import (
     Feature, FeatureKey, Label, LabelKey, GoldLabel, GoldLabelKey, StableLabel,
     Prediction, PredictionKey
 )
-
-# This call must be performed after all classes that extend SnorkelBase are
-# declared to ensure the storage schema is initialized
-SnorkelBase.metadata.create_all(snorkel_engine)

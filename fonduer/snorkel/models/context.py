@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
-from .meta import SnorkelBase, snorkel_postgres
+from .meta import Meta
 import pickle
 from sqlalchemy import Column, String, Integer, Text, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects import postgresql
@@ -12,10 +12,10 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import select, text
 from sqlalchemy.types import PickleType
 
-from .meta import SnorkelBase, snorkel_postgres
+# Grab pointer to global metadata
+_meta = Meta.init()
 
-
-class Context(SnorkelBase):
+class Context(_meta.Base):
     """
     A piece of content from which Candidates are composed.
     """
@@ -79,28 +79,16 @@ class Sentence(Context):
     position = Column(Integer, nullable=False)
     document = relationship('Document', backref=backref('sentences', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
     text = Column(Text, nullable=False)
-    if snorkel_postgres:
-        words             = Column(postgresql.ARRAY(String), nullable=False)
-        char_offsets      = Column(postgresql.ARRAY(Integer), nullable=False)
-        abs_char_offsets  = Column(postgresql.ARRAY(Integer), nullable=False)
-        lemmas            = Column(postgresql.ARRAY(String))
-        pos_tags          = Column(postgresql.ARRAY(String))
-        ner_tags          = Column(postgresql.ARRAY(String))
-        dep_parents       = Column(postgresql.ARRAY(Integer))
-        dep_labels        = Column(postgresql.ARRAY(String))
-        entity_cids       = Column(postgresql.ARRAY(String))
-        entity_types      = Column(postgresql.ARRAY(String))
-    else:
-        words             = Column(PickleType, nullable=False)
-        char_offsets      = Column(PickleType, nullable=False)
-        abs_char_offsets  = Column(PickleType, nullable=False)
-        lemmas            = Column(PickleType)
-        pos_tags          = Column(PickleType)
-        ner_tags          = Column(PickleType)
-        dep_parents       = Column(PickleType)
-        dep_labels        = Column(PickleType)
-        entity_cids       = Column(PickleType)
-        entity_types      = Column(PickleType)
+    words             = Column(postgresql.ARRAY(String), nullable=False)
+    char_offsets      = Column(postgresql.ARRAY(Integer), nullable=False)
+    abs_char_offsets  = Column(postgresql.ARRAY(Integer), nullable=False)
+    lemmas            = Column(postgresql.ARRAY(String))
+    pos_tags          = Column(postgresql.ARRAY(String))
+    ner_tags          = Column(postgresql.ARRAY(String))
+    dep_parents       = Column(postgresql.ARRAY(Integer))
+    dep_labels        = Column(postgresql.ARRAY(String))
+    entity_cids       = Column(postgresql.ARRAY(String))
+    entity_types      = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'sentence',
@@ -167,10 +155,7 @@ class TemporaryContext(object):
                 insert_args['id'] = self.id
                 for (key, val) in insert_args.items():
                     if isinstance(val, list):
-                        if snorkel_postgres:
-                            insert_args[key] = val
-                        else:
-                            insert_args[key] = pickle.dumps(val) #NOTE: this works for sqlite, not Postgres
+                        insert_args[key] = val
                 session.execute(text(self._get_insert_query()), insert_args)
             else:
                 self.id = id[0]

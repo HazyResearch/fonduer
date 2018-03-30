@@ -11,7 +11,7 @@ from fonduer.async_annotations import BatchFeatureAnnotator
 from fonduer.async_annotations import BatchLabelAnnotator
 from fonduer.candidates import CandidateExtractor, OmniNgrams, OmniFigures
 from fonduer.matchers import LambdaFunctionFigureMatcher
-from fonduer.models import (SnorkelSession, Document, Phrase, Figure,
+from fonduer.models import (Meta, Document, Phrase, Figure,
                             candidate_subclass)
 from fonduer.parser import HTMLPreprocessor
 from fonduer.parser import OmniParser

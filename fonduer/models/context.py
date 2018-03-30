@@ -12,11 +12,13 @@ from fonduer.snorkel.models.context import Document
 from fonduer.snorkel.models.context import TemporaryContext
 from fonduer.snorkel.models.context import TemporarySpan
 from fonduer.snorkel.models.context import split_stable_id
-from fonduer.snorkel.models.meta import snorkel_postgres
+from fonduer.snorkel.models.meta import Meta
 
-INT_ARRAY_TYPE = postgresql.ARRAY(Integer) if snorkel_postgres else PickleType
-STR_ARRAY_TYPE = postgresql.ARRAY(String)  if snorkel_postgres else PickleType
+# Grab pointer to global metadata
+_meta = Meta.init()
 
+INT_ARRAY_TYPE = postgresql.ARRAY(Integer)
+STR_ARRAY_TYPE = postgresql.ARRAY(String)
 
 class Webpage(Document):
     """
@@ -105,14 +107,7 @@ class Cell(Context):
     col_start = Column(Integer)
     col_end = Column(Integer)
     html_tag = Column(Text)
-    if snorkel_postgres:
-        html_attrs = Column(postgresql.ARRAY(String))
-        # html_anc_tags = Column(postgresql.ARRAY(String))
-        # html_anc_attrs = Column(postgresql.ARRAY(String))
-    else:
-        html_attrs = Column(PickleType)
-        # html_anc_tags = Column(PickleType)
-        # html_anc_attrs = Column(PickleType)
+    html_attrs = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'cell',
@@ -505,30 +500,17 @@ class ImplicitSpan(Context, TemporaryImplicitSpan):
     expander_key  = Column(String, nullable=False)
     position      = Column(Integer, nullable=False)
     text          = Column(String)
-    if snorkel_postgres:
-        words       = Column(postgresql.ARRAY(String), nullable=False)
-        lemmas      = Column(postgresql.ARRAY(String))
-        pos_tags    = Column(postgresql.ARRAY(String))
-        ner_tags    = Column(postgresql.ARRAY(String))
-        dep_parents = Column(postgresql.ARRAY(Integer))
-        dep_labels  = Column(postgresql.ARRAY(String))
-        page        = Column(postgresql.ARRAY(Integer))
-        top         = Column(postgresql.ARRAY(Integer))
-        left        = Column(postgresql.ARRAY(Integer))
-        bottom      = Column(postgresql.ARRAY(Integer))
-        right       = Column(postgresql.ARRAY(Integer))
-    else:
-        words       = Column(PickleType, nullable=False)
-        lemmas      = Column(PickleType)
-        pos_tags    = Column(PickleType)
-        ner_tags    = Column(PickleType)
-        dep_parents = Column(PickleType)
-        dep_labels  = Column(PickleType)
-        page        = Column(PickleType)
-        top         = Column(PickleType)
-        left        = Column(PickleType)
-        bottom      = Column(PickleType)
-        right       = Column(PickleType)
+    words       = Column(postgresql.ARRAY(String), nullable=False)
+    lemmas      = Column(postgresql.ARRAY(String))
+    pos_tags    = Column(postgresql.ARRAY(String))
+    ner_tags    = Column(postgresql.ARRAY(String))
+    dep_parents = Column(postgresql.ARRAY(Integer))
+    dep_labels  = Column(postgresql.ARRAY(String))
+    page        = Column(postgresql.ARRAY(Integer))
+    top         = Column(postgresql.ARRAY(Integer))
+    left        = Column(postgresql.ARRAY(Integer))
+    bottom      = Column(postgresql.ARRAY(Integer))
+    right       = Column(postgresql.ARRAY(Integer))
     meta = Column(PickleType)
 
     __table_args__ = (

@@ -10,5 +10,4 @@ and visual information.
 .. automodule:: fonduer.lf_helpers
     :members:
 
-
 .. _Fonduer: https://github.com/HazyResearch/fonduer

@@ -50,4 +50,3 @@ testing on 14.04 or older.
 
 .. _see changelog: https://poppler.freedesktop.org/releases.html
 .. _install manually: https://poppler.freedesktop.org
-

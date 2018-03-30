@@ -18,21 +18,20 @@ submit your contributions as a pull request.
 .. _Issues: https://github.com/hazyresearch/fonduer/issues
 
 .. toctree::
-   :maxdepth: 2
-   :caption: User Documentation
-
-   user/lf_helpers
-   user/faqs
-
+    :maxdepth: 2
+    :caption: User Documentation
   
+    user/getting_started
+    user/lf_helpers
+    user/faqs
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Developer Documentation
-
-   dev/changelog
-   dev/install
-   dev/tests
-
+    :maxdepth: 2
+    :caption: Developer Documentation
+    
+    dev/changelog
+    dev/install
+    dev/tests
 
 Acknowledgements
 ----------------
@@ -53,4 +52,3 @@ findings, and conclusions or recommendations expressed in this material are
 those of the authors and do not necessarily reflect the views, policies, or
 endorsements, either expressed or implied, of DARPA, DOE, NIH, ONR, or the U.S.
 Government.
-

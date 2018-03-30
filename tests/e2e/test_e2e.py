@@ -9,9 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-os.environ['FONDUERDBNAME'] = "e2e_test"
-os.environ[
-    'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
+DB = "e2e_test"
 
 from fonduer import BatchFeatureAnnotator
 from fonduer import BatchLabelAnnotator
@@ -25,7 +23,7 @@ from fonduer import LambdaFunctionMatcher
 from fonduer import OmniParser
 from fonduer import Phrase
 from fonduer import RegexMatchSpan
-from fonduer import SnorkelSession
+from fonduer import Meta
 from fonduer import SparseLogisticRegression
 from fonduer import Union
 from fonduer import candidate_subclass
@@ -37,15 +35,14 @@ from hardware_utils import load_hardware_labels
 from hardware_utils import entity_level_f1
 
 
-@pytest.mark.skipif(
-    'CI' not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif('CI' not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on 20 documents of the hardware domain."""
     caplog.set_level(logging.INFO)
     PARALLEL = 2
     max_docs = 12
 
-    session = SnorkelSession()
+    session = Meta.init('postgres://localhost:5432/' + DB).Session()
 
     Part_Attr = candidate_subclass('Part_Attr', ['part', 'attr'])
 
