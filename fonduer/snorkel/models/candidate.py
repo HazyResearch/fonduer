@@ -9,14 +9,13 @@ from sqlalchemy import (
     MetaData
 )
 from sqlalchemy.orm import relationship, backref
-from functools import partial
 
-from .meta import SnorkelBase
-from ..models import snorkel_engine
+from .meta import Meta
 from ..utils import camel_to_under
 
+_meta = Meta.init()
 
-class Candidate(SnorkelBase):
+class Candidate(_meta.SnorkelBase):
     """
     An abstract candidate relation.
 
@@ -182,15 +181,15 @@ def candidate_subclass(class_name, args, table_name=None, cardinality=None,
         C = type(class_name, (Candidate,), class_attribs)
 
         # Create table in DB
-        if not snorkel_engine.dialect.has_table(snorkel_engine, table_name):
-            C.__table__.create(bind=snorkel_engine)
+        if not _meta.snorkel_engine.dialect.has_table(_meta.snorkel_engine, table_name):
+            C.__table__.create(bind=_meta.snorkel_engine)
 
         candidate_subclasses[class_name] = C, class_spec
 
         return C
 
 
-class Marginal(SnorkelBase):
+class Marginal(_meta.SnorkelBase):
     """
     A marginal probability corresponding to a (Candidate, value) pair.
 

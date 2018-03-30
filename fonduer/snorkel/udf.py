@@ -7,11 +7,14 @@ from builtins import *
 import logging
 from multiprocessing import Process, JoinableQueue
 from queue import Empty
-from .models.meta import new_sessionmaker, snorkel_conn_string
+from .models.meta import new_sessionmaker, Meta
 from .utils import ProgressBar
 
 
 QUEUE_TIMEOUT = 3
+
+# Grab pointer to global metadata
+_meta = Meta.init()
 
 
 class UDFRunner(object):
@@ -82,7 +85,7 @@ class UDFRunner(object):
 
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
-        if snorkel_conn_string.startswith('sqlite'):
+        if _meta.conn_string.startswith('sqlite'):
             raise ValueError('Multiprocessing with SQLite is not supported. Please use a different database backend,'
                              ' such as PostgreSQL.')
 

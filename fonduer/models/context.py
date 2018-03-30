@@ -12,11 +12,13 @@ from fonduer.snorkel.models.context import Document
 from fonduer.snorkel.models.context import TemporaryContext
 from fonduer.snorkel.models.context import TemporarySpan
 from fonduer.snorkel.models.context import split_stable_id
-from fonduer.snorkel.models.meta import snorkel_postgres
+from fonduer.snorkel.models.meta import Meta
 
-INT_ARRAY_TYPE = postgresql.ARRAY(Integer) if snorkel_postgres else PickleType
-STR_ARRAY_TYPE = postgresql.ARRAY(String)  if snorkel_postgres else PickleType
+# Grab pointer to global metadata
+_meta = Meta.init()
 
+INT_ARRAY_TYPE = postgresql.ARRAY(Integer) if _meta.snorkel_postgres else PickleType
+STR_ARRAY_TYPE = postgresql.ARRAY(String)  if _meta.snorkel_postgres else PickleType
 
 class Webpage(Document):
     """
@@ -105,7 +107,7 @@ class Cell(Context):
     col_start = Column(Integer)
     col_end = Column(Integer)
     html_tag = Column(Text)
-    if snorkel_postgres:
+    if _meta.snorkel_postgres:
         html_attrs = Column(postgresql.ARRAY(String))
         # html_anc_tags = Column(postgresql.ARRAY(String))
         # html_anc_attrs = Column(postgresql.ARRAY(String))
@@ -505,7 +507,7 @@ class ImplicitSpan(Context, TemporaryImplicitSpan):
     expander_key  = Column(String, nullable=False)
     position      = Column(Integer, nullable=False)
     text          = Column(String)
-    if snorkel_postgres:
+    if _meta.snorkel_postgres:
         words       = Column(postgresql.ARRAY(String), nullable=False)
         lemmas      = Column(postgresql.ARRAY(String))
         pos_tags    = Column(postgresql.ARRAY(String))

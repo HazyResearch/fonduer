@@ -8,9 +8,11 @@ from sqlalchemy import Column, String, Integer, Float, ForeignKey, UniqueConstra
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship, backref
 
-from .meta import SnorkelBase
+from .meta import Meta
 from ..utils import camel_to_under
 
+# Grab pointer to global metadata
+_meta = Meta.init()
 
 class AnnotationKeyMixin(object):
     """
@@ -42,19 +44,19 @@ class AnnotationKeyMixin(object):
         return str(self.__class__.__name__) + " (" + str(self.name) + ")"
 
 
-class GoldLabelKey(AnnotationKeyMixin, SnorkelBase):
+class GoldLabelKey(AnnotationKeyMixin, _meta.SnorkelBase):
     pass
 
 
-class LabelKey(AnnotationKeyMixin, SnorkelBase):
+class LabelKey(AnnotationKeyMixin, _meta.SnorkelBase):
     pass
 
 
-class FeatureKey(AnnotationKeyMixin, SnorkelBase):
+class FeatureKey(AnnotationKeyMixin, _meta.SnorkelBase):
     pass
 
 
-class PredictionKey(AnnotationKeyMixin, SnorkelBase):
+class PredictionKey(AnnotationKeyMixin, _meta.SnorkelBase):
     pass
 
 
@@ -106,12 +108,12 @@ class AnnotationMixin(object):
         return self.__class__.__name__ + " (" + str(self.key.name) + " = " + str(self.value) + ")"
 
 
-class GoldLabel(AnnotationMixin, SnorkelBase):
+class GoldLabel(AnnotationMixin, _meta.SnorkelBase):
     """A separate class for labels from human annotators or other gold standards."""
     value = Column(Integer, nullable=False)
 
 
-class Label(AnnotationMixin, SnorkelBase):
+class Label(AnnotationMixin, _meta.SnorkelBase):
     """
     A discrete label associated with a Candidate, indicating a target prediction value.
 
@@ -122,7 +124,7 @@ class Label(AnnotationMixin, SnorkelBase):
     value = Column(Integer, nullable=False)
 
 
-class Feature(AnnotationMixin, SnorkelBase):
+class Feature(AnnotationMixin, _meta.SnorkelBase):
     """
     An element of a representation of a Candidate in a feature space.
 
@@ -132,7 +134,7 @@ class Feature(AnnotationMixin, SnorkelBase):
     value = Column(Float, nullable=False)
 
 
-class Prediction(AnnotationMixin, SnorkelBase):
+class Prediction(AnnotationMixin, _meta.SnorkelBase):
     """
     A probability associated with a Candidate, indicating the degree of belief that the Candidate is true.
 
@@ -142,7 +144,7 @@ class Prediction(AnnotationMixin, SnorkelBase):
     value = Column(Float, nullable=False)
 
 
-class StableLabel(SnorkelBase):
+class StableLabel(_meta.SnorkelBase):
     """
     A special secondary table for preserving labels created by *human annotators* (e.g. in the Viewer)
     in a stable format that does not cascade, and is independent of the Candidate ids.

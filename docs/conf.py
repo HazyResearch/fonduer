@@ -16,43 +16,18 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-# Mock imports for troublesome modules (i.e. any that use C code)
-# See: http://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
-import mock
-MOCK_MODULES = [
+autodoc_mock_imports = [
     'future',
     'matplotlib',
-    'matplotlib.pyplot',
-    'nltk',
-    'nltk.stem.porter',
-    'np',
     'numba',
     'numbskull',
-    'numbskull.inference',
-    'numbskull.numbskulltypes',
     'numpy',
     'pandas',
-    'plt',
     'scipy',
-    'scipy.sparse',
     'spacy',
-    'spacy.cli',
-    'spacy.deprecated',
-    'sparse',
-    'sparse.csr_matrix',
     'sqlalchemy',
-    'sqlalchemy.dialects',
-    'sqlalchemy.engine',
-    'sqlalchemy.ext',
-    'sqlalchemy.ext.declarative',
-    'sqlalchemy.orm',
-    'sqlalchemy.sql',
-    'sqlalchemy.types',
     'tensorflow',
-    'tensorflow.contrib.rnn',
 ]
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.MagicMock()
 
 # -- Project information -----------------------------------------------------
 

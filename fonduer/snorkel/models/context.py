@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
 
-from .meta import SnorkelBase, snorkel_postgres
+from .meta import Meta
 import pickle
 from sqlalchemy import Column, String, Integer, Text, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects import postgresql
@@ -12,10 +12,10 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import select, text
 from sqlalchemy.types import PickleType
 
-from .meta import SnorkelBase, snorkel_postgres
+# Grab pointer to global metadata
+_meta = Meta.init()
 
-
-class Context(SnorkelBase):
+class Context(_meta.SnorkelBase):
     """
     A piece of content from which Candidates are composed.
     """
@@ -79,7 +79,7 @@ class Sentence(Context):
     position = Column(Integer, nullable=False)
     document = relationship('Document', backref=backref('sentences', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
     text = Column(Text, nullable=False)
-    if snorkel_postgres:
+    if _meta.snorkel_postgres:
         words             = Column(postgresql.ARRAY(String), nullable=False)
         char_offsets      = Column(postgresql.ARRAY(Integer), nullable=False)
         abs_char_offsets  = Column(postgresql.ARRAY(Integer), nullable=False)
@@ -167,7 +167,7 @@ class TemporaryContext(object):
                 insert_args['id'] = self.id
                 for (key, val) in insert_args.items():
                     if isinstance(val, list):
-                        if snorkel_postgres:
+                        if _meta.snorkel_postgres:
                             insert_args[key] = val
                         else:
                             insert_args[key] = pickle.dumps(val) #NOTE: this works for sqlite, not Postgres

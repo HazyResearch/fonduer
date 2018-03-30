@@ -11,11 +11,7 @@ import os
 import pytest
 
 ATTRIBUTE = "parser_test"
-os.environ['FONDUERDBNAME'] = ATTRIBUTE
-os.environ[
-    'SNORKELDB'] = 'postgres://localhost:5432/' + os.environ['FONDUERDBNAME']
-
-from fonduer import SnorkelSession
+from fonduer import Meta
 from fonduer import HTMLPreprocessor, OmniParser
 from fonduer.models import Document, Phrase
 from fonduer.parser import OmniParserUDF
@@ -29,6 +25,7 @@ def test_parse_structure(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
+    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).SnorkelSession()
 
     max_docs = 1
     docs_path = 'tests/data/html_simple/md.html'
@@ -77,7 +74,7 @@ def test_parse_document_md(caplog):
     This tests both the structural and visual parse of the document.
     """
     logger = logging.getLogger(__name__)
-    session = SnorkelSession()
+    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).SnorkelSession()
 
     PARALLEL = 2
     max_docs = 2
@@ -126,7 +123,7 @@ def test_parse_document_diseases(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = SnorkelSession()
+    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).SnorkelSession()
 
     PARALLEL = 2
     max_docs = 2
@@ -178,7 +175,7 @@ def test_spacy_integration(caplog):
 
     PARALLEL = 2  # Travis only gives 2 cores
 
-    session = SnorkelSession()
+    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).SnorkelSession()
 
     docs_path = 'tests/data/html_simple/'
     pdf_path = 'tests/data/pdf_simple/'
