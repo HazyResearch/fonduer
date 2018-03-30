@@ -9,5 +9,18 @@ locally.
  
     make test
 
+
+Code Style
+----------
+
+We are using flake8_ to enfore some general code style standards. This style
+check is part of our Travis-CI tests which is required before merging. You can
+check this on your local machine by installing flake8::
+
+    $ pip install flake8
+    $ flake8 fonduer --count --statistics
+
+
+.. _flake8: https://flake8.pycqa.org/en/latest/ 
 .. _pytest: https://docs.pytest.org/en/latest/
 .. _installing: install.html
