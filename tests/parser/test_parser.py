@@ -171,7 +171,7 @@ def test_spacy_integration(caplog):
     The point of this test is to actually use the DB just as would be
     done in a notebook by a user.
     """
-    caplog.set_level(logging.INFO)
+    #  caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
     PARALLEL = 2  # Travis only gives 2 cores

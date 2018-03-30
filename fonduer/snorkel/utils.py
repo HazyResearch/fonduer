@@ -4,7 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 import re
 import subprocess
 import sys
-from builtins import str, unicode
+from builtins import object, range, zip
 
 import numpy as np
 import scipy.sparse as sparse
@@ -42,7 +42,7 @@ def get_ORM_instance(ORM_class, session, instance):
     Given an ORM class and *either an instance of this class, or the name attribute of an instance
     of this class*, return the instance
     """
-    if isinstance(instance, str) or isinstance(instance, unicode):
+    if isinstance(instance, str):
         return session.query(ORM_class).filter(
             ORM_class.name == instance).one_or_none()
     else:
