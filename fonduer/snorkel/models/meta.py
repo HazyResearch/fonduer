@@ -56,7 +56,7 @@ class Meta(object):
     @classmethod
     def init(cls, conn_string=None):
         """Return the unique Meta class."""
-        if conn_string:
+        if conn_string and not Meta.ready:
             Meta.conn_string = conn_string
             Meta.DBNAME = conn_string.split('/')[-1]
             Meta.DBUSER = os.environ.get('SNORKELDBUSER', getpass.getuser())

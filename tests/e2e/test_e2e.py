@@ -35,8 +35,7 @@ from hardware_utils import load_hardware_labels
 from hardware_utils import entity_level_f1
 
 
-@pytest.mark.skipif(
-    'CI' not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif('CI' not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on 20 documents of the hardware domain."""
     caplog.set_level(logging.INFO)
@@ -44,7 +43,6 @@ def test_e2e(caplog):
     max_docs = 12
 
     session = Meta.init('postgres://localhost:5432/' + DB).SnorkelSession()
-
 
     Part_Attr = candidate_subclass('Part_Attr', ['part', 'attr'])
 
