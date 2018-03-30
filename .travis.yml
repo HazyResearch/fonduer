@@ -23,6 +23,7 @@ install:
 - sudo apt-get -qq update
 - sudo apt-get install pandoc
 - pip install coveralls
+- pip install flake8
 - sudo apt-get install build-essential checkinstall
 - wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
 - tar -xf ./poppler-0.53.0.tar.xz
@@ -43,6 +44,7 @@ before_script:
 - "./download_data.sh"
 - cd ../..
 - make dev  # install package locally for tests
+- flake8 fonduer --count --max-line-length=127 --statistics --show-source
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
