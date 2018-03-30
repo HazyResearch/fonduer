@@ -14,8 +14,9 @@ Version 0.1.5
         from fonduer import SnorkelSession       
         session = SnorkelSession()
 
-    which had the side-effects of manipulating your database tables on import.
-    Now, you use the Meta class to initialize your session:
+    which had the side-effects of manipulating your database tables on import
+    (or creating a ``snorkel.db`` file if you forgot to set the environment
+    variable). Now, you use the Meta class to initialize your session:
 
     .. code:: python
 
