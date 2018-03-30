@@ -163,7 +163,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Fonduer.tex', 'Fonduer Documentation', 'Sen Wu', 'manual'),
+    (master_doc, 'Fonduer.tex', 'Fonduer Documentation', 'HazyResearch', 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
