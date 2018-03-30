@@ -21,15 +21,15 @@ submit your contributions as a pull request.
    :maxdepth: 2
    :caption: User Documentation
 
-   lf_helpers
-   faqs
+   user/lf_helpers
+   user/faqs
 
   
 .. toctree::
    :maxdepth: 2
    :caption: Developer Documentation
 
-   changelog 
+   developer/changelog 
 
 
 Acknowledgements
