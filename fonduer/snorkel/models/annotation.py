@@ -1,15 +1,13 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, UniqueConstraint
+from sqlalchemy import (Column, Float, ForeignKey, Integer, String,
+                        UniqueConstraint)
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 
-from .meta import Meta
 from ..utils import camel_to_under
+from .meta import Meta
 
 # Grab pointer to global metadata
 _meta = Meta.init()

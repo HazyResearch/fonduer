@@ -1,7 +1,5 @@
 """For pip."""
-from setuptools import setup
-from setuptools import find_packages
-
+from setuptools import find_packages, setup
 
 exec(open('fonduer/_version.py').read())
 setup(

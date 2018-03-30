@@ -1,4 +1,8 @@
-from fonduer.lf_helpers import *
+from fonduer.lf_helpers import (get_visual_aligned_lemmas, is_horz_aligned,
+                                is_vert_aligned, is_vert_aligned_center,
+                                is_vert_aligned_left, is_vert_aligned_right,
+                                same_page)
+from fonduer.snorkel.models import TemporarySpan
 
 FEAT_PRE = 'VIZ_'
 DEF_VALUE = 1
@@ -12,7 +16,8 @@ def get_visual_feats(candidates):
     for candidate in candidates:
         args = candidate.get_contexts()
         if not (isinstance(args[0], TemporarySpan)):
-            raise ValueError("Accepts Span-type arguments, %s-type found." % type(candidate))
+            raise ValueError("Accepts Span-type arguments, %s-type found." %
+                             type(candidate))
 
         # Unary candidates
         if len(args) == 1:
@@ -49,14 +54,16 @@ def get_visual_feats(candidates):
                 for f, v in binary_vizlib_feats[candidate.id]:
                     yield candidate.id, FEAT_PRE + f, v
         else:
-            raise NotImplementedError("Only handles unary and binary candidates currently")
+            raise NotImplementedError(
+                "Only handles unary and binary candidates currently")
 
 
 def vizlib_unary_features(span):
     """
     Visual-related features for a single span
     """
-    if not span.sentence.is_visual(): return
+    if not span.sentence.is_visual():
+        return
 
     for f in get_visual_aligned_lemmas(span):
         yield 'ALIGNED_' + f, DEF_VALUE

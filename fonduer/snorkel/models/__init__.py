@@ -33,7 +33,13 @@ from .meta import Meta
 from .context import Context, Document, Sentence, TemporarySpan, Span
 from .context import construct_stable_id, split_stable_id
 from .candidate import Candidate, candidate_subclass, Marginal
-from .annotation import (
-    Feature, FeatureKey, Label, LabelKey, GoldLabel, GoldLabelKey, StableLabel,
-    Prediction, PredictionKey
-)
+from .annotation import (Feature, FeatureKey, Label, LabelKey, GoldLabel,
+                         GoldLabelKey, StableLabel, Prediction, PredictionKey)
+
+__all__ = [
+    'Meta', 'Context', 'Document', 'Sentence', 'TemporarySpan', 'Span',
+    'construct_stable_id', 'split_stable_id', 'Candidate',
+    'candidate_subclass', 'Marginal', 'Feature', 'FeatureKey', 'Label',
+    'LabelKey', 'GoldLabel', 'GoldLabelKey', 'StableLabel', 'Prediction',
+    'PredictionKey'
+]

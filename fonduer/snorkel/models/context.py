@@ -1,28 +1,27 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-from .meta import Meta
-import pickle
-from sqlalchemy import Column, String, Integer, Text, ForeignKey, UniqueConstraint
+from sqlalchemy import (Column, ForeignKey, Integer, String, Text,
+                        UniqueConstraint)
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import select, text
 from sqlalchemy.types import PickleType
 
+from .meta import Meta
+
 # Grab pointer to global metadata
 _meta = Meta.init()
+
 
 class Context(_meta.Base):
     """
     A piece of content from which Candidates are composed.
     """
     __tablename__ = 'context'
-    id            = Column(Integer, primary_key=True)
-    type          = Column(String, nullable=False)
-    stable_id     = Column(String, unique=True, nullable=False)
+    id = Column(Integer, primary_key=True)
+    type = Column(String, nullable=False)
+    stable_id = Column(String, unique=True, nullable=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'context',
@@ -44,10 +43,13 @@ class Document(Context):
     A root Context.
     """
     __tablename__ = 'document'
-    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
-    name          = Column(String, unique=True, nullable=False)
-    text          = Column(String)
-    meta          = Column(PickleType)
+    id = Column(
+        Integer,
+        ForeignKey('context.id', ondelete='CASCADE'),
+        primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    text = Column(String)
+    meta = Column(PickleType)
 
     __mapper_args__ = {
         'polymorphic_identity': 'document',
@@ -74,29 +76,35 @@ class Document(Context):
 class Sentence(Context):
     """A sentence Context in a Document."""
     __tablename__ = 'sentence'
-    id = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
-    document_id = Column(Integer, ForeignKey('document.id', ondelete='CASCADE'))
+    id = Column(
+        Integer,
+        ForeignKey('context.id', ondelete='CASCADE'),
+        primary_key=True)
+    document_id = Column(Integer, ForeignKey(
+        'document.id', ondelete='CASCADE'))
     position = Column(Integer, nullable=False)
-    document = relationship('Document', backref=backref('sentences', order_by=position, cascade='all, delete-orphan'), foreign_keys=document_id)
+    document = relationship(
+        'Document',
+        backref=backref(
+            'sentences', order_by=position, cascade='all, delete-orphan'),
+        foreign_keys=document_id)
     text = Column(Text, nullable=False)
-    words             = Column(postgresql.ARRAY(String), nullable=False)
-    char_offsets      = Column(postgresql.ARRAY(Integer), nullable=False)
-    abs_char_offsets  = Column(postgresql.ARRAY(Integer), nullable=False)
-    lemmas            = Column(postgresql.ARRAY(String))
-    pos_tags          = Column(postgresql.ARRAY(String))
-    ner_tags          = Column(postgresql.ARRAY(String))
-    dep_parents       = Column(postgresql.ARRAY(Integer))
-    dep_labels        = Column(postgresql.ARRAY(String))
-    entity_cids       = Column(postgresql.ARRAY(String))
-    entity_types      = Column(postgresql.ARRAY(String))
+    words = Column(postgresql.ARRAY(String), nullable=False)
+    char_offsets = Column(postgresql.ARRAY(Integer), nullable=False)
+    abs_char_offsets = Column(postgresql.ARRAY(Integer), nullable=False)
+    lemmas = Column(postgresql.ARRAY(String))
+    pos_tags = Column(postgresql.ARRAY(String))
+    ner_tags = Column(postgresql.ARRAY(String))
+    dep_parents = Column(postgresql.ARRAY(Integer))
+    dep_labels = Column(postgresql.ARRAY(String))
+    entity_cids = Column(postgresql.ARRAY(String))
+    entity_types = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'sentence',
     }
 
-    __table_args__ = (
-        UniqueConstraint(document_id, position),
-    )
+    __table_args__ = (UniqueConstraint(document_id, position), )
 
     def get_parent(self):
         return self.document
@@ -125,7 +133,8 @@ class Sentence(Context):
         yield self
 
     def __repr__(self):
-        return "Sentence(%s,%s,%s)" % (self.document, self.position, self.text.encode('utf-8'))
+        return "Sentence(%s,%s,%s)" % (self.document, self.position,
+                                       self.text.encode('utf-8'))
 
 
 class TemporaryContext(object):
@@ -140,17 +149,21 @@ class TemporaryContext(object):
     A TemporaryContext must have specified equality / set membership semantics, a stable_id for checking
     uniqueness against the database, and a promote() method which returns a corresponding Context object.
     """
+
     def __init__(self):
         self.id = None
 
     def load_id_or_insert(self, session):
         if self.id is None:
             stable_id = self.get_stable_id()
-            id = session.execute(select([Context.id]).where(Context.stable_id == stable_id)).first()
+            id = session.execute(
+                select([Context.id
+                        ]).where(Context.stable_id == stable_id)).first()
             if id is None:
-                self.id = session.execute(
-                        Context.__table__.insert(),
-                        {'type': self._get_table_name(), 'stable_id': stable_id}).inserted_primary_key[0]
+                self.id = session.execute(Context.__table__.insert(), {
+                    'type': self._get_table_name(),
+                    'stable_id': stable_id
+                }).inserted_primary_key[0]
                 insert_args = self._get_insert_args()
                 insert_args['id'] = self.id
                 for (key, val) in insert_args.items():
@@ -187,12 +200,13 @@ class TemporaryContext(object):
 
 class TemporarySpan(TemporaryContext):
     """The TemporaryContext version of Span"""
+
     def __init__(self, sentence, char_start, char_end, meta=None):
         super(TemporarySpan, self).__init__()
-        self.sentence   = sentence  # The sentence Context of the Span
-        self.char_end   = char_end
+        self.sentence = sentence  # The sentence Context of the Span
+        self.char_end = char_end
         self.char_start = char_start
-        self.meta       = meta
+        self.meta = meta
 
     def __len__(self):
         return self.char_end - self.char_start + 1
@@ -212,10 +226,13 @@ class TemporarySpan(TemporaryContext):
             return True
 
     def __hash__(self):
-        return hash(self.sentence) + hash(self.char_start) + hash(self.char_end)
+        return hash(self.sentence) + hash(self.char_start) + hash(
+            self.char_end)
 
     def get_stable_id(self):
-        return construct_stable_id(self.sentence, self._get_polymorphic_identity(), self.char_start, self.char_end)
+        return construct_stable_id(self.sentence,
+                                   self._get_polymorphic_identity(),
+                                   self.char_start, self.char_end)
 
     def _get_table_name(self):
         return 'span'
@@ -227,10 +244,12 @@ class TemporarySpan(TemporaryContext):
         return """INSERT INTO span VALUES(:id, :sentence_id, :char_start, :char_end, :meta)"""
 
     def _get_insert_args(self):
-        return {'sentence_id' : self.sentence.id,
-                'char_start': self.char_start,
-                'char_end'  : self.char_end,
-                'meta'      : self.meta}
+        return {
+            'sentence_id': self.sentence.id,
+            'char_start': self.char_start,
+            'char_end': self.char_end,
+            'meta': self.meta
+        }
 
     def get_word_start(self):
         return self.char_to_word_index(self.char_start)
@@ -248,7 +267,7 @@ class TemporarySpan(TemporaryContext):
             if ci == co:
                 return i
             elif ci < co:
-                return i-1
+                return i - 1
         return i
 
     def word_to_char_index(self, wi):
@@ -257,7 +276,8 @@ class TemporarySpan(TemporaryContext):
 
     def get_attrib_tokens(self, a='words'):
         """Get the tokens of sentence attribute _a_ over the range defined by word_offset, n"""
-        return self.sentence.__getattribute__(a)[self.get_word_start():self.get_word_end() + 1]
+        return self.sentence.__getattribute__(a)[self.get_word_start():
+                                                 self.get_word_end() + 1]
 
     def get_attrib_span(self, a, sep=" "):
         """Get the span of sentence attribute _a_ over the range defined by word_offset, n"""
@@ -272,8 +292,8 @@ class TemporarySpan(TemporaryContext):
 
     def __contains__(self, other_span):
         return (self.sentence == other_span.sentence
-            and other_span.char_start >= self.char_start
-            and other_span.char_end <= self.char_end)
+                and other_span.char_start >= self.char_start
+                and other_span.char_end <= self.char_end)
 
     def __getitem__(self, key):
         """
@@ -288,7 +308,10 @@ class TemporarySpan(TemporaryContext):
                 char_end = self.char_start + key.stop - 1
             else:
                 char_end = self.char_end + key.stop
-            return self._get_instance(char_start=char_start, char_end=char_end, sentence=self.sentence)
+            return self._get_instance(
+                char_start=char_start,
+                char_end=char_end,
+                sentence=self.sentence)
         else:
             raise NotImplementedError()
 
@@ -308,22 +331,26 @@ class Span(Context, TemporarySpan):
     char_offsets are **relative to the Context start**
     """
     __tablename__ = 'span'
-    id            = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'), primary_key=True)
-    sentence_id   = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'))
-    char_start    = Column(Integer, nullable=False)
-    char_end      = Column(Integer, nullable=False)
-    meta          = Column(PickleType)
+    id = Column(
+        Integer,
+        ForeignKey('context.id', ondelete='CASCADE'),
+        primary_key=True)
+    sentence_id = Column(Integer, ForeignKey('context.id', ondelete='CASCADE'))
+    char_start = Column(Integer, nullable=False)
+    char_end = Column(Integer, nullable=False)
+    meta = Column(PickleType)
 
-    __table_args__ = (
-        UniqueConstraint(sentence_id, char_start, char_end),
-    )
+    __table_args__ = (UniqueConstraint(sentence_id, char_start, char_end), )
 
     __mapper_args__ = {
         'polymorphic_identity': 'span',
         'inherit_condition': (id == Context.id)
     }
 
-    sentence = relationship('Context', backref=backref('spans', cascade='all, delete-orphan'), foreign_keys=sentence_id)
+    sentence = relationship(
+        'Context',
+        backref=backref('spans', cascade='all, delete-orphan'),
+        foreign_keys=sentence_id)
 
     def get_parent(self):
         return self.sentence
@@ -361,9 +388,11 @@ def split_stable_id(stable_id):
     raise ValueError("Malformed stable_id:", stable_id)
 
 
-def construct_stable_id(parent_context, polymorphic_type, relative_char_offset_start, relative_char_offset_end):
+def construct_stable_id(parent_context, polymorphic_type,
+                        relative_char_offset_start, relative_char_offset_end):
     """Contruct a stable ID for a Context given its parent and its character offsets relative to the parent"""
-    doc_id, _, parent_doc_char_start, _ = split_stable_id(parent_context.stable_id)
+    doc_id, _, parent_doc_char_start, _ = split_stable_id(
+        parent_context.stable_id)
     start = parent_doc_char_start + relative_char_offset_start
-    end   = parent_doc_char_start + relative_char_offset_end
+    end = parent_doc_char_start + relative_char_offset_end
     return "%s::%s:%s:%s" % (doc_id, polymorphic_type, start, end)

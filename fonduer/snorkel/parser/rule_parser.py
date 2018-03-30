@@ -1,39 +1,42 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-import pkg_resources
 import re
 from collections import defaultdict
+from pathlib import Path
+
+import pkg_resources
+
 from fonduer.snorkel.models import construct_stable_id
 from fonduer.snorkel.parser import Parser, ParserConnection
-from pathlib import Path
 
 try:
     import spacy
     from spacy.cli import download
     from spacy import util
-except:
+except Exception as e:
     raise Exception("spacy not installed. Use `pip install spacy`.")
+
 
 class Tokenizer(object):
     '''
     Interface for rule-based tokenizers
     '''
-    def apply(self,s):
+
+    def apply(self, s):
         raise NotImplementedError()
+
 
 class RegexTokenizer(Tokenizer):
     '''
     Regular expression tokenization.
     '''
+
     def __init__(self, rgx="\s+"):
         super(RegexTokenizer, self).__init__()
         self.rgx = re.compile(rgx)
 
-    def apply(self,s):
+    def apply(self, s):
         '''
 
         :param s:
@@ -45,14 +48,16 @@ class RegexTokenizer(Tokenizer):
         for t in self.rgx.split(s):
             while t < len(s) and t != s[offset:len(t)]:
                 offset += 1
-            tokens += [(t,offset)]
+            tokens += [(t, offset)]
             offset += len(t)
         return tokens
+
 
 class SpacyTokenizer(Tokenizer):
     '''
     Only use spaCy's tokenizer functionality
     '''
+
     def __init__(self, lang='en'):
         super(SpacyTokenizer, self).__init__()
         self.lang = lang
@@ -93,7 +98,7 @@ class SpacyTokenizer(Tokenizer):
             raise IOError("Can't find spaCy data path: %s" % str(data_path))
         if name in set([d.name for d in data_path.iterdir()]):
             return True
-        if Spacy.is_package(name):  # installed as package
+        if spacy.is_package(name):  # installed as package
             return True
         if Path(name).exists():  # path to model data directory
             return True
@@ -129,11 +134,13 @@ class RuleBasedParser(Parser):
      1) detecting sentence boundaries
      2) tokenizing
     '''
+
     def __init__(self, tokenizer=None, sent_boundary=None):
 
         super(RuleBasedParser, self).__init__(name="rules")
         self.tokenizer = tokenizer if tokenizer else SpacyTokenizer("en")
-        self.sent_boundary = sent_boundary if sent_boundary else RegexTokenizer("[\n\r]+")
+        self.sent_boundary = sent_boundary if sent_boundary else RegexTokenizer(
+            "[\n\r]+")
 
     def to_unicode(self, text):
 
@@ -162,14 +169,16 @@ class RuleBasedParser(Parser):
         offset, position = 0, 0
         sentences = self.sent_boundary.apply(text)
 
-        for sent,sent_offset in sentences:
+        for sent, sent_offset in sentences:
             parts = defaultdict(list)
             tokens = self.tokenizer.apply(sent)
             if not tokens:
                 continue
 
             parts['words'], parts['char_offsets'] = list(zip(*tokens))
-            parts['abs_char_offsets'] = [idx + offset for idx in parts['char_offsets']]
+            parts['abs_char_offsets'] = [
+                idx + offset for idx in parts['char_offsets']
+            ]
             parts['lemmas'] = []
             parts['pos_tags'] = []
             parts['ner_tags'] = []
@@ -191,8 +200,10 @@ class RuleBasedParser(Parser):
             # Assign the stable id as document's stable id plus absolute
             # character offset
             abs_sent_offset = parts['abs_char_offsets'][0]
-            abs_sent_offset_end = abs_sent_offset + parts['char_offsets'][-1] + len(parts['words'][-1])
+            abs_sent_offset_end = abs_sent_offset + parts['char_offsets'][-1] + len(
+                parts['words'][-1])
             if document:
-                parts['stable_id'] = construct_stable_id(document, 'sentence', abs_sent_offset, abs_sent_offset_end)
+                parts['stable_id'] = construct_stable_id(
+                    document, 'sentence', abs_sent_offset, abs_sent_offset_end)
 
             yield parts

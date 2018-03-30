@@ -1,22 +1,19 @@
-from __future__ import print_function
-from __future__ import division
-from future import standard_library
-standard_library.install_aliases()
-from builtins import zip
-from builtins import str
-from builtins import range
-from builtins import object
-import http.client
+from __future__ import division, print_function
+
 import os
 import re
 import subprocess
 import warnings
+from builtins import object, range, str, zip
 from collections import OrderedDict, defaultdict
 
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
+from future import standard_library
+
+standard_library.install_aliases()
 
 
 class VisualLinker(object):
@@ -107,8 +104,7 @@ class VisualLinker(object):
         # sort pdf_word_list by page, block top then block left, top, then left
         pdf_word_list = sorted(
             pdf_word_list,
-            key=
-            lambda word_id__: block_coordinates[word_id__[0]] + coordinate_map[word_id__[0]][1:3]
+            key=lambda word_id__: block_coordinates[word_id__[0]] + coordinate_map[word_id__[0]][1:3]
         )
         return pdf_word_list, coordinate_map
 
@@ -300,7 +296,7 @@ class VisualLinker(object):
         for i in range(seedSize):
             try:
                 offsets.append(wordsB.index(wordsA[i]) - i)
-            except:
+            except Exception as e:
                 pass
         return int(np.median(offsets))
 

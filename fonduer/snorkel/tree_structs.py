@@ -1,8 +1,10 @@
 import json
 import os
 import re
-import six
+
 import lxml.etree as et
+import six
+
 from fonduer.snorkel.utils import corenlp_cleaner
 
 APP_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -10,7 +12,7 @@ APP_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Load IPython display functionality libs if possible i.e. if in IPython
 try:
     from IPython.core.display import display_html, HTML, display_javascript, Javascript
-except:
+except Exception as e:
     pass
 
 
@@ -68,10 +70,10 @@ def corenlp_to_xmltree(s, prune_root=True):
     Also adds special word_idx attribute corresponding to original sequence order in sentence
     """
     # Convert input object to dictionary
-    if isinstance(s, dict) == False:
+    if not isinstance(s, dict):
         try:
             s = s.__dict__ if hasattr(s, '__dict__') else dict(s)
-        except:
+        except Exception as e:
             raise ValueError("Cannot convert input object to dict")
 
     # Use the dep_parents array as a guide: ensure it is present and a list of ints
@@ -81,7 +83,7 @@ def corenlp_to_xmltree(s, prune_root=True):
         )
     try:
         dep_parents = list(map(int, s['dep_parents']))
-    except:
+    except Exception as e:
         raise ValueError("'dep_parents' attribute must be a list of ints")
 
     # Also ensure that we are using CoreNLP-native indexing (root=0, 1-base word indexes)!

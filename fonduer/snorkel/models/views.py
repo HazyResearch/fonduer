@@ -1,8 +1,6 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 
 def create_serialized_candidate_view(session, C, verbose=False):
     """Creates a view in the database for a Candidate sub-class C defined over
@@ -39,12 +37,8 @@ def create_serialized_candidate_view(session, C, verbose=False):
             candidate.id = {0}.id
             AND sentence.id = span0.sentence_id
             AND {3}
-    """.format(
-        C.__tablename__,
-        ", ".join(selects),
-        ", ".join(froms),
-        " AND ".join(joins)
-    )
+    """.format(C.__tablename__, ", ".join(selects), ", ".join(froms),
+               " AND ".join(joins))
     if verbose:
         print("Creating view...")
         print(sql)

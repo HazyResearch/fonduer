@@ -1,24 +1,23 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
-from future.utils import iteritems
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-from .classifier import Classifier
-from numba import jit
+import os
+import random
+from copy import copy
+from distutils.version import StrictVersion
+
 import numbskull
+import numpy as np
+import scipy.sparse as sparse
+from future.utils import iteritems
+from numba import jit
 from numbskull import NumbSkull
 from numbskull.inference import FACTORS
-from numbskull.numbskulltypes import Weight, Variable, Factor, FactorToVar
-import numpy as np
-import random
-import scipy.sparse as sparse
-from copy import copy
+from numbskull.numbskulltypes import Factor, FactorToVar, Variable, Weight
 from pandas import DataFrame
-from distutils.version import StrictVersion
 from six.moves.cPickle import dump, load
-import os
+
+from .classifier import Classifier
 
 DEP_SIMILAR = 0
 DEP_FIXING = 1
@@ -40,18 +39,25 @@ class GenerativeModel(Classifier):
         function propensity factors
     :param seed: seed for initializing state of Numbskull variables
     """
-    def __init__(self, class_prior=False, lf_prior=False, lf_propensity=False,
-        lf_class_propensity=False, seed=271828, name=None):
+
+    def __init__(self,
+                 class_prior=False,
+                 lf_prior=False,
+                 lf_propensity=False,
+                 lf_class_propensity=False,
+                 seed=271828,
+                 name=None):
         self.name = name or self.__class__.__name__
         try:
             numbskull_version = numbskull.__version__
-        except:
+        except Exception as e:
             numbskull_version = "0.0"
         numbskull_require = "0.1"
 
         if StrictVersion(numbskull_version) < StrictVersion(numbskull_require):
             raise ValueError(
-                "Snorkel requires Numbskull version %s, but version %s is installed." % (numbskull_require, numbskull_version))
+                "Snorkel requires Numbskull version %s, but version %s is installed."
+                % (numbskull_require, numbskull_version))
 
         self.class_prior = class_prior
         self.lf_prior = lf_prior
@@ -72,15 +78,30 @@ class GenerativeModel(Classifier):
     # These names are also used by other related classes, such as
     # GenerativeModelParameters
     optional_names = ('lf_prior', 'lf_propensity', 'lf_class_propensity')
-    dep_names = (
-        'dep_similar', 'dep_fixing', 'dep_reinforcing', 'dep_exclusive'
-    )
+    dep_names = ('dep_similar', 'dep_fixing', 'dep_reinforcing',
+                 'dep_exclusive')
 
-    def train(self, L, deps=(), LF_acc_prior_weights=None,
-        LF_acc_prior_weight_default=1, labels=None, label_prior_weight=5,
-        init_deps=0.0, init_class_prior=-1.0, epochs=30, step_size=None, 
-        decay=1.0, reg_param=0.1, reg_type=2, verbose=False, truncation=10, 
-        burn_in=5, cardinality=None, timer=None, candidate_ranges=None, threads=1):
+    def train(self,
+              L,
+              deps=(),
+              LF_acc_prior_weights=None,
+              LF_acc_prior_weight_default=1,
+              labels=None,
+              label_prior_weight=5,
+              init_deps=0.0,
+              init_class_prior=-1.0,
+              epochs=30,
+              step_size=None,
+              decay=1.0,
+              reg_param=0.1,
+              reg_type=2,
+              verbose=False,
+              truncation=10,
+              burn_in=5,
+              cardinality=None,
+              timer=None,
+              candidate_ranges=None,
+              threads=1):
         """
         Fits the parameters of the model to a data set. By default, learns a
         conditionally independent model. Additional unary dependencies can be
@@ -90,19 +111,19 @@ class GenerativeModel(Classifier):
         Results are stored as a member named weights, instance of
         snorkel.learning.gen_learning.GenerativeModelWeights.
 
-        :param L: M x N csr_AnnotationMatrix-type label matrix, where there are 
+        :param L: M x N csr_AnnotationMatrix-type label matrix, where there are
             M candidates labeled by N labeling functions (LFs)
-        :param deps: collection of dependencies to include in the model, each 
-                     element is a tuple of the form 
+        :param deps: collection of dependencies to include in the model, each
+                     element is a tuple of the form
                      (LF 1 index, LF 2 index, dependency type),
                      see snorkel.learning.constants
         :param LF_acc_prior_weights: An N-element list of prior weights for the
             LF accuracies (log scale)
-        :param LF_acc_prior_weight_default: Default prior for the weight of each 
-            LF accuracy; if LF_acc_prior_weights is unset, each LF will have 
+        :param LF_acc_prior_weight_default: Default prior for the weight of each
+            LF accuracy; if LF_acc_prior_weights is unset, each LF will have
             this accuracy prior weight (log scale)
         :param labels: Optional ground truth labels
-        :param label_prior_weight: The prior probability that the ground truth 
+        :param label_prior_weight: The prior probability that the ground truth
             labels (if provided) are correct (log scale)
         :param init_deps: initial weight for additional dependencies, except
                           class prior (log scale)
@@ -133,11 +154,11 @@ class GenerativeModel(Classifier):
         step_size = step_size or 0.0001
 
         # Check to make sure matrix is int-valued
-        element_type = type(L[0,0])
+        element_type = type(L[0, 0])
         # Note: Other simpler forms of this check often don't work; still not
         # sure why...
         if not issubclass(element_type, np.integer):
-            raise ValueError("""Label matrix must have int-type elements, 
+            raise ValueError("""Label matrix must have int-type elements,
                 but elements have type %s""" % element_type)
 
         # Automatically infer cardinality
@@ -168,7 +189,9 @@ class GenerativeModel(Classifier):
         # NOTE: Setting default != 0.5 creates a (fixed) factor which increases
         # runtime (by ~0.5x that of a non-fixed factor)...
         if LF_acc_prior_weights is None:
-            LF_acc_prior_weights = [LF_acc_prior_weight_default for _ in range(n)]
+            LF_acc_prior_weights = [
+                LF_acc_prior_weight_default for _ in range(n)
+            ]
         else:
             LF_acc_prior_weights = list(copy(LF_acc_prior_weights))
 
@@ -197,8 +220,8 @@ class GenerativeModel(Classifier):
         self.cardinalities = self.cardinality * np.ones(m, dtype=np.int64)
         self.candidate_ranges = candidate_ranges
         if self.candidate_ranges is not None:
-            L, self.cardinalities, _ = self._remap_scoped_categoricals(L, 
-                self.candidate_ranges)
+            L, self.cardinalities, _ = self._remap_scoped_categoricals(
+                L, self.candidate_ranges)
 
         # Shuffle the data points, cardinalities, and candidate_ranges
         idxs = self.rng.permutation(list(range(m)))
@@ -213,21 +236,21 @@ class GenerativeModel(Classifier):
         # Compile factor graph
         self._process_dependency_graph(L, deps)
         weight, variable, factor, ftv, domain_mask, n_edges = self._compile(
-            L, init_deps, init_class_prior, LF_acc_prior_weights, is_fixed, self.cardinalities)
+            L, init_deps, init_class_prior, LF_acc_prior_weights, is_fixed,
+            self.cardinalities)
         fg = NumbSkull(
             n_inference_epoch=0,
-            n_learning_epoch=epochs, 
+            n_learning_epoch=epochs,
             stepsize=step_size,
             decay=decay,
             reg_param=reg_param,
             regularization=reg_type,
             truncation=truncation,
             quiet=(not verbose),
-            verbose=verbose, 
+            verbose=verbose,
             learn_non_evidence=True,
             burn_in=burn_in,
-            nthreads=threads
-        )
+            nthreads=threads)
         fg.loadFactorGraph(weight, variable, factor, ftv, domain_mask, n_edges)
 
         if timer is not None:
@@ -243,10 +266,9 @@ class GenerativeModel(Classifier):
         else:
             self.cardinality_for_stats = self.cardinality
         self.learned_weights = fg.factorGraphs[0].weight_value
-        weight, variable, factor, ftv, domain_mask, n_edges =\
-            self._compile(sparse.coo_matrix((1, n), L.dtype), init_deps,
-                init_class_prior, LF_acc_prior_weights, is_fixed,
-                [self.cardinality_for_stats])
+        weight, variable, factor, ftv, domain_mask, n_edges = self._compile(
+            sparse.coo_matrix((1, n), L.dtype), init_deps, init_class_prior,
+            LF_acc_prior_weights, is_fixed, [self.cardinality_for_stats])
 
         variable["isEvidence"] = False
         weight["isFixed"] = True
@@ -284,7 +306,7 @@ class GenerativeModel(Classifier):
             for j in range(L[i].data.shape[0]):
                 val = L[i].data[j]
                 if val not in c_range:
-                    raise ValueError("""Value {0} is not in supplied range 
+                    raise ValueError("""Value {0} is not in supplied range
                         for candidate at index {1}""".format(val, i))
                 L[i, L[i].indices[j]] = c_range.index(val) + 1
         return L, cardinalities, mappings
@@ -342,18 +364,18 @@ class GenerativeModel(Classifier):
                 tp = count[i, 1, 1]
                 fp = count[i, 0, 1]
                 tn = count[i, 0, 0]
-                fn = count[i, 1, 0]
+                #  fn = count[i, 1, 0]
                 coverage = 1 - (count[i, 0, 2] + count[i, 1, 2])
                 stats.append({
                     "Precision": tp / (tp + fp),
                     "Recall": tp / count[i, 1, :].sum(),
                     "Accuracy": (tp + tn) / coverage,
                     "Coverage": coverage
-                    })
+                })
             else:
                 correct = sum([count[i, j, j] for j in range(cardinality)])
-                coverage = 1 - sum([count[i, j, cardinality]
-                    for j in range(cardinality)])
+                coverage = 1 - sum(
+                    [count[i, j, cardinality] for j in range(cardinality)])
                 stats.append({
                     "Accuracy": correct / coverage,
                     "Coverage": coverage
@@ -381,7 +403,7 @@ class GenerativeModel(Classifier):
         """
         m, n = L.shape
         if self.weights is None:
-            raise ValueError("""Must fit model with train() before computing 
+            raise ValueError("""Must fit model with train() before computing
                 marginal probabilities.""")
 
         # Binary classification setting
@@ -397,14 +419,14 @@ class GenerativeModel(Classifier):
                 for l_index1 in range(l_i.nnz):
                     data_j, j = l_i.data[l_index1], l_i.col[l_index1]
                     if data_j == 1:
-                        logp_true  += self.weights.lf_accuracy[j]
+                        logp_true += self.weights.lf_accuracy[j]
                         logp_false -= self.weights.lf_accuracy[j]
-                        logp_true  += self.weights.lf_class_propensity[j]
+                        logp_true += self.weights.lf_class_propensity[j]
                         logp_false -= self.weights.lf_class_propensity[j]
                     elif data_j == -1:
-                        logp_true  -= self.weights.lf_accuracy[j]
+                        logp_true -= self.weights.lf_accuracy[j]
                         logp_false += self.weights.lf_accuracy[j]
-                        logp_true  += self.weights.lf_class_propensity[j]
+                        logp_true += self.weights.lf_class_propensity[j]
                         logp_false -= self.weights.lf_class_propensity[j]
                     else:
                         ValueError("""Illegal value at %d, %d: %d.
@@ -421,7 +443,8 @@ class GenerativeModel(Classifier):
                             if data_j == 1 and data_k == 1:
                                 logp_true += self.weights.dep_reinforcing[j, k]
                             elif data_j == -1 and data_k == -1:
-                                logp_false += self.weights.dep_reinforcing[j, k]
+                                logp_false += self.weights.dep_reinforcing[j,
+                                                                           k]
 
                 marginals[i] = 1 / (1 + np.exp(logp_false - logp_true))
             return marginals
@@ -433,8 +456,8 @@ class GenerativeModel(Classifier):
             # Handle the scoped categorical case, otherwise get cardinalities
             # from self.cardinality
             if candidate_ranges is not None:
-                L, cardinalities, mappings = self._remap_scoped_categoricals(L, 
-                    candidate_ranges)
+                L, cardinalities, mappings = self._remap_scoped_categoricals(
+                    L, candidate_ranges)
             else:
                 cardinalities = self.cardinality * np.ones(m)
 
@@ -449,13 +472,13 @@ class GenerativeModel(Classifier):
                     if (data_j != 0):
                         if not 1 <= data_j <= cardinality:
                             raise ValueError(
-                                """Illegal value at %d, %d: %d. Must be in 0 to 
+                                """Illegal value at %d, %d: %d. Must be in 0 to
                                 %d.""" % (i, j, data_j, cardinality))
                         # NB: LF class propensity not currently available
                         # for categoricals
-                        marginals[int(data_j - 1)] += \
-                            2 * self.weights.lf_accuracy[j]
-                            
+                        marginals[int(data_j - 1)] += (
+                            2 * self.weights.lf_accuracy[j])
+
                 # NB: fixing and reinforcing not available for categoricals
                 # Get softmax
                 exps = np.exp(marginals)
@@ -495,23 +518,28 @@ class GenerativeModel(Classifier):
         }
 
         for dep_name in GenerativeModel.dep_names:
-            setattr(self, dep_name, sparse.lil_matrix((L.shape[1], L.shape[1])))
+            setattr(self, dep_name, sparse.lil_matrix((L.shape[1],
+                                                       L.shape[1])))
 
         for lf1, lf2, dep_type in deps:
             if lf1 == lf2:
-                raise ValueError("Invalid dependency. Labeling function cannot depend on itself.")
+                raise ValueError(
+                    "Invalid dependency. Labeling function cannot depend on itself."
+                )
 
             if dep_type in dep_name_map:
                 dep_mat = getattr(self, dep_name_map[dep_type])
             else:
-                raise ValueError("Unrecognized dependency type: " + str(dep_type))
+                raise ValueError(
+                    "Unrecognized dependency type: " + str(dep_type))
 
             dep_mat[lf1, lf2] = 1
 
         for dep_name in GenerativeModel.dep_names:
             setattr(self, dep_name, getattr(self, dep_name).tocoo(copy=True))
 
-    def _compile(self, L, init_deps, init_class_prior, LF_acc_prior_weights, is_fixed, cardinalities):
+    def _compile(self, L, init_deps, init_class_prior, LF_acc_prior_weights,
+                 is_fixed, cardinalities):
         """Compiles a generative model based on L and the current labeling function
         dependencies.
         """
@@ -542,8 +570,10 @@ class GenerativeModel(Classifier):
             n_edges += n
         if self.lf_class_propensity:
             n_edges += 2 * n
-        n_edges += 2 * self.dep_similar.getnnz() + 3 * self.dep_fixing.getnnz() + \
-                   3 * self.dep_reinforcing.getnnz() + 2 * self.dep_exclusive.getnnz()
+        n_edges += (
+            2 * self.dep_similar.getnnz() + 3 * self.dep_fixing.getnnz() +
+            3 * self.dep_reinforcing.getnnz() +
+            2 * self.dep_exclusive.getnnz())
         n_edges *= m
 
         weight = np.zeros(n_weights, Weight)
@@ -603,14 +633,15 @@ class GenerativeModel(Classifier):
                 variable[index]["isEvidence"] = 1
                 variable[index]["dataType"] = 0
                 variable[index]["cardinality"] = cardinalities[i] + 1
-                
+
                 # Default to abstain
                 variable[index]["initialValue"] = cardinalities[i]
 
         # LF labels -- now set the non-zero labels
         L_coo = L.tocoo()
         for L_index in range(L_coo.nnz):
-            data, i, j = L_coo.data[L_index], L_coo.row[L_index], L_coo.col[L_index]
+            data, i, j = L_coo.data[L_index], L_coo.row[L_index], L_coo.col[
+                L_index]
             index = m + n * i + j
 
             # Note: Here we need to use the overall cardinality to handle, since
@@ -624,16 +655,19 @@ class GenerativeModel(Classifier):
                 elif data == -1:
                     variable[index]["initialValue"] = 0
                 else:
-                    raise ValueError("Invalid labeling function output in cell (%d, %d): %d. "
-                                     "Valid values are 1, 0, and -1. " % (i, j, data))
+                    raise ValueError(
+                        "Invalid labeling function output in cell (%d, %d): %d. "
+                        "Valid values are 1, 0, and -1. " % (i, j, data))
             else:
                 if data == 0:
                     variable[index]["initialValue"] = cardinalities[i]
                 elif 1 <= data <= cardinalities[i]:
                     variable[index]["initialValue"] = data - 1
                 else:
-                    raise ValueError("Invalid labeling function output in cell (%d, %d): %d. "
-                                     "Valid values are 0 to %d. " % (i, j, data, self.cardinalities[i]))
+                    raise ValueError(
+                        "Invalid labeling function output in cell (%d, %d): %d. "
+                        "Valid values are 0 to %d. " % (i, j, data,
+                                                        self.cardinalities[i]))
 
         #
         # Compiles factor and ftv matrices
@@ -641,7 +675,8 @@ class GenerativeModel(Classifier):
         # Class prior
         if self.class_prior:
             if self.cardinality != 2:
-                raise NotImplementedError("Class Prior not implemented for categorical classes.")
+                raise NotImplementedError(
+                    "Class Prior not implemented for categorical classes.")
             for i in range(m):
                 factor[i]["factorFunction"] = FACTORS["DP_GEN_CLASS_PRIOR"]
                 factor[i]["weightId"] = 0
@@ -660,51 +695,51 @@ class GenerativeModel(Classifier):
             w_off = 0
 
         # Factors over labeling function outputs
-        nfactors_for_lf = [(int(self.hasPrior[i]) + int(not is_fixed[i])) for i in range(n)]
-        f_off, ftv_off, w_off = self._compile_output_factors(L, factor, f_off, ftv, ftv_off, w_off, "DP_GEN_LF_ACCURACY",
-                                                             (lambda m, n, i, j: i, lambda m, n, i, j: m + n * i + j), nfactors_for_lf)
+        nfactors_for_lf = [(int(self.hasPrior[i]) + int(not is_fixed[i]))
+                           for i in range(n)]
+        f_off, ftv_off, w_off = self._compile_output_factors(
+            L, factor, f_off, ftv, ftv_off, w_off, "DP_GEN_LF_ACCURACY",
+            (lambda m, n, i, j: i, lambda m, n, i, j: m + n * i + j),
+            nfactors_for_lf)
 
         optional_name_map = {
-            'lf_prior':
-                ('DP_GEN_LF_PRIOR', (
-                    lambda m, n, i, j: m + n * i + j,)),
-            'lf_propensity':
-                ('DP_GEN_LF_PROPENSITY', (
-                    lambda m, n, i, j: m + n * i + j,)),
-            'lf_class_propensity':
-                ('DP_GEN_LF_CLASS_PROPENSITY', (
-                    lambda m, n, i, j: i,
-                    lambda m, n, i, j: m + n * i + j)),
+            'lf_prior': ('DP_GEN_LF_PRIOR', (lambda m, n, i, j: m + n * i + j,
+                                             )),
+            'lf_propensity': ('DP_GEN_LF_PROPENSITY',
+                              (lambda m, n, i, j: m + n * i + j,
+                               )),
+            'lf_class_propensity': ('DP_GEN_LF_CLASS_PROPENSITY',
+                                    (lambda m, n, i, j: i,
+                                     lambda m, n, i, j: m + n * i + j)),
         }
 
         for optional_name in GenerativeModel.optional_names:
             if getattr(self, optional_name):
                 if optional_name != 'lf_propensity' and self.cardinality != 2:
-                    raise NotImplementedError(optional_name + " not implemented for categorical classes.")
-                f_off, ftv_off, w_off = self._compile_output_factors(L, factor, f_off, ftv, ftv_off, w_off,
-                                                                     optional_name_map[optional_name][0],
-                                                                     optional_name_map[optional_name][1])
+                    raise NotImplementedError(
+                        optional_name +
+                        " not implemented for categorical classes.")
+                f_off, ftv_off, w_off = self._compile_output_factors(
+                    L, factor, f_off, ftv, ftv_off, w_off,
+                    optional_name_map[optional_name][0],
+                    optional_name_map[optional_name][1])
 
         # Factors for labeling function dependencies
         dep_name_map = {
-            'dep_similar':
-                ('DP_GEN_DEP_SIMILAR', (
-                    lambda m, n, i, j, k: m + n * i + j,
-                    lambda m, n, i, j, k: m + n * i + k)),
+            'dep_similar': ('DP_GEN_DEP_SIMILAR',
+                            (lambda m, n, i, j, k: m + n * i + j,
+                             lambda m, n, i, j, k: m + n * i + k)),
             'dep_fixing':
-                ('DP_GEN_DEP_FIXING', (
-                    lambda m, n, i, j, k: i,
-                    lambda m, n, i, j, k: m + n * i + j,
-                    lambda m, n, i, j, k: m + n * i + k)),
-            'dep_reinforcing':
-                ('DP_GEN_DEP_REINFORCING', (
-                    lambda m, n, i, j, k: i,
-                    lambda m, n, i, j, k: m + n * i + j,
-                    lambda m, n, i, j, k: m + n * i + k)),
-            'dep_exclusive':
-                ('DP_GEN_DEP_EXCLUSIVE', (
-                    lambda m, n, i, j, k: m + n * i + j,
-                    lambda m, n, i, j, k: m + n * i + k))
+            ('DP_GEN_DEP_FIXING',
+             (lambda m, n, i, j, k: i, lambda m, n, i, j, k: m + n * i + j,
+              lambda m, n, i, j, k: m + n * i + k)),
+            'dep_reinforcing': ('DP_GEN_DEP_REINFORCING',
+                                (lambda m, n, i, j, k: i,
+                                 lambda m, n, i, j, k: m + n * i + j,
+                                 lambda m, n, i, j, k: m + n * i + k)),
+            'dep_exclusive': ('DP_GEN_DEP_EXCLUSIVE',
+                              (lambda m, n, i, j, k: m + n * i + j,
+                               lambda m, n, i, j, k: m + n * i + k))
         }
 
         CATEGORICAL_DEPS = ['dep_similar', 'dep_exclusive']
@@ -715,23 +750,31 @@ class GenerativeModel(Classifier):
                     raise NotImplementedError(
                         dep_name + " not implemented for categorical classes.")
                 for i in range(len(mat.data)):
-                    f_off, ftv_off, w_off = self._compile_dep_factors(L, factor, 
-                        f_off, ftv, ftv_off, w_off, mat.row[i], mat.col[i],
-                        dep_name_map[dep_name][0], dep_name_map[dep_name][1])
+                    f_off, ftv_off, w_off = self._compile_dep_factors(
+                        L, factor, f_off, ftv, ftv_off, w_off, mat.row[i],
+                        mat.col[i], dep_name_map[dep_name][0],
+                        dep_name_map[dep_name][1])
 
         return weight, variable, factor, ftv, domain_mask, n_edges
 
-    def _compile_output_factors(self, L, factors, factors_offset, ftv, 
-        ftv_offset, weight_offset, factor_name, vid_funcs,
-        nfactors_for_lf=None):
+    def _compile_output_factors(self,
+                                L,
+                                factors,
+                                factors_offset,
+                                ftv,
+                                ftv_offset,
+                                weight_offset,
+                                factor_name,
+                                vid_funcs,
+                                nfactors_for_lf=None):
         """
         Compiles factors over the outputs of labeling functions, i.e., for which
-        there is one weight per labeling function and one factor per labeling 
+        there is one weight per labeling function and one factor per labeling
         function-candidate pair.
         """
         m, n = L.shape
 
-        if nfactors_for_lf == None:
+        if nfactors_for_lf is None:
             nfactors_for_lf = [1 for i in range(n)]
 
         factors_index = factors_offset
@@ -740,7 +783,8 @@ class GenerativeModel(Classifier):
             w_off = weight_offset
             for j in range(n):
                 for k in range(nfactors_for_lf[j]):
-                    factors[factors_index]["factorFunction"] = FACTORS[factor_name]
+                    factors[factors_index]["factorFunction"] = FACTORS[
+                        factor_name]
                     factors[factors_index]["weightId"] = w_off
                     factors[factors_index]["featureValue"] = 1
                     factors[factors_index]["arity"] = len(vid_funcs)
@@ -755,7 +799,8 @@ class GenerativeModel(Classifier):
 
         return factors_index, ftv_index, w_off
 
-    def _compile_dep_factors(self, L, factors, factors_offset, ftv, ftv_offset, weight_offset, j, k, factor_name, vid_funcs):
+    def _compile_dep_factors(self, L, factors, factors_offset, ftv, ftv_offset,
+                             weight_offset, j, k, factor_name, vid_funcs):
         """
         Compiles factors for dependencies between pairs of labeling functions (possibly also depending on the latent
         class label).
@@ -775,7 +820,8 @@ class GenerativeModel(Classifier):
             for i_var, vid_func in enumerate(vid_funcs):
                 ftv[ftv_index + i_var]["vid"] = vid_func(m, n, i, j, k)
 
-        return factors_offset + m, ftv_offset + len(vid_funcs) * m, weight_offset + 1
+        return factors_offset + m, ftv_offset + len(
+            vid_funcs) * m, weight_offset + 1
 
     def _process_learned_weights(self, L, fg, LF_acc_prior_weights, is_fixed):
         _, n = L.shape
@@ -789,7 +835,7 @@ class GenerativeModel(Classifier):
         else:
             w_off = 0
 
-        weights.lf_accuracy = np.zeros((n,))
+        weights.lf_accuracy = np.zeros((n, ))
         for i in range(n):
             # Prior on LF acc
             if self.hasPrior[i]:
@@ -823,9 +869,10 @@ class GenerativeModel(Classifier):
         model_name = model_name or self.name
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        
+
         # Save generative model weights
-        save_path = os.path.join(save_dir, "{0}.weights.pkl".format(model_name))
+        save_path = os.path.join(save_dir,
+                                 "{0}.weights.pkl".format(model_name))
         with open(save_path, 'wb') as f:
             dump(self.weights, f)
 
@@ -843,7 +890,8 @@ class GenerativeModel(Classifier):
     def load(self, model_name=None, save_dir='checkpoints', verbose=True):
         """Load model."""
         model_name = model_name or self.name
-        save_path = os.path.join(save_dir, "{0}.weights.pkl".format(model_name))
+        save_path = os.path.join(save_dir,
+                                 "{0}.weights.pkl".format(model_name))
         with open(save_path, 'rb') as f:
             self.weights = load(f)
         save_path2 = os.path.join(save_dir, "{0}.hps.pkl".format(model_name))
@@ -856,7 +904,6 @@ class GenerativeModel(Classifier):
 
 
 class GenerativeModelWeights(object):
-
     def __init__(self, n):
         self.n = n
         self.class_prior = 0.0
@@ -865,13 +912,16 @@ class GenerativeModelWeights(object):
             setattr(self, optional_name, np.zeros(n, dtype=np.float64))
 
         for dep_name in GenerativeModel.dep_names:
-            setattr(self, dep_name, sparse.lil_matrix((n, n), dtype=np.float64))
+            setattr(self, dep_name, sparse.lil_matrix(
+                (n, n), dtype=np.float64))
 
     def is_sign_sparsistent(self, other, threshold=0.1):
         if self.n != other.n:
-            raise ValueError("Dimension mismatch. %d versus %d" % (self.n, other.n))
+            raise ValueError("Dimension mismatch. %d versus %d" % (self.n,
+                                                                   other.n))
 
-        if not self._weight_is_sign_sparsitent(self.class_prior, other.class_prior, threshold):
+        if not self._weight_is_sign_sparsitent(self.class_prior,
+                                               other.class_prior, threshold):
             return False
 
         for i in range(self.n):
@@ -882,14 +932,16 @@ class GenerativeModelWeights(object):
         for name in GenerativeModel.optional_names:
             for i in range(self.n):
                 if not self._weight_is_sign_sparsitent(
-                        getattr(self, name)[i], getattr(other, name)[i], threshold):
+                        getattr(self, name)[i],
+                        getattr(other, name)[i], threshold):
                     return False
 
         for name in GenerativeModel.dep_names:
             for i in range(self.n):
                 for j in range(self.n):
                     if not self._weight_is_sign_sparsitent(
-                            getattr(self, name)[i, j], getattr(other, name)[i, j], threshold):
+                            getattr(self, name)[i, j],
+                            getattr(other, name)[i, j], threshold):
                         return False
 
         return True

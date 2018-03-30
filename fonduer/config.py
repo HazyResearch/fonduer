@@ -1,4 +1,5 @@
 import os
+
 import yaml
 
 
@@ -12,9 +13,10 @@ def dict2obj(d):
                 n[item] = [dict2obj(i) for i in d[item]]
             else:
                 n[item] = d[item]
-        return type('obj_from_dict', (object,), n)
+        return type('obj_from_dict', (object, ), n)
     else:
         return d
+
 
 # Load the settings relative to this config file.
 directory = os.path.dirname(__file__)

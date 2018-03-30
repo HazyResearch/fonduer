@@ -1,20 +1,17 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
-from future.utils import iteritems
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-import numpy as np
 import tensorflow as tf
+from future.utils import iteritems
 
 
 class SymbolTable(object):
     """Wrapper for dict to encode unknown symbols"""
-    def __init__(self, starting_symbol=2, unknown_symbol=1): 
-        self.s       = starting_symbol
+
+    def __init__(self, starting_symbol=2, unknown_symbol=1):
+        self.s = starting_symbol
         self.unknown = unknown_symbol
-        self.d       = dict()
+        self.d = dict()
 
     def get(self, w):
         if w not in self.d:
@@ -47,15 +44,15 @@ def candidate_to_tokens(candidate, token_type='words'):
 def get_rnn_output(output, dim, lengths):
     batch_size = tf.shape(output)[0]
     max_length = tf.shape(output)[1]
-    index      = tf.range(0, batch_size) * max_length + (lengths - 1)
-    flat       = tf.reshape(output, [-1, dim])
+    index = tf.range(0, batch_size) * max_length + (lengths - 1)
+    flat = tf.reshape(output, [-1, dim])
     return tf.gather(flat, index)
 
 
 def get_bi_rnn_output(output, dim, lengths):
-    c_output   = tf.concat(output, 2)
+    c_output = tf.concat(output, 2)
     batch_size = tf.shape(c_output)[0]
     max_length = tf.shape(c_output)[1]
-    index      = tf.range(0, batch_size) * max_length + (lengths - 1)
-    flat       = tf.reshape(c_output, [-1, 2 * dim])
+    index = tf.range(0, batch_size) * max_length + (lengths - 1)
+    flat = tf.reshape(c_output, [-1, 2 * dim])
     return tf.gather(flat, index)

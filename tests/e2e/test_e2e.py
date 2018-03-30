@@ -1,38 +1,27 @@
 #!/usr/bin/env python
-from builtins import range
 import csv
 import logging
 import os
 import pickle
-import pytest
 import re
+from builtins import range
+
+import pytest
+
+from fonduer import (BatchFeatureAnnotator, BatchLabelAnnotator,
+                     CandidateExtractor, DictionaryMatch, Document,
+                     GenerativeModel, HTMLPreprocessor, Intersect,
+                     LambdaFunctionMatcher, Meta, OmniParser, Phrase,
+                     RegexMatchSpan, SparseLogisticRegression, Union,
+                     candidate_subclass, load_gold_labels)
+from fonduer.lf_helpers import *
+from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
+from hardware_utils import entity_level_f1, load_hardware_labels
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
-from fonduer import BatchFeatureAnnotator
-from fonduer import BatchLabelAnnotator
-from fonduer import CandidateExtractor
-from fonduer import DictionaryMatch
-from fonduer import Document
-from fonduer import GenerativeModel
-from fonduer import HTMLPreprocessor
-from fonduer import Intersect
-from fonduer import LambdaFunctionMatcher
-from fonduer import OmniParser
-from fonduer import Phrase
-from fonduer import RegexMatchSpan
-from fonduer import Meta
-from fonduer import SparseLogisticRegression
-from fonduer import Union
-from fonduer import candidate_subclass
-from fonduer import load_gold_labels
-from fonduer.lf_helpers import *
-from hardware_spaces import OmniNgramsPart
-from hardware_spaces import OmniNgramsTemp
-from hardware_utils import load_hardware_labels
-from hardware_utils import entity_level_f1
 
 
 @pytest.mark.skipif('CI' not in os.environ, reason="Only run e2e on Travis")

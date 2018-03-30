@@ -1,5 +1,7 @@
 from __future__ import division
+
 from collections import namedtuple
+
 from fonduer.models import Phrase
 from fonduer.snorkel.models.context import TemporarySpan
 
@@ -33,7 +35,8 @@ def bbox_horz_aligned(box1, box2):
     Returns true if the vertical center point of either span is within the
     vertical range of the other
     """
-    if not (box1 and box2): return False
+    if not (box1 and box2):
+        return False
     # NEW: any overlap counts
     #    return box1.top <= box2.bottom and box2.top <= box1.bottom
     box1_top = box1.top + 1.5
@@ -55,7 +58,8 @@ def bbox_vert_aligned(box1, box2):
     Returns true if the horizontal center point of either span is within the
     horizontal range of the other
     """
-    if not (box1 and box2): return False
+    if not (box1 and box2):
+        return False
     # NEW: any overlap counts
     #    return box1.left <= box2.right and box2.left <= box1.right
     box1_left = box1.left + 1.5
@@ -73,7 +77,8 @@ def bbox_vert_aligned_left(box1, box2):
     """
     Returns true if the left boundary of both boxes is within 2 pts
     """
-    if not (box1 and box2): return False
+    if not (box1 and box2):
+        return False
     return abs(box1.left - box2.left) <= 2
 
 
@@ -81,7 +86,8 @@ def bbox_vert_aligned_right(box1, box2):
     """
     Returns true if the right boundary of both boxes is within 2 pts
     """
-    if not (box1 and box2): return False
+    if not (box1 and box2):
+        return False
     return abs(box1.right - box2.right) <= 2
 
 
@@ -89,6 +95,7 @@ def bbox_vert_aligned_center(box1, box2):
     """
     Returns true if the center of both boxes is within 5 pts
     """
-    if not (box1 and box2): return False
+    if not (box1 and box2):
+        return False
     return abs(((box1.right + box1.left) / 2.0) - (
         (box2.right + box2.left) / 2.0)) <= 5

@@ -1,24 +1,22 @@
 import codecs
 import itertools
 import logging
-import numpy as np
 import os
 import re
-from bs4 import BeautifulSoup
-from builtins import object
-from builtins import range
-from builtins import str
+from builtins import object, range, str
 from collections import defaultdict
+
+import numpy as np
+from bs4 import BeautifulSoup
 from lxml import etree
 from lxml.html import fromstring
-from pprint import pformat
 
-from fonduer.models import Table, Cell, Figure, Phrase
-from fonduer.visual import VisualLinker
+from fonduer.models import Cell, Figure, Phrase, Table
 from fonduer.snorkel.models import (Candidate, Context, Document,
                                     construct_stable_id, split_stable_id)
 from fonduer.snorkel.parser import DocPreprocessor, Spacy
 from fonduer.snorkel.udf import UDF, UDFRunner
+from fonduer.visual import VisualLinker
 
 logger = logging.getLogger(__name__)
 
@@ -388,9 +386,10 @@ class TableInfo(object):
             parts["col_start"] = col_start
             parts["col_end"] = col_end
             parts["position"] = self.cell_position
-            parts["stable_id"] = "%s::%s:%s:%s:%s" % \
-                                    (self.document.name, "cell",
-                                     self.table.position, row_start, col_start)
+            parts["stable_id"] = "%s::%s:%s:%s:%s" % (self.document.name,
+                                                      "cell",
+                                                      self.table.position,
+                                                      row_start, col_start)
             self.cell = Cell(**parts)
             self.parent = self.cell
         return table_idx

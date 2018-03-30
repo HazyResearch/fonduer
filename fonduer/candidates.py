@@ -1,7 +1,7 @@
-from builtins import map
-from builtins import range
+from builtins import map, range
 from copy import deepcopy
 from itertools import product
+
 from sqlalchemy.sql import select
 
 from fonduer.models import TemporaryImage
@@ -10,35 +10,53 @@ from fonduer.snorkel.models import Candidate
 from fonduer.snorkel.models.context import Document
 from fonduer.snorkel.udf import UDF, UDFRunner
 
+
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
     :param candidate_class: The type of relation to extract, defined using
                             :func:`snorkel.models.candidate_subclass <snorkel.models.candidate.candidate_subclass>`
-    :param cspaces: one or list of :class:`CandidateSpace` objects, one for each relation argument. Defines space of
-                    Contexts to consider
-    :param matchers: one or list of :class:`snorkel.matchers.Matcher` objects, one for each relation argument. Only tuples of
-                     Contexts for which each element is accepted by the corresponding Matcher will be returned as Candidates
-    :param candidate_filter: an optional function for filtering out candidates which returns a Boolean expressing whether or not
-                      the candidate should be instantiated.
-    :param self_relations: Boolean indicating whether to extract Candidates that relate the same context.
-                           Only applies to binary relations. Default is False.
-    :param nested_relations: Boolean indicating whether to extract Candidates that relate one Context with another
-                             that contains it. Only applies to binary relations. Default is False.
-    :param symmetric_relations: Boolean indicating whether to extract symmetric Candidates, i.e., rel(A,B) and rel(B,A),
-                                where A and B are Contexts. Only applies to binary relations. Default is True.
+    :param cspaces: one or list of :class:`CandidateSpace` objects, one for
+                    each relation argument. Defines space of Contexts to
+                    consider
+    :param matchers: one or list of :class:`snorkel.matchers.Matcher` objects,
+                     one for each relation argument. Only tuples of Contexts
+                     for which each element is accepted by the corresponding
+                     Matcher will be returned as Candidates
+    :param candidate_filter: an optional function for filtering out candidates
+                             which returns a Boolean expressing whether or not
+                             the candidate should be instantiated.
+    :param self_relations: Boolean indicating whether to extract Candidates
+                           that relate the same context. Only applies to binary
+                           relations. Default is False.
+    :param nested_relations: Boolean indicating whether to extract Candidates
+                             that relate one Context with another that contains
+                             it. Only applies to binary relations. Default is
+                             False.
+    :param symmetric_relations: Boolean indicating whether to extract symmetric
+                                Candidates, i.e., rel(A,B) and rel(B,A), where
+                                A and B are Contexts. Only applies to binary
+                                relations. Default is True.
     """
 
-    def __init__(self, candidate_class, cspaces, matchers, candidate_filter=None, self_relations=False, nested_relations=False, symmetric_relations=True):
+    def __init__(self,
+                 candidate_class,
+                 cspaces,
+                 matchers,
+                 candidate_filter=None,
+                 self_relations=False,
+                 nested_relations=False,
+                 symmetric_relations=True):
         """Initialize the CandidateExtractor."""
-        super(CandidateExtractor, self).__init__(CandidateExtractorUDF,
-                                                 candidate_class=candidate_class,
-                                                 cspaces=cspaces,
-                                                 matchers=matchers,
-                                                 candidate_filter=candidate_filter,
-                                                 self_relations=self_relations,
-                                                 nested_relations=nested_relations,
-                                                 symmetric_relations=symmetric_relations)
+        super(CandidateExtractor, self).__init__(
+            CandidateExtractorUDF,
+            candidate_class=candidate_class,
+            cspaces=cspaces,
+            matchers=matchers,
+            candidate_filter=candidate_filter,
+            self_relations=self_relations,
+            nested_relations=nested_relations,
+            symmetric_relations=symmetric_relations)
 
     def apply(self, xs, split=0, **kwargs):
         """Call the CandidateExtractorUDF."""
@@ -52,19 +70,24 @@ class CandidateExtractor(UDFRunner):
 class CandidateExtractorUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_class, cspaces, matchers, candidate_filter, self_relations, nested_relations, symmetric_relations, **kwargs):
+    def __init__(self, candidate_class, cspaces, matchers, candidate_filter,
+                 self_relations, nested_relations, symmetric_relations,
+                 **kwargs):
         """Initialize the CandidateExtractorUDF."""
-        self.candidate_class     = candidate_class
-        self.candidate_spaces    = cspaces if type(cspaces) in [list, tuple] else [cspaces]
-        self.matchers            = matchers if type(matchers) in [list, tuple] else [matchers]
-        self.candidate_filter    = candidate_filter
-        self.nested_relations    = nested_relations
-        self.self_relations      = self_relations
+        self.candidate_class = candidate_class
+        self.candidate_spaces = cspaces if type(cspaces) in [list, tuple
+                                                             ] else [cspaces]
+        self.matchers = matchers if type(matchers) in [list,
+                                                       tuple] else [matchers]
+        self.candidate_filter = candidate_filter
+        self.nested_relations = nested_relations
+        self.self_relations = self_relations
         self.symmetric_relations = symmetric_relations
 
         # Check that arity is same
         if len(self.candidate_spaces) != len(self.matchers):
-            raise ValueError("Mismatched arity of candidate space and matcher.")
+            raise ValueError(
+                "Mismatched arity of candidate space and matcher.")
         else:
             self.arity = len(self.candidate_spaces)
 
@@ -90,19 +113,24 @@ class CandidateExtractorUDF(UDF):
         # by the Matcher
         for i in range(self.arity):
             self.child_context_sets[i].clear()
-            for tc in self.matchers[i].apply(self.candidate_spaces[i].apply(self.session, context)):
+            for tc in self.matchers[i].apply(self.candidate_spaces[i].apply(
+                    self.session, context)):
                 tc.load_id_or_insert(self.session)
                 self.child_context_sets[i].add(tc)
 
         # Generates and persists candidates
         candidate_args = {'split': split}
-        for args in product(*[enumerate(child_contexts) for child_contexts in self.child_context_sets]):
+        for args in product(*[
+                enumerate(child_contexts)
+                for child_contexts in self.child_context_sets
+        ]):
 
             # Apply candidate_filter if one was given
             # Accepts a tuple of Context objects (e.g., (Span, Span))
             # (candidate_filter returns whether or not proposed candidate passes throttling condition)
             if self.candidate_filter:
-                if not self.candidate_filter(tuple(args[i][1] for i in range(self.arity))):
+                if not self.candidate_filter(
+                        tuple(args[i][1] for i in range(self.arity))):
                     continue
 
             # TODO: Make this work for higher-order relations
@@ -155,7 +183,9 @@ class OmniNgrams(Ngrams):
         Generate OmniNgrams from a Document by parsing all of its Phrases.
         """
         if not isinstance(context, Document):
-            raise TypeError("Input Contexts to OmniNgrams.apply() must be of type Document")
+            raise TypeError(
+                "Input Contexts to OmniNgrams.apply() must be of type Document"
+            )
 
         doc = session.query(Document).filter(Document.id == context.id).one()
         for phrase in doc.phrases:
@@ -177,7 +207,7 @@ class OmniFigures(CandidateSpace):
         """
         CandidateSpace.__init__(self)
         if type is not None:
-            self.type=type.strip().lower()
+            self.type = type.strip().lower()
         self.type = None
 
     def apply(self, session, context):
@@ -185,7 +215,9 @@ class OmniFigures(CandidateSpace):
         Generate OmniFigures from a Document by parsing all of its Figures.
         """
         if not isinstance(context, Document):
-            raise TypeError("Input Contexts to OmniFigures.apply() must be of type Document")
+            raise TypeError(
+                "Input Contexts to OmniFigures.apply() must be of type Document"
+            )
 
         doc = session.query(Document).filter(Document.id == context.id).one()
         for figure in doc.figures:
