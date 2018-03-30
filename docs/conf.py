@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # See: http://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
 import mock
 MOCK_MODULES = [
+    'future',
     'matplotlib',
     'matplotlib.pyplot',
     'nltk',
@@ -39,11 +40,19 @@ MOCK_MODULES = [
     'spacy.deprecated',
     'sparse',
     'sparse.csr_matrix',
+    'sqlalchemy',
+    'sqlalchemy.dialects',
+    'sqlalchemy.engine',
+    'sqlalchemy.ext',
+    'sqlalchemy.ext.declarative',
+    'sqlalchemy.orm',
+    'sqlalchemy.sql',
+    'sqlalchemy.types',
     'tensorflow',
     'tensorflow.contrib.rnn',
 ]
 for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
+    sys.modules[mod_name] = mock.MagicMock()
 
 # -- Project information -----------------------------------------------------
 
