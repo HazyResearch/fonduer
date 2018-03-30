@@ -33,47 +33,9 @@ to submit your contributions as a pull request._
 
 ## Installation
 
-### Dependencies
-
-We use a few applications that you'll need to install and be sure are on your
-PATH.
-
-For OS X using [homebrew](https://brew.sh):
-
-```bash
-brew install poppler
-brew install postgresql
-```
-
-On Debian-based distros:
-
-```bash
-sudo apt-get install poppler-utils
-sudo apt-get install postgresql
-```
-
-For the Python dependencies, we recommend using a
-[virtualenv](https://virtualenv.pypa.io/en/stable/). Once you have cloned the
-repository, change directories to the root of the repository and run
-
-```bash
-virtualenv -p python3 .venv
-```
-
-Once the virtual environment is created, activate it by running
-
-```bash
-source .venv/bin/activate
-```
-
-Any Python libraries installed will now be contained within this virtual
-environment. To deactivate the environment, simply run `deactivate`.
-
-Then, install `Fonduer` by running
-
-```bash
-pip install fonduer
-```
+Check out our [Getting Started
+Guide](https://fonduer.readthedocs.io/en/latest/user/getting_started.html) to
+get up and running.
 
 ## Learning how to use `Fonduer`
 
