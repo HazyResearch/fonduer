@@ -1,13 +1,13 @@
 # Fonduer
 
-[![Read the Docs](https://img.shields.io/readthedocs/fonduer.svg)](https://fonduer.readthedocs.io/)
-[![GitHub license](https://img.shields.io/github/license/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/blob/master/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/stargazers)
-[![PyPI](https://img.shields.io/pypi/v/fonduer.svg)](https://pypi.org/project/fonduer/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fonduer.svg)](https://pypi.org/project/fonduer/)
-[![GitHub issues](https://img.shields.io/github/issues/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/issues)
 [![Travis](https://img.shields.io/travis/HazyResearch/fonduer.svg)](https://travis-ci.org/HazyResearch/fonduer)
 [![Coveralls github](https://img.shields.io/coveralls/github/HazyResearch/fonduer.svg)](https://coveralls.io/github/HazyResearch/fonduer)
+[![Read the Docs](https://img.shields.io/readthedocs/fonduer.svg)](https://fonduer.readthedocs.io/)
+[![GitHub issues](https://img.shields.io/github/issues/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/issues)
+[![PyPI](https://img.shields.io/pypi/v/fonduer.svg)](https://pypi.org/project/fonduer/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fonduer.svg)](https://pypi.org/project/fonduer/)
+[![GitHub stars](https://img.shields.io/github/stars/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/stargazers)
+[![GitHub license](https://img.shields.io/github/license/HazyResearch/fonduer.svg)](https://github.com/HazyResearch/fonduer/blob/master/LICENSE)
 
 `Fonduer` is a framework for building knowledge base construction (KBC)
 applications from _richy formatted data_ and is implemented as a library on
