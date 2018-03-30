@@ -29,7 +29,7 @@ submit your contributions as a pull request.
    :maxdepth: 2
    :caption: Developer Documentation
 
-   developer/changelog 
+   dev/changelog
 
 
 Acknowledgements
