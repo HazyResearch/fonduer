@@ -30,6 +30,8 @@ submit your contributions as a pull request.
    :caption: Developer Documentation
 
    dev/changelog
+   dev/install
+   dev/tests
 
 
 Acknowledgements

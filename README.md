@@ -81,35 +81,3 @@ The [`Fonduer`
 tutorials](https://github.com/hazyresearch/fonduer-tutorials) cover the
 `Fonduer` workflow, showing how to extract relations from hardware datasheets
 and scientific literature.
-
-## For Developers
-
-We are following [Semantic Versioning 2.0.0](https://semver.org/) conventions.
-The maintainers will create a git tag for each release and increment the
-version number found in
-[fonduer/\_version.py](https://github.com/HazyResearch/fonduer/blob/master/fonduer/_version.py)
-accordingly. We deploy tags to PyPI automatically using Travis-CI.
-
-To install locally, you'll need to install `pandoc`:
-
-```
-sudo apt-get install pandoc
-```
-
-which is used to create the reStructuredText file that the setuptools expects.
-
-### Tests
-
-To test changes in the package, you install it in [editable
-mode](https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode)
-locally in your virtualenv by running:
-
-```
-make dev
-```
-
-Then you can run our tests
-
-```
-make test
-```

@@ -11,13 +11,13 @@ How do I connect to PostgreSQL? I'm getting "fe\_sendauth no password supplied".
 There are `four main ways`_ to deal with entering passwords when you connect to
 your PostgreSQL database:
 
-1. Set the ``PGPASSWORD`` environment variable
-   ``PGPASSWORD=<pass> psql -h <host> -U <user>``
+1. Set the ``PGPASSWORD`` environment variable ``PGPASSWORD=<pass> psql -h
+   <host> -U <user>``
 2. Using a `.pgpass file to store the password`_.
-3. Setting the users to `trust authentication`_
-   in the pg\_hba.conf file. This makes local development easy, but
-   probably isn't suitable for multiuser environments. You can find your
-   hba file location by running ``psql``, then querying ``SHOW hba_file;``
+3. Setting the users to `trust authentication`_ in the pg\_hba.conf file. This
+   makes local development easy, but probably isn't suitable for multiuser
+   environments. You can find your hba file location by running ``psql``, then
+   querying ``SHOW hba_file;``
 4. Put the username and password in the connection URI:
    ``postgres://user:pw@localhost:5432/...``
 
@@ -45,8 +45,8 @@ install ``0.53.0``:
     make
     sudo checkinstall
 
-We highly recommend using at least Ubuntu 16.04 though, as we haven't
-done testing on 14.04 or older.
+We highly recommend using at least Ubuntu 16.04 though, as we haven't done
+testing on 14.04 or older.
 
 .. _see changelog: https://poppler.freedesktop.org/releases.html
 .. _install manually: https://poppler.freedesktop.org
