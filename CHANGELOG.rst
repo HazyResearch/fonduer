@@ -1,6 +1,10 @@
-.. note::
-    Fonduer is still under active development and APIs may still change
-    rapidly.
+Version 0.1.6
+-------------
+
+* `@senwu`_: Fix support for providing a PostgreSQL username and password as
+  part of the connection string provided to Meta.init() 
+  (`#40 <https://github.com/HazyResearch/fonduer/pull/40>`_)
+* `@lukehsiao`_: Switch README from Markdown to reStructuredText 
 
 Version 0.1.5 
 -------------
@@ -51,3 +55,4 @@ Version 0.1.2
   For convenience, all username links for contributors can be listed here
 
 .. _@lukehsiao: https://github.com/lukehsiao
+.. _@senwu: https://github.com/senwu

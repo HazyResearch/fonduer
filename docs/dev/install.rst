@@ -1,11 +1,6 @@
 Installation
 ============
 
-We are following `Semantic Versioning 2.0.0 <https://semver.org/>`__
-conventions. The maintainers will create a git tag for each release and
-increment the version number found in `fonduer/\_version.py`_ accordingly. We
-deploy tags to PyPI automatically using Travis-CI.
-
 To test changes in the package, you install it in `editable mode`_ locally in
 your virtualenv by running::
 

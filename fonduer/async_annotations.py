@@ -160,21 +160,18 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
     separated by comma. e.g. "name, age, income"
     """
     print('Copying %s to postgres' % table_name)
-    if _meta.DBPORT:
-        cmd = ('cat %s | psql -p %s %s -U %s -c "COPY %s(%s) '
-               'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
-                                                          _meta.DBPORT,
-                                                          _meta.DBNAME,
-                                                          _meta.DBUSER,
-                                                          table_name,
-                                                          tsv_columns)
-    else:
-        cmd = ('cat %s | psql %s -U %s -c "COPY %s(%s) '
-               'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
-                                                          _meta.DBNAME,
-                                                          _meta.DBUSER,
-                                                          table_name,
-                                                          tsv_columns)
+
+    username = "-U " + _meta.DBUSER if _meta.DBUSER is not None else ""
+    password = "PGPASSWORD=" + _meta.DBPWD if _meta.DBPWD is not None else ""
+    port = "-p " + str(_meta.DBPORT) if _meta.DBPORT is not None else ""
+    cmd = ('cat %s | %s psql %s %s %s -c "COPY %s(%s) '
+           'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
+                                                      password,
+                                                      _meta.DBNAME,
+                                                      username,
+                                                      port,
+                                                      table_name,
+                                                      tsv_columns)
     _out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     print(_out)
 
