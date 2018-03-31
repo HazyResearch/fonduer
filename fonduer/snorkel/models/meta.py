@@ -45,6 +45,7 @@ class Meta(object):
     DBNAME = None
     DBUSER = None
     DBPORT = None
+    DBPWD = None
     Session = None
     engine = None
     Base = declarative_base(name='Base', cls=object)
@@ -55,11 +56,13 @@ class Meta(object):
     def init(cls, conn_string=None):
         """Return the unique Meta class."""
         if conn_string and not Meta.ready:
+            url = urlparse(conn_string)
             Meta.conn_string = conn_string
-            Meta.DBNAME = conn_string.split('/')[-1]
-            Meta.DBUSER = getpass.getuser()
-            Meta.DBPORT = urlparse(conn_string).port
-            Meta.postgres = conn_string.startswith('postgres')
+            Meta.DBNAME = url.path[1:]
+            Meta.DBUSER = url.username
+            Meta.DBPWD = url.password
+            Meta.DBPORT = url.port
+            Meta.postgres = url.scheme.startswith('postgres')
             # We initialize the engine within the models module because models'
             # schema can depend on which data types are supported by the engine
             Meta.ready = Meta.postgres
