@@ -42,7 +42,7 @@ Then, install Fonduer by running::
 
 .. tip::
   For the Python dependencies, we recommend using a virtualenv_, which will
-  allow you to install Fonduer and it's python dependencies in a isolated
+  allow you to install Fonduer and its python dependencies in an isolated
   Python environment. Once you have virtualenv installed, you can create a
   Python 3 virtual environment as follows.::
 
