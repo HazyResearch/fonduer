@@ -23,7 +23,6 @@ __pycache__/
 _build/
 
 # Distribution / packaging
-README.rst
 .Python
 build/
 develop-eggs/

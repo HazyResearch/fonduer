@@ -4,9 +4,9 @@ Testing
 Code Style
 ----------
 
-We are using flake8_ to enfore some general code style standards. This style
-check is part of our Travis-CI tests which is required before merging. You can
-check this on your local machine by installing flake8::
+We are using flake8_ to enforce general code style standards. This style check
+is part of our Travis-CI tests which is required before merging. You can check
+this on your local machine by installing flake8::
 
     $ pip install flake8
     $ make check 
