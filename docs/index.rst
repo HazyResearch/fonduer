@@ -1,12 +1,7 @@
-.. Fonduer documentation master file, created by
-   sphinx-quickstart on Thu Mar 29 12:03:46 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Fonduer
 ==================
 
-``Fonduer`` is a framework for building knowledge base construction (KBC)
+Fonduer is a framework for building knowledge base construction (KBC)
 applications from richy formatted data and is implemented as a library on top
 of a modified version of Snorkel_.
 
