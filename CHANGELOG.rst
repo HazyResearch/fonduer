@@ -1,3 +1,9 @@
+Version 0.1.7
+-------------
+
+* `@lukehsiao`_: Remove unused package dependencies. 
+  (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
+
 Version 0.1.6
 -------------
 
