@@ -27,6 +27,8 @@ Version 0.1.5
 
 * `@lukehsiao`_: Remove reliance on environment vars and remove side-effects of
   importing fonduer (`#36 <https://github.com/HazyResearch/fonduer/pull/36>`_)
+* `@lukehsiao`_: Bring codebase in PEP8 compliance and add automatic code-style
+  checks (`#37 <https://github.com/HazyResearch/fonduer/pull/37>`_)
 
 Version 0.1.4 
 -------------
