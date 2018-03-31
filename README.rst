@@ -7,9 +7,9 @@ Fonduer is a framework for building knowledge base construction (KBC)
 applications from *richy formatted data* and is implemented as a library on top
 of a modified version of Snorkel_.
 
-*Note that Fonduer is still actively under development, so feedback and
+Note that Fonduer is still *actively under development*, so feedback and
 contributions are welcome. Let us know in the Issues_ section or feel free to
-submit your contributions as a pull request.*
+submit your contributions as a pull request.
 
 Reference
 ---------
@@ -53,6 +53,6 @@ relations from hardware datasheets and scientific literature.
    :target: https://github.com/HazyResearch/fonduer/blob/master/LICENSE
 
 .. _Snorkel: https://hazyresearch.github.io/snorkel/
-.. _Issues: https://github.com/HazyResearch/fonduer/issues
+.. _Issues: https://github.com/HazyResearch/fonduer/issues/
 .. _Getting Started Guide: https://fonduer.readthedocs.io/en/latest/user/getting_started.html
 .. _Fonduer tutorials: https://github.com/hazyresearch/fonduer-tutorials
