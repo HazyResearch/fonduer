@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import getpass
 import logging
 from builtins import object
 from urllib.parse import urlparse
