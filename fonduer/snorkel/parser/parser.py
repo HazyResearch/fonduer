@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import sys
-import requests
 
+import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
 class Parser(object):
-
     def __init__(self, name, encoding='utf-8'):
         self.name = name
         self.encoding = encoding
@@ -51,6 +47,7 @@ class ParserConnection(object):
     '''
     Default connection object assumes local parser object
     '''
+
     def __init__(self, parser):
         self.parser = parser
 
@@ -65,6 +62,7 @@ class URLParserConnection(ParserConnection):
     '''
     URL parser connection
     '''
+
     def __init__(self, parser, retries=5):
         self.retries = retries
         self.parser = parser
@@ -80,11 +78,12 @@ class URLParserConnection(ParserConnection):
         :return:
         '''
         requests_session = requests.Session()
-        retries = Retry(total=self.retries,
-                        connect=self.retries,
-                        read=self.retries,
-                        backoff_factor=0.1,
-                        status_forcelist=[500, 502, 503, 504])
+        retries = Retry(
+            total=self.retries,
+            connect=self.retries,
+            read=self.retries,
+            backoff_factor=0.1,
+            status_forcelist=[500, 502, 503, 504])
 
         # Mac OS bug -- without this setting multiprocessing requests will fail
         # when the server has boot-up latency associated with model loading
@@ -103,7 +102,8 @@ class URLParserConnection(ParserConnection):
         :param timeout:
         :return:
         '''
-        resp = self.request.post(url, data=data, allow_redirects=allow_redirects)
+        resp = self.request.post(
+            url, data=data, allow_redirects=allow_redirects)
         return resp.content.strip()
 
     def parse(self, document, text):
@@ -114,8 +114,3 @@ class URLParserConnection(ParserConnection):
         :return:
         '''
         return self.parser.parse(document, text, self)
-
-
-
-
-

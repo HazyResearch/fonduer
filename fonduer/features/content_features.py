@@ -1,26 +1,15 @@
-from builtins import str
-from builtins import range
-import os
-import sys
+from builtins import range, str
+
+from treedlib import (Children, Compile, Indicator, LeftNgrams, LeftSiblings,
+                      Mention, Ngrams, Parents, RightNgrams, RightSiblings,
+                      compile_relation_feature_generator)
 
 from fonduer.config import settings
-from fonduer.lf_helpers import get_left_ngrams, get_right_ngrams, tokens_to_ngrams
+from fonduer.lf_helpers import (get_left_ngrams, get_right_ngrams,
+                                tokens_to_ngrams)
 from fonduer.snorkel.models import TemporarySpan
 from fonduer.snorkel.tree_structs import corenlp_to_xmltree
 from fonduer.snorkel.utils import get_as_dict
-
-from treedlib import compile_relation_feature_generator
-from treedlib import Compile
-from treedlib import Children
-from treedlib import Indicator
-from treedlib import LeftNgrams
-from treedlib import LeftSiblings
-from treedlib import Mention
-from treedlib import Ngrams
-from treedlib import Parents
-from treedlib import RightNgrams
-from treedlib import RightSiblings
-
 
 DEF_VALUE = 1
 
@@ -35,7 +24,8 @@ def get_content_feats(candidates):
     for candidate in candidates:
         args = candidate.get_contexts()
         if not (isinstance(args[0], TemporarySpan)):
-            raise ValueError("Accepts Span-type arguments, %s-type found." % type(candidate))
+            raise ValueError("Accepts Span-type arguments, %s-type found." %
+                             type(candidate))
 
         # Unary candidates
         if len(args) == 1:
@@ -44,16 +34,18 @@ def get_content_feats(candidates):
                 get_tdl_feats = compile_entity_feature_generator()
                 sent = get_as_dict(span.sentence)
                 xmltree = corenlp_to_xmltree(sent)
-                sidxs = list(range(span.get_word_start(), span.get_word_end() + 1))
+                sidxs = list(
+                    range(span.get_word_start(),
+                          span.get_word_end() + 1))
                 if len(sidxs) > 0:
                     # Add DDLIB entity features
                     for f in get_ddlib_feats(span, sent, sidxs):
                         yield candidate.id, 'DDL_' + f, DEF_VALUE
                     # Add TreeDLib entity features
                     if span.stable_id not in unary_tdl_feats:
-                            unary_tdl_feats[span.stable_id] = set()
-                            for f in get_tdl_feats(xmltree.root, sidxs):
-                                unary_tdl_feats[span.stable_id].add(f)
+                        unary_tdl_feats[span.stable_id] = set()
+                        for f in get_tdl_feats(xmltree.root, sidxs):
+                            unary_tdl_feats[span.stable_id].add(f)
                     for f in unary_tdl_feats[span.stable_id]:
                         yield candidate.id, 'TDL_' + f, DEF_VALUE
             else:
@@ -68,8 +60,12 @@ def get_content_feats(candidates):
                 sent1 = get_as_dict(span1.sentence)
                 sent2 = get_as_dict(span2.sentence)
                 xmltree = corenlp_to_xmltree(get_as_dict(span1.sentence))
-                s1_idxs = list(range(span1.get_word_start(), span1.get_word_end() + 1))
-                s2_idxs = list(range(span2.get_word_start(), span2.get_word_end() + 1))
+                s1_idxs = list(
+                    range(span1.get_word_start(),
+                          span1.get_word_end() + 1))
+                s2_idxs = list(
+                    range(span2.get_word_start(),
+                          span2.get_word_end() + 1))
                 if len(s1_idxs) > 0 and len(s2_idxs) > 0:
 
                     # Add DDLIB entity features for relation
@@ -81,9 +77,9 @@ def get_content_feats(candidates):
 
                     # Add TreeDLib relation features
                     if candidate.id not in binary_tdl_feats:
-                            binary_tdl_feats[candidate.id] = set()
-                            for f in get_tdl_feats(xmltree.root, s1_idxs, s2_idxs):
-                                binary_tdl_feats[candidate.id].add(f)
+                        binary_tdl_feats[candidate.id] = set()
+                        for f in get_tdl_feats(xmltree.root, s1_idxs, s2_idxs):
+                            binary_tdl_feats[candidate.id].add(f)
                     for f in binary_tdl_feats[candidate.id]:
                         yield candidate.id, 'TDL_' + f, DEF_VALUE
             else:
@@ -94,7 +90,8 @@ def get_content_feats(candidates):
                     yield candidate.id, 'BASIC_e2_' + f, DEF_VALUE
 
         else:
-            raise NotImplementedError("Only handles unary and binary candidates currently")
+            raise NotImplementedError(
+                "Only handles unary and binary candidates currently")
 
 
 def compile_entity_feature_generator():
@@ -140,6 +137,7 @@ def get_ddlib_feats(span, context, idxs):
     for f in unary_ddlib_feats[span.stable_id]:
         yield f
 
+
 def _get_seq_features(context, idxs):
     yield "WORD_SEQ_[" + " ".join(context['words'][i] for i in idxs) + "]"
     yield "LEMMA_SEQ_[" + " ".join(context['lemmas'][i] for i in idxs) + "]"
@@ -147,9 +145,13 @@ def _get_seq_features(context, idxs):
     yield "DEP_SEQ_[" + " ".join(context['dep_labels'][i] for i in idxs) + "]"
 
 
-def _get_window_features(context, idxs, window=settings.featurization.content.window_feature.size,
-                         combinations=settings.featurization.content.window_feature.combinations,
-                         isolated=settings.featurization.content.window_feature.isolated):
+def _get_window_features(
+        context,
+        idxs,
+        window=settings.featurization.content.window_feature.size,
+        combinations=settings.featurization.content.window_feature.
+        combinations,
+        isolated=settings.featurization.content.window_feature.isolated):
     left_lemmas = []
     left_pos_tags = []
     right_lemmas = []
@@ -182,11 +184,15 @@ def _get_window_features(context, idxs, window=settings.featurization.content.wi
         pass
     if isolated:
         for i in range(len(left_lemmas)):
-            yield "W_LEFT_" + str(i + 1) + "_[" + " ".join(left_lemmas[-i - 1:]) + "]"
-            yield "W_LEFT_POS_" + str(i + 1) + "_[" + " ".join(left_pos_tags[-i - 1:]) + "]"
+            yield "W_LEFT_" + str(i + 1) + "_[" + " ".join(
+                left_lemmas[-i - 1:]) + "]"
+            yield "W_LEFT_POS_" + str(i + 1) + "_[" + " ".join(
+                left_pos_tags[-i - 1:]) + "]"
         for i in range(len(right_lemmas)):
-            yield "W_RIGHT_" + str(i + 1) + "_[" + " ".join(right_lemmas[:i + 1]) + "]"
-            yield "W_RIGHT_POS_" + str(i + 1) + "_[" + " ".join(right_pos_tags[:i + 1]) + "]"
+            yield "W_RIGHT_" + str(i + 1) + "_[" + " ".join(
+                right_lemmas[:i + 1]) + "]"
+            yield "W_RIGHT_POS_" + str(i + 1) + "_[" + " ".join(
+                right_pos_tags[:i + 1]) + "]"
     if combinations:
         for i in range(len(left_lemmas)):
             curr_left_lemmas = " ".join(left_lemmas[-i - 1:])
@@ -213,9 +219,11 @@ def _get_window_features(context, idxs, window=settings.featurization.content.wi
                         new_pos_tags.append(to_add)
                     curr_right_pos_tags = " ".join(new_pos_tags)
                 yield "W_LEMMA_L_" + str(i + 1) + "_R_" + str(
-                    j + 1) + "_[" + curr_left_lemmas + "]_[" + curr_right_lemmas + "]"
+                    j + 1
+                ) + "_[" + curr_left_lemmas + "]_[" + curr_right_lemmas + "]"
                 yield "W_POS_L_" + str(i + 1) + "_R_" + str(
-                    j + 1) + "_[" + curr_left_pos_tags + "]_[" + curr_right_pos_tags + "]"
+                    j + 1
+                ) + "_[" + curr_left_pos_tags + "]_[" + curr_right_pos_tags + "]"
 
 
 def get_word_feats(span):
@@ -224,19 +232,24 @@ def get_word_feats(span):
     if span.stable_id not in unary_word_feats:
         unary_word_feats[span.stable_id] = set()
 
-        for ngram in tokens_to_ngrams(span.get_attrib_tokens(attrib), n_min=1, n_max=2):
+        for ngram in tokens_to_ngrams(
+                span.get_attrib_tokens(attrib), n_min=1, n_max=2):
             feature = "CONTAINS_%s_[%s]" % (attrib.upper(), ngram)
             unary_word_feats.add(feature)
 
-        for ngram in get_left_ngrams(span,
-                                     window=settings.featurization.content.word_feature.window,
-                                     n_max=2, attrib=attrib):
+        for ngram in get_left_ngrams(
+                span,
+                window=settings.featurization.content.word_feature.window,
+                n_max=2,
+                attrib=attrib):
             feature = "LEFT_%s_[%s]" % (attrib.upper(), ngram)
             unary_word_feats.add(feature)
 
-        for ngram in get_right_ngrams(span,
-                                      window=settings.featurization.content.word_feature.window,
-                                      n_max=2, attrib=attrib):
+        for ngram in get_right_ngrams(
+                span,
+                window=settings.featurization.content.word_feature.window,
+                n_max=2,
+                attrib=attrib):
             feature = "RIGHT_%s_[%s]" % (attrib.upper(), ngram)
             unary_word_feats.add(feature)
 

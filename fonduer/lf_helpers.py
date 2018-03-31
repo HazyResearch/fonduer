@@ -1,23 +1,24 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-from builtins import str
-from builtins import range
+from __future__ import absolute_import, division, print_function
+
+from builtins import range, str
 from collections import defaultdict
 from itertools import chain
+
+import numpy as np
 from lxml import etree
 from lxml.html import fromstring
-import numpy as np
 
 from fonduer.models import Phrase
 from fonduer.snorkel.candidates import Ngrams
 from fonduer.snorkel.models.context import TemporarySpan
 from fonduer.snorkel.utils import tokens_to_ngrams
-from fonduer.utils_table import (min_row_diff, min_col_diff, is_row_aligned,
-                                 is_col_aligned, is_axis_aligned)
-from fonduer.utils_visual import (
-    bbox_from_span, bbox_from_phrase, bbox_horz_aligned, bbox_vert_aligned,
-    bbox_vert_aligned_left, bbox_vert_aligned_right, bbox_vert_aligned_center)
+from fonduer.utils_table import (is_axis_aligned, is_col_aligned,
+                                 is_row_aligned, min_col_diff, min_row_diff)
+from fonduer.utils_visual import (bbox_from_phrase, bbox_from_span,
+                                  bbox_horz_aligned, bbox_vert_aligned,
+                                  bbox_vert_aligned_center,
+                                  bbox_vert_aligned_left,
+                                  bbox_vert_aligned_right)
 
 
 def get_between_ngrams(c, attrib='words', n_min=1, n_max=1, lower=True):
@@ -526,9 +527,7 @@ def get_head_ngrams(span,
             for axis in axes:
                 if getattr(span.sentence, _other_axis(axis) + '_start') == 0:
                     return
-                for phrase in getattr(
-                        _get_head_cell(span.sentence.cell, axis), 'phrases',
-                    []):
+                for phrase in getattr(_get_head_cell(span.sentence.cell, axis), 'phrases', []):
                     for ngram in tokens_to_ngrams(
                             getattr(phrase, attrib),
                             n_min=n_min,

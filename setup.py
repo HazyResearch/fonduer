@@ -1,7 +1,5 @@
 """For pip."""
-from setuptools import setup
-from setuptools import find_packages
-
+from setuptools import find_packages, setup
 
 exec(open('fonduer/_version.py').read())
 setup(
@@ -37,7 +35,7 @@ setup(
     ],
     keywords=['fonduer', 'knowledge base construction', 'richly formatted data'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest>=3.4.0'],
+    tests_require=['pytest>=3.4.0', 'flake8'],
     include_package_data=True,
     url="https://github.com/HazyResearch/fonduer",
     classifiers=[  # https://pypi.python.org/pypi?:action=list_classifiers

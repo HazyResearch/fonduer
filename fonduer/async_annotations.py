@@ -1,16 +1,15 @@
-from __future__ import print_function
-from __future__ import division
-from builtins import range
-from builtins import str
-from builtins import zip
-from collections import namedtuple
-from pandas import DataFrame, Series
+from __future__ import division, print_function
+
 import codecs
-import numpy as np
 import os
-import scipy.sparse as sparse
 import subprocess
 import tempfile
+from builtins import range, str, zip
+from collections import namedtuple
+
+import numpy as np
+import scipy.sparse as sparse
+from pandas import DataFrame, Series
 
 from fonduer.features.features import get_all_feats
 from fonduer.snorkel.annotations import FeatureAnnotator
@@ -18,9 +17,8 @@ from fonduer.snorkel.models import Candidate
 from fonduer.snorkel.models.meta import Meta, new_sessionmaker
 from fonduer.snorkel.udf import UDF, UDFRunner
 from fonduer.snorkel.utils import (matrix_conflicts, matrix_coverage,
-                                   matrix_overlaps, matrix_tp, matrix_fp,
-                                   matrix_fn, matrix_tn)
-from fonduer.snorkel.utils import remove_files
+                                   matrix_fn, matrix_fp, matrix_overlaps,
+                                   matrix_tn, matrix_tp, remove_files)
 
 # Used to conform to existing annotation key API call
 # Note that this anontation matrix class can not be replaced with snorkel one
@@ -29,6 +27,7 @@ _TempKey = namedtuple('TempKey', ['id', 'name'])
 
 # Grab a pointer to the global vars
 _meta = Meta.init()
+
 
 def _to_annotation_generator(fns):
     """"
@@ -66,8 +65,8 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
 
     def get_candidate(self, session, i):
         """Return the Candidate object corresponding to row i"""
-        return session.query(Candidate)\
-                .filter(Candidate.id == self.row_index[i]).one()
+        return session.query(Candidate).filter(
+            Candidate.id == self.row_index[i]).one()
 
     def get_row_index(self, candidate):
         """Return the row index of the Candidate"""
@@ -163,12 +162,19 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
     print('Copying %s to postgres' % table_name)
     if _meta.DBPORT:
         cmd = ('cat %s | psql -p %s %s -U %s -c "COPY %s(%s) '
-                'FROM STDIN" --set=ON_ERROR_STOP=true') % \
-                (segment_file_blob, _meta.DBPORT, _meta.DBNAME, _meta.DBUSER, table_name, tsv_columns)
+               'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
+                                                          _meta.DBPORT,
+                                                          _meta.DBNAME,
+                                                          _meta.DBUSER,
+                                                          table_name,
+                                                          tsv_columns)
     else:
         cmd = ('cat %s | psql %s -U %s -c "COPY %s(%s) '
-                'FROM STDIN" --set=ON_ERROR_STOP=true') % \
-                (segment_file_blob, _meta.DBNAME, _meta.DBUSER, table_name, tsv_columns)
+               'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
+                                                          _meta.DBNAME,
+                                                          _meta.DBUSER,
+                                                          table_name,
+                                                          tsv_columns)
     _out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     print(_out)
 
@@ -226,8 +232,10 @@ class BatchAnnotatorUDF(UDF):
             else:
                 nonzero_kv_dict = {}
                 for id, k, v in self.anno_generator(list(candidates)):
-                    if id not in nonzero_kv_dict: nonzero_kv_dict[id] = []
-                    if v != 0: nonzero_kv_dict[id].append((k, v))
+                    if id not in nonzero_kv_dict:
+                        nonzero_kv_dict[id] = []
+                    if v != 0:
+                        nonzero_kv_dict[id].append((k, v))
                 for i, candidate in enumerate(candidates):
                     nonzero_kvs = nonzero_kv_dict[candidate.id]
                     if nonzero_kvs:
@@ -270,7 +278,8 @@ class BatchAnnotator(UDFRunner):
               storage=None,
               ignore_keys=[],
               **kwargs):
-        if update_keys: replace_key_set = False
+        if update_keys:
+            replace_key_set = False
         # Get the cids based on the split, and also the count
         Session = new_sessionmaker()
         session = Session()
@@ -353,7 +362,8 @@ class BatchAnnotator(UDFRunner):
                                                             table_name))
                     con.execute('DROP TABLE %s' % table_name)
 
-            if old_table_name: table_name = old_table_name
+            if old_table_name:
+                table_name = old_table_name
             # Load the matrix
             key_table_name = self.key_table_name
             if key_group:
@@ -406,7 +416,7 @@ class BatchFeatureAnnotator(BatchAnnotator):
 
 
 class BatchLabelAnnotator(BatchAnnotator):
-    def __init__(self, candidate_type, lfs, **kwargs):
+    def __init__(self, candidate_type, lfs, label_generator=None, **kwargs):
         if lfs is not None:
             labels = lambda c: [(lf.__name__, lf(c)) for lf in lfs]
         elif label_generator is not None:

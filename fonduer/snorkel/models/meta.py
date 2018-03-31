@@ -1,16 +1,16 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
-from builtins import object
+from __future__ import absolute_import, division, print_function
 
 import getpass
 import logging
+from builtins import object
+from urllib.parse import urlparse
+
+from future import standard_library
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from urllib.parse import urlparse
+
+standard_library.install_aliases()
 
 logger = logging.getLogger(__name__)
 

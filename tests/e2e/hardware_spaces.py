@@ -1,9 +1,8 @@
-from builtins import chr
-from builtins import str
-from builtins import range
-from difflib import SequenceMatcher
 import logging
 import re
+from builtins import chr, range, str
+from difflib import SequenceMatcher
+
 from fonduer.candidates import OmniNgrams
 from fonduer.models import TemporaryImplicitSpan
 

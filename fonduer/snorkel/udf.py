@@ -1,14 +1,15 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-from future import standard_library
-standard_library.install_aliases()
-from builtins import *
+from __future__ import absolute_import, division, unicode_literals
+
 import logging
-from multiprocessing import Process, JoinableQueue
+from multiprocessing import JoinableQueue, Process
 from queue import Empty
-from .models.meta import new_sessionmaker, Meta
+
+from future import standard_library
+
+from .models.meta import Meta, new_sessionmaker
 from .utils import ProgressBar
+
+standard_library.install_aliases()
 
 QUEUE_TIMEOUT = 3
 

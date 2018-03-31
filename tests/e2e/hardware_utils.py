@@ -1,8 +1,9 @@
 from __future__ import division
-from builtins import range
+
 import codecs
 import csv
 import logging
+from builtins import range
 
 from fonduer.lf_helpers import *
 from fonduer.snorkel.models import GoldLabel, GoldLabelKey

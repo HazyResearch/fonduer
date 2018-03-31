@@ -1,20 +1,28 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
+import random
+
+import numpy as np
+import scipy.sparse as sparse
 from numbskull import NumbSkull
 from numbskull.inference import FACTORS
-from numbskull.numbskulltypes import Weight, Variable, Factor, FactorToVar
-import numpy as np
-import random
-import scipy.sparse as sparse
+from numbskull.numbskulltypes import Factor, FactorToVar, Variable, Weight
+
 from fonduer.snorkel.learning import GenerativeModel, GenerativeModelWeights
 
 
-def generate_model(n, dep_density, class_prior=False, lf_propensity=False, lf_prior=False, lf_class_propensity=False,
-                   dep_similar=False, dep_reinforcing=False, dep_fixing=False, dep_exclusive=False, force_dep=False):
+def generate_model(n,
+                   dep_density,
+                   class_prior=False,
+                   lf_propensity=False,
+                   lf_prior=False,
+                   lf_class_propensity=False,
+                   dep_similar=False,
+                   dep_reinforcing=False,
+                   dep_fixing=False,
+                   dep_exclusive=False,
+                   force_dep=False):
     weights = GenerativeModelWeights(n)
     for i in range(n):
         weights.lf_accuracy[i] = 1.1 - 0.2 * random.random()
@@ -36,13 +44,13 @@ def generate_model(n, dep_density, class_prior=False, lf_propensity=False, lf_pr
 
     if dep_similar:
         for i in range(n):
-            for j in range(i+1, n):
+            for j in range(i + 1, n):
                 if random.random() < dep_density:
                     weights.dep_similar[i, j] = 0.25
 
     if dep_fixing:
         for i in range(n):
-            for j in range(i+1, n):
+            for j in range(i + 1, n):
                 if random.random() < dep_density:
                     if random.random() < 0.5:
                         weights.dep_fixing[i, j] = 0.25
@@ -51,7 +59,7 @@ def generate_model(n, dep_density, class_prior=False, lf_propensity=False, lf_pr
 
     if dep_reinforcing:
         for i in range(n):
-            for j in range(i+1, n):
+            for j in range(i + 1, n):
                 if random.random() < dep_density:
                     if random.random() < 0.5:
                         weights.dep_reinforcing[i, j] = 0.25
@@ -60,15 +68,26 @@ def generate_model(n, dep_density, class_prior=False, lf_propensity=False, lf_pr
 
     if dep_exclusive:
         for i in range(n):
-            for j in range(i+1, n):
+            for j in range(i + 1, n):
                 if random.random() < dep_density:
                     weights.dep_exclusive[i, j] = 0.25
 
-    if force_dep and weights.dep_similar.getnnz() == 0 and weights.dep_fixing.getnnz() == 0 \
-        and weights.dep_reinforcing.getnnz() == 0 and weights.dep_exclusive.getnnz() == 0:
-        return generate_model(n, dep_density, class_prior=class_prior, lf_propensity=lf_propensity, lf_prior=lf_prior,
-                              lf_class_propensity=lf_class_propensity, dep_similar=dep_similar, dep_fixing=dep_fixing,
-                              dep_reinforcing=dep_reinforcing, dep_exclusive=dep_exclusive, force_dep=True)
+    if (force_dep and weights.dep_similar.getnnz() == 0
+            and weights.dep_fixing.getnnz() == 0
+            and weights.dep_reinforcing.getnnz() == 0
+            and weights.dep_exclusive.getnnz() == 0):
+        return generate_model(
+            n,
+            dep_density,
+            class_prior=class_prior,
+            lf_propensity=lf_propensity,
+            lf_prior=lf_prior,
+            lf_class_propensity=lf_class_propensity,
+            dep_similar=dep_similar,
+            dep_fixing=dep_fixing,
+            dep_reinforcing=dep_reinforcing,
+            dep_exclusive=dep_exclusive,
+            force_dep=True)
     else:
         return weights
 
@@ -109,14 +128,16 @@ def generate_label_matrix(weights, m):
     for optional_name in GenerativeModel.optional_names:
         for i in range(weights.n):
             if getattr(weights, optional_name)[i] != 0.0:
-                weight[w_off]['initialValue'] = np.float64(getattr(weights, optional_name)[i])
+                weight[w_off]['initialValue'] = np.float64(
+                    getattr(weights, optional_name)[i])
                 w_off += 1
 
     for dep_name in GenerativeModel.dep_names:
         for i in range(weights.n):
             for j in range(weights.n):
                 if getattr(weights, dep_name)[i, j] != 0.0:
-                    weight[w_off]['initialValue'] = np.float64(getattr(weights, dep_name)[i, j])
+                    weight[w_off]['initialValue'] = np.float64(
+                        getattr(weights, dep_name)[i, j])
                     w_off += 1
 
     # Variables
@@ -212,7 +233,8 @@ def generate_label_matrix(weights, m):
 
     for i in range(weights.n):
         if weights.lf_class_propensity[i] != 0.0:
-            factor[f_off]["factorFunction"] = FACTORS["DP_GEN_LF_CLASS_PROPENSITY"]
+            factor[f_off]["factorFunction"] = FACTORS[
+                "DP_GEN_LF_CLASS_PROPENSITY"]
             factor[f_off]["weightId"] = f_off
             factor[f_off]["featureValue"] = 1
             factor[f_off]["arity"] = 2
@@ -229,7 +251,9 @@ def generate_label_matrix(weights, m):
             for j in range(weights.n):
                 if getattr(weights, dep_name)[i, j] != 0.0:
                     if dep_name == 'dep_similar' or dep_name == 'dep_exclusive':
-                        factor[f_off]["factorFunction"] = FACTORS["DP_GEN_DEP_SIMILAR"] if dep_name == 'dep_similar' else FACTORS["DP_GEN_DEP_EXCLUSIVE"]
+                        factor[f_off]["factorFunction"] = FACTORS[
+                            "DP_GEN_DEP_SIMILAR"] if dep_name == 'dep_similar' else FACTORS[
+                                "DP_GEN_DEP_EXCLUSIVE"]
                         factor[f_off]["weightId"] = f_off
                         factor[f_off]["featureValue"] = 1
                         factor[f_off]["arity"] = 2
@@ -241,7 +265,9 @@ def generate_label_matrix(weights, m):
                         f_off += 1
                         ftv_off += 2
                     elif dep_name == 'dep_fixing' or dep_name == 'dep_reinforcing':
-                        factor[f_off]["factorFunction"] = FACTORS["DP_GEN_DEP_FIXING"] if dep_name == 'dep_fixing' else FACTORS["DP_GEN_DEP_REINFORCING"]
+                        factor[f_off]["factorFunction"] = FACTORS[
+                            "DP_GEN_DEP_FIXING"] if dep_name == 'dep_fixing' else FACTORS[
+                                "DP_GEN_DEP_REINFORCING"]
 
                         factor[f_off]["weightId"] = f_off
                         factor[f_off]["featureValue"] = 1
@@ -265,7 +291,7 @@ def generate_label_matrix(weights, m):
     ns.loadFactorGraph(weight, variable, factor, ftv, domain_mask, n_edges)
     fg = ns.getFactorGraph()
 
-    y = np.ndarray((m,), np.int64)
+    y = np.ndarray((m, ), np.int64)
     L = sparse.lil_matrix((m, weights.n), dtype=np.int64)
     for i in range(m):
         fg.burnIn(10, False)

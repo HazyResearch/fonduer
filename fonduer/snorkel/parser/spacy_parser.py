@@ -1,20 +1,19 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+from collections import defaultdict
+from pathlib import Path
 
 import pkg_resources
-from collections import defaultdict
+
 from fonduer.snorkel.models import construct_stable_id
 from fonduer.snorkel.parser import Parser, ParserConnection
-from pathlib import Path
 
 try:
     import spacy
     from spacy.cli import download
     from spacy import util
-except:
+except Exception as e:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 
@@ -50,15 +49,18 @@ class Spacy(Parser):
     CARDINAL	Numerals that do not fall under another type.
 
     '''
-    def __init__(self, annotators=['tagger', 'parser', 'entity'],
-                 lang='en', num_threads=1, verbose=False):
+
+    def __init__(self,
+                 annotators=['tagger', 'parser', 'entity'],
+                 lang='en',
+                 num_threads=1,
+                 verbose=False):
 
         super(Spacy, self).__init__(name="spacy")
         self.model = Spacy.load_lang_model(lang)
         self.num_threads = num_threads
 
         self.pipeline = [proc for _, proc in self.model.__dict__['pipeline']]
-
 
     @staticmethod
     def is_package(name):
@@ -75,7 +77,6 @@ class Spacy(Parser):
             if package.lower().replace('-', '_') == name:
                 return True
         return False
-
 
     @staticmethod
     def model_installed(name):
@@ -97,7 +98,6 @@ class Spacy(Parser):
         if Path(name).exists():  # path to model data directory
             return True
         return False
-
 
     @staticmethod
     def load_lang_model(lang):
@@ -141,11 +141,12 @@ class Spacy(Parser):
             parts = defaultdict(list)
             text = sent.text
 
-            for i,token in enumerate(sent):
+            for i, token in enumerate(sent):
                 parts['words'].append(str(token))
                 parts['lemmas'].append(token.lemma_)
                 parts['pos_tags'].append(token.tag_)
-                parts['ner_tags'].append(token.ent_type_ if token.ent_type_ else 'O')
+                parts['ner_tags'].append(token.ent_type_
+                                         if token.ent_type_ else 'O')
                 parts['char_offsets'].append(token.idx)
                 parts['abs_char_offsets'].append(token.idx)
                 head_idx = 0 if token.head is token else token.head.i - sent[0].i + 1
@@ -173,9 +174,11 @@ class Spacy(Parser):
             # Assign the stable id as document's stable id plus absolute
             # character offset
             abs_sent_offset = parts['abs_char_offsets'][0]
-            abs_sent_offset_end = abs_sent_offset + parts['char_offsets'][-1] + len(parts['words'][-1])
+            abs_sent_offset_end = abs_sent_offset + parts['char_offsets'][-1] + len(
+                parts['words'][-1])
             if document:
-                parts['stable_id'] = construct_stable_id(document, 'sentence', abs_sent_offset, abs_sent_offset_end)
+                parts['stable_id'] = construct_stable_id(
+                    document, 'sentence', abs_sent_offset, abs_sent_offset_end)
 
             position += 1
 

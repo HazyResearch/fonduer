@@ -8,14 +8,15 @@ If you are testing locally, you will need to create this db.
 """
 import logging
 import os
+
 import pytest
 
-ATTRIBUTE = "parser_test"
-from fonduer import Meta
-from fonduer import HTMLPreprocessor, OmniParser
+from fonduer import HTMLPreprocessor, Meta, OmniParser
 from fonduer.models import Document, Phrase
 from fonduer.parser import OmniParserUDF
 from fonduer.snorkel.parser import Spacy
+
+ATTRIBUTE = "parser_test"
 
 
 def test_parse_structure(caplog):
@@ -170,7 +171,7 @@ def test_spacy_integration(caplog):
     The point of this test is to actually use the DB just as would be
     done in a notebook by a user.
     """
-    caplog.set_level(logging.INFO)
+    #  caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
     PARALLEL = 2  # Travis only gives 2 cores

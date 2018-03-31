@@ -33,17 +33,15 @@ version ``0.36.0`` or greater. Otherwise, the ``-bbox-layout`` option is not
 available for ``pdftotext`` (`see changelog`_).
 
 If you must use Ubuntu 14.04, you can `install manually`_. As an example, to
-install ``0.53.0``:
+install ``0.53.0``::
 
-.. code:: bash
-
-    sudo apt-get install build-essential checkinstall
-    wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
-    tar -xf ./poppler-0.53.0.tar.xz
-    cd poppler-0.53.0
-    ./configure
-    make
-    sudo checkinstall
+    $ sudo apt install build-essential checkinstall
+    $ wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
+    $ tar -xf ./poppler-0.53.0.tar.xz
+    $ cd poppler-0.53.0
+    $ ./configure
+    $ make
+    $ sudo checkinstall
 
 We highly recommend using at least Ubuntu 16.04 though, as we haven't done
 testing on 14.04 or older.

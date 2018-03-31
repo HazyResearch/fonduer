@@ -1,8 +1,8 @@
-from fonduer.features.content_features import *
-from fonduer.features.core_features import *
-from fonduer.features.structural_features import *
-from fonduer.features.table_features import *
-from fonduer.features.visual_features import *
+from fonduer.features.content_features import get_content_feats
+from fonduer.features.core_features import get_core_feats
+from fonduer.features.structural_features import get_structural_feats
+from fonduer.features.table_features import get_table_feats
+from fonduer.features.visual_features import get_visual_feats
 
 
 def get_all_feats(candidates):

@@ -1,37 +1,39 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import re
+import subprocess
 import sys
+from builtins import object, range, zip
+
 import numpy as np
 import scipy.sparse as sparse
-import subprocess
 
 
 class ProgressBar(object):
     def __init__(self, N, length=40):
-        self.N      = max(1, N)
-        self.nf     = float(self.N)
+        self.N = max(1, N)
+        self.nf = float(self.N)
         self.length = length
-        self.update_interval = self.nf/100
+        self.update_interval = self.nf / 100
         self.current_tick = 0
         self.bar(0)
 
     def bar(self, i):
         """Assumes i ranges through [0, N-1]"""
-        new_tick = i/self.update_interval
+        new_tick = i / self.update_interval
         if int(new_tick) != int(self.current_tick):
             b = int(np.ceil((i / self.nf) * self.length))
-            sys.stdout.write("\r[%s%s] %d%%" % ("="*b, " "*(self.length-b), int(100*(i / self.nf))))
+            sys.stdout.write("\r[%s%s] %d%%" % ("=" * b,
+                                                " " * (self.length - b),
+                                                int(100 * (i / self.nf))))
             sys.stdout.flush()
         self.current_tick = new_tick
 
     def close(self):
         b = self.length
-        sys.stdout.write("\r[%s%s] %d%%\n" % ("="*b, " "*(self.length-b), 100))
+        sys.stdout.write("\r[%s%s] %d%%\n" % ("=" * b, " " * (self.length - b),
+                                              100))
         sys.stdout.flush()
 
 
@@ -40,8 +42,9 @@ def get_ORM_instance(ORM_class, session, instance):
     Given an ORM class and *either an instance of this class, or the name attribute of an instance
     of this class*, return the instance
     """
-    if isinstance(instance, str) or isinstance(instance, unicode):
-        return session.query(ORM_class).filter(ORM_class.name == instance).one_or_none()
+    if isinstance(instance, str):
+        return session.query(ORM_class).filter(
+            ORM_class.name == instance).one_or_none()
     else:
         return instance
 
@@ -59,6 +62,7 @@ def camel_to_under(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
+
 def sparse_nonzero(X):
     """Sparse matrix with value 1 for i,jth entry !=0"""
     X_nonzero = X.copy()
@@ -72,6 +76,7 @@ def sparse_nonzero(X):
     else:
         raise ValueError("Only supports CSR/CSC and LIL matrices")
     return X_nonzero
+
 
 def sparse_abs(X):
     """Element-wise absolute value of sparse matrix- avoids casting to dense matrix!"""
@@ -101,7 +106,10 @@ def matrix_overlaps(L):
     Return the **fraction of candidates that each LF _overlaps with other LFs on_.**
     """
     L_nonzero = sparse_nonzero(L)
-    return np.ravel(np.where(L_nonzero.sum(axis=1) > 1, 1, 0).T * L_nonzero / float(L.shape[0]))
+    return np.ravel(
+        np.where(L_nonzero.sum(axis=1) > 1, 1, 0).T * L_nonzero / float(
+            L.shape[0]))
+
 
 def matrix_conflicts(L):
     """
@@ -114,38 +122,42 @@ def matrix_conflicts(L):
             if np.unique(np.array(B[row][np.nonzero(B[row])])).size == 1:
                 B[row] = 0
         return matrix_coverage(sparse_nonzero(B))
-    if not (sparse.isspmatrix_csc(B) or sparse.isspmatrix_lil(B) or sparse.isspmatrix_csr(B)):
+    if not (sparse.isspmatrix_csc(B) or sparse.isspmatrix_lil(B)
+            or sparse.isspmatrix_csr(B)):
         raise ValueError("Only supports CSR/CSC and LIL matrices")
     if sparse.isspmatrix_csc(B) or sparse.isspmatrix_lil(B):
         B = B.tocsr()
     for row in range(B.shape[0]):
         if np.unique(B.getrow(row).data).size == 1:
-            B.data[B.indptr[row]:B.indptr[row+1]] = 0
+            B.data[B.indptr[row]:B.indptr[row + 1]] = 0
     return matrix_coverage(sparse_nonzero(B))
-
 
 
 def matrix_tp(L, labels):
     return np.ravel([
-        np.sum(np.ravel((L[:, j] == 1).todense()) * (labels == 1)) for j in range(L.shape[1])
+        np.sum(np.ravel((L[:, j] == 1).todense()) * (labels == 1))
+        for j in range(L.shape[1])
     ])
 
 
 def matrix_fp(L, labels):
     return np.ravel([
-        np.sum(np.ravel((L[:, j] == 1).todense()) * (labels == -1)) for j in range(L.shape[1])
+        np.sum(np.ravel((L[:, j] == 1).todense()) * (labels == -1))
+        for j in range(L.shape[1])
     ])
 
 
 def matrix_tn(L, labels):
     return np.ravel([
-        np.sum(np.ravel((L[:, j] == -1).todense()) * (labels == -1)) for j in range(L.shape[1])
+        np.sum(np.ravel((L[:, j] == -1).todense()) * (labels == -1))
+        for j in range(L.shape[1])
     ])
 
 
 def matrix_fn(L, labels):
     return np.ravel([
-        np.sum(np.ravel((L[:, j] == -1).todense()) * (labels == 1)) for j in range(L.shape[1])
+        np.sum(np.ravel((L[:, j] == -1).todense()) * (labels == 1))
+        for j in range(L.shape[1])
     ])
 
 
@@ -161,13 +173,19 @@ def get_as_dict(x):
 
 
 def sort_X_on_Y(X, Y):
-    return [x for (y,x) in sorted(zip(Y,X), key=lambda t : t[0])]
+    return [x for (y, x) in sorted(zip(Y, X), key=lambda t: t[0])]
 
 
 def corenlp_cleaner(words):
-  d = {'-RRB-': ')', '-LRB-': '(', '-RCB-': '}', '-LCB-': '{',
-       '-RSB-': ']', '-LSB-': '['}
-  return [d[w] if w in d else w for w in words]
+    d = {
+        '-RRB-': ')',
+        '-LRB-': '(',
+        '-RCB-': '}',
+        '-LCB-': '{',
+        '-RSB-': ']',
+        '-LSB-': '['
+    }
+    return [d[w] if w in d else w for w in words]
 
 
 def split_html_attrs(attrs):
@@ -178,7 +196,8 @@ def split_html_attrs(attrs):
     html_attrs = []
     for a in attrs:
         attr = a[0]
-        values = [v.split(';') for v in a[1]] if isinstance(a[1], list) else [a[1].split(';')]
+        values = [v.split(';') for v in a[1]] if isinstance(
+            a[1], list) else [a[1].split(';')]
         for i in range(len(values)):
             while isinstance(values[i], list):
                 values[i] = values[i][0]
@@ -195,7 +214,8 @@ def tokens_to_ngrams(tokens, n_min=1, n_max=3, delim=' ', lower=False):
 
 
 def get_keys_by_candidate(candidate, annotation_matrix):
-    (r, c, v) = sparse.find(annotation_matrix[annotation_matrix.get_row_index(candidate), :])
+    (r, c, v) = sparse.find(
+        annotation_matrix[annotation_matrix.get_row_index(candidate), :])
     return [annotation_matrix.get_key(idx).name for idx in c]
 
 
