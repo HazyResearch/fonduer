@@ -2,11 +2,11 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import os
+from pickle import dump, load
 from time import time
 
 import numpy as np
 import tensorflow as tf
-from six.moves.cPickle import dump, load
 
 from .classifier import Classifier
 from .utils import LabelBalancer, reshape_marginals

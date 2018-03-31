@@ -5,6 +5,7 @@ import os
 import random
 from copy import copy
 from distutils.version import StrictVersion
+from pickle import dump, load
 
 import numbskull
 import numpy as np
@@ -15,7 +16,6 @@ from numbskull import NumbSkull
 from numbskull.inference import FACTORS
 from numbskull.numbskulltypes import Factor, FactorToVar, Variable, Weight
 from pandas import DataFrame
-from six.moves.cPickle import dump, load
 
 from .classifier import Classifier
 

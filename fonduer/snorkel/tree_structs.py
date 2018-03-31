@@ -3,7 +3,6 @@ import os
 import re
 
 import lxml.etree as et
-import six
 
 from fonduer.snorkel.utils import corenlp_cleaner
 
@@ -119,7 +118,7 @@ def corenlp_to_xmltree_sub(s, dep_parents, rid=0):
     if i >= 0:
         for k, v in list(
                 filter(lambda t: isinstance(t[1], list) and len(t[1]) == N,
-                       six.iteritems(s))):
+                       s.items())):
             if v[i] is not None:
                 attrib[singular(k)] = scrub(v[i]).encode(
                     'ascii', 'ignore') if hasattr(v[i], 'encode') else str(
