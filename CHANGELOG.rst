@@ -1,4 +1,4 @@
-Version 0.1.7
+Version 0.1.7 (coming soon...)
 -------------
 
 * `@lukehsiao`_: Remove unused package dependencies. 
