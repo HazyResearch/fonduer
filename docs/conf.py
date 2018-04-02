@@ -33,7 +33,7 @@ autodoc_mock_imports = [
     'requests',
     'scipy',
     'spacy',
-    'sqlalchemy',
+    #  'sqlalchemy',
     'tensorflow',
     'treedlib',
     'wand',

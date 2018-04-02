@@ -139,15 +139,18 @@ class Sentence(Context):
 
 class TemporaryContext(object):
     """
-    A context which does not incur the overhead of a proper ORM-based Context object.
-    The TemporaryContext class is specifically for the candidate extraction process, during which a CandidateSpace
-    object will generate many TemporaryContexts, which will then be filtered by Matchers prior to materialization
-    of Candidates and constituent Context objects.
+    A context which does not incur the overhead of a proper ORM-based Context
+    object. The TemporaryContext class is specifically for the candidate
+    extraction process, during which a CandidateSpace object will generate many
+    TemporaryContexts, which will then be filtered by Matchers prior to
+    materialization of Candidates and constituent Context objects.
 
-    Every Context object has a corresponding TemporaryContext object from which it inherits.
+    Every Context object has a corresponding TemporaryContext object from which
+    it inherits.
 
-    A TemporaryContext must have specified equality / set membership semantics, a stable_id for checking
-    uniqueness against the database, and a promote() method which returns a corresponding Context object.
+    A TemporaryContext must have specified equality / set membership semantics,
+    a stable_id for checking uniqueness against the database, and a promote()
+    method which returns a corresponding Context object.
     """
 
     def __init__(self):

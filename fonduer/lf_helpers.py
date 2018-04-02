@@ -22,9 +22,9 @@ from fonduer.utils_visual import (bbox_from_phrase, bbox_from_span,
 
 
 def get_between_ngrams(c, attrib='words', n_min=1, n_max=1, lower=True):
-    """Return the ngrams _between_ two unary Spans of a binary-Span Candidate.
+    """Return the ngrams *between* two unary Spans of a binary-Span Candidate.
 
-    Get the ngrams _between_ two unary Spans of a binary-Span Candidate, where
+    Get the ngrams *between* two unary Spans of a binary-Span Candidate, where
     both share the same sentence Context.
 
     :param c: The binary-Span Candidate to evaluate.
@@ -32,7 +32,7 @@ def get_between_ngrams(c, attrib='words', n_min=1, n_max=1, lower=True):
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If 'True', all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     if len(c) != 2:
         raise ValueError("Only applicable to binary Candidates")
@@ -68,9 +68,9 @@ def get_left_ngrams(span,
                     n_min=1,
                     n_max=1,
                     lower=True):
-    """Get the ngrams within a window to the _left_ of the Candidate from its sentence Context.
+    """Get the ngrams within a window to the *left* of the Candidate from its sentence Context.
 
-    For higher-arity Candidates, defaults to the _first_ argument.
+    For higher-arity Candidates, defaults to the *first* argument.
 
     :param span: The Span to evaluate. If a candidate is given, default to its first Span.
     :param window: The number of tokens to the left of the first argument to return
@@ -78,7 +78,7 @@ def get_left_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     span = span if isinstance(span,
                               TemporarySpan) else span[0]  # get first Span
@@ -97,9 +97,9 @@ def get_right_ngrams(span,
                      n_min=1,
                      n_max=1,
                      lower=True):
-    """Get the ngrams within a window to the _right_ of the Candidate from its sentence Context.
+    """Get the ngrams within a window to the *right* of the Candidate from its sentence Context.
 
-    For higher-arity Candidates, defaults to the _last_ argument.
+    For higher-arity Candidates, defaults to the *last* argument.
 
     :param span: The Span to evaluate. If a candidate is given, default to its last Span.
     :param window: The number of tokens to the left of the first argument to return
@@ -107,7 +107,7 @@ def get_right_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     span = span if isinstance(span,
                               TemporarySpan) else span[-1]  # get last Span
@@ -251,7 +251,7 @@ def get_phrase_ngrams(span, attrib='words', n_min=1, n_max=1, lower=True):
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -288,7 +288,7 @@ def get_neighbor_phrase_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -314,7 +314,7 @@ def get_cell_ngrams(span, attrib='words', n_min=1, n_max=1, lower=True):
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -353,7 +353,7 @@ def get_neighbor_cell_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams (or (ngram, direction) tuples if directions=True)
+    :rtype: a *generator* of ngrams (or (ngram, direction) tuples if directions=True)
     """
     # TODO: Fix this to be more efficient (optimize with SQL query)
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
@@ -415,7 +415,7 @@ def get_row_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -445,7 +445,7 @@ def get_col_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -475,7 +475,7 @@ def get_aligned_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -516,7 +516,7 @@ def get_head_ngrams(span,
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     axes = [axis] if axis else ['row', 'col']
@@ -736,7 +736,7 @@ def get_horz_ngrams(span,
     :param lower: If True, all ngrams will be returned in lower case
     :param from_phrase: If True, returns ngrams from any horizontally aligned Phrases,
                         rather than just horizontally aligned ngrams themselves.
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -762,7 +762,7 @@ def get_vert_ngrams(span,
     :param lower: If True, all ngrams will be returned in lower case
     :param from_phrase: If True, returns ngrams from any horizontally aligned Phrases,
                         rather than just horizontally aligned ngrams themselves.
-    :rtype: a _generator_ of ngrams
+    :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -846,7 +846,8 @@ def get_page_vert_percentile(span,
     the page is 1.0. For example, a Span in at the top 1/4 of the page will have
     a percentil of 0.25.
 
-    Page width and height are based on pt values:
+    Page width and height are based on pt values::
+
         Letter      612x792
         Tabloid     792x1224
         Ledger      1224x792
@@ -865,6 +866,7 @@ def get_page_vert_percentile(span,
         Folio       612x936
         Quarto      610x780
         10x14       720x1008
+
     and should match the source documents. Letter size is used by default.
 
     Note that if a candidate is passed in, only the vertical percentil of its
@@ -884,10 +886,11 @@ def get_page_horz_percentile(span,
                              page_height=DEFAULT_HEIGHT):
     """Return which percentile from the LEFT in the page the Span is located in.
 
-    Percentile is calculated where the left of the page is 0.0, and the right of
-    the page is 1.0.
+    Percentile is calculated where the left of the page is 0.0, and the right
+    of the page is 1.0.
 
-    Page width and height are based on pt values:
+    Page width and height are based on pt values::
+
         Letter      612x792
         Tabloid     792x1224
         Ledger      1224x792
@@ -906,6 +909,7 @@ def get_page_horz_percentile(span,
         Folio       612x936
         Quarto      610x780
         10x14       720x1008
+
     and should match the source documents. Letter size is used by default.
 
     Note that if a candidate is passed in, only the vertical percentil of its
@@ -986,7 +990,7 @@ def get_visual_aligned_lemmas(span):
     Note that if a candidate is passed in, all of its Spans will be searched.
 
     :param span: The Span to evaluate.
-    :rtype: a _generator_ of lemmas
+    :rtype: a *generator* of lemmas
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
@@ -1171,7 +1175,7 @@ def common_ancestor(c):
 def lowest_common_ancestor_depth(c):
     """Return the minimum distance between a binary-Span Candidate to their lowest common ancestor.
 
-    For example, if the tree looked like this:
+    For example, if the tree looked like this::
 
         html
         |----<div> span 1 </div>
