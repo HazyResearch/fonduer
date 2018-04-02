@@ -11,6 +11,17 @@ Note that Fonduer is still *actively under development*, so feedback and
 contributions are welcome. Let us know in the Issues_ section or feel free to
 submit your contributions as a pull request.
 
+Getting Started
+------------
+
+Check out our `Getting Started Guide`_ to get up and running with Fonduer.
+
+Learning how to use Fonduer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `Fonduer tutorials`_ cover the Fonduer workflow, showing how to extract
+relations from hardware datasheets and scientific literature.
+
 Reference
 ---------
 
@@ -24,16 +35,6 @@ Data <https://arxiv.org/abs/1703.05028>`__::
       year={2017}
     }
 
-Installation
-------------
-
-Check out our `Getting Started Guide`_ to get up and running.
-
-Learning how to use ``Fonduer``
--------------------------------
-
-The `Fonduer tutorials`_ cover the Fonduer workflow, showing how to extract
-relations from hardware datasheets and scientific literature.
 
 .. |Travis| image:: https://img.shields.io/travis/HazyResearch/fonduer.svg
    :target: https://travis-ci.org/HazyResearch/fonduer
