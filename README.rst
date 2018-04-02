@@ -12,7 +12,7 @@ contributions are welcome. Let us know in the Issues_ section or feel free to
 submit your contributions as a pull request.
 
 Getting Started
-------------
+---------------
 
 Check out our `Getting Started Guide`_ to get up and running with Fonduer.
 
