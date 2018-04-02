@@ -30,7 +30,6 @@ autodoc_mock_imports = [
     'pandas',
     'pdftotree',
     'psycopyg2',
-    'pyyaml',
     'requests',
     'scipy',
     'spacy',
@@ -38,6 +37,7 @@ autodoc_mock_imports = [
     'tensorflow',
     'treedlib',
     'wand',
+    'yaml',
 ]
 
 # -- Project information -----------------------------------------------------
