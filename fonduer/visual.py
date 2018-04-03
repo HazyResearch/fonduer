@@ -1,9 +1,9 @@
-from __future__ import division, print_function
+from __future__ import division
 
+import logging
 import os
 import re
 import subprocess
-import warnings
 from builtins import object, range, str, zip
 from collections import OrderedDict, defaultdict
 
@@ -18,6 +18,7 @@ standard_library.install_aliases()
 
 class VisualLinker(object):
     def __init__(self, time=False, verbose=False):
+        self.logger = logging.getLogger(__name__)
         self.pdf_file = None
         self.verbose = verbose
         self.time = time
@@ -37,7 +38,7 @@ class VisualLinker(object):
         try:
             self.extract_pdf_words()
         except RuntimeError as e:
-            warnings.warn(e.message, RuntimeWarning)
+            self.logger.exception(e)
             return
         self.extract_html_words()
         self.link_lists(search_max=200)
@@ -73,7 +74,8 @@ class VisualLinker(object):
             float(pages[0].get('height')))
         self.pdf_dim = (page_width, page_height)
         if self.verbose:
-            print("Extracted %d pdf words" % len(self.pdf_word_list))
+            self.logger.info("Extracted {} pdf words".format(
+                len(self.pdf_word_list)))
 
     def _coordinates_from_HTML(self, page, page_num):
         pdf_word_list = []
@@ -115,7 +117,8 @@ class VisualLinker(object):
                 html_word_list.append(((phrase.stable_id, i), word))
         self.html_word_list = html_word_list
         if self.verbose:
-            print("Extracted %d html words" % len(self.html_word_list))
+            self.logger.info("Extracted {} html words".format(
+                len(self.html_word_list)))
 
     def link_lists(self, search_max=100, edit_cost=20, offset_cost=1):
         # NOTE: there are probably some inefficiencies here from rehashing words
@@ -181,8 +184,8 @@ class VisualLinker(object):
                 for i in range(len(self.html_word_list))
             ])
             total = len(self.html_word_list)
-            print("({:d}/{:d}) = {:.2f}".format(matches, total,
-                                                matches / total))
+            self.logger.info("({:d}/{:d}) = {:.2f}".format(
+                matches, total, matches / total))
             return matches
 
         N = len(self.html_word_list)
@@ -195,7 +198,7 @@ class VisualLinker(object):
         # first pass: global search for exact matches
         link_exact(0, N)
         if self.verbose:
-            print("Global exact matching:")
+            self.logger.debug("Global exact matching:")
             display_match_counts()
 
         # second pass: local search for exact matches
@@ -204,7 +207,7 @@ class VisualLinker(object):
                 max(0, i * search_radius - search_radius),
                 min(N, i * search_radius + search_radius))
         if self.verbose:
-            print("Local exact matching:")
+            self.logger.debug("Local exact matching:")
             display_match_counts()
 
         # third pass: local search for approximate matches
@@ -214,7 +217,7 @@ class VisualLinker(object):
             if html_to_pdf[i] is None:
                 link_fuzzy(i)
         if self.verbose:
-            print("Local approximate matching:")
+            self.logger.debug("Local approximate matching:")
             display_match_counts()
 
         # convert list to dict
@@ -225,8 +228,9 @@ class VisualLinker(object):
         ])
         total = len(self.html_word_list)
         if self.verbose:
-            print("Linked {:d}/{:d} ({:.2f}) html words exactly".format(
-                matches, total, matches / total))
+            self.logger.debug(
+                "Linked {:d}/{:d} ({:.2f}) html words exactly".format(
+                    matches, total, matches / total))
         self.links = OrderedDict((self.html_word_list[i][0],
                                   self.pdf_word_list[html_to_pdf[i]][0])
                                  for i in range(len(self.html_word_list)))
@@ -280,14 +284,15 @@ class VisualLinker(object):
                     offsetHist.append(searchIndices[nearest])
                     editDistHist += 1
         if DEBUG:
-            print(offsetHist)
-            print(jHist)
-            print(editDistHist)
+            self.logger.debug(offsetHist)
+            self.logger.debug(jHist)
+            self.logger.debug(editDistHist)
             self.offsetHist = offsetHist
         self.links = links
         if self.verbose:
-            print("Linked {:d} words to {:d} bounding boxes".format(
-                len(self.html_word_list), len(self.pdf_word_list)))
+            self.logger.debug(
+                "Linked {:d} words to {:d} bounding boxes".format(
+                    len(self.html_word_list), len(self.pdf_word_list)))
 
     def _calculate_offset(self, listA, listB, seedSize, maxOffset):
         wordsA = zip(*listA[:seedSize])[1]
@@ -319,7 +324,7 @@ class VisualLinker(object):
             total += 1
             if word == pdf[i]:
                 match += 1
-        print((match, total, match / total))
+        self.logger.info((match, total, match / total))
 
         data = {
             # 'i': range(len(self.links)),
@@ -328,7 +333,7 @@ class VisualLinker(object):
             'j': j,
         }
         pd.set_option('display.max_rows', max_rows)
-        print(pd.DataFrame(data, columns=['html', 'pdf', 'j']))
+        self.logger.info(pd.DataFrame(data, columns=['html', 'pdf', 'j']))
         pd.reset_option('display.max_rows')
 
     def update_coordinates(self):
@@ -345,4 +350,4 @@ class VisualLinker(object):
             phrase.right = list(right)
             yield phrase
         if self.verbose:
-            print("Updated coordinates in database")
+            self.logger.debug("Updated coordinates in database")

@@ -1,6 +1,6 @@
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import (absolute_import, division, unicode_literals)
 
+import logging
 import re
 import subprocess
 import sys
@@ -220,8 +220,9 @@ def get_keys_by_candidate(candidate, annotation_matrix):
 
 
 def remove_files(filename):
+    logger = logging.getLogger(__name__)
     try:
         subprocess.check_output('rm -f %s' % filename, shell=True)
     except OSError as e:
-        print(e)
+        logger.exception(e)
         pass
