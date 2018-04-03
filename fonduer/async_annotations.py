@@ -30,6 +30,7 @@ _TempKey = namedtuple('TempKey', ['id', 'name'])
 _meta = Meta.init()
 logger = logging.getLogger(__name__)
 
+
 def _to_annotation_generator(fns):
     """"
     Generic method which takes a set of functions, and returns a generator that yields
@@ -167,12 +168,9 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
     port = "-p " + str(_meta.DBPORT) if _meta.DBPORT is not None else ""
     cmd = ('cat %s | %s psql %s %s %s -c "COPY %s(%s) '
            'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
-                                                      password,
-                                                      _meta.DBNAME,
-                                                      username,
-                                                      port,
-                                                      table_name,
-                                                      tsv_columns)
+                                                      password, _meta.DBNAME,
+                                                      username, port,
+                                                      table_name, tsv_columns)
     _out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     logger.info(_out)
 

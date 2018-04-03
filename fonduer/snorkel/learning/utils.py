@@ -3,7 +3,6 @@ from __future__ import (absolute_import, division, print_function,
 
 import inspect
 import logging
-import math
 import os
 from itertools import product
 from multiprocessing import JoinableQueue, Process
@@ -21,6 +20,7 @@ standard_library.install_aliases()
 # ###########################################################
 # # General Learning Utilities
 # ###########################################################
+
 
 def reshape_marginals(marginals):
     """Returns correctly shaped marginals as np array"""
@@ -213,37 +213,21 @@ class MentionScorer(Scorer):
 
             # If gold candidate set is provided calculate recall-adjusted scores
             if self.gold_candidate_set is not None:
-<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
                 gold_fn = [
                     c for c in self.gold_candidate_set
                     if c not in self.test_candidates
                 ]
-                print("\n")
+                logger.info("\n")
                 print_scores(
                     len(tp),
                     len(fp),
                     len(tn),
                     len(fn) + len(gold_fn),
-=======
-                gold_fn = [c for c in self.gold_candidate_set
-                    if c not in self.test_candidates]
-                logger.info("\n")
-                print_scores(len(tp), len(fp), len(tn), len(fn)+len(gold_fn),
->>>>>>> Remove print statements to switch to logging
                     title="Corpus Recall-adjusted Scores")
 
             # If training and test marginals provided print calibration plots
             if train_marginals is not None and test_marginals is not None:
-<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
                 raise NotImplementedError("Invalid code here.")
-                #  print("\nCalibration plot:")
-                #  calibration_plots(train_marginals, test_marginals,
-                #                    np.asarray(test_label_array))
-=======
-                logger.info("\nCalibration plot:")
-                calibration_plots(train_marginals, test_marginals,
-                    np.asarray(test_label_array))
->>>>>>> Remove print statements to switch to logging
         return tp, fp, tn, fn
 
     def _score_categorical(self,
@@ -288,17 +272,12 @@ class MentionScorer(Scorer):
 
             # If gold candidate set is provided calculate recall-adjusted scores
             if self.gold_candidate_set is not None:
-<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
                 gold_missed = [
                     c for c in self.gold_candidate_set
                     if c not in self.test_candidates
                 ]
-                print("Coverage:", (nc + ni) / (nc + ni + len(gold_missed)))
-=======
-                gold_missed = [c for c in self.gold_candidate_set
-                    if c not in self.test_candidates]
-                logger.info("Coverage: {}".format((nc + ni) / (nc + ni + len(gold_missed))))
->>>>>>> Remove print statements to switch to logging
+                logger.info("Coverage: {}".format(
+                    (nc + ni) / (nc + ni + len(gold_missed))))
         return correct, incorrect
 
     def summary_score(self, test_marginals, **kwargs):
@@ -451,18 +430,10 @@ class GridSearch(object):
                 hps[pn] = pv
             logger.info("=" * 60)
             NUMTYPES = float, int, np.float64
-<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
-            print("[%d] Testing %s" % (k + 1, ', '.join([
+            logger.info("[%d] Testing %s" % (k + 1, ', '.join([
                 "%s = %s" % (pn, ("%0.2e" % pv)
                              if isinstance(pv, NUMTYPES) else pv)
                 for pn, pv in zip(self.param_names, param_vals)
-=======
-            logger.info("[%d] Testing %s" % (k+1, ', '.join([
-                "%s = %s" % (
-                    pn,
-                    ("%0.2e" % pv) if isinstance(pv, NUMTYPES) else pv)
-                for pn,pv in zip(self.param_names, param_vals)
->>>>>>> Remove print statements to switch to logging
             ])))
             logger.info("=" * 60)
 
@@ -501,12 +472,8 @@ class GridSearch(object):
                 run_score_label = "F-{0} Score".format(beta)
 
             # Add scores to running stats, print, and set as optimal if best
-<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
-            print("[{0}] {1}: {2}".format(model.name, run_score_label,
-                                          run_score))
-=======
-            logger.info("[{0}] {1}: {2}".format(model.name,run_score_label,run_score))
->>>>>>> Remove print statements to switch to logging
+            logger.info("[{0}] {1}: {2}".format(model.name, run_score_label,
+                                                run_score))
             run_stats.append(list(param_vals) + list(run_scores))
             if run_score > run_score_opt or k == 0:
                 model.save(model_name=model_name, save_dir=self.save_dir)
@@ -591,7 +558,8 @@ class GridSearch(object):
                     k = scores[0]
                     param_vals = param_val_sets[k]
                     run_stats.append([k] + list(param_vals) + list(scores[1:]))
-                    logger.info("Model {0} Done; score: {1}".format(k, scores[-1]))
+                    logger.info("Model {0} Done; score: {1}".format(
+                        k, scores[-1]))
                     scores_queue.task_done()
                 except Empty:
                     break
@@ -760,8 +728,9 @@ def sparse_abs(X):
 
 def candidate_coverage(L):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return the **fraction of candidates which have > 0 (non-zero) labels.**
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return the **fraction of candidates which have > 0
+    (non-zero) labels.**
     """
     return np.where(
         sparse_abs(L).sum(axis=1) != 0, 1, 0).sum() / float(L.shape[0])
@@ -769,16 +738,17 @@ def candidate_coverage(L):
 
 def LF_coverage(L):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return the **fraction of candidates that each LF labels.**
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return the **fraction of candidates that each LF labels.**
     """
     return np.ravel(sparse_abs(L).sum(axis=0) / float(L.shape[0]))
 
 
 def candidate_overlap(L):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return the **fraction of candidates which have > 1 (non-zero) labels.**
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return the **fraction of candidates which have > 1
+    (non-zero) labels.**
     """
     return np.where(
         sparse_abs(L).sum(axis=1) > 1, 1, 0).sum() / float(L.shape[0])
@@ -786,8 +756,9 @@ def candidate_overlap(L):
 
 def LF_overlaps(L):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return the **fraction of candidates that each LF _overlaps with other LFs on_.**
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return the **fraction of candidates that each LF _overlaps
+    with other LFs on_.**
     """
     L_abs = sparse_abs(L)
     return np.ravel(
@@ -796,8 +767,9 @@ def LF_overlaps(L):
 
 def candidate_conflict(L):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return the **fraction of candidates which have > 1 (non-zero) labels _which are not equal_.**
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return the **fraction of candidates which have > 1
+    (non-zero) labels _which are not equal_.**
     """
     return np.where(
         sparse_abs(L).sum(axis=1) != sparse_abs(L.sum(axis=1)), 1,
@@ -806,8 +778,9 @@ def candidate_conflict(L):
 
 def LF_conflicts(L):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return the **fraction of candidates that each LF _conflicts with other LFs on_.**
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return the **fraction of candidates that each LF _conflicts
+    with other LFs on_.**
     """
     L_abs = sparse_abs(L)
     return np.ravel(
@@ -817,41 +790,32 @@ def LF_conflicts(L):
 
 def LF_accuracies(L, labels):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate, and labels {-1,1}
-    Return the accuracy of each LF w.r.t. these labels
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate, and labels {-1,1} Return the accuracy of each LF w.r.t.
+    these labels
     """
     return np.ravel(0.5 * (L.T.dot(labels) / sparse_abs(L).sum(axis=0) + 1))
 
 
 def training_set_summary_stats(L, return_vals=True, verbose=False):
     """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the ith candidate:
-    Return simple summary statistics
+    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
+    ith candidate: Return simple summary statistics
     """
     N, M = L.shape
     coverage, overlap, conflict = candidate_coverage(L), candidate_overlap(
         L), candidate_conflict(L)
     if verbose:
-<<<<<<< 0546c8c6fedbd7538ecc75dd2a64e9c5184749fa
-        print("=" * 60)
-        print("LF Summary Statistics: %s LFs applied to %s candidates" % (M,
-                                                                          N))
-        print("-" * 60)
-        print("Coverage (candidates w/ > 0 labels):\t\t%0.2f%%" %
-              (coverage * 100, ))
-        print("Overlap (candidates w/ > 1 labels):\t\t%0.2f%%" %
-              (overlap * 100, ))
-        print("Conflict (candidates w/ conflicting labels):\t%0.2f%%" %
-              (conflict * 100, ))
-        print("=" * 60)
-=======
         logger.info("=" * 60)
-        logger.info("LF Summary Statistics: %s LFs applied to %s candidates" % (M, N))
+        logger.info("LF Summary Statistics: %s LFs applied to %s candidates" %
+                    (M, N))
         logger.info("-" * 60)
-        logger.info("Coverage (candidates w/ > 0 labels):\t\t%0.2f%%" % (coverage*100,))
-        logger.info("Overlap (candidates w/ > 1 labels):\t\t%0.2f%%" % (overlap*100,))
-        logger.info("Conflict (candidates w/ conflicting labels):\t%0.2f%%" % (conflict*100,))
+        logger.info("Coverage (candidates w/ > 0 labels):\t\t%0.2f%%" %
+                    (coverage * 100, ))
+        logger.info("Overlap (candidates w/ > 1 labels):\t\t%0.2f%%" %
+                    (overlap * 100, ))
+        logger.info("Conflict (candidates w/ conflicting labels):\t%0.2f%%" %
+                    (conflict * 100, ))
         logger.info("=" * 60)
->>>>>>> Remove print statements to switch to logging
     if return_vals:
         return coverage, overlap, conflict

@@ -20,11 +20,29 @@ from fonduer.snorkel.matchers import (RegexMatchSpan, DictionaryMatch,
                                       LambdaFunctionMatcher, Intersect, Union)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 __all__ = [
-    '__version__', 'BatchFeatureAnnotator', 'BatchLabelAnnotator',
-    'CandidateExtractor', 'OmniNgrams', 'OmniFigures',
-    'LambdaFunctionFigureMatcher', 'Meta', 'Document', 'Phrase', 'Figure',
-    'candidate_subclass', 'HTMLPreprocessor', 'OmniParser', 'load_gold_labels',
-    'GenerativeModel', 'SparseLogisticRegression', 'RegexMatchSpan',
-    'DictionaryMatch', 'LambdaFunctionMatcher', 'Intersect', 'Union'
+    'BatchFeatureAnnotator',
+    'BatchLabelAnnotator',
+    'CandidateExtractor',
+    'DictionaryMatch',
+    'Document',
+    'Figure',
+    'GenerativeModel',
+    'HTMLPreprocessor',
+    'Intersect',
+    'LambdaFunctionFigureMatcher',
+    'LambdaFunctionMatcher',
+    'Meta',
+    'OmniFigures',
+    'OmniNgrams',
+    'OmniParser',
+    'PDFPreprocessor',
+    'Phrase',
+    'RegexMatchSpan',
+    'SparseLogisticRegression',
+    'Union',
+    '__version__',
+    'candidate_subclass',
+    'load_gold_labels',
 ]

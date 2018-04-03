@@ -1,6 +1,6 @@
 from builtins import map, object
 
-from sqlalchemy import (Column, ForeignKey, Integer, String, Text,
+from sqlalchemy import (Column, Float, ForeignKey, Integer, String, Text,
                         UniqueConstraint)
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declared_attr
@@ -8,8 +8,9 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import text
 from sqlalchemy.types import PickleType
 
-from fonduer.snorkel.models.context import (
-    Context, Document, TemporaryContext, TemporarySpan, split_stable_id)
+from fonduer.snorkel.models.context import (Context, Document,
+                                            TemporaryContext, TemporarySpan,
+                                            split_stable_id)
 from fonduer.snorkel.models.meta import Meta
 
 # Grab pointer to global metadata
@@ -351,7 +352,7 @@ class Cell(Context):
     col_start = Column(Integer)
     col_end = Column(Integer)
     html_tag = Column(Text)
-    if snorkel_postgres:
+    if _meta.postgres:
         html_attrs = Column(postgresql.ARRAY(String))
         # html_anc_tags = Column(postgresql.ARRAY(String))
         # html_anc_attrs = Column(postgresql.ARRAY(String))

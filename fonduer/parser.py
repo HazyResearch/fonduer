@@ -109,7 +109,9 @@ class OmniParser(UDFRunner):
             flatten_delim='',
             lingual=True,  # lingual information
             strip=True,
-            replacements=[('\(cid:\d+\)', '$')],  #[(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],
+            replacements=[
+                ('\(cid:\d+\)', '$')
+            ],  # [(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],
             tabular=True,  # tabular information
             visual=False,  # visual information
             pdf_path=None):
@@ -282,7 +284,6 @@ class OmniParserUDF(UDF):
                 parts['right'].append(curr_word[4])
             except Exception as e:
                 logger.exception(e)
-
 
         # TODO(lwhsiao): I think this actually is uncessesary, as the parts
         # object gets modified by this function directly. But, it might be nice
@@ -787,7 +788,7 @@ class ParaInfo(object):
             self.para = Para(
                 document=self.document, stable_id=stable_id, position=para_idx)
             self.parent = self.para
-            #coordinates
+            # coordinates
             coordinates = {}
             coordinates["char"] = node.get('char')
             coordinates["top"] = node.get('top')
@@ -880,7 +881,6 @@ def update_coordinates(parts, coordinates, char_idx):
     left = [float(_) for _ in coordinates['left'][:-1].split(sep)]
     bottom = [float(_) for _ in coordinates['bottom'][:-1].split(sep)]
     right = [float(_) for _ in coordinates['right'][:-1].split(sep)]
-    words = []
     new_chars = []
     new_top = []
     new_left = []
@@ -898,7 +898,6 @@ def update_coordinates(parts, coordinates, char_idx):
     left = new_left
     right = new_right
     bottom = new_bottom
-    words = []
     matches = lcs("".join(chars[char_idx:]), "".join(parts['words']))
     word_lens = [len(words) for words in parts['words']]
     logger.debug("parts['words'] = {}".format(parts['words']))
@@ -963,7 +962,7 @@ class SectionInfo(object):
                 para=para,
                 para_id=para_idx)
             self.parent = self.section
-            #coordinates
+            # coordinates
             coordinates = {}
             coordinates["char"] = node.get('char')
             coordinates["top"] = node.get('top')
@@ -1015,7 +1014,7 @@ class HeaderInfo(object):
                 position=header_idx,
                 para=para)
             self.parent = self.header
-            #coordinates
+            # coordinates
             coordinates = {}
             coordinates["char"] = node.get('char')
             coordinates["top"] = node.get('top')
@@ -1067,7 +1066,7 @@ class FigureCaptionInfo(object):
                 position=figCaption_idx,
                 para=para)
             self.parent = self.figCaption
-            #coordinates
+            # coordinates
             coordinates = {}
             coordinates["char"] = node.get('char')
             coordinates["top"] = node.get('top')
@@ -1119,7 +1118,7 @@ class TableCaptionInfo(object):
                 position=tabCaption_idx,
                 para=para)
             self.parent = self.tabCaption
-            #coordinates
+            # coordinates
             coordinates = {}
             coordinates["char"] = node.get('char')
             coordinates["top"] = node.get('top')
@@ -1171,7 +1170,7 @@ class RefListInfo(object):
                 position=refList_idx,
                 para=para)
             self.parent = self.refList
-            #coordinates
+            # coordinates
             coordinates = {}
             coordinates["char"] = node.get('char')
             coordinates["top"] = node.get('top')
