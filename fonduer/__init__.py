@@ -1,12 +1,9 @@
 import logging
 
 from fonduer._version import __version__
-# If we want to directly expose any subclasses at the package level, include
-# them here. For example, this allows the user to write
-# `from fonduer import HTMLPreprocessor` rather than having
-# `from fonduer.parser import HTMLPreprocessor`
+from fonduer.annotations import load_gold_labels
 from fonduer.async_annotations import (BatchFeatureAnnotator,
-                                       BatchLabelAnnotator, load_gold_labels)
+                                       BatchLabelAnnotator)
 from fonduer.candidates import CandidateExtractor, OmniFigures, OmniNgrams
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.matchers import (DateMatcher, DictionaryMatch, Intersect, Inverse,

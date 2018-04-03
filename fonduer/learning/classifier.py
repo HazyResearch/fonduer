@@ -2,8 +2,8 @@ from __future__ import (absolute_import, division, unicode_literals)
 
 import numpy as np
 
-from fonduer.async_annotations import save_marginals
-from .utils import MentionScorer
+from fonduer.annotations import save_marginals
+from fonduer.learning.utils import MentionScorer
 
 
 class Classifier(object):
