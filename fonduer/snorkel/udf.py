@@ -92,10 +92,9 @@ class UDFRunner(object):
 
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
-        if _meta.conn_string.startswith('sqlite'):
+        if not _meta.postgres:
             raise ValueError(
-                'Multiprocessing with SQLite is not supported. Please use a different database backend,'
-                ' such as PostgreSQL.')
+                "Fonduer must use PostgreSQL as a database backend.")
 
         # Fill a JoinableQueue with input objects
         in_queue = JoinableQueue()
