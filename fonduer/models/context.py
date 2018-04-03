@@ -352,14 +352,7 @@ class Cell(Context):
     col_start = Column(Integer)
     col_end = Column(Integer)
     html_tag = Column(Text)
-    if _meta.postgres:
-        html_attrs = Column(postgresql.ARRAY(String))
-        # html_anc_tags = Column(postgresql.ARRAY(String))
-        # html_anc_attrs = Column(postgresql.ARRAY(String))
-    else:
-        html_attrs = Column(PickleType)
-        # html_anc_tags = Column(PickleType)
-        # html_anc_attrs = Column(PickleType)
+    html_attrs = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'cell',
