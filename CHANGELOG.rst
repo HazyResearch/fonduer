@@ -16,8 +16,9 @@ Version 0.1.7 (coming soon...)
         
         from fonduer._ import _
 
-    In addition, to leverage the logging output of Fonduer, such as in a Jupyter Notebook,
-    you can configure a logger in your first cell:
+.. tip::
+    To leverage the logging output of Fonduer, such as in a Jupyter Notebook,
+    you can configure a logger in your application:
 
     .. code:: python
 
@@ -26,7 +27,8 @@ Version 0.1.7 (coming soon...)
         logging.basicConfig(stream=sys.stdout, format='[%(levelname)s] %(name)s - %(message)s')
         log = logging.getLogger('fonduer')
         log.setLevel(logging.INFO)
-      
+
+
 * `@lukehsiao`_: Remove SQLite code, switch to logging, and absorb snorkel
   codebase directly into the fonduer package for simplicity
   (`#44 <https://github.com/HazyResearch/fonduer/pull/44>`_)
