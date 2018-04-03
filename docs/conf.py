@@ -18,15 +18,26 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 autodoc_mock_imports = [
+    'bs4',
+    'editdistance',
     'future',
+    'ipywidgets',
+    'lxml',
+    'nltk',
     'numba',
     'numbskull',
     'numpy',
     'pandas',
+    'pdftotree',
+    'psycopyg2',
+    'requests',
     'scipy',
     'spacy',
-    'sqlalchemy',
+    #  'sqlalchemy',
     'tensorflow',
+    'treedlib',
+    'wand',
+    'yaml',
 ]
 
 # -- Project information -----------------------------------------------------

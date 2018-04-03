@@ -1,7 +1,9 @@
 Version 0.1.7 (coming soon...)
 ------------------------------
 
-* `@lukehsiao`_: Remove unused package dependencies. 
+* `@lukehsiao`_: Add lf_helpers to ReadTheDocs 
+  (`#42 <https://github.com/HazyResearch/fonduer/pull/42>`_)
+* `@lukehsiao`_: Remove unused package dependencies 
   (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
 
 Version 0.1.6
