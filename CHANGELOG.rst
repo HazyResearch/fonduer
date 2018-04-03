@@ -19,7 +19,7 @@ Version 0.1.7 (coming soon...)
     In addition, to leverage the logging output of Fonduer, such as in a Jupyter Notebook,
     you can configure a logger in your first cell:
 
-    .. code::python
+    .. code:: python
 
         import logging
 
