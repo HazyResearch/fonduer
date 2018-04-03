@@ -7,7 +7,7 @@ import warnings
 import ipywidgets as widgets
 from traitlets import Int, List, Unicode
 
-from fonduer.snorkel.models import GoldLabel, GoldLabelKey, StableLabel
+from fonduer.models import GoldLabel, GoldLabelKey, StableLabel
 
 try:
     from IPython.core.display import display, Javascript

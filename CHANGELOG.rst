@@ -1,6 +1,9 @@
 Version 0.1.7 (coming soon...)
 ------------------------------
 
+* `@lukehsiao`_: Remove SQLite code, switch to logging, and absorb snorkel codebase
+  directly into the fonduer package for simplicity.
+  (`#44 <https://github.com/HazyResearch/fonduer/pull/44>`_)
 * `@lukehsiao`_: Add lf_helpers to ReadTheDocs 
   (`#42 <https://github.com/HazyResearch/fonduer/pull/42>`_)
 * `@lukehsiao`_: Remove unused package dependencies 

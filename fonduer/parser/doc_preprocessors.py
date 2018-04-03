@@ -3,12 +3,11 @@ from __future__ import (absolute_import, division, unicode_literals)
 import codecs
 import glob
 import os
-import re
 
 import lxml.etree as et
 from bs4 import BeautifulSoup
 
-from ..models import Document
+from fonduer.models.context import Document
 
 
 class DocPreprocessor(object):
@@ -148,35 +147,36 @@ class CSVPathsPreprocessor(DocPreprocessor):
         return self.parser.parse_file(fp, file_name)
 
 
-class HTMLDocPreprocessor(DocPreprocessor):
-    """Simple parsing of raw HTML files, assuming one document per file"""
-
-    def parse_file(self, fp, file_name):
-        with open(fp, 'rb') as f:
-            html = BeautifulSoup(f, 'lxml')
-            txt = list(filter(self._cleaner, html.findAll(text=True)))
-            txt = ' '.join(self._strip_special(s) for s in txt if s != '\n')
-            name = os.path.basename(fp).rsplit('.', 1)[0]
-            stable_id = self.get_stable_id(name)
-            doc = Document(
-                name=name, stable_id=stable_id, meta={
-                    'file_name': file_name
-                })
-            yield doc, txt
-
-    def _can_read(self, fpath):
-        return fpath.endswith('.html')
-
-    def _cleaner(self, s):
-        if s.parent.name in ['style', 'script', '[document]', 'head', 'title']:
-            return False
-        elif re.match('<!--.*-->', str(s)):
-            return False
-        return True
-
-    def _strip_special(self, s):
-        return (''.join(c for c in s if ord(c) < 128)).encode(
-            'ascii', 'ignore')
+#  NOTE: this is not used in Fonduer
+#  class HTMLDocPreprocessor(DocPreprocessor):
+#      """Simple parsing of raw HTML files, assuming one document per file"""
+#
+#      def parse_file(self, fp, file_name):
+#          with open(fp, 'rb') as f:
+#              html = BeautifulSoup(f, 'lxml')
+#              txt = list(filter(self._cleaner, html.findAll(text=True)))
+#              txt = ' '.join(self._strip_special(s) for s in txt if s != '\n')
+#              name = os.path.basename(fp).rsplit('.', 1)[0]
+#              stable_id = self.get_stable_id(name)
+#              doc = Document(
+#                  name=name, stable_id=stable_id, meta={
+#                      'file_name': file_name
+#                  })
+#              yield doc, txt
+#
+#      def _can_read(self, fpath):
+#          return fpath.endswith('.html')
+#
+#      def _cleaner(self, s):
+#          if s.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+#              return False
+#          elif re.match('<!--.*-->', str(s)):
+#              return False
+#          return True
+#
+#      def _strip_special(self, s):
+#          return (''.join(c for c in s if ord(c) < 128)).encode(
+#              'ascii', 'ignore')
 
 
 class XMLMultiDocPreprocessor(DocPreprocessor):
@@ -218,3 +218,24 @@ class XMLMultiDocPreprocessor(DocPreprocessor):
 
     def _can_read(self, fpath):
         return fpath.endswith('.xml')
+
+
+class HTMLPreprocessor(DocPreprocessor):
+    """Simple parsing of files into html documents"""
+
+    def parse_file(self, fp, file_name):
+        with codecs.open(fp, encoding=self.encoding) as f:
+            soup = BeautifulSoup(f, 'lxml')
+            for text in soup.find_all('html'):
+                name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
+                stable_id = self.get_stable_id(name)
+                yield Document(
+                    name=name,
+                    stable_id=stable_id,
+                    text=str(text),
+                    meta={
+                        'file_name': file_name
+                    }), str(text)
+
+    def _can_read(self, fpath):
+        return fpath.endswith('html')  # includes both .html and .xhtml

@@ -6,8 +6,8 @@ from queue import Empty
 
 from future import standard_library
 
-from .models.meta import Meta, new_sessionmaker
-from .utils import ProgressBar
+from fonduer.models.meta import Meta, new_sessionmaker
+from fonduer.utils import ProgressBar
 
 standard_library.install_aliases()
 

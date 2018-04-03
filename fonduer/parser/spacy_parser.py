@@ -1,12 +1,12 @@
-from __future__ import (absolute_import, division, unicode_literals)
+from __future__ import absolute_import, division, unicode_literals
 
 from collections import defaultdict
 from pathlib import Path
 
 import pkg_resources
 
-from fonduer.snorkel.models import construct_stable_id
-from fonduer.snorkel.parser import Parser, ParserConnection
+from fonduer.models import construct_stable_id
+from fonduer.parser.parser import Parser, ParserConnection
 
 try:
     import spacy

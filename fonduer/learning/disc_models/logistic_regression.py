@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from scipy.sparse import issparse
 
-from fonduer.snorkel.learning.disc_learning import TFNoiseAwareModel
+from fonduer.learning.disc_learning import TFNoiseAwareModel
 
 SD = 0.1
 

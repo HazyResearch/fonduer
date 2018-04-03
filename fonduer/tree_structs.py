@@ -4,7 +4,7 @@ import re
 
 import lxml.etree as et
 
-from fonduer.snorkel.utils import corenlp_cleaner
+from fonduer.utils import corenlp_cleaner
 
 APP_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 

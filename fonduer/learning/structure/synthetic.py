@@ -1,4 +1,4 @@
-from __future__ import (absolute_import, division, unicode_literals)
+from __future__ import absolute_import, division, unicode_literals
 
 import random
 
@@ -8,7 +8,7 @@ from numbskull import NumbSkull
 from numbskull.inference import FACTORS
 from numbskull.numbskulltypes import Factor, FactorToVar, Variable, Weight
 
-from fonduer.snorkel.learning import GenerativeModel, GenerativeModelWeights
+from fonduer.learning import GenerativeModel, GenerativeModelWeights
 
 
 def generate_model(n,

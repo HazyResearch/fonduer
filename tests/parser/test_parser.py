@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
+# !/usr/bin/env python
 """
 These tests expect that postgres is installed and that a databased named
 parser_test has been created for the purpose of testing.
@@ -13,8 +13,8 @@ import pytest
 
 from fonduer import HTMLPreprocessor, Meta, OmniParser
 from fonduer.models import Document, Phrase
-from fonduer.parser import OmniParserUDF
-from fonduer.snorkel.parser import Spacy
+from fonduer.parser import Spacy
+from fonduer.parser.async_parser import OmniParserUDF
 
 ATTRIBUTE = "parser_test"
 

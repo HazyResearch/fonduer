@@ -57,7 +57,7 @@ class GenerativeModel(Classifier):
 
         if StrictVersion(numbskull_version) < StrictVersion(numbskull_require):
             raise ValueError(
-                "Snorkel requires Numbskull version %s, but version %s is installed."
+                "Fonduer requires Numbskull version %s, but version %s is installed."
                 % (numbskull_require, numbskull_version))
 
         self.class_prior = class_prior
@@ -110,14 +110,14 @@ class GenerativeModel(Classifier):
         higher-order dependencies can be included as an argument.
 
         Results are stored as a member named weights, instance of
-        snorkel.learning.gen_learning.GenerativeModelWeights.
+        fonduer.learning.gen_learning.GenerativeModelWeights.
 
         :param L: M x N csr_AnnotationMatrix-type label matrix, where there are
             M candidates labeled by N labeling functions (LFs)
         :param deps: collection of dependencies to include in the model, each
                      element is a tuple of the form
                      (LF 1 index, LF 2 index, dependency type),
-                     see snorkel.learning.constants
+                     see fonduer.learning.constants
         :param LF_acc_prior_weights: An N-element list of prior weights for the
             LF accuracies (log scale)
         :param LF_acc_prior_weight_default: Default prior for the weight of each

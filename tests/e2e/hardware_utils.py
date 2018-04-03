@@ -6,8 +6,8 @@ import logging
 from builtins import range
 
 from fonduer.lf_helpers import *
-from fonduer.snorkel.models import GoldLabel, GoldLabelKey
-from fonduer.snorkel.utils import ProgressBar
+from fonduer.models import GoldLabel, GoldLabelKey
+from fonduer.utils import ProgressBar
 
 logger = logging.getLogger(__name__)
 

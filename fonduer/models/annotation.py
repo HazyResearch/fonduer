@@ -5,8 +5,8 @@ from sqlalchemy import (Column, Float, ForeignKey, Integer, String,
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
-from ..utils import camel_to_under
-from .meta import Meta
+from fonduer.utils import camel_to_under
+from fonduer.models.meta import Meta
 
 # Grab pointer to global metadata
 _meta = Meta.init()
@@ -70,15 +70,15 @@ class AnnotationMixin(object):
 
     .. code-block:: python
 
-        from fonduer.snorkel.models.annotation import AnnotationMixin
-        from fonduer.snorkel.models.meta import Meta
+        from fonduer.models.annotation import AnnotationMixin
+        from fonduer.models.meta import Meta
 
         class NewAnnotation(AnnotationMixin, Meta.Base):
             value = Column(Float, nullable=False)
 
 
         # The entire storage schema, including NewAnnotation, can now be initialized with the following import
-        import fonduer.snorkel.models
+        import fonduer.models
 
     The annotation class should include a Column attribute named value.
     """

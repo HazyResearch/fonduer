@@ -1,9 +1,10 @@
-from __future__ import (absolute_import, division, unicode_literals)
+from __future__ import absolute_import, division, unicode_literals
 
 import numpy as np
 from numba import jit
 
-from .constants import DEP_FIXING, DEP_REINFORCING, DEP_SIMILAR
+from fonduer.learning.structure.constants import (DEP_FIXING, DEP_REINFORCING,
+                                                  DEP_SIMILAR)
 
 
 class DependencySelector(object):
@@ -33,7 +34,7 @@ class DependencySelector(object):
                           regularization strength
         :param truncation: number of iterations between truncation step for regularization
         :return: collection of tuples of the format (LF 1 index, LF 2 index, dependency type),
-                 see snorkel.learning.constants
+                 see fonduer.learning.constants
         """
         try:
             L = L.todense()

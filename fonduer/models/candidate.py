@@ -4,8 +4,8 @@ from sqlalchemy import (Boolean, Column, Float, ForeignKey, Integer, String,
                         UniqueConstraint)
 from sqlalchemy.orm import backref, relationship
 
-from ..utils import camel_to_under
-from .meta import Meta
+from fonduer.utils import camel_to_under
+from fonduer.models.meta import Meta
 
 _meta = Meta.init()
 
@@ -81,7 +81,7 @@ def candidate_subclass(class_name,
 
     .. code-block:: python
 
-        from fonduer.snorkel.models import candidate_subclass
+        from fonduer.models import candidate_subclass
 
     :param class_name: The name of the class, should be "camel case" e.g.
         NewCandidate

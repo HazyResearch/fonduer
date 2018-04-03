@@ -9,10 +9,10 @@ import numpy as np
 from lxml import etree
 from lxml.html import fromstring
 
+from fonduer.candidates import Ngrams
 from fonduer.models import Phrase
-from fonduer.snorkel.candidates import Ngrams
-from fonduer.snorkel.models.context import TemporarySpan
-from fonduer.snorkel.utils import tokens_to_ngrams
+from fonduer.models.context import TemporarySpan
+from fonduer.utils import tokens_to_ngrams
 from fonduer.utils_table import (is_axis_aligned, is_col_aligned,
                                  is_row_aligned, min_col_diff, min_row_diff)
 from fonduer.utils_visual import (bbox_from_phrase, bbox_from_span,

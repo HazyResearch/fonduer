@@ -7,9 +7,9 @@ from treedlib import (Children, Compile, Indicator, LeftNgrams, LeftSiblings,
 from fonduer.config import settings
 from fonduer.lf_helpers import (get_left_ngrams, get_right_ngrams,
                                 tokens_to_ngrams)
-from fonduer.snorkel.models import TemporarySpan
-from fonduer.snorkel.tree_structs import corenlp_to_xmltree
-from fonduer.snorkel.utils import get_as_dict
+from fonduer.models import TemporarySpan
+from fonduer.tree_structs import corenlp_to_xmltree
+from fonduer.utils import get_as_dict
 
 DEF_VALUE = 1
 

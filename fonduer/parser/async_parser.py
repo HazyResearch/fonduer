@@ -1,4 +1,3 @@
-import codecs
 import itertools
 import logging
 import os
@@ -7,39 +6,16 @@ from builtins import object, range, str
 from collections import defaultdict
 
 import numpy as np
-from bs4 import BeautifulSoup
 from lxml import etree
 from lxml.html import fromstring
 
-from fonduer.models import Cell, Figure, Phrase, Table
-from fonduer.snorkel.models import (Candidate, Context, Document,
-                                    construct_stable_id, split_stable_id)
-from fonduer.snorkel.parser import DocPreprocessor, Spacy
-from fonduer.snorkel.udf import UDF, UDFRunner
+from fonduer.models import (Candidate, Cell, Context, Document, Figure, Phrase,
+                            Table, construct_stable_id, split_stable_id)
+from fonduer.parser.spacy_parser import Spacy
+from fonduer.udf import UDF, UDFRunner
 from fonduer.visual import VisualLinker
 
 logger = logging.getLogger(__name__)
-
-
-class HTMLPreprocessor(DocPreprocessor):
-    """Simple parsing of files into html documents"""
-
-    def parse_file(self, fp, file_name):
-        with codecs.open(fp, encoding=self.encoding) as f:
-            soup = BeautifulSoup(f, 'lxml')
-            for text in soup.find_all('html'):
-                name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
-                stable_id = self.get_stable_id(name)
-                yield Document(
-                    name=name,
-                    stable_id=stable_id,
-                    text=str(text),
-                    meta={
-                        'file_name': file_name
-                    }), str(text)
-
-    def _can_read(self, fpath):
-        return fpath.endswith('html')  # includes both .html and .xhtml
 
 
 class SimpleTokenizer(object):

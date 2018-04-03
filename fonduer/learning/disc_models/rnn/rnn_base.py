@@ -1,4 +1,4 @@
-from __future__ import (absolute_import, division, unicode_literals)
+from __future__ import absolute_import, division, unicode_literals
 
 # import tensorflow.contrib.rnn as rnn
 import logging
@@ -6,10 +6,10 @@ import logging
 import numpy as np
 import tensorflow as tf
 
-from fonduer.snorkel.learning.disc_learning import TFNoiseAwareModel
-from fonduer.snorkel.models import Candidate
-
-from .utils import SymbolTable, get_bi_rnn_output
+from fonduer.learning.disc_learning import TFNoiseAwareModel
+from fonduer.learning.disc_models.rnn.utils import (SymbolTable,
+                                                    get_bi_rnn_output)
+from fonduer.models import Candidate
 
 SD = 0.1
 

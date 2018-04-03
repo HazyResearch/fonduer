@@ -2,7 +2,7 @@ from __future__ import (absolute_import, division, unicode_literals)
 
 import numpy as np
 
-from ..annotations import save_marginals
+from fonduer.async_annotations import save_marginals
 from .utils import MentionScorer
 
 
