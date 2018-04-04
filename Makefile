@@ -10,7 +10,7 @@ check:
 	flake8 fonduer --count --max-line-length=127 --statistics --ignore=E731,W503,E741,E123
 
 clean:
-	rm -r fonduer.egg-info
 	pip uninstall fonduer
+	rm -r fonduer.egg-info
 
 .PHONY: dev test clean check
