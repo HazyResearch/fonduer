@@ -14,7 +14,7 @@ import pytest
 from fonduer import HTMLPreprocessor, Meta, OmniParser
 from fonduer.models import Document, Phrase
 from fonduer.parser import Spacy
-from fonduer.parser.async_parser import OmniParserUDF
+from fonduer.parser.parser import OmniParserUDF
 
 ATTRIBUTE = "parser_test"
 

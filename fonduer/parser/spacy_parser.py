@@ -6,7 +6,6 @@ from pathlib import Path
 import pkg_resources
 
 from fonduer.models import construct_stable_id
-from fonduer.parser.parser import Parser, ParserConnection
 
 try:
     import spacy
@@ -16,7 +15,7 @@ except Exception as e:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 
-class Spacy(Parser):
+class Spacy(object):
     '''
     spaCy
     https://spacy.io/
@@ -55,7 +54,7 @@ class Spacy(Parser):
                  num_threads=1,
                  verbose=False):
 
-        super(Spacy, self).__init__(name="spacy")
+        self.name = "spacy"
         self.model = Spacy.load_lang_model(lang)
         self.num_threads = num_threads
 
@@ -118,9 +117,6 @@ class Spacy(Parser):
             download(lang)
         return spacy.load(lang)
 
-    def connect(self):
-        return ParserConnection(self)
-
     def parse(self, document, text):
         '''
         Transform spaCy output to match CoreNLP's default format
@@ -128,8 +124,6 @@ class Spacy(Parser):
         :param text:
         :return:
         '''
-        text = self.to_unicode(text)
-
         doc = self.model.tokenizer(text)
         for proc in self.pipeline:
             proc(doc)
