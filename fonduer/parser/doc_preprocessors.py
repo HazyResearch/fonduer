@@ -181,11 +181,11 @@ class CSVPathsPreprocessor(DocPreprocessor):
 
 class XMLMultiDocPreprocessor(DocPreprocessor):
     """
-    Parse an XML file _which contains multiple documents_ into a set of Document
-    objects.
+    Parse an XML file *which contains multiple documents* into a set of
+    Document objects.
 
-    Use XPath queries to specify a _document_ object, and then for each
-    document, a set of _text_ sections and an _id_.
+    Use XPath queries to specify a *document* object, and then for each
+    document, a set of *text* sections and an *id*.
 
     **Note: Include the full document XML etree in the attribs dict with
     keep_xml_tree=True**

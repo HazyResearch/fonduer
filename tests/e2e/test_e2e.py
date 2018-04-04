@@ -23,7 +23,6 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-
 @pytest.mark.skipif('CI' not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on 20 documents of the hardware domain."""
@@ -52,7 +51,7 @@ def test_e2e(caplog):
     logger.info("Phrases: {}".format(num_phrases))
     #  assert num_phrases == 20
 
-    # Divid into test and train
+    # Divide into test and train
     docs = session.query(Document).order_by(Document.name).all()
     ld = len(docs)
 
