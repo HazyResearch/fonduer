@@ -17,6 +17,9 @@ submit your contributions as a pull request.
     :caption: User Documentation
   
     user/getting_started
+    user/preprocessors
+    user/data_model
+    user/matchers
     user/lf_helpers
     user/faqs
 

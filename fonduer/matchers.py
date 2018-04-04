@@ -18,8 +18,8 @@ WORDS = 'words'
 
 class Matcher(object):
     """
-    Applies a function f : c -> {True,False} to a generator of candidates,
-    returning only candidates _c_ s.t. _f(c) == True_,
+    Applies a function ``f : c -> {True,False}`` to a generator of candidates,
+    returning only candidates *c* s.t. *f(c) == True*,
     where f can be compositionally defined.
     """
 

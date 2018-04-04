@@ -58,7 +58,35 @@ Then, install Fonduer by running::
       $ deactivate
 
 
+The Fonduer Pipeline
+--------------------
+
+The Fonduer pipeline can be broken into three main phases. Each of these phases
+requires input from you as you build your Fonduer application. 
+
+  #. Knowledge Base Initialization 
+      We initialize the target knowledge base. Fonduer requires users to
+      specify a schema, as well as preprocessors_ to be used while parsing your
+      corpus.
+  #. Candidate Extraction 
+      Next, users provide matchers_ to define which each type in the schema
+      looks like. Throttlers can also (optionally) be added to filter out
+      invalid candidates to achieve better class balance.
+  #. Multimodal Featurization, Supervision, and Classification 
+      Finally, users provide labeling functions (which can leverage our
+      `labeling function helpers`_) to provide weak supervision.
+
+To demonstrate how to set up and use Fonduer in your applications, we walk
+through each of these phases in real-world examples in our Tutorials_.
+
+Check out the `Fonduer paper`_ for more details about the system.
+
+
+.. _Fonduer paper: https://arxiv.org/abs/1703.05028
+.. _labeling function helpers: lf_helpers.html
+.. _preprocessors: preprocessors.html
+.. _matchers: matchers.html
 .. _Tutorials: https://github.com/HazyResearch/fonduer-tutorials
 .. _homebrew: https://brew.sh
-.. _virtualenv: https://virtualenv.pypa.io/en/stable/
 .. _see changelog: https://poppler.freedesktop.org/releases.html
+.. _virtualenv: https://virtualenv.pypa.io/en/stable/

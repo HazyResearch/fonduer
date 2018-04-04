@@ -217,12 +217,12 @@ class TemporarySpan(TemporaryContext):
         return self.sentence.char_offsets[wi]
 
     def get_attrib_tokens(self, a='words'):
-        """Get the tokens of sentence attribute _a_ over the range defined by word_offset, n"""
+        """Get the tokens of sentence attribute *a* over the range defined by word_offset, n"""
         return self.sentence.__getattribute__(a)[self.get_word_start():
                                                  self.get_word_end() + 1]
 
     def get_attrib_span(self, a, sep=" "):
-        """Get the span of sentence attribute _a_ over the range defined by word_offset, n"""
+        """Get the span of sentence attribute *a* over the range defined by word_offset, n"""
         # NOTE: Special behavior for words currently (due to correspondence with char_offsets)
         if a == 'words':
             return self.sentence.text[self.char_start:self.char_end + 1]
@@ -1008,11 +1008,12 @@ def construct_stable_id(parent_context, polymorphic_type,
 
 
 def split_stable_id(stable_id):
-    """
-    Split stable id, returning:
+    """Split stable id, returning:
+
         * Document (root) stable ID
         * Context polymorphic type
         * Character offset start, end *relative to document start*
+
     Returns tuple of four values.
     """
     split1 = stable_id.split('::')
