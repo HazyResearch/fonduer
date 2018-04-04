@@ -784,11 +784,11 @@ class TemporaryImplicitSpan(TemporarySpan):
         }
 
     def get_attrib_tokens(self, a='words'):
-        """Get the tokens of sentence attribute _a_ over the range defined by word_offset, n"""
+        """Get the tokens of sentence attribute *a* over the range defined by word_offset, n"""
         return self.__getattribute__(a)
 
     def get_attrib_span(self, a, sep=" "):
-        """Get the span of sentence attribute _a_ over the range defined by word_offset, n"""
+        """Get the span of sentence attribute *a* over the range defined by word_offset, n"""
         if a == 'words':
             return self.text
         else:
