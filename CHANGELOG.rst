@@ -1,6 +1,37 @@
 Version 0.1.7 (coming soon...)
 ------------------------------
 
+.. warning::
+    This release is NOT backwards compatable with v0.1.6. Specifically, the
+    ``snorkel`` submodule in fonduer has been removed. Any previous imports of
+    the form:
+
+    .. code:: python
+
+        from fonduer.snorkel._ import _
+
+    Should drop the ``snorkel`` submodule:
+
+    .. code:: python
+        
+        from fonduer._ import _
+
+.. tip::
+    To leverage the logging output of Fonduer, such as in a Jupyter Notebook,
+    you can configure a logger in your application:
+
+    .. code:: python
+
+        import logging
+
+        logging.basicConfig(stream=sys.stdout, format='[%(levelname)s] %(name)s - %(message)s')
+        log = logging.getLogger('fonduer')
+        log.setLevel(logging.INFO)
+
+
+* `@lukehsiao`_: Remove SQLite code, switch to logging, and absorb snorkel
+  codebase directly into the fonduer package for simplicity
+  (`#44 <https://github.com/HazyResearch/fonduer/pull/44>`_)
 * `@lukehsiao`_: Add lf_helpers to ReadTheDocs 
   (`#42 <https://github.com/HazyResearch/fonduer/pull/42>`_)
 * `@lukehsiao`_: Remove unused package dependencies 

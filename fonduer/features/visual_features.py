@@ -2,7 +2,7 @@ from fonduer.lf_helpers import (get_visual_aligned_lemmas, is_horz_aligned,
                                 is_vert_aligned, is_vert_aligned_center,
                                 is_vert_aligned_left, is_vert_aligned_right,
                                 same_page)
-from fonduer.snorkel.models import TemporarySpan
+from fonduer.models import TemporarySpan
 
 FEAT_PRE = 'VIZ_'
 DEF_VALUE = 1

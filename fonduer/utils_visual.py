@@ -3,7 +3,7 @@ from __future__ import division
 from collections import namedtuple
 
 from fonduer.models import Phrase
-from fonduer.snorkel.models.context import TemporarySpan
+from fonduer.models.context import TemporarySpan
 
 Bbox = namedtuple(
     'bbox', ['page', 'top', 'bottom', 'left', 'right'], verbose=False)

@@ -22,7 +22,6 @@ setup(
         'pdftotree',
         'psycopg2-binary',
         'pyyaml',
-        'requests',
         'scipy>=0.18',
         'spacy>=2.0.7',
         'sqlalchemy>=1.0.14',

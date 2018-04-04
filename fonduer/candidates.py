@@ -1,25 +1,92 @@
+import re
 from builtins import map, range
 from copy import deepcopy
 from itertools import product
 
 from sqlalchemy.sql import select
 
-from fonduer.models import TemporaryImage
-from fonduer.snorkel.candidates import CandidateSpace, Ngrams
-from fonduer.snorkel.models import Candidate
-from fonduer.snorkel.models.context import Document
-from fonduer.snorkel.udf import UDF, UDFRunner
+from fonduer.models import Candidate, TemporaryImage, TemporarySpan
+from fonduer.models.context import Document
+from fonduer.udf import UDF, UDFRunner
+
+
+class CandidateSpace(object):
+    """
+    Defines the **space** of candidate objects
+    Calling _apply(x)_ given an object _x_ returns a generator over candidates in _x_.
+    """
+
+    def __init__(self):
+        pass
+
+    def apply(self, x):
+        raise NotImplementedError()
+
+
+class Ngrams(CandidateSpace):
+    """
+    Defines the space of candidates as all n-grams (n <= n_max) in a Sentence _x_,
+    indexing by **character offset**.
+    """
+
+    def __init__(self, n_max=5, split_tokens=('-', '/')):
+        CandidateSpace.__init__(self)
+        self.n_max = n_max
+        self.split_rgx = r'(' + r'|'.join(
+            split_tokens) + r')' if split_tokens and len(
+                split_tokens) > 0 else None
+
+    def apply(self, context):
+
+        # These are the character offset--**relative to the sentence start**--for each _token_
+        offsets = context.char_offsets
+
+        # Loop over all n-grams in **reverse** order (to facilitate longest-match semantics)
+        L = len(offsets)
+        seen = set()
+        for j in range(1, self.n_max + 1)[::-1]:
+            for i in range(L - j + 1):
+                w = context.words[i + j - 1]
+                start = offsets[i]
+                end = offsets[i + j - 1] + len(w) - 1
+                ts = TemporarySpan(
+                    char_start=start, char_end=end, sentence=context)
+                if ts not in seen:
+                    seen.add(ts)
+                    yield ts
+
+                # Check for split
+                # NOTE: For simplicity, we only split single tokens right now!
+                if j == 1 and self.split_rgx is not None and end - start > 0:
+                    m = re.search(
+                        self.split_rgx,
+                        context.text[start - offsets[0]:end - offsets[0] + 1])
+                    if m is not None and j < self.n_max + 1:
+                        ts1 = TemporarySpan(
+                            char_start=start,
+                            char_end=start + m.start(1) - 1,
+                            sentence=context)
+                        if ts1 not in seen:
+                            seen.add(ts1)
+                            yield ts
+                        ts2 = TemporarySpan(
+                            char_start=start + m.end(1),
+                            char_end=end,
+                            sentence=context)
+                        if ts2 not in seen:
+                            seen.add(ts2)
+                            yield ts2
 
 
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
     :param candidate_class: The type of relation to extract, defined using
-                            :func:`snorkel.models.candidate_subclass <snorkel.models.candidate.candidate_subclass>`
+                            :func:`fonduer.models.candidate_subclass <snorkel.models.candidate.candidate_subclass>`
     :param cspaces: one or list of :class:`CandidateSpace` objects, one for
                     each relation argument. Defines space of Contexts to
                     consider
-    :param matchers: one or list of :class:`snorkel.matchers.Matcher` objects,
+    :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
                      one for each relation argument. Only tuples of Contexts
                      for which each element is accepted by the corresponding
                      Matcher will be returned as Candidates

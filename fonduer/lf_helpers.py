@@ -1,5 +1,6 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import, division
 
+import logging
 from builtins import range, str
 from collections import defaultdict
 from itertools import chain
@@ -8,10 +9,10 @@ import numpy as np
 from lxml import etree
 from lxml.html import fromstring
 
+from fonduer.candidates import Ngrams
 from fonduer.models import Phrase
-from fonduer.snorkel.candidates import Ngrams
-from fonduer.snorkel.models.context import TemporarySpan
-from fonduer.snorkel.utils import tokens_to_ngrams
+from fonduer.models.context import TemporarySpan
+from fonduer.utils import tokens_to_ngrams
 from fonduer.utils_table import (is_axis_aligned, is_col_aligned,
                                  is_row_aligned, min_col_diff, min_row_diff)
 from fonduer.utils_visual import (bbox_from_phrase, bbox_from_span,
@@ -131,12 +132,13 @@ def get_matches(lf, candidate_set, match_values=[1, -1]):
     :param match_values: An option list of the values to consider as matched. [1, -1] by default.
     :rtype: a list of candidates
     """
+    logger = logging.getLogger(__name__)
     matches = []
     for c in candidate_set:
         label = lf(c)
         if label in match_values:
             matches.append(c)
-    print(("%s matches") % len(matches))
+    logger.info(("%s matches") % len(matches))
     return matches
 
 
@@ -936,7 +938,6 @@ def _assign_alignment_features(phrases_by_key, align_type):
                 new_lemmas = [
                     lemma.lower() for lemma in p.lemmas if lemma.isalpha()
                 ]
-                # if new_lemmas: print '++Lemmas for\t', p, context_lemmas
                 context_lemmas.update(new_lemmas)
                 context_lemmas.update(
                     align_type + lemma for lemma in new_lemmas)

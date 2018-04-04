@@ -1,5 +1,4 @@
-from fonduer.models import ImplicitSpan
-from fonduer.snorkel.models import TemporarySpan
+from fonduer.models import ImplicitSpan, TemporarySpan
 
 FEAT_PRE = "CORE_"
 DEF_VALUE = 1

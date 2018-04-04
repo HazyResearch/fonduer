@@ -1,6 +1,7 @@
-from __future__ import division, print_function
+from __future__ import division
 
 import codecs
+import logging
 import os
 import subprocess
 import tempfile
@@ -12,13 +13,12 @@ import scipy.sparse as sparse
 from pandas import DataFrame, Series
 
 from fonduer.features.features import get_all_feats
-from fonduer.snorkel.annotations import FeatureAnnotator
-from fonduer.snorkel.models import Candidate
-from fonduer.snorkel.models.meta import Meta, new_sessionmaker
-from fonduer.snorkel.udf import UDF, UDFRunner
-from fonduer.snorkel.utils import (matrix_conflicts, matrix_coverage,
-                                   matrix_fn, matrix_fp, matrix_overlaps,
-                                   matrix_tn, matrix_tp, remove_files)
+from fonduer.models import Candidate
+from fonduer.models.meta import Meta, new_sessionmaker
+from fonduer.udf import UDF, UDFRunner
+from fonduer.utils import (matrix_conflicts, matrix_coverage, matrix_fn,
+                           matrix_fp, matrix_overlaps, matrix_tn, matrix_tp,
+                           remove_files)
 
 # Used to conform to existing annotation key API call
 # Note that this anontation matrix class can not be replaced with snorkel one
@@ -27,6 +27,7 @@ _TempKey = namedtuple('TempKey', ['id', 'name'])
 
 # Grab a pointer to the global vars
 _meta = Meta.init()
+logger = logging.getLogger(__name__)
 
 
 def _to_annotation_generator(fns):
@@ -159,21 +160,18 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
     @var tsv_columns: a string listing column names in the segment files
     separated by comma. e.g. "name, age, income"
     """
-    print('Copying %s to postgres' % table_name)
+    logger.info('Copying {} to postgres'.format(table_name))
 
     username = "-U " + _meta.DBUSER if _meta.DBUSER is not None else ""
     password = "PGPASSWORD=" + _meta.DBPWD if _meta.DBPWD is not None else ""
     port = "-p " + str(_meta.DBPORT) if _meta.DBPORT is not None else ""
     cmd = ('cat %s | %s psql %s %s %s -c "COPY %s(%s) '
            'FROM STDIN" --set=ON_ERROR_STOP=true') % (segment_file_blob,
-                                                      password,
-                                                      _meta.DBNAME,
-                                                      username,
-                                                      port,
-                                                      table_name,
-                                                      tsv_columns)
+                                                      password, _meta.DBNAME,
+                                                      username, port,
+                                                      table_name, tsv_columns)
     _out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    print(_out)
+    logger.info(_out)
 
 
 def _segment_filename(db_name, table_name, job_id, start=None, end=None):
@@ -183,11 +181,6 @@ def _segment_filename(db_name, table_name, job_id, start=None, end=None):
         if end is not None:
             suffix += '-' + str(end)
     return '%s_%s_%s_%s.tsv' % (db_name, table_name, job_id, suffix)
-
-
-class COOFeatureAnnotator(FeatureAnnotator):
-    def __init__(self, f=get_all_feats, **kwargs):
-        super(COOFeatureAnnotator, f, **kwargs)
 
 
 class BatchAnnotatorUDF(UDF):
@@ -496,8 +489,8 @@ def load_annotation_matrix(con, candidates, split, table_name, key_table_name,
     # TODO: move this for-loop computation to database for automatic parallelization,
     # avoid communication overhead etc. Try to avoid the log sorting factor using unnest
     if storage == 'COO':
-        print('key size', len(keys))
-        print('candidate size', len(candidates))
+        logger.info('key size: {}'.format(len(keys)))
+        logger.info('candidate size {}'.format(len(candidates)))
         iterator_sql = 'SELECT candidate_id, key, value FROM %s '
         'WHERE candidate_id IN '
         '(SELECT id FROM candidate WHERE split=%d) '
@@ -538,3 +531,9 @@ def load_annotation_matrix(con, candidates, split, table_name, key_table_name,
         row_index=row_index,
         keys=keys,
         key_index=key_index)
+
+
+# TODO(senwu): Check to see if we can inherit from BatchFeatureAnnotator
+#  class COOFeatureAnnotator(BatchFeatureAnnotator):
+#      def __init__(self, f=get_all_feats, **kwargs):
+#          super(COOFeatureAnnotator, f, **kwargs)

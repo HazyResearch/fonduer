@@ -5,7 +5,7 @@ from fonduer.lf_helpers import (common_ancestor, get_ancestor_class_names,
                                 get_attributes, get_next_sibling_tags,
                                 get_parent_tag, get_prev_sibling_tags, get_tag,
                                 lowest_common_ancestor_depth)
-from fonduer.snorkel.models import TemporarySpan
+from fonduer.models import TemporarySpan
 
 FEAT_PRE = 'STR_'
 DEF_VALUE = 1
