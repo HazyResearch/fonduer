@@ -1,5 +1,5 @@
-Version 0.1.7 (coming soon...)
-------------------------------
+Version 0.1.7
+-------------
 
 .. warning::
     This release is NOT backwards compatable with v0.1.6. Specifically, the
