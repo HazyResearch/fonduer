@@ -8,8 +8,9 @@ applications from *richy formatted data* and is implemented as a library on top
 of a modified version of Snorkel_.
 
 Note that Fonduer is still *actively under development*, so feedback and
-contributions are welcome. Let us know in the Issues_ section or feel free to
-submit your contributions as a pull request.
+contributions are welcome. Submit bugs in the Issues_ section or feel free to
+submit your contributions as a pull request. If you have questions, please use
+our `Mailing List`_
 
 Getting Started
 ---------------
@@ -57,3 +58,4 @@ Data <https://arxiv.org/abs/1703.05028>`__::
 .. _Issues: https://github.com/HazyResearch/fonduer/issues/
 .. _Getting Started Guide: https://fonduer.readthedocs.io/en/latest/user/getting_started.html
 .. _Fonduer tutorials: https://github.com/hazyresearch/fonduer-tutorials
+.. _Mailing List: https://groups.google.com/forum/#!forum/fonduer-dev
