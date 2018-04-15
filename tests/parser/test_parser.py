@@ -88,7 +88,7 @@ def test_parse_document_md(caplog):
     # Create an OmniParser and parse the md document
     omni = OmniParser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallel=PARALLEL)
+    omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the md document
     doc = session.query(Document).order_by(Document.name).all()[1]
@@ -137,7 +137,7 @@ def test_parse_document_diseases(caplog):
     # Create an OmniParser and parse the md document
     omni = OmniParser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallel=PARALLEL)
+    omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the diseases document
     doc = session.query(Document).order_by(Document.name).all()[0]
@@ -186,7 +186,7 @@ def test_spacy_integration(caplog):
 
     corpus_parser = OmniParser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path)
-    corpus_parser.apply(doc_preprocessor, parallel=PARALLEL)
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
 
     docs = session.query(Document).order_by(Document.name).all()
 
