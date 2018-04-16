@@ -72,12 +72,13 @@ def test_parse_structure(caplog):
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
 
-    This tests both the structural and visual parse of the document.
+    This tests both the structural and visual parse of the document. This
+    also serves as a test of single-threaded parsing.
     """
     logger = logging.getLogger(__name__)
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
 
-    PARALLEL = 2
+    PARALLEL = 1
     max_docs = 2
     docs_path = 'tests/data/html_simple/'
     pdf_path = 'tests/data/pdf_simple/'
@@ -88,7 +89,7 @@ def test_parse_document_md(caplog):
     # Create an OmniParser and parse the md document
     omni = OmniParser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallel=PARALLEL)
+    omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the md document
     doc = session.query(Document).order_by(Document.name).all()[1]
@@ -137,7 +138,7 @@ def test_parse_document_diseases(caplog):
     # Create an OmniParser and parse the md document
     omni = OmniParser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallel=PARALLEL)
+    omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the diseases document
     doc = session.query(Document).order_by(Document.name).all()[0]
@@ -186,7 +187,7 @@ def test_spacy_integration(caplog):
 
     corpus_parser = OmniParser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path)
-    corpus_parser.apply(doc_preprocessor, parallel=PARALLEL)
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
 
     docs = session.query(Document).order_by(Document.name).all()
 
