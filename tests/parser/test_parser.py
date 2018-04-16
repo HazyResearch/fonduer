@@ -72,12 +72,13 @@ def test_parse_structure(caplog):
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
 
-    This tests both the structural and visual parse of the document.
+    This tests both the structural and visual parse of the document. This
+    also serves as a test of single-threaded parsing.
     """
     logger = logging.getLogger(__name__)
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
 
-    PARALLEL = 2
+    PARALLEL = 1
     max_docs = 2
     docs_path = 'tests/data/html_simple/'
     pdf_path = 'tests/data/pdf_simple/'
