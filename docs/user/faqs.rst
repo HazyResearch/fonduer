@@ -6,6 +6,17 @@ run into anything not covered in this section, feel free to open an Issue_.
 
 .. _Issue: https://github.com/hazyresearch/fonduer/issues
 
+When I try to createdb, or use psql, I get `FATAL: role "<username>" does not exist.
+--------------------------------------------------------------------------------
+If you just installed PostgreSQL, you probably need to add users. You will need
+sudo privileges to do this.
+
+We recommend using createuser_ to define a new PostgreSQL user account::
+
+  $ sudo -u postgres createuser [options] [username]
+
+.. _createuser: https://www.postgresql.org/docs/current/static/app-createuser.html
+
 How do I connect to PostgreSQL? I'm getting "fe\_sendauth no password supplied".
 --------------------------------------------------------------------------------
 There are `four main ways`_ to deal with entering passwords when you connect to
