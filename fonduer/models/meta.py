@@ -67,6 +67,7 @@ class Meta(object):
             Meta.ready = Meta.postgres
             Meta.Session = new_sessionmaker()
             Meta.engine = Meta.Session.kw['bind']
+            logger.info("Connecting {} to {}:{}".format(Meta.DBUSER, Meta.DBNAME, Meta.DBPORT))
             if Meta.ready:
                 Meta._init_db()
             else:
