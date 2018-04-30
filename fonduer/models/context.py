@@ -69,7 +69,7 @@ class Document(Context):
             yield sentence
 
     def __repr__(self):
-        return "Document " + str(self.name.encode('utf-8'))
+        return "Document " + str(self.name)
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
@@ -258,9 +258,10 @@ class TemporarySpan(TemporaryContext):
             raise NotImplementedError()
 
     def __repr__(self):
-        return '%s("%s", sentence=%s, chars=[%s,%s], words=[%s,%s])' \
-            % (self.__class__.__name__, self.get_span().encode('utf-8'), self.sentence.id, self.char_start, self.char_end,
-               self.get_word_start(), self.get_word_end())
+        return '{}("{}", sentence={}, chars=[{},{}], words=[{},{}])'.format(
+            self.__class__.__name__, self.get_span(), self.sentence.id,
+            self.char_start, self.char_end, self.get_word_start(),
+            self.get_word_end())
 
     def _get_instance(self, **kwargs):
         return TemporarySpan(**kwargs)
@@ -338,8 +339,8 @@ class Webpage(Document):
 
     # Rest of class definition here
     def __repr__(self):
-        return "Webpage(id: %s..., url: %s...)" % (
-            self.name[:10].encode('utf-8'), self.url[8:23].encode('utf-8'))
+        return "Webpage(id: {}..., url: {}...)".format(self.name[:10],
+                                                       self.url[8:23])
 
 
 class Table(Context):
@@ -364,8 +365,8 @@ class Table(Context):
     __table_args__ = (UniqueConstraint(document_id, position), )
 
     def __repr__(self):
-        return "Table(Doc: %s, Position: %s)" % (
-            self.document.name.encode('utf-8'), self.position)
+        return "Table(Doc: {}, Position: {})".format(self.document.name,
+                                                     self.position)
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
@@ -396,8 +397,8 @@ class Figure(Context):
     __table_args__ = (UniqueConstraint(document_id, position), )
 
     def __repr__(self):
-        return "Figure(Doc: %s, Position: %s, Url: %s)" % (
-            self.document.name.encode('utf-8'), self.position, self.url)
+        return "Figure(Doc: {}, Position: {}, Url: {})".format(
+            self.document.name, self.position, self.url)
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
@@ -438,10 +439,10 @@ class Cell(Context):
     __table_args__ = (UniqueConstraint(document_id, table_id, position), )
 
     def __repr__(self):
-        return ("Cell(Doc: %s, Table: %s, Row: %s, Col: %s, Pos: %s)" %
-                (self.document.name.encode('utf-8'), self.table.position,
-                 tuple(set([self.row_start, self.row_end])),
-                 tuple(set([self.col_start, self.col_end])), self.position))
+        return ("Cell(Doc: {}, Table: {}, Row: {}, Col: {}, Pos: {})".format(
+            self.document.name, self.table.position,
+            tuple(set([self.row_start, self.row_end])),
+            tuple(set([self.col_start, self.col_end])), self.position))
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
@@ -464,9 +465,8 @@ class PhraseMixin(object):
         return False
 
     def __repr__(self):
-        return ("Phrase (Doc: %s, Index: %s, Text: %s)" %
-                (self.document.name.encode('utf-8'), self.phrase_idx,
-                 self.text.encode('utf-8')))
+        return ("Phrase (Doc: {}, Index: {}, Text: {})".format(
+            self.document.name, self.phrase_idx, self.text))
 
 
 class LingualMixin(object):
@@ -481,9 +481,8 @@ class LingualMixin(object):
         return self.lemmas is not None
 
     def __repr__(self):
-        return ("LingualPhrase (Doc: %s, Index: %s, Text: %s)" %
-                (self.document.name.encode('utf-8'), self.phrase_idx,
-                 self.text.encode('utf-8')))
+        return ("LingualPhrase (Doc: {}, Index: {}, Text: {})".format(
+            self.document.name, self.phrase_idx, self.text))
 
 
 class TabularMixin(object):
@@ -529,10 +528,9 @@ class TabularMixin(object):
         cols = tuple([self.col_start, self.col_end
                       ]) if self.col_start != self.col_end else self.col_start
         return (
-            "TabularPhrase (Doc: %s, Table: %s, Row: %s, Col: %s, Index: %s, Text: %s)"
-            % (self.document.name.encode('utf-8'),
-               (lambda: self.table).position, rows, cols, self.phrase_idx,
-               self.text.encode('utf-8')))
+            "TabularPhrase (Doc: {}, Table: {}, Row: {}, Col: {}, Index: {}, Text: {})".
+            format(self.document.name, (lambda: self.table).position, rows,
+                   cols, self.phrase_idx, self.text))
 
 
 class VisualMixin(object):
@@ -548,9 +546,8 @@ class VisualMixin(object):
 
     def __repr__(self):
         return (
-            "VisualPhrase (Doc: %s, Page: %s, (T,B,L,R): (%d,%d,%d,%d), Text: %s)"
-            % (self.document.name.encode('utf-8'), self.page, self.top,
-               self.bottom, self.left, self.right, self.text.encode('utf-8')))
+            "VisualPhrase (Doc: {}, Page: {}, (T,B,L,R): ({},{},{},{}), Text: {})".format(
+                self.document.name, self.page, self.top, self.bottom, self.left, self.right, self.text))
 
 
 class StructuralMixin(object):
@@ -563,9 +560,8 @@ class StructuralMixin(object):
         return self.html_tag is not None
 
     def __repr__(self):
-        return ("StructuralPhrase (Doc: %s, Tag: %s, Text: %s)" %
-                (self.document.name.encode('utf-8'), self.html_tag,
-                 self.text.encode('utf-8')))
+        return ("StructuralPhrase (Doc: {}, Tag: {}, Text: {})".format(
+            self.document.name, self.html_tag, self.text))
 
 
 # PhraseMixin must come last in arguments to not ovewrite is_* methods
@@ -607,13 +603,12 @@ class Phrase(Context, TabularMixin, LingualMixin, VisualMixin, StructuralMixin,
                 self.col_start, self.col_end
             ]) if self.col_start != self.col_end else self.col_start
             return (
-                "Phrase (Doc: %s, Table: %s, Row: %s, Col: %s, Index: %s, Text: %s)"
-                % (self.document.name.encode('utf-8'), self.table.position,
-                   rows, cols, self.position, self.text.encode('utf-8')))
+                "Phrase (testDoc: '{}', Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')".
+                format(self.document.name, self.table.position, rows, cols,
+                       self.position, self.text))
         else:
-            return ("Phrase (Doc: %s, Index: %s, Text: %s)" %
-                    (self.document.name.encode('utf-8'), self.phrase_num,
-                     self.text.encode('utf-8')))
+            return ("Phrase (Doc: '{}', Index: {}, Text: '{}')".format(
+                self.document.name, self.phrase_num, self.text))
 
     def _asdict(self):
         return {
@@ -830,9 +825,9 @@ class TemporaryImplicitSpan(TemporarySpan):
             raise NotImplementedError()
 
     def __repr__(self):
-        return '%s("%s", sentence=%s, words=[%s,%s], position=[%s])' \
-            % (self.__class__.__name__, self.get_span().encode('utf-8'), self.sentence.id,
-               self.get_word_start(), self.get_word_end(), self.position)
+        return '{}("{}", sentence={}, words=[{},{}], position=[{}])'.format(
+            self.__class__.__name__, self.get_span(), self.sentence.id,
+            self.get_word_start(), self.get_word_end(), self.position)
 
     def _get_instance(self, **kwargs):
         return TemporaryImplicitSpan(**kwargs)
@@ -955,8 +950,8 @@ class TemporaryImage(TemporaryContext):
         }
 
     def __repr__(self):
-        return '%s(document=%s, position=%s, url=%s)' % (
-            self.__class__.__name__, self.figure.document.name.encode('utf-8'),
+        return '{}(document={}, position={}, url={})'.format(
+            self.__class__.__name__, self.figure.document.name,
             self.figure.position, self.figure.url)
 
     def _get_instance(self, **kwargs):
@@ -989,8 +984,8 @@ class Image(Context, TemporaryImage):
     }
 
     def __repr__(self):
-        return "Image(Doc: %s, Position: %s, Url: %s)" % (
-            self.document.name.encode('utf-8'), self.position, self.url)
+        return "Image(Doc: {}, Position: {}, Url: {})".format(
+            self.document.name, self.position, self.url)
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
