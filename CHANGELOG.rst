@@ -1,3 +1,9 @@
+Version 0.1.8 (coming soon...)
+------------------------------
+
+* `@lukehsiao`_: Remove unnecessary encoding in __repr__
+  (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
+
 Version 0.1.7
 -------------
 
