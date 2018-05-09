@@ -203,4 +203,4 @@ def test_spacy_integration(caplog):
             logger.info("  Phrase: {}".format(phrase.text))
 
     assert session.query(Document).count() == 2
-    assert session.query(Phrase).count() == 80
+    assert session.query(Phrase).count() == 81
