@@ -66,8 +66,12 @@ def test_parse_structure(caplog):
     assert header.html_tag == 'h1'
     assert header.html_attrs == ['id=sample-markdown']
 
-    # 44 phrases expected in the "md" document.
-    assert len(phrases) == 44
+    # Test the unicode parse of delta
+    assert (phrases[-1].text == "δ13Corg")
+
+    # phrases expected in the "md" document.
+    assert len(phrases) == 45
+
 
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
@@ -116,7 +120,8 @@ def test_parse_document_md(caplog):
     assert header.dep_labels == ['compound', 'ROOT']
 
     # 44 phrases expected in the "md" document.
-    assert len(doc.phrases) == 44
+    assert len(doc.phrases) == 45
+
 
 def test_parse_document_diseases(caplog):
     """Unit test of OmniParser on a single document.
@@ -135,7 +140,7 @@ def test_parse_document_diseases(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the md document
+    # Create an OmniParser and parse the diseases document
     omni = OmniParser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
@@ -165,6 +170,7 @@ def test_parse_document_diseases(caplog):
 
     # 44 phrases expected in the "diseases" document.
     assert len(doc.phrases) == 36
+
 
 def test_spacy_integration(caplog):
     """Run a simple e2e parse using spaCy as our parser.
@@ -197,4 +203,4 @@ def test_spacy_integration(caplog):
             logger.info("  Phrase: {}".format(phrase.text))
 
     assert session.query(Document).count() == 2
-    assert session.query(Phrase).count() == 80
+    assert session.query(Phrase).count() == 81

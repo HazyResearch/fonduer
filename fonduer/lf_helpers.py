@@ -1179,10 +1179,10 @@ def lowest_common_ancestor_depth(c):
     For example, if the tree looked like this::
 
         html
-        |----<div> span 1 </div>
-        |----table
-        |    |----tr
-        |    |    |-----<th> span 2 </th>
+        ├──<div> span 1 </div>
+        ├──table
+        │    ├──tr
+        │    │  └──<th> span 2 </th>
 
     we return 1, the distance from span 1 to the html root. Smaller values indicate
     that two Spans are close structurally, while larger values indicate that two
