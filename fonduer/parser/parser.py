@@ -260,26 +260,27 @@ class OmniParserUDF(UDF):
                                         '='.join(x) for x in list(
                                             context_node.attrib.items())
                                     ]
-                                    
+
                                     # Extending html style attribute with the styles
                                     # from inline style class for the element.
                                     cur_style_index = None
                                     for index, attr in enumerate(parts['html_attrs']):
                                         if attr.find('style') >= 0:
-                                            cur_style_index = index;
-                                            break;
-                                    inline_styles = root.find('head').find('style')
+                                            cur_style_index = index
+                                            break
+                                    styles = root.find('head').find('style')
                                     for x in list(context_node.attrib.items()):
                                         if x[0] == 'class':
-                                            exp = r'(.'+x[1]+')([\n\s\r]*)\{(.*?)\}'
+                                            exp = r'(.' + x[1] + ')([\n\s\r]*)\{(.*?)\}'
                                             r = re.compile(exp, re.DOTALL)
-                                            if r.search(inline_styles.text) is not None:
+                                            if r.search(styles.text) is not None:
                                                 if cur_style_index is not None:
-                                                    parts['html_attrs'][cur_style_index] += r.search(inline_styles.text).group(3).replace('\r','').replace('\n','').replace('\t','')
+                                                    parts['html_attrs'][cur_style_index] += r.search(styles.text).group(3)\
+                                                        .replace('\r', '').replace('\n', '').replace('\t', '')
                                                 else:
-                                                    parts['html_attrs'] = 'style=' + r.search(inline_styles.text).group(3).replace('\r','').replace('\n','').replace('\t','')
-                                            break;
-                                    
+                                                    parts['html_attrs'] = 'style=' + r.search(styles.text).group(3)\
+                                                        .replace('\r', '').replace('\n', '').replace('\t', '')
+                                            break
                                 if self.tabular:
                                     parent = table_info.parent
                                     parts = table_info.apply_tabular(

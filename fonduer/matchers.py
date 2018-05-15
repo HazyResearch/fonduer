@@ -228,10 +228,10 @@ class RegexMatch(NgramMatcher):
         self.attrib = self.opts.get('attrib', WORDS)
         self.sep = self.opts.get('sep', " ")
 
-        # Extending the RegexMatch to handle search(instead of only match) 
+        # Extending the RegexMatch to handle search(instead of only match)
         # and adding a toggle for full span match.
-        # Default values are set to False and True for search flag and full 
-        # span matching flag respectively. 
+        # Default values are set to False and True for search flag and full
+        # span matching flag respectively.
         self.search = self.opts.get('search', False)
         self.full_match = self.opts.get('full_match', True)
 
@@ -250,19 +250,17 @@ class RegexMatch(NgramMatcher):
 
 class RegexMatchSpan(RegexMatch):
     """
-        Matches regex pattern on **full concatenated span** 
-
+        Matches regex pattern on **full concatenated span**
         If search flag is set to True:
-            Search regex pattern in **full concatenated span** 
+            Search regex pattern in **full concatenated span**
     """
-    
     def _f(self, c):
         if not self.search:
             return True if self.r.match(
-                c.get_attrib_span(self.attrib,sep=self.sep)) is not None else False
+                c.get_attrib_span(self.attrib, sep=self.sep)) is not None else False
         else:
             return True if self.r.search(
-                c.get_attrib_span(self.attrib,sep=self.sep)) is not None else False
+                c.get_attrib_span(self.attrib, sep=self.sep)) is not None else False
 
 
 class RegexMatchEach(RegexMatch):
