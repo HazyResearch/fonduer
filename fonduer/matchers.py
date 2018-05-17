@@ -262,6 +262,7 @@ class RegexMatchSpan(RegexMatch):
             return True if self.r.match(
                 c.get_attrib_span(self.attrib, sep=self.sep)) is not None else False
 
+
 class RegexMatchEach(RegexMatch):
     """Matches regex pattern on **each token**"""
 
