@@ -255,13 +255,12 @@ class RegexMatchSpan(RegexMatch):
             Search regex pattern in **full concatenated span**
     """
     def _f(self, c):
-        if not self.search:
-            return True if self.r.match(
-                c.get_attrib_span(self.attrib, sep=self.sep)) is not None else False
-        else:
+        if self.search:
             return True if self.r.search(
                 c.get_attrib_span(self.attrib, sep=self.sep)) is not None else False
-
+        else:
+            return True if self.r.match(
+                c.get_attrib_span(self.attrib, sep=self.sep)) is not None else False
 
 class RegexMatchEach(RegexMatch):
     """Matches regex pattern on **each token**"""
