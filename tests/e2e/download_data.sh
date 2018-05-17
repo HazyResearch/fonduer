@@ -4,7 +4,7 @@ data_tar=hardware_tutorial_data
 if type curl &>/dev/null; then
     curl -RLO $url
 elif type wget &>/dev/null; then
-    wget -N -nc $url
+    wget -N $url
 fi
 
 echo "Unpacking hardware tutorial data..."
