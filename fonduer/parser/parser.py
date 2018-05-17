@@ -33,14 +33,20 @@ class SimpleTokenizer(object):
             if not len(text.strip()):
                 continue
             words = text.split()
-            char_offsets = [0] + list(np.cumsum([len(x) + 1
-                                                 for x in words]))[:-1]
+            char_offsets = [0] + [int(_) for _ in np.cumsum([len(x) + 1
+                                  for x in words])[:-1]]
             text = ' '.join(words)
             stable_id = construct_stable_id(document, 'phrase', i, i)
             yield {
                 'text': text,
                 'words': words,
+                'pos_tags': [''] * len(words),
+                'ner_tags': [''] * len(words),
+                'lemmas': [''] * len(words),
+                'dep_parents': [0] * len(words),
+                'dep_labels': [''] * len(words),
                 'char_offsets': char_offsets,
+                'abs_char_offsets': char_offsets,
                 'stable_id': stable_id
             }
             i += 1

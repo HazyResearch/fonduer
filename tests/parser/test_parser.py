@@ -73,12 +73,54 @@ def test_parse_structure(caplog):
     assert len(phrases) == 45
 
 
+def test_simple_tokenizer(caplog):
+    """Unit test of OmniParser on a single document with lingual features off.
+    """
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+
+    PARALLEL = 2
+    max_docs = 2
+    docs_path = 'tests/data/html_simple/'
+    pdf_path = 'tests/data/pdf_simple/'
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+
+    omni = OmniParser(
+        structural=True, lingual=False, visual=True, pdf_path=pdf_path)
+    omni.apply(preprocessor, parallelism=PARALLEL)
+
+    doc = session.query(Document).order_by(Document.name).all()[1]
+
+    logger.info("Doc: {}".format(doc))
+    for i, phrase in enumerate(doc.phrases):
+        logger.info("    Phrase[{}]: {}".format(i, phrase.text))
+
+    header = doc.phrases[0]
+    # Test structural attributes
+    assert header.xpath == '/html/body/h1'
+    assert header.html_tag == 'h1'
+    assert header.html_attrs == ['id=sample-markdown']
+
+    # Test lingual attributes
+    assert header.ner_tags == ['', '']
+    assert header.dep_labels == ['', '']
+    assert header.dep_parents == [0, 0]
+    assert header.lemmas == ['', '']
+    assert header.pos_tags == ['', '']
+
+    assert len(doc.phrases) == 44
+
+
 def test_parse_document_md(caplog):
     """Unit test of OmniParser on a single document.
 
     This tests both the structural and visual parse of the document. This
     also serves as a test of single-threaded parsing.
     """
+    caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
 
@@ -99,8 +141,8 @@ def test_parse_document_md(caplog):
     doc = session.query(Document).order_by(Document.name).all()[1]
 
     logger.info("Doc: {}".format(doc))
-    for phrase in doc.phrases:
-        logger.info("    Phrase: {}".format(phrase.text))
+    for i, phrase in enumerate(doc.phrases):
+        logger.info("    Phrase[{}]: {}".format(i, phrase.text))
 
     header = doc.phrases[0]
     # Test structural attributes
@@ -119,7 +161,7 @@ def test_parse_document_md(caplog):
     assert header.ner_tags == ['O', 'O']
     assert header.dep_labels == ['compound', 'ROOT']
 
-    # 44 phrases expected in the "md" document.
+    # 45 phrases expected in the "md" document.
     assert len(doc.phrases) == 45
 
 
