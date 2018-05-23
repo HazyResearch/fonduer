@@ -185,8 +185,8 @@ def test_spacy_integration(caplog):
 
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
 
-    docs_path = 'tests/data/html_simple/'
-    pdf_path = 'tests/data/pdf_simple/'
+    docs_path = 'tests/data/html/'
+    pdf_path = 'tests/data/pdf/'
 
     max_docs = 2
     doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
@@ -204,3 +204,66 @@ def test_spacy_integration(caplog):
 
     assert session.query(Document).count() == 2
     assert session.query(Phrase).count() == 81
+
+
+def test_parse_style(caplog):
+    """Test style tag parsing."""
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+
+    max_docs = 1
+    docs_path = 'tests/data/html_extended/ext_diseases.html'
+    pdf_path = 'tests/data/pdf_extended/ext_diseases.pdf'
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+
+    # Grab the document, text tuple from the preprocessor
+    doc, text = next(preprocessor.generate())
+    logger.info("    Text: {}".format(text))
+
+    # Create an OmniParserUDF
+    omni_udf = OmniParserUDF(
+        True,           # structural
+        [],             # blacklist, empty so that style is not blacklisted
+        ["span", "br"],  # flatten
+        '',             # flatten delim
+        True,           # lingual
+        True,           # strip
+        [],             # replace
+        True,           # tabular
+        True,           # visual
+        pdf_path,       # pdf path
+        Spacy())        # lingual parser
+
+    # Grab the phrases parsed by the OmniParser
+    phrases = list(omni_udf.parse_structure(doc, text))
+
+    logger.warning("Doc: {}".format(doc))
+    for phrase in phrases:
+        logger.warning("    Phrase: {}".format(phrase.html_attrs))
+
+    # Phrases for testing
+    sub_phrases = [
+        {
+            'index': 7,
+            'attr': [
+                'class=col-header',
+                'hobbies=work:hard;play:harder',
+                'type=phenotype',
+                'style=background: #f1f1f1; color: aquamarine; font-size: 18px;'
+            ]
+        },
+        {
+            'index': 10,
+            'attr': ['class=row-header', 'style=background: #f1f1f1;']
+        },
+        {
+            'index': 12,
+            'attr': ['class=cell', 'style=text-align: center;']
+        }
+    ]
+    
+    # Assertions
+    assert(all(phrases[p['index']].html_attrs == p['attr'] for p in sub_phrases))
