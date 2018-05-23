@@ -279,8 +279,12 @@ class OmniParserUDF(UDF):
                                                         parts['html_attrs'][cur_style_index] += r.search(styles.text).group(3)\
                                                             .replace('\r', '').replace('\n', '').replace('\t', '')
                                                     else:
-                                                        parts['html_attrs'] = 'style=' + r.search(styles.text).group(3)\
-                                                            .replace('\r', '').replace('\n', '').replace('\t', '')
+                                                        parts['html_attrs'].extend([
+                                                            'style=' + re.sub(
+                                                                r'\s{1,}', ' ', r.search(styles.text).group(3).
+                                                                replace('\r', '').replace('\n', '').replace('\t', '').strip()
+                                                            )
+                                                        ])
                                                 break
                                 if self.tabular:
                                     parent = table_info.parent
