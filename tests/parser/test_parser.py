@@ -227,8 +227,8 @@ def test_spacy_integration(caplog):
 
     session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
 
-    docs_path = 'tests/data/html/'
-    pdf_path = 'tests/data/pdf/'
+    docs_path = 'tests/data/html_simple/'
+    pdf_path = 'tests/data/pdf_simple/'
 
     max_docs = 2
     doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
