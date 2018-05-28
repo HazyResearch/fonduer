@@ -1,6 +1,10 @@
 Version 0.1.8 (coming soon...)
 ------------------------------
 
+* `@senwu`_: Fix SimpleTokenizer for lingual features are disabled 
+  (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
+* `@prabh06`_: Extend styles parsing and add regex search 
+  (`#52 <https://github.com/HazyResearch/fonduer/pull/52>`_)
 * `@lukehsiao`_: Remove unnecessary encoding in __repr__
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 * `@lukehsiao`_: Fix LocationMatch NER tags for spaCy 
@@ -103,3 +107,4 @@ Version 0.1.2
 
 .. _@lukehsiao: https://github.com/lukehsiao
 .. _@senwu: https://github.com/senwu
+.. _@prabh06: https://github.com/Prabh06
