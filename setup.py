@@ -12,7 +12,6 @@ setup(
         'bs4',
         'editdistance',
         'future',
-        'ipywidgets>=7.0',
         'lxml==3.6.4',
         'nltk',
         'numba',
