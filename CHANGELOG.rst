@@ -1,6 +1,8 @@
 Version 0.1.8 (coming soon...)
 ------------------------------
 
+* `@senwu`_: Remove the Viewer, which is unused in FOnduer 
+  (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
 * `@senwu`_: Fix SimpleTokenizer for lingual features are disabled 
   (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
 * `@prabh06`_: Extend styles parsing and add regex search 
