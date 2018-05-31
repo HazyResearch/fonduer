@@ -1,5 +1,5 @@
-Version 0.1.8 (coming soon...)
-------------------------------
+Version 0.1.8
+-------------
 
 * `@senwu`_: Remove the Viewer, which is unused in FOnduer 
   (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
