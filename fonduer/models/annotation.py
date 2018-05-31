@@ -168,7 +168,7 @@ class Prediction(AnnotationMixin, _meta.Base):
 class StableLabel(_meta.Base):
     """
     A special secondary table for preserving labels created by *human
-    annotators* (e.g. in the Viewer) in a stable format that does not cascade,
+    annotators* in a stable format that does not cascade,
     and is independent of the Candidate ids.
     """
     __tablename__ = 'stable_label'

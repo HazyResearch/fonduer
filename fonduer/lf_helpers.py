@@ -125,7 +125,6 @@ def get_matches(lf, candidate_set, match_values=[1, -1]):
     """Return a list of candidates that are matched by a particular LF.
 
     A simple helper function to see how many matches (non-zero by default) an LF gets.
-    Returns the matched candidates, which can then be directly put into the Viewer.
 
     :param lf: The labeling function to apply to the candidate_set
     :param candidate_set: The set of candidates to evaluate

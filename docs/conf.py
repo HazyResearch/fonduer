@@ -21,7 +21,6 @@ autodoc_mock_imports = [
     'bs4',
     'editdistance',
     'future',
-    'ipywidgets',
     'lxml',
     'nltk',
     'numba',
