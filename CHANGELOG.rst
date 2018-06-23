@@ -1,15 +1,14 @@
-Version 0.1.9 (coming soon...)
+Version 0.2.0 (coming soon...)
 ------------------------------
 
 .. warning::
     This release is NOT backwards compatable with v0.1.8. The code has now been
     refactored into submodules, where each submodule corresponds with a phase
-    of the Fonduer pipeline. In addition, all PostgreSQL 
+    of the Fonduer pipeline. In addition, all PostgreSQL tables are only
+    created during the task in which they are used, rather than creating all
+    tables right at the start.
 
-.. warning::
-    This release removes support for Python 2 by removing the futures imports.
-
-* `@lukehsiao`_: Remove the futures imports, making Fonduer Python 3 only. 
+* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3 only. 
 
 Version 0.1.8
 -------------
