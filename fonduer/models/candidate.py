@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 from sqlalchemy import (Boolean, Column, Float, ForeignKey, Integer, String,
                         UniqueConstraint)
 from sqlalchemy.orm import backref, relationship

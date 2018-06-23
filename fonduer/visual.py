@@ -1,5 +1,3 @@
-from __future__ import division
-
 import logging
 import os
 import re
@@ -11,9 +9,6 @@ import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
-from future import standard_library
-
-standard_library.install_aliases()
 
 
 class VisualLinker(object):

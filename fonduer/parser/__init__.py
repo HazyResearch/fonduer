@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from fonduer.parser.doc_preprocessors import (CSVPathsPreprocessor,
                                               DocPreprocessor,
                                               HTMLPreprocessor,

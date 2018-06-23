@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import logging
 import os
 import random
@@ -10,7 +8,6 @@ from pickle import dump, load
 import numbskull
 import numpy as np
 import scipy.sparse as sparse
-from future.utils import iteritems
 from numba import jit
 from numbskull import NumbSkull
 from numbskull.inference import FACTORS
@@ -899,7 +896,7 @@ class GenerativeModel(Classifier):
         save_path2 = os.path.join(save_dir, "{0}.hps.pkl".format(model_name))
         with open(save_path2, 'rb') as f:
             hps = load(f)
-            for k, v in iteritems(hps):
+            for k, v in list(hps.items()):
                 setattr(self, k, v)
         if verbose:
             self.logger.info("[{0}] Model <{1}> loaded.".format(

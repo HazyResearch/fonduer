@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import random
 
 from .constants import DEP_EXCLUSIVE, DEP_FIXING, DEP_REINFORCING, DEP_SIMILAR

@@ -1,15 +1,9 @@
-from __future__ import absolute_import, division, unicode_literals
-
 import logging
 from multiprocessing import JoinableQueue, Process
 from queue import Empty
 
-from future import standard_library
-
 from fonduer.models.meta import Meta, new_sessionmaker
 from fonduer.utils import ProgressBar
-
-standard_library.install_aliases()
 
 QUEUE_TIMEOUT = 3
 

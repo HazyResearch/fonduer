@@ -1,15 +1,10 @@
-from __future__ import absolute_import, division
-
 import logging
 from builtins import object
 from urllib.parse import urlparse
 
-from future import standard_library
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-standard_library.install_aliases()
 
 logger = logging.getLogger(__name__)
 

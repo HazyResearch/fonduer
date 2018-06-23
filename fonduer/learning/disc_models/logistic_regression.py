@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import numpy as np
 import tensorflow as tf
 from scipy.sparse import issparse

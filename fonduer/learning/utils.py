@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import inspect
 import logging
 import os
@@ -9,12 +7,9 @@ from queue import Empty
 
 import numpy as np
 import scipy.sparse as sparse
-from future import standard_library
 from pandas import DataFrame
 
 logger = logging.getLogger(__name__)
-
-standard_library.install_aliases()
 
 # ###########################################################
 # # General Learning Utilities

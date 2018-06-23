@@ -1,5 +1,3 @@
-from __future__ import division
-
 from collections import namedtuple
 
 from fonduer.models import Phrase

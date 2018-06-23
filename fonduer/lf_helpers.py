@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division
-
 import logging
 from builtins import range, str
 from collections import defaultdict
