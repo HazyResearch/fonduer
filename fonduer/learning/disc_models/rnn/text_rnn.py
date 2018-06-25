@@ -1,7 +1,7 @@
 import numpy as np
 
-from .rnn_base import RNNBase
-from .utils import SymbolTable
+from fonduer.learning.disc_models.rnn.rnn_base import RNNBase
+from fonduer.learning.disc_models.rnn.utils import SymbolTable
 
 
 class TextRNN(RNNBase):
@@ -13,7 +13,7 @@ class TextRNN(RNNBase):
         :param candidates: candidates to process
         :param extend: extend symbol table for tokens (train), or lookup (test)?
         """
-        if not hasattr(self, 'word_dict'):
+        if not hasattr(self, "word_dict"):
             self.word_dict = SymbolTable()
         data, ends = [], []
         for candidate in candidates:

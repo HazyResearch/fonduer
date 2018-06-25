@@ -6,8 +6,8 @@ from time import time
 import numpy as np
 import tensorflow as tf
 
-from .classifier import Classifier
-from .utils import LabelBalancer, reshape_marginals
+from fonduer.learning.classifier import Classifier
+from fonduer.learning.utils import LabelBalancer, reshape_marginals
 
 
 class TFNoiseAwareModel(Classifier):

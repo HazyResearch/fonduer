@@ -1,7 +1,7 @@
 import numpy as np
 
-from .rnn_base import RNNBase
-from .utils import SymbolTable, candidate_to_tokens
+from fonduer.learning.disc_models.rnn.rnn_base import RNNBase
+from fonduer.learning.disc_models.rnn.utils import SymbolTable, candidate_to_tokens
 
 
 def mark(l, h, idx):
@@ -11,8 +11,7 @@ def mark(l, h, idx):
     :param h: sentence position of last word in argument
     :param idx: argument index (1 or 2)
     """
-    return [(l, "{}{}".format('~~[[', idx)), (h + 1, "{}{}".format(
-        idx, ']]~~'))]
+    return [(l, "{}{}".format("~~[[", idx)), (h + 1, "{}{}".format(idx, "]]~~"))]
 
 
 def mark_sentence(s, args):
@@ -41,15 +40,15 @@ class reRNN(RNNBase):
         :param candidates: candidates to process
         :param extend: extend symbol table for tokens (train), or lookup (test)?
         """
-        if not hasattr(self, 'word_dict'):
+        if not hasattr(self, "word_dict"):
             self.word_dict = SymbolTable()
         data, ends = [], []
         for candidate in candidates:
             # Mark sentence
-            args = [(candidate[0].get_word_start(),
-                     candidate[0].get_word_end(), 1),
-                    (candidate[1].get_word_start(),
-                     candidate[1].get_word_end(), 2)]
+            args = [
+                (candidate[0].get_word_start(), candidate[0].get_word_end(), 1),
+                (candidate[1].get_word_start(), candidate[1].get_word_end(), 2),
+            ]
             s = mark_sentence(candidate_to_tokens(candidate), args)
             # Either extend word table or retrieve from it
             f = self.word_dict.get if extend else self.word_dict.lookup

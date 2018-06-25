@@ -14,7 +14,7 @@ from numbskull.inference import FACTORS
 from numbskull.numbskulltypes import Factor, FactorToVar, Variable, Weight
 from pandas import DataFrame
 
-from .classifier import Classifier
+from fonduer.learning.classifier import Classifier
 
 DEP_SIMILAR = 0
 DEP_FIXING = 1
