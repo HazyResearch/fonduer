@@ -13,7 +13,7 @@ from pandas import DataFrame, Series
 from fonduer.features.features import get_all_feats
 from fonduer.models import Candidate
 from fonduer.models.meta import Meta, new_sessionmaker
-from fonduer.udf import UDF, UDFRunner
+from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils import (
     matrix_conflicts,
     matrix_coverage,

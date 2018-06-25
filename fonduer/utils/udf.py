@@ -20,18 +20,14 @@ class UDFRunner(object):
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
 
-        if hasattr(self.udf_class, 'reduce'):
+        if hasattr(self.udf_class, "reduce"):
             self.reducer = self.udf_class(**self.udf_init_kwargs)
         else:
             self.reducer = None
 
-    def apply(self,
-              xs,
-              clear=True,
-              parallelism=None,
-              progress_bar=True,
-              count=None,
-              **kwargs):
+    def apply(
+        self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs
+    ):
         """
         Apply the given UDF to the set of objects xs, either single or multi-threaded,
         and optionally calling clear() first.
@@ -61,7 +57,7 @@ class UDFRunner(object):
 
         # Set up ProgressBar if possible
         pb = None
-        if progress_bar and hasattr(xs, '__len__') or count is not None:
+        if progress_bar and hasattr(xs, "__len__") or count is not None:
             n = count if count is not None else len(xs)
             pb = ProgressBar(n)
 
@@ -74,7 +70,7 @@ class UDFRunner(object):
             for y in udf.apply(x, **kwargs):
 
                 # Uf UDF has a reduce step, this will take care of the insert; else add to session
-                if hasattr(self.udf_class, 'reduce'):
+                if hasattr(self.udf_class, "reduce"):
                     udf.reduce(y, **kwargs)
                 else:
                     udf.session.add(y)
@@ -87,8 +83,7 @@ class UDFRunner(object):
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if not _meta.postgres:
-            raise ValueError(
-                "Fonduer must use PostgreSQL as a database backend.")
+            raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
         # Fill a JoinableQueue with input objects
         in_queue = JoinableQueue()
@@ -97,7 +92,7 @@ class UDFRunner(object):
 
         # If the UDF has a reduce step, we collect the output of apply in a Queue
         out_queue = None
-        if hasattr(self.udf_class, 'reduce'):
+        if hasattr(self.udf_class, "reduce"):
             out_queue = JoinableQueue()
 
         # Start UDF Processes
@@ -106,7 +101,8 @@ class UDFRunner(object):
                 in_queue=in_queue,
                 out_queue=out_queue,
                 worker_id=i,
-                **self.udf_init_kwargs)
+                **self.udf_init_kwargs
+            )
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
@@ -115,7 +111,7 @@ class UDFRunner(object):
             udf.start()
 
         # If there is a reduce step, do now on this thread
-        if hasattr(self.udf_class, 'reduce'):
+        if hasattr(self.udf_class, "reduce"):
             while any([udf.is_alive() for udf in self.udfs]):
                 while True:
                     try:

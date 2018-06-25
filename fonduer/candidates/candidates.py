@@ -7,7 +7,7 @@ from sqlalchemy.sql import select
 
 from fonduer.models import Candidate, TemporaryImage, TemporarySpan
 from fonduer.models.context import Document
-from fonduer.udf import UDF, UDFRunner
+from fonduer.utils.udf import UDF, UDFRunner
 
 
 class CandidateSpace(object):
