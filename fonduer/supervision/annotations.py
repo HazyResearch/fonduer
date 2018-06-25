@@ -5,7 +5,7 @@ import scipy.sparse as sparse
 from pandas import DataFrame, Series
 
 from fonduer.candidates.models import Candidate, Marginal
-from fonduer.models import GoldLabel, GoldLabelKey
+from fonduer.supervision.models import GoldLabel, GoldLabelKey
 from fonduer.utils import (
     matrix_conflicts,
     matrix_coverage,

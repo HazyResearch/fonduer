@@ -6,7 +6,7 @@ import logging
 from builtins import range
 
 from fonduer.supervision.lf_helpers import *
-from fonduer.models import GoldLabel, GoldLabelKey
+from fonduer.supervision.models import GoldLabel, GoldLabelKey
 from fonduer.utils import ProgressBar
 
 logger = logging.getLogger(__name__)
