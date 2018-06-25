@@ -3,18 +3,18 @@ from collections import namedtuple
 from fonduer.models import Phrase
 from fonduer.models.context import TemporarySpan
 
-Bbox = namedtuple(
-    'bbox', ['page', 'top', 'bottom', 'left', 'right'], verbose=False)
+Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"], verbose=False)
 
 
 def bbox_from_span(span):
     if isinstance(span, TemporarySpan) and span.sentence.is_visual():
         return Bbox(
-            span.get_attrib_tokens('page')[0],
-            min(span.get_attrib_tokens('top')),
-            max(span.get_attrib_tokens('bottom')),
-            min(span.get_attrib_tokens('left')),
-            max(span.get_attrib_tokens('right')))
+            span.get_attrib_tokens("page")[0],
+            min(span.get_attrib_tokens("top")),
+            max(span.get_attrib_tokens("bottom")),
+            min(span.get_attrib_tokens("left")),
+            max(span.get_attrib_tokens("right")),
+        )
     else:
         return None
 
@@ -22,8 +22,13 @@ def bbox_from_span(span):
 def bbox_from_phrase(phrase):
     # TODO: this may have issues where a phrase is linked to words on different pages
     if isinstance(phrase, Phrase) and phrase.is_visual():
-        return Bbox(phrase.page[0], min(phrase.top), max(phrase.bottom),
-                    min(phrase.left), max(phrase.right))
+        return Bbox(
+            phrase.page[0],
+            min(phrase.top),
+            max(phrase.bottom),
+            min(phrase.left),
+            max(phrase.right),
+        )
     else:
         return None
 
@@ -95,5 +100,4 @@ def bbox_vert_aligned_center(box1, box2):
     """
     if not (box1 and box2):
         return False
-    return abs(((box1.right + box1.left) / 2.0) - (
-        (box2.right + box2.left) / 2.0)) <= 5
+    return abs(((box1.right + box1.left) / 2.0) - ((box2.right + box2.left) / 2.0)) <= 5
