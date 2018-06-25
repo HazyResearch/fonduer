@@ -8,7 +8,7 @@ from fonduer.supervision.async_annotations import (
 )
 from fonduer.candidates import CandidateExtractor, OmniFigures, OmniNgrams
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
-from fonduer.matchers import (
+from fonduer.candidates.matchers import (
     DateMatcher,
     DictionaryMatch,
     Intersect,
