@@ -5,9 +5,8 @@ import numpy as np
 import tensorflow as tf
 
 from fonduer.learning.disc_learning import TFNoiseAwareModel
-from fonduer.learning.disc_models.rnn.utils import (SymbolTable,
-                                                    get_bi_rnn_output)
-from fonduer.models import Candidate
+from fonduer.learning.disc_models.rnn.utils import SymbolTable, get_bi_rnn_output
+from fonduer.candidates.models import Candidate
 
 SD = 0.1
 
@@ -32,7 +31,7 @@ class RNNBase(TFNoiseAwareModel):
             if end >= mx:
                 w = "Candidate {0} has argument past max length for model:"
                 info = "[arg ends at index {0}; max len {1}]".format(end, mx)
-                self.logger.warning('\t'.join([w.format(i), info]))
+                self.logger.warning("\t".join([w.format(i), info]))
 
     def _make_tensor(self, x):
         """Construct input tensor with padding
@@ -48,13 +47,15 @@ class RNNBase(TFNoiseAwareModel):
             len_batch[j] = t
         return x_batch, len_batch
 
-    def _build_model(self,
-                     dim=50,
-                     attn_window=None,
-                     max_len=20,
-                     cell_type=tf.contrib.rnn.BasicLSTMCell,
-                     word_dict=SymbolTable(),
-                     **kwargs):
+    def _build_model(
+        self,
+        dim=50,
+        attn_window=None,
+        max_len=20,
+        cell_type=tf.contrib.rnn.BasicLSTMCell,
+        word_dict=SymbolTable(),
+        **kwargs
+    ):
         """
         Build RNN model
 
@@ -79,7 +80,8 @@ class RNNBase(TFNoiseAwareModel):
 
         # Embedding layer
         emb_var = tf.Variable(
-            tf.random_normal((vocab_size - 1, dim), stddev=SD, seed=s1))
+            tf.random_normal((vocab_size - 1, dim), stddev=SD, seed=s1)
+        )
         embedding = tf.concat([tf.zeros([1, dim]), emb_var], axis=0)
         inputs = tf.nn.embedding_lookup(embedding, self.sentences)
 
@@ -93,9 +95,11 @@ class RNNBase(TFNoiseAwareModel):
             # Add attention if needed
             if attn_window:
                 fw_cell = tf.contrib.rnn.AttentionCellWrapper(
-                    fw_cell, attn_window, state_is_tuple=True)
+                    fw_cell, attn_window, state_is_tuple=True
+                )
                 bw_cell = tf.contrib.rnn.AttentionCellWrapper(
-                    bw_cell, attn_window, state_is_tuple=True)
+                    bw_cell, attn_window, state_is_tuple=True
+                )
             # Construct RNN
             initial_state_fw = fw_cell.zero_state(batch_size, tf.float32)
             initial_state_bw = bw_cell.zero_state(batch_size, tf.float32)
@@ -106,7 +110,8 @@ class RNNBase(TFNoiseAwareModel):
                 sequence_length=self.sentence_lengths,
                 initial_state_fw=initial_state_fw,
                 initial_state_bw=initial_state_bw,
-                time_major=False)
+                time_major=False,
+            )
         potentials = get_bi_rnn_output(rnn_out, dim, self.sentence_lengths)
 
         # Add dropout layer
@@ -118,8 +123,8 @@ class RNNBase(TFNoiseAwareModel):
         if self.cardinality > 2:
             self.Y = tf.placeholder(tf.float32, [None, self.cardinality])
             W = tf.Variable(
-                tf.random_normal(
-                    (2 * dim, self.cardinality), stddev=SD, seed=s4))
+                tf.random_normal((2 * dim, self.cardinality), stddev=SD, seed=s4)
+            )
             b = tf.Variable(np.zeros(self.cardinality), dtype=tf.float32)
             self.logits = tf.matmul(potentials, W) + b
             self.marginals_op = tf.nn.softmax(self.logits)
@@ -132,7 +137,8 @@ class RNNBase(TFNoiseAwareModel):
                 # TODO: Implement for categorical as well...
                 if self.cardinality > 2:
                     raise NotImplementedError(
-                        "Deterministic mode not implemented for categoricals.")
+                        "Deterministic mode not implemented for categoricals."
+                    )
 
                 # Make deterministic
                 # See: https://github.com/tensorflow/tensorflow/pull/10636/files
@@ -154,15 +160,10 @@ class RNNBase(TFNoiseAwareModel):
             self.sentence_lengths: len_b,
             self.Y: Y_b,
             self.keep_prob: dropout or 1.0,
-            self.lr: lr
+            self.lr: lr,
         }
 
-    def train(self,
-              X_train,
-              Y_train,
-              X_dev=None,
-              max_sentence_length=None,
-              **kwargs):
+    def train(self, X_train, Y_train, X_dev=None, max_sentence_length=None, **kwargs):
         """
         Perform preprocessing of data, construct dataset-specific model, then
         train.
@@ -183,7 +184,8 @@ class RNNBase(TFNoiseAwareModel):
             X_dev=X_dev,
             word_dict=self.word_dict,
             max_len=max_len,
-            **kwargs)
+            **kwargs
+        )
 
     def _marginals_batch(self, test_candidates):
         """Get likelihood of tagged sequences represented by test_candidates
@@ -198,8 +200,7 @@ class RNNBase(TFNoiseAwareModel):
 
         # Make tensor and run prediction op
         x, x_len = self._make_tensor(X_test)
-        return self.session.run(self.marginals_op, {
-            self.sentences: x,
-            self.sentence_lengths: x_len,
-            self.keep_prob: 1.0,
-        })
+        return self.session.run(
+            self.marginals_op,
+            {self.sentences: x, self.sentence_lengths: x_len, self.keep_prob: 1.0},
+        )

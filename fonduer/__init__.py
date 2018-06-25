@@ -24,7 +24,8 @@ from fonduer.candidates.matchers import (
     RegexMatchSpan,
     Union,
 )
-from fonduer.models import Document, Figure, Meta, Phrase, candidate_subclass
+from fonduer.candidates.models import candidate_subclass
+from fonduer.models import Document, Figure, Meta, Phrase
 from fonduer.parser import HTMLPreprocessor, OmniParser
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

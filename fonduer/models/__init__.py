@@ -30,7 +30,6 @@ define a new type of Context is:
 from fonduer.models.annotation import (Feature, FeatureKey, GoldLabel,
                                        GoldLabelKey, Label, LabelKey,
                                        Prediction, PredictionKey, StableLabel)
-from fonduer.models.candidate import Candidate, Marginal, candidate_subclass
 from fonduer.models.context import (Cell, Context, Document, Figure, Image,
                                     ImplicitSpan, Phrase, Span, Table,
                                     TemporaryImage, TemporaryImplicitSpan,
@@ -39,7 +38,6 @@ from fonduer.models.context import (Cell, Context, Document, Figure, Image,
 from fonduer.models.meta import Meta
 
 __all__ = [
-    'Candidate',
     'Cell',
     'Context',
     'Document',
@@ -52,7 +50,6 @@ __all__ = [
     'ImplicitSpan',
     'Label',
     'LabelKey',
-    'Marginal',
     'Meta',
     'Meta',
     'Phrase',
@@ -65,7 +62,6 @@ __all__ = [
     'TemporaryImplicitSpan',
     'TemporarySpan',
     'Webpage',
-    'candidate_subclass',
     'construct_stable_id',
     'split_stable_id',
 ]
