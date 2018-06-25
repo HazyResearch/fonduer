@@ -1,6 +1,6 @@
 import numpy as np
 
-from fonduer.annotations import save_marginals
+from fonduer.supervision.annotations import save_marginals
 from fonduer.learning.utils import MentionScorer
 
 
