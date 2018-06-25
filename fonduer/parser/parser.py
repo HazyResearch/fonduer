@@ -10,7 +10,7 @@ from lxml import etree
 from lxml.html import fromstring
 
 from fonduer.candidates.models import Candidate
-from fonduer.models import (
+from fonduer.parser.models import (
     Cell,
     Context,
     Document,

@@ -25,7 +25,8 @@ from fonduer.candidates.matchers import (
     Union,
 )
 from fonduer.candidates.models import candidate_subclass
-from fonduer.models import Document, Figure, Meta, Phrase
+from fonduer.parser.models import Document, Figure, Phrase
+from fonduer.models import Meta
 from fonduer.parser import HTMLPreprocessor, OmniParser
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

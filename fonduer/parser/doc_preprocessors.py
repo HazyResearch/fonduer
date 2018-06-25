@@ -5,7 +5,7 @@ import os
 import lxml.etree as et
 from bs4 import BeautifulSoup
 
-from fonduer.models.context import Document
+from fonduer.parser.models import Document
 
 
 class DocPreprocessor(object):

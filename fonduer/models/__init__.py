@@ -27,41 +27,28 @@ define a new type of Context is:
     from fonduer import Meta
     Meta.init_db()
 """
-from fonduer.models.annotation import (Feature, FeatureKey, GoldLabel,
-                                       GoldLabelKey, Label, LabelKey,
-                                       Prediction, PredictionKey, StableLabel)
-from fonduer.models.context import (Cell, Context, Document, Figure, Image,
-                                    ImplicitSpan, Phrase, Span, Table,
-                                    TemporaryImage, TemporaryImplicitSpan,
-                                    TemporarySpan, Webpage,
-                                    construct_stable_id, split_stable_id)
+from fonduer.models.annotation import (
+    Feature,
+    FeatureKey,
+    GoldLabel,
+    GoldLabelKey,
+    Label,
+    LabelKey,
+    Prediction,
+    PredictionKey,
+    StableLabel,
+)
 from fonduer.models.meta import Meta
 
 __all__ = [
-    'Cell',
-    'Context',
-    'Document',
-    'Feature',
-    'FeatureKey',
-    'Figure',
-    'GoldLabel',
-    'GoldLabelKey',
-    'Image',
-    'ImplicitSpan',
-    'Label',
-    'LabelKey',
-    'Meta',
-    'Meta',
-    'Phrase',
-    'Prediction',
-    'PredictionKey',
-    'Span',
-    'StableLabel',
-    'Table',
-    'TemporaryImage',
-    'TemporaryImplicitSpan',
-    'TemporarySpan',
-    'Webpage',
-    'construct_stable_id',
-    'split_stable_id',
+    "Feature",
+    "FeatureKey",
+    "GoldLabel",
+    "GoldLabelKey",
+    "Label",
+    "LabelKey",
+    "Meta",
+    "Prediction",
+    "PredictionKey",
+    "StableLabel",
 ]

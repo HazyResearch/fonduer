@@ -6,8 +6,7 @@ from itertools import product
 from sqlalchemy.sql import select
 
 from fonduer.candidates.models import Candidate
-from fonduer.models import TemporaryImage, TemporarySpan
-from fonduer.models.context import Document
+from fonduer.parser.models import Document, TemporaryImage, TemporarySpan
 from fonduer.utils.udf import UDF, UDFRunner
 
 

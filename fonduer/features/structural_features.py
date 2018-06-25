@@ -12,7 +12,7 @@ from fonduer.supervision.lf_helpers import (
     get_tag,
     lowest_common_ancestor_depth,
 )
-from fonduer.models import TemporarySpan
+from fonduer.parser.models import TemporarySpan
 
 FEAT_PRE = "STR_"
 DEF_VALUE = 1

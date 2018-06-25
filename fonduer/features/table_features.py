@@ -7,7 +7,7 @@ from fonduer.supervision.lf_helpers import (
     get_head_ngrams,
     get_row_ngrams,
 )
-from fonduer.models import TemporarySpan
+from fonduer.parser.models import TemporarySpan
 from fonduer.utils.utils_table import min_col_diff, min_row_diff, num_cols, num_rows
 
 FEAT_PRE = "TAB_"

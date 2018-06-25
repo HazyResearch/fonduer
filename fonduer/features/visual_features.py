@@ -7,7 +7,7 @@ from fonduer.supervision.lf_helpers import (
     is_vert_aligned_right,
     same_page,
 )
-from fonduer.models import TemporarySpan
+from fonduer.parser.models import TemporarySpan
 
 FEAT_PRE = "VIZ_"
 DEF_VALUE = 1

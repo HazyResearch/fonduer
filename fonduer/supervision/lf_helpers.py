@@ -8,8 +8,7 @@ from lxml import etree
 from lxml.html import fromstring
 
 from fonduer.candidates import Ngrams
-from fonduer.models import Phrase
-from fonduer.models.context import TemporarySpan
+from fonduer.parser.models import Phrase, TemporarySpan
 from fonduer.utils import tokens_to_ngrams
 from fonduer.utils.utils_table import (
     is_axis_aligned,

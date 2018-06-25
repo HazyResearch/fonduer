@@ -20,7 +20,7 @@ from fonduer.supervision.lf_helpers import (
     get_right_ngrams,
     tokens_to_ngrams,
 )
-from fonduer.models import TemporarySpan
+from fonduer.parser.models import TemporarySpan
 from fonduer.features.tree_structs import corenlp_to_xmltree
 from fonduer.utils import get_as_dict
 
