@@ -14,7 +14,7 @@ from treedlib import (
     compile_relation_feature_generator,
 )
 
-from fonduer.config import settings
+from fonduer.features.config import settings
 from fonduer.supervision.lf_helpers import (
     get_left_ngrams,
     get_right_ngrams,

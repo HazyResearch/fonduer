@@ -1,6 +1,6 @@
 from builtins import range, str
 
-from fonduer.config import settings
+from fonduer.features.config import settings
 from fonduer.supervision.lf_helpers import (
     get_cell_ngrams,
     get_col_ngrams,
