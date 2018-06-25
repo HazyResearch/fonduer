@@ -1,10 +1,15 @@
-from fonduer.lf_helpers import (get_visual_aligned_lemmas, is_horz_aligned,
-                                is_vert_aligned, is_vert_aligned_center,
-                                is_vert_aligned_left, is_vert_aligned_right,
-                                same_page)
+from fonduer.supervision.lf_helpers import (
+    get_visual_aligned_lemmas,
+    is_horz_aligned,
+    is_vert_aligned,
+    is_vert_aligned_center,
+    is_vert_aligned_left,
+    is_vert_aligned_right,
+    same_page,
+)
 from fonduer.models import TemporarySpan
 
-FEAT_PRE = 'VIZ_'
+FEAT_PRE = "VIZ_"
 DEF_VALUE = 1
 
 unary_vizlib_feats = {}
@@ -16,8 +21,9 @@ def get_visual_feats(candidates):
     for candidate in candidates:
         args = candidate.get_contexts()
         if not (isinstance(args[0], TemporarySpan)):
-            raise ValueError("Accepts Span-type arguments, %s-type found." %
-                             type(candidate))
+            raise ValueError(
+                "Accepts Span-type arguments, %s-type found." % type(candidate)
+            )
 
         # Unary candidates
         if len(args) == 1:
@@ -55,7 +61,8 @@ def get_visual_feats(candidates):
                     yield candidate.id, FEAT_PRE + f, v
         else:
             raise NotImplementedError(
-                "Only handles unary and binary candidates currently")
+                "Only handles unary and binary candidates currently"
+            )
 
 
 def vizlib_unary_features(span):
@@ -66,9 +73,9 @@ def vizlib_unary_features(span):
         return
 
     for f in get_visual_aligned_lemmas(span):
-        yield 'ALIGNED_' + f, DEF_VALUE
+        yield "ALIGNED_" + f, DEF_VALUE
 
-    for page in set(span.get_attrib_tokens('page')):
+    for page in set(span.get_attrib_tokens("page")):
         yield "PAGE_[%d]" % page, DEF_VALUE
 
 
