@@ -2,7 +2,7 @@ import logging
 from multiprocessing import JoinableQueue, Process
 from queue import Empty
 
-from fonduer.models.meta import Meta, new_sessionmaker
+from fonduer.meta import Meta, new_sessionmaker
 from fonduer.utils import ProgressBar
 
 QUEUE_TIMEOUT = 3

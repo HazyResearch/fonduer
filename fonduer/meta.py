@@ -42,7 +42,7 @@ class Meta(object):
     DBPWD = None
     Session = None
     engine = None
-    Base = declarative_base(name='Base', cls=object)
+    Base = declarative_base(name="Base", cls=object)
     postgres = False
     ready = False
 
@@ -56,19 +56,21 @@ class Meta(object):
             Meta.DBUSER = url.username
             Meta.DBPWD = url.password
             Meta.DBPORT = url.port
-            Meta.postgres = url.scheme.startswith('postgres')
+            Meta.postgres = url.scheme.startswith("postgres")
             # We initialize the engine within the models module because models'
             # schema can depend on which data types are supported by the engine
             Meta.ready = Meta.postgres
             Meta.Session = new_sessionmaker()
-            Meta.engine = Meta.Session.kw['bind']
-            logger.info("Connecting {} to {}:{}".format(Meta.DBUSER, Meta.DBNAME, Meta.DBPORT))
+            Meta.engine = Meta.Session.kw["bind"]
+            logger.info(
+                "Connecting {} to {}:{}".format(Meta.DBUSER, Meta.DBNAME, Meta.DBPORT)
+            )
             if Meta.ready:
                 Meta._init_db()
             else:
                 raise ValueError(
-                    "{} is not a valid postgres connection string.".format(
-                        conn_string))
+                    "{} is not a valid postgres connection string.".format(conn_string)
+                )
 
         return cls
 

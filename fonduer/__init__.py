@@ -1,13 +1,7 @@
 import logging
 
 from fonduer._version import __version__
-from fonduer.supervision.annotations import load_gold_labels
-from fonduer.supervision.async_annotations import (
-    BatchFeatureAnnotator,
-    BatchLabelAnnotator,
-)
 from fonduer.candidates import CandidateExtractor, OmniFigures, OmniNgrams
-from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.candidates.matchers import (
     DateMatcher,
     DictionaryMatch,
@@ -25,9 +19,15 @@ from fonduer.candidates.matchers import (
     Union,
 )
 from fonduer.candidates.models import candidate_subclass
-from fonduer.parser.models import Document, Figure, Phrase
-from fonduer.models import Meta
+from fonduer.learning import GenerativeModel, SparseLogisticRegression
+from fonduer.meta import Meta
 from fonduer.parser import HTMLPreprocessor, OmniParser
+from fonduer.parser.models import Document, Figure, Phrase
+from fonduer.supervision.annotations import load_gold_labels
+from fonduer.supervision.async_annotations import (
+    BatchFeatureAnnotator,
+    BatchLabelAnnotator,
+)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 

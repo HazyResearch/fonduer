@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -9,10 +11,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import backref, relationship
 
-from fonduer.models.meta import Meta
+from fonduer.meta import Meta
 from fonduer.utils import camel_to_under
 
 _meta = Meta.init()
+logger = logging.getLogger(__name__)
 
 
 class Candidate(_meta.Base):
@@ -66,9 +69,9 @@ class Candidate(_meta.Base):
         return self.__repr__() > other_cand.__repr__()
 
 
-# This global dictionary contains all classes that have been declared in this Python environment, so
-# that candidate_subclass() can return a class if it already exists and is identical in specification
-# to the requested class
+# This global dictionary contains all classes that have been declared in this
+# Python environment, so that candidate_subclass() can return a class if it
+# already exists and is identical in specification to the requested class
 candidate_subclasses = {}
 
 
@@ -223,3 +226,13 @@ class Marginal(_meta.Base):
             self.value,
             self.probability,
         )
+
+
+def init_models():
+    """Create the tables for candidate generation."""
+    all_models = {"candidate": Candidate, "marginal": Marginal}.update(
+        candidate_subclasses
+    )
+    for name, cls in all_models:
+        logger.info("Creating {} table...".format(name))
+        cls.__table__.create(_meta.engine, checkfirst=True)

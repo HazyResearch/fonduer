@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.utils import camel_to_under
-from fonduer.models.meta import Meta
+from fonduer.meta import Meta
 
 # Grab pointer to global metadata
 _meta = Meta.init()
@@ -67,8 +67,8 @@ class AnnotationMixin(object):
 
     .. code-block:: python
 
-        from fonduer.models.annotation import AnnotationMixin
-        from fonduer.models.meta import Meta
+        from fonduer.supervision.models import AnnotationMixin
+        from fonduer.meta import Meta
 
         class NewAnnotation(AnnotationMixin, Meta.Base):
             value = Column(Float, nullable=False)
