@@ -8,7 +8,9 @@ Version 0.2.0 (coming soon...)
     created during the task in which they are used, rather than creating all
     tables right at the start.
 
-* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3 only. 
+* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
+  only. Also reorganize the codebase into submodules for each pipeline phase.
+  (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
 
 Version 0.1.8
 -------------
