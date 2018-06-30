@@ -226,13 +226,3 @@ class Marginal(_meta.Base):
             self.value,
             self.probability,
         )
-
-
-def init_models():
-    """Create the tables for candidate generation."""
-    all_models = {"candidate": Candidate, "marginal": Marginal}.update(
-        candidate_subclasses
-    )
-    for name, cls in all_models:
-        logger.info("Creating {} table...".format(name))
-        cls.__table__.create(_meta.engine, checkfirst=True)

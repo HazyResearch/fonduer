@@ -1074,22 +1074,3 @@ def split_stable_id(stable_id):
         if len(split2) == 3:
             return split1[0], split2[0], int(split2[1]), int(split2[2])
     raise ValueError("Malformed stable_id:", stable_id)
-
-
-def init_models():
-    """Create the tables for candidate generation."""
-    all_models = {
-        "Cell": Cell,
-        "Context": Context,
-        "Document": Document,
-        "Figure": Figure,
-        "Image": Image,
-        "ImplicitSpan": ImplicitSpan,
-        "Phrase": Phrase,
-        "Span": Span,
-        "Table": Table,
-        "Webpage": Webpage,
-    }
-    for name, cls in all_models:
-        logger.info("Creating {} table...".format(name))
-        cls.__table__.create(_meta.engine, checkfirst=True)
