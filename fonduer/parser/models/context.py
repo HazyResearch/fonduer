@@ -41,37 +41,6 @@ class Context(_meta.Base):
         raise NotImplementedError()
 
 
-class Document(Context):
-    """
-    A root Context.
-    """
-
-    __tablename__ = "document"
-    id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
-    name = Column(String, unique=True, nullable=False)
-    text = Column(String)
-    meta = Column(PickleType)
-
-    __mapper_args__ = {"polymorphic_identity": "document"}
-
-    def get_parent(self):
-        return None
-
-    def get_children(self):
-        return self.sentences
-
-    def get_sentence_generator(self):
-        for sentence in self.sentences:
-            yield sentence
-
-    def __repr__(self):
-        return "Document " + str(self.name)
-
-    def __gt__(self, other):
-        # Allow sorting by comparing the string representations of each
-        return self.__repr__() > other.__repr__()
-
-
 class TemporaryContext(object):
     """
     A context which does not incur the overhead of a proper ORM-based Context
@@ -325,31 +294,6 @@ class Span(Context, TemporarySpan):
 
     def __hash__(self):
         return id(self)
-
-
-class Webpage(Document):
-    """
-    Declares name for storage table.
-    """
-
-    __tablename__ = "webpage"
-    id = Column(
-        Integer, ForeignKey("document.id", ondelete="CASCADE"), primary_key=True
-    )
-    # Connects NewType records to generic Context records
-    url = Column(String)
-    host = Column(String)
-    page_type = Column(String)
-    raw_content = Column(String)
-    crawltime = Column(String)
-    all = Column(String)
-
-    # Polymorphism information for SQLAlchemy
-    __mapper_args__ = {"polymorphic_identity": "webpage"}
-
-    # Rest of class definition here
-    def __repr__(self):
-        return "Webpage(id: {}..., url: {}...)".format(self.name[:10], self.url[8:23])
 
 
 class Table(Context):

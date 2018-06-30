@@ -1,7 +1,6 @@
 from fonduer.parser.models.context import (
     Cell,
     Context,
-    Document,
     Figure,
     ImplicitSpan,
     Phrase,
@@ -9,11 +8,12 @@ from fonduer.parser.models.context import (
     Table,
     TemporaryImplicitSpan,
     TemporarySpan,
-    Webpage,
     construct_stable_id,
     split_stable_id,
 )
+from fonduer.parser.models.document import Document
 from fonduer.parser.models.image import Image, TemporaryImage
+from fonduer.parser.models.webpage import Webpage
 
 __all__ = [
     "Cell",
