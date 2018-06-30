@@ -1,10 +1,6 @@
-from fonduer.meta import Meta
 from fonduer.parser.models.context import Context, TemporaryContext
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
-
-# Grab pointer to global metadata
-_meta = Meta.init()
 
 
 class TemporaryImage(TemporaryContext):
