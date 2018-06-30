@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from pathlib import Path
 
@@ -53,7 +54,7 @@ class Spacy(object):
         num_threads=1,
         verbose=False,
     ):
-
+        self.logger = logging.getLogger(__name__)
         self.name = "spacy"
         self.model = Spacy.load_lang_model(lang)
         self.num_threads = num_threads
@@ -127,7 +128,10 @@ class Spacy(object):
         doc = self.model.tokenizer(text)
         for proc in self.pipeline:
             proc(doc)
-        assert doc.is_parsed
+        try:
+            assert doc.is_parsed
+        except Exception:
+            self.logger.exception("{} was not parsed".format(doc))
 
         position = 0
         for sent in doc.sents:

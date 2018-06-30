@@ -201,7 +201,12 @@ class VisualLinker(object):
 
         N = len(self.html_word_list)
         M = len(self.pdf_word_list)
-        assert N > 0 and M > 0
+
+        try:
+            assert N > 0 and M > 0
+        except Exception:
+            self.logger.exception("N = {} and M = {} are invalid values.".format(N, M))
+
         html_to_pdf = [None] * N
         pdf_to_html = [None] * M
         search_radius = search_max // 2
@@ -340,7 +345,10 @@ class VisualLinker(object):
                     pdf.append(b[1])
                     j.append(k)
                     break
-        assert len(pdf) == len(html)
+        try:
+            assert len(pdf) == len(html)
+        except Exception:
+            self.logger.exception("PDF and HTML are not the same length")
 
         total = 0
         match = 0

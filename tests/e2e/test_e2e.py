@@ -36,7 +36,7 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-#  @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on 20 documents of the hardware domain."""
     caplog.set_level(logging.INFO)

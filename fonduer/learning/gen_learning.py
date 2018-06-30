@@ -309,7 +309,11 @@ class GenerativeModel(Classifier):
             c_range = candidate_ranges[i]
 
             # Confirm that the candidate range has only unique values
-            assert len(c_range) == len(set(c_range))
+            try:
+                assert len(c_range) == len(set(c_range))
+            except Exception:
+                self.logger.exception("Candidate range has non-unique values")
+
             cardinalities[i] = len(c_range)
 
             # Create the inverse mapping
