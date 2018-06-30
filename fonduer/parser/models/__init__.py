@@ -3,11 +3,11 @@ from fonduer.parser.models.context import (
     Context,
     Figure,
     Phrase,
-    Table,
     construct_stable_id,
     split_stable_id,
 )
 from fonduer.parser.models.document import Document
+from fonduer.parser.models.table import Table
 from fonduer.parser.models.image import Image, TemporaryImage
 from fonduer.parser.models.span import (
     ImplicitSpan,
