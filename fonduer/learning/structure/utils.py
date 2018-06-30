@@ -1,30 +1,34 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import random
 
-from .constants import DEP_EXCLUSIVE, DEP_FIXING, DEP_REINFORCING, DEP_SIMILAR
+from fonduer.learningl.structure.constants import (
+    DEP_EXCLUSIVE,
+    DEP_FIXING,
+    DEP_REINFORCING,
+    DEP_SIMILAR,
+)
 
 
 def get_deps(weights, threshold=0.05, expand=0.0):
     deps = set()
-    for dep_mat, dep in ((weights.dep_fixing, DEP_FIXING),
-                         (weights.dep_reinforcing,
-                          DEP_REINFORCING), (weights.dep_similar, DEP_SIMILAR),
-                         (weights.dep_exclusive, DEP_EXCLUSIVE)):
+    for dep_mat, dep in (
+        (weights.dep_fixing, DEP_FIXING),
+        (weights.dep_reinforcing, DEP_REINFORCING),
+        (weights.dep_similar, DEP_SIMILAR),
+        (weights.dep_exclusive, DEP_EXCLUSIVE),
+    ):
         for i in range(weights.n):
             for j in range(weights.n):
-                if abs(dep_mat[i, j]) > threshold or (random.random() < expand
-                                                      and i != j):
+                if abs(dep_mat[i, j]) > threshold or (
+                    random.random() < expand and i != j
+                ):
                     deps.add((i, j, dep))
 
     return deps
 
 
-def get_all_deps(n,
-                 dep_fixing=False,
-                 dep_reinforcing=False,
-                 dep_similar=False,
-                 dep_exclusive=False):
+def get_all_deps(
+    n, dep_fixing=False, dep_reinforcing=False, dep_similar=False, dep_exclusive=False
+):
     """
     Convenience method for getting a list of all dependencies to consider
     learning for a given number of labeling functions.
@@ -34,10 +38,14 @@ def get_all_deps(n,
     j, is included.
 
     :param n: number of labeling functions
-    :param dep_fixing: whether to include DEP_FIXING dependencies. Default is False.
-    :param dep_reinforcing: whether to include DEP_REINFORCING dependencies. Default is False.
-    :param dep_similar: whether to include DEP_SIMILAR dependencies. Default is False.
-    :param dep_exclusive: whether to include DEP_DEP_EXCLUSIVE dependencies. Default is False.
+    :param dep_fixing: whether to include DEP_FIXING dependencies. Default is
+                       False.
+    :param dep_reinforcing: whether to include DEP_REINFORCING dependencies.
+                            Default is False.
+    :param dep_similar: whether to include DEP_SIMILAR dependencies. Default is
+                        False.
+    :param dep_exclusive: whether to include DEP_DEP_EXCLUSIVE dependencies.
+                          Default is False.
     """
     deps = []
 
@@ -45,9 +53,9 @@ def get_all_deps(n,
     if dep_similar and dep_exclusive:
         sym_deps = (DEP_SIMILAR, DEP_EXCLUSIVE)
     elif dep_similar:
-        sym_deps = (DEP_SIMILAR, )
+        sym_deps = (DEP_SIMILAR,)
     elif dep_exclusive:
-        sym_deps = (DEP_EXCLUSIVE, )
+        sym_deps = (DEP_EXCLUSIVE,)
     else:
         sym_deps = ()
 
@@ -60,9 +68,9 @@ def get_all_deps(n,
     if dep_fixing and dep_reinforcing:
         asym_deps = (DEP_FIXING, DEP_REINFORCING)
     elif dep_fixing:
-        asym_deps = (DEP_FIXING, )
+        asym_deps = (DEP_FIXING,)
     elif dep_reinforcing:
-        asym_deps = (DEP_REINFORCING, )
+        asym_deps = (DEP_REINFORCING,)
     else:
         asym_deps = ()
 

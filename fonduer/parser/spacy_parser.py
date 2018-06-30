@@ -1,11 +1,10 @@
-from __future__ import absolute_import, division, unicode_literals
-
+import logging
 from collections import defaultdict
 from pathlib import Path
 
 import pkg_resources
 
-from fonduer.models import construct_stable_id
+from fonduer.parser.models import construct_stable_id
 
 try:
     import spacy
@@ -16,7 +15,7 @@ except Exception as e:
 
 
 class Spacy(object):
-    '''
+    """
     spaCy
     https://spacy.io/
 
@@ -46,19 +45,21 @@ class Spacy(object):
     ORDINAL     "first", "second", etc.
     CARDINAL    Numerals that do not fall under another type.
 
-    '''
+    """
 
-    def __init__(self,
-                 annotators=['tagger', 'parser', 'entity'],
-                 lang='en',
-                 num_threads=1,
-                 verbose=False):
-
+    def __init__(
+        self,
+        annotators=["tagger", "parser", "entity"],
+        lang="en",
+        num_threads=1,
+        verbose=False,
+    ):
+        self.logger = logging.getLogger(__name__)
         self.name = "spacy"
         self.model = Spacy.load_lang_model(lang)
         self.num_threads = num_threads
 
-        self.pipeline = [proc for _, proc in self.model.__dict__['pipeline']]
+        self.pipeline = [proc for _, proc in self.model.__dict__["pipeline"]]
 
     @staticmethod
     def is_package(name):
@@ -72,20 +73,20 @@ class Spacy(object):
         name = name.lower()  # compare package name against lowercase name
         packages = pkg_resources.working_set.by_key.keys()
         for package in packages:
-            if package.lower().replace('-', '_') == name:
+            if package.lower().replace("-", "_") == name:
                 return True
         return False
 
     @staticmethod
     def model_installed(name):
-        '''
+        """
         Check if spaCy language model is installed
 
         From https://github.com/explosion/spaCy/blob/master/spacy/util.py
 
         :param name:
         :return:
-        '''
+        """
         data_path = util.get_data_path()
         if not data_path or not data_path.exists():
             raise IOError("Can't find spaCy data path: %s" % str(data_path))
@@ -99,7 +100,7 @@ class Spacy(object):
 
     @staticmethod
     def load_lang_model(lang):
-        '''
+        """
         Load spaCy language model or download if
         model is available and not installed
 
@@ -112,22 +113,25 @@ class Spacy(object):
 
         :param lang:
         :return:
-        '''
+        """
         if not Spacy.model_installed(lang):
             download(lang)
         return spacy.load(lang)
 
     def parse(self, document, text):
-        '''
+        """
         Transform spaCy output to match CoreNLP's default format
         :param document:
         :param text:
         :return:
-        '''
+        """
         doc = self.model.tokenizer(text)
         for proc in self.pipeline:
             proc(doc)
-        assert doc.is_parsed
+        try:
+            assert doc.is_parsed
+        except Exception:
+            self.logger.exception("{} was not parsed".format(doc))
 
         position = 0
         for sent in doc.sents:
@@ -135,43 +139,44 @@ class Spacy(object):
             text = sent.text
 
             for i, token in enumerate(sent):
-                parts['words'].append(str(token))
-                parts['lemmas'].append(token.lemma_)
-                parts['pos_tags'].append(token.tag_)
-                parts['ner_tags'].append(token.ent_type_
-                                         if token.ent_type_ else 'O')
-                parts['char_offsets'].append(token.idx)
-                parts['abs_char_offsets'].append(token.idx)
+                parts["words"].append(str(token))
+                parts["lemmas"].append(token.lemma_)
+                parts["pos_tags"].append(token.tag_)
+                parts["ner_tags"].append(token.ent_type_ if token.ent_type_ else "O")
+                parts["char_offsets"].append(token.idx)
+                parts["abs_char_offsets"].append(token.idx)
                 head_idx = 0 if token.head is token else token.head.i - sent[0].i + 1
-                parts['dep_parents'].append(head_idx)
-                parts['dep_labels'].append(token.dep_)
+                parts["dep_parents"].append(head_idx)
+                parts["dep_labels"].append(token.dep_)
 
             # Add null entity array (matching null for CoreNLP)
-            parts['entity_cids'] = ['O' for _ in parts['words']]
-            parts['entity_types'] = ['O' for _ in parts['words']]
+            parts["entity_cids"] = ["O" for _ in parts["words"]]
+            parts["entity_types"] = ["O" for _ in parts["words"]]
 
             # make char_offsets relative to start of sentence
-            parts['char_offsets'] = [
-                p - parts['char_offsets'][0] for p in parts['char_offsets']
+            parts["char_offsets"] = [
+                p - parts["char_offsets"][0] for p in parts["char_offsets"]
             ]
-            parts['position'] = position
+            parts["position"] = position
 
             # Link the sentence to its parent document object
-            parts['document'] = document
-            parts['text'] = text
+            parts["document"] = document
+            parts["text"] = text
 
             # Add null entity array (matching null for CoreNLP)
-            parts['entity_cids'] = ['O' for _ in parts['words']]
-            parts['entity_types'] = ['O' for _ in parts['words']]
+            parts["entity_cids"] = ["O" for _ in parts["words"]]
+            parts["entity_types"] = ["O" for _ in parts["words"]]
 
             # Assign the stable id as document's stable id plus absolute
             # character offset
-            abs_sent_offset = parts['abs_char_offsets'][0]
-            abs_sent_offset_end = abs_sent_offset + parts['char_offsets'][-1] + len(
-                parts['words'][-1])
+            abs_sent_offset = parts["abs_char_offsets"][0]
+            abs_sent_offset_end = (
+                abs_sent_offset + parts["char_offsets"][-1] + len(parts["words"][-1])
+            )
             if document:
-                parts['stable_id'] = construct_stable_id(
-                    document, 'sentence', abs_sent_offset, abs_sent_offset_end)
+                parts["stable_id"] = construct_stable_id(
+                    document, "sentence", abs_sent_offset, abs_sent_offset_end
+                )
 
             position += 1
 

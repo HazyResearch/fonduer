@@ -1,15 +1,20 @@
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
 import logging
 
 import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame, Series
 
-from .models import Candidate, GoldLabel, GoldLabelKey, Marginal
-from .utils import (matrix_conflicts, matrix_coverage, matrix_fn, matrix_fp,
-                    matrix_overlaps, matrix_tn, matrix_tp)
+from fonduer.candidates.models import Candidate, Marginal
+from fonduer.supervision.models import GoldLabel, GoldLabelKey
+from fonduer.utils import (
+    matrix_conflicts,
+    matrix_coverage,
+    matrix_fn,
+    matrix_fp,
+    matrix_overlaps,
+    matrix_tn,
+    matrix_tp,
+)
 
 
 class csr_AnnotationMatrix(sparse.csr_matrix):
@@ -20,19 +25,18 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
 
     def __init__(self, arg1, **kwargs):
         # Note: Currently these need to return None if unset, otherwise matrix copy operations break...
-        self.candidate_index = kwargs.pop('candidate_index', None)
-        self.row_index = kwargs.pop('row_index', None)
-        self.annotation_key_cls = kwargs.pop('annotation_key_cls', None)
-        self.key_index = kwargs.pop('key_index', None)
-        self.col_index = kwargs.pop('col_index', None)
+        self.candidate_index = kwargs.pop("candidate_index", None)
+        self.row_index = kwargs.pop("row_index", None)
+        self.annotation_key_cls = kwargs.pop("annotation_key_cls", None)
+        self.key_index = kwargs.pop("key_index", None)
+        self.col_index = kwargs.pop("col_index", None)
 
         # Note that scipy relies on the first three letters of the class to define matrix type...
         super(csr_AnnotationMatrix, self).__init__(arg1, **kwargs)
 
     def get_candidate(self, session, i):
         """Return the Candidate object corresponding to row i"""
-        return session.query(Candidate).filter(
-            Candidate.id == self.row_index[i]).one()
+        return session.query(Candidate).filter(Candidate.id == self.row_index[i]).one()
 
     def get_row_index(self, candidate):
         """Return the row index of the Candidate"""
@@ -40,8 +44,11 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
 
     def get_key(self, session, j):
         """Return the AnnotationKey object corresponding to column j"""
-        return session.query(self.annotation_key_cls).filter(
-            self.annotation_key_cls.id == self.col_index[j]).one()
+        return (
+            session.query(self.annotation_key_cls)
+            .filter(self.annotation_key_cls.id == self.col_index[j])
+            .one()
+        )
 
     def get_col_index(self, key):
         """Return the cow index of the AnnotationKey"""
@@ -78,8 +85,11 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
         X = super(csr_AnnotationMatrix, self).__getitem__(key)
 
         # If X is an integer or float value, just return it
-        if (type(X) in [int, float] or issubclass(type(X), np.integer)
-                or issubclass(type(X), np.float)):
+        if (
+            type(X) in [int, float]
+            or issubclass(type(X), np.integer)
+            or issubclass(type(X), np.float)
+        ):
             return X
         # If X is a matrix, make sure it stays a csr_AnnotationMatrix
         elif not isinstance(X, csr_AnnotationMatrix):
@@ -88,9 +98,11 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
         X.annotation_key_cls = self.annotation_key_cls
         row_slice, col_slice = self._unpack_index(key)
         X.row_index, X.candidate_index = self._get_sliced_indexes(
-            row_slice, 0, self.row_index, self.candidate_index)
+            row_slice, 0, self.row_index, self.candidate_index
+        )
         X.col_index, X.key_index = self._get_sliced_indexes(
-            col_slice, 1, self.col_index, self.key_index)
+            col_slice, 1, self.col_index, self.key_index
+        )
         return X
 
     def stats(self):
@@ -101,69 +113,70 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
 class csr_LabelMatrix(csr_AnnotationMatrix):
     def lf_stats(self, session, labels=None, est_accs=None):
         """Returns a pandas DataFrame with the LFs and various per-LF statistics"""
-        lf_names = [
-            self.get_key(session, j).name for j in range(self.shape[1])
-        ]
+        lf_names = [self.get_key(session, j).name for j in range(self.shape[1])]
 
         # Default LF stats
-        col_names = ['j', 'Coverage', 'Overlaps', 'Conflicts']
+        col_names = ["j", "Coverage", "Overlaps", "Conflicts"]
         d = {
-            'j': list(range(self.shape[1])),
-            'Coverage': Series(data=matrix_coverage(self), index=lf_names),
-            'Overlaps': Series(data=matrix_overlaps(self), index=lf_names),
-            'Conflicts': Series(data=matrix_conflicts(self), index=lf_names)
+            "j": list(range(self.shape[1])),
+            "Coverage": Series(data=matrix_coverage(self), index=lf_names),
+            "Overlaps": Series(data=matrix_overlaps(self), index=lf_names),
+            "Conflicts": Series(data=matrix_conflicts(self), index=lf_names),
         }
         if labels is not None:
-            col_names.extend(['TP', 'FP', 'FN', 'TN', 'Empirical Acc.'])
-            ls = np.ravel(labels.todense()
-                          if sparse.issparse(labels) else labels)
+            col_names.extend(["TP", "FP", "FN", "TN", "Empirical Acc."])
+            ls = np.ravel(labels.todense() if sparse.issparse(labels) else labels)
             tp = matrix_tp(self, ls)
             fp = matrix_fp(self, ls)
             fn = matrix_fn(self, ls)
             tn = matrix_tn(self, ls)
             ac = (tp + tn) / (tp + tn + fp + fn)
-            d['Empirical Acc.'] = Series(data=ac, index=lf_names)
-            d['TP'] = Series(data=tp, index=lf_names)
-            d['FP'] = Series(data=fp, index=lf_names)
-            d['FN'] = Series(data=fn, index=lf_names)
-            d['TN'] = Series(data=tn, index=lf_names)
+            d["Empirical Acc."] = Series(data=ac, index=lf_names)
+            d["TP"] = Series(data=tp, index=lf_names)
+            d["FP"] = Series(data=fp, index=lf_names)
+            d["FN"] = Series(data=fn, index=lf_names)
+            d["TN"] = Series(data=tn, index=lf_names)
 
         if est_accs is not None:
-            col_names.append('Learned Acc.')
-            d['Learned Acc.'] = est_accs
-            d['Learned Acc.'].index = lf_names
+            col_names.append("Learned Acc.")
+            d["Learned Acc."] = est_accs
+            d["Learned Acc."].index = lf_names
         return DataFrame(data=d, index=lf_names)[col_names]
 
 
-def load_matrix(matrix_class,
-                annotation_key_class,
-                annotation_class,
-                session,
-                split=0,
-                cids_query=None,
-                key_group=0,
-                key_names=None,
-                zero_one=False,
-                load_as_array=False):
+def load_matrix(
+    matrix_class,
+    annotation_key_class,
+    annotation_class,
+    session,
+    split=0,
+    cids_query=None,
+    key_group=0,
+    key_names=None,
+    zero_one=False,
+    load_as_array=False,
+):
     """
     Returns the annotations corresponding to a split of candidates with N members
     and an AnnotationKey group with M distinct keys as an N x M CSR sparse matrix.
     """
-    cid_query = cids_query or session.query(Candidate.id)\
-                                     .filter(Candidate.split == split)
+    cid_query = cids_query or session.query(Candidate.id).filter(
+        Candidate.split == split
+    )
     cid_query = cid_query.order_by(Candidate.id)
 
     keys_query = session.query(annotation_key_class.id)
     keys_query = keys_query.filter(annotation_key_class.group == key_group)
     if key_names is not None:
         keys_query = keys_query.filter(
-            annotation_key_class.name.in_(frozenset(key_names)))
+            annotation_key_class.name.in_(frozenset(key_names))
+        )
     keys_query = keys_query.order_by(annotation_key_class.id)
 
     # First, we query to construct the row index map
     cid_to_row = {}
     row_to_cid = {}
-    for cid, in cid_query.all():
+    for (cid,) in cid_query.all():
         if cid not in cid_to_row:
             j = len(cid_to_row)
 
@@ -174,7 +187,7 @@ def load_matrix(matrix_class,
     # Second, we query to construct the column index map
     kid_to_col = {}
     col_to_kid = {}
-    for kid, in keys_query.all():
+    for (kid,) in keys_query.all():
         if kid not in kid_to_col:
             j = len(kid_to_col)
 
@@ -209,7 +222,8 @@ def load_matrix(matrix_class,
             data.append(int(val))
 
     X = sparse.coo_matrix(
-        (data, (row, columns)), shape=(len(cid_to_row), len(kid_to_col)))
+        (data, (row, columns)), shape=(len(cid_to_row), len(kid_to_col))
+    )
 
     # Return as an AnnotationMatrix
     Xr = matrix_class(
@@ -218,7 +232,8 @@ def load_matrix(matrix_class,
         row_index=row_to_cid,
         annotation_key_cls=annotation_key_class,
         key_index=kid_to_col,
-        col_index=col_to_kid)
+        col_index=col_to_kid,
+    )
     return np.squeeze(Xr.toarray()) if load_as_array else Xr
 
 
@@ -229,7 +244,8 @@ def load_gold_labels(session, annotator_name, **kwargs):
         GoldLabel,
         session,
         key_names=[annotator_name],
-        **kwargs)
+        **kwargs
+    )
 
 
 def save_marginals(session, X, marginals, training=True):
@@ -266,8 +282,9 @@ def save_marginals(session, X, marginals, training=True):
                 marginal_tuples.append((i, k, marginals[i, k]))
 
     # NOTE: This will delete all existing marginals of type `training`
-    session.query(Marginal).filter(Marginal.training == training).\
-        delete(synchronize_session='fetch')
+    session.query(Marginal).filter(Marginal.training == training).delete(
+        synchronize_session="fetch"
+    )
 
     # Prepare bulk INSERT query
     q = Marginal.__table__.insert()
@@ -281,13 +298,15 @@ def save_marginals(session, X, marginals, training=True):
     insert_vals = []
     for i, k, p in marginal_tuples:
         cid = X.get_candidate(session, i).id if anno_matrix else X[i].id
-        insert_vals.append({
-            'candidate_id': cid,
-            'training': training,
-            'value': k,
-            # We cast p in case its a numpy type, which psycopg2 does not handle
-            'probability': float(p)
-        })
+        insert_vals.append(
+            {
+                "candidate_id": cid,
+                "training": training,
+                "value": k,
+                # We cast p in case its a numpy type, which psycopg2 does not handle
+                "probability": float(p),
+            }
+        )
 
     # Execute update
     session.execute(q, insert_vals)

@@ -1,5 +1,3 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import codecs
 import glob
 import os
@@ -7,7 +5,7 @@ import os
 import lxml.etree as et
 from bs4 import BeautifulSoup
 
-from fonduer.models.context import Document
+from fonduer.parser.models import Document
 
 
 class DocPreprocessor(object):
@@ -63,7 +61,7 @@ class DocPreprocessor(object):
         if len(fpaths) > 0:
             return fpaths
         else:
-            raise IOError("File or directory not found: %s" % (path, ))
+            raise IOError("File or directory not found: %s" % (path,))
 
 
 class TSVDocPreprocessor(DocPreprocessor):
@@ -75,11 +73,8 @@ class TSVDocPreprocessor(DocPreprocessor):
                 (doc_name, doc_text) = line.split('\t')
                 stable_id = self.get_stable_id(doc_name)
                 doc = Document(
-                    name=doc_name,
-                    stable_id=stable_id,
-                    meta={
-                        'file_name': file_name
-                    })
+                    name=doc_name, stable_id=stable_id, meta={'file_name': file_name}
+                )
                 yield doc, doc_text
 
 
@@ -91,9 +86,8 @@ class TextDocPreprocessor(DocPreprocessor):
             name = os.path.basename(fp).rsplit('.', 1)[0]
             stable_id = self.get_stable_id(name)
             doc = Document(
-                name=name, stable_id=stable_id, meta={
-                    'file_name': file_name
-                })
+                name=name, stable_id=stable_id, meta={'file_name': file_name}
+            )
             yield doc, f.read()
 
 
@@ -113,13 +107,15 @@ class CSVPathsPreprocessor(DocPreprocessor):
        parameter to constructor.
      """
 
-    def __init__(self,
-                 path,
-                 parser_factory=TextDocPreprocessor,
-                 column=None,
-                 delim=',',
-                 *args,
-                 **kwargs):
+    def __init__(
+        self,
+        path,
+        parser_factory=TextDocPreprocessor,
+        column=None,
+        delim=',',
+        *args,
+        **kwargs
+    ):
         """
         :param path: input file having paths
         :param parser_factory: The parser class to be used to parse the
@@ -191,14 +187,16 @@ class XMLMultiDocPreprocessor(DocPreprocessor):
     keep_xml_tree=True**
     """
 
-    def __init__(self,
-                 path,
-                 doc='.//document',
-                 text='./text/text()',
-                 id='./id/text()',
-                 keep_xml_tree=False,
-                 *args,
-                 **kwargs):
+    def __init__(
+        self,
+        path,
+        doc='.//document',
+        text='./text/text()',
+        id='./id/text()',
+        keep_xml_tree=False,
+        *args,
+        **kwargs
+    ):
         super(XMLMultiDocPreprocessor, self).__init__(path, *args, **kwargs)
         self.doc = doc
         self.text = text
@@ -208,8 +206,7 @@ class XMLMultiDocPreprocessor(DocPreprocessor):
     def parse_file(self, f, file_name):
         for i, doc in enumerate(et.parse(f).xpath(self.doc)):
             doc_id = str(doc.xpath(self.id)[0])
-            text = '\n'.join(
-                [t for t in doc.xpath(self.text) if t is not None])
+            text = '\n'.join([t for t in doc.xpath(self.text) if t is not None])
             meta = {'file_name': str(file_name)}
             if self.keep_xml_tree:
                 meta['root'] = et.tostring(doc)
@@ -227,15 +224,14 @@ class HTMLPreprocessor(DocPreprocessor):
         with codecs.open(fp, encoding=self.encoding) as f:
             soup = BeautifulSoup(f, 'lxml')
             for text in soup.find_all('html'):
-                name = os.path.basename(fp)[:os.path.basename(fp).rfind('.')]
+                name = os.path.basename(fp)[: os.path.basename(fp).rfind('.')]
                 stable_id = self.get_stable_id(name)
                 yield Document(
                     name=name,
                     stable_id=stable_id,
                     text=str(text),
-                    meta={
-                        'file_name': file_name
-                    }), str(text)
+                    meta={'file_name': file_name},
+                ), str(text)
 
     def _can_read(self, fpath):
         return fpath.endswith('html')  # includes both .html and .xhtml

@@ -13,7 +13,7 @@ def dict2obj(d):
                 n[item] = [dict2obj(i) for i in d[item]]
             else:
                 n[item] = d[item]
-        return type('obj_from_dict', (object, ), n)
+        return type("obj_from_dict", (object,), n)
     else:
         return d
 

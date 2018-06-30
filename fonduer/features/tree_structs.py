@@ -1,18 +1,6 @@
-import json
-import os
 import re
 
 import lxml.etree as et
-
-from fonduer.utils import corenlp_cleaner
-
-APP_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Load IPython display functionality libs if possible i.e. if in IPython
-try:
-    from IPython.core.display import display_html, HTML, display_javascript, Javascript
-except Exception as e:
-    pass
 
 
 class XMLTree:
@@ -30,9 +18,9 @@ class XMLTree:
         self.id = str(abs(hash(self.to_str())))
 
     def _to_json(self, root):
-        js = {'attrib': dict(root.attrib), 'children': []}
+        js = {"attrib": dict(root.attrib), "children": []}
         for i, c in enumerate(root):
-            js['children'].append(self._to_json(c))
+            js["children"].append(self._to_json(c))
         return js
 
     def to_json(self):
@@ -40,26 +28,6 @@ class XMLTree:
 
     def to_str(self):
         return et.tostring(self.root)
-
-    def render_tree(self, highlight=[]):
-        """
-        Renders d3 visualization of the d3 tree, for IPython notebook display
-        Depends on html/js files in vis/ directory, which is assumed to be in same dir...
-        """
-        # HTML
-        WORD = '<span class="word-' + self.id + '-%s">%s</span>'
-        words = ' '.join(WORD % (i, w) for i, w in enumerate(
-            corenlp_cleaner(self.words))) if self.words else ''
-        html = open('%s/vis/tree-chart.html' % APP_HOME).read() % (self.id,
-                                                                   self.id,
-                                                                   words)
-        display_html(HTML(data=html))
-
-        # JS
-        JS_LIBS = ["https://d3js.org/d3.v3.min.js"]
-        js = open('%s/vis/tree-chart.js' % APP_HOME).read() % (
-            self.id, json.dumps(self.to_json()), str(highlight))
-        display_javascript(Javascript(data=js, lib=JS_LIBS))
 
 
 def corenlp_to_xmltree(s, prune_root=True):
@@ -71,17 +39,17 @@ def corenlp_to_xmltree(s, prune_root=True):
     # Convert input object to dictionary
     if not isinstance(s, dict):
         try:
-            s = s.__dict__ if hasattr(s, '__dict__') else dict(s)
+            s = s.__dict__ if hasattr(s, "__dict__") else dict(s)
         except Exception as e:
             raise ValueError("Cannot convert input object to dict")
 
     # Use the dep_parents array as a guide: ensure it is present and a list of ints
-    if not ('dep_parents' in s and isinstance(s['dep_parents'], list)):
+    if not ("dep_parents" in s and isinstance(s["dep_parents"], list)):
         raise ValueError(
             "Input CoreNLP object must have a 'dep_parents' attribute which is a list"
         )
     try:
-        dep_parents = list(map(int, s['dep_parents']))
+        dep_parents = list(map(int, s["dep_parents"]))
     except Exception as e:
         raise ValueError("'dep_parents' attribute must be a list of ints")
 
@@ -102,11 +70,11 @@ def corenlp_to_xmltree(s, prune_root=True):
                 root.remove(c)
         if len(root) == 1:
             root = root.findall("./*")[0]
-    return XMLTree(root, words=s['words'])
+    return XMLTree(root, words=s["words"])
 
 
 def scrub(s):
-    return ''.join(c for c in s if ord(c) < 128)
+    return "".join(c for c in s if ord(c) < 128)
 
 
 def corenlp_to_xmltree_sub(s, dep_parents, rid=0):
@@ -117,19 +85,21 @@ def corenlp_to_xmltree_sub(s, dep_parents, rid=0):
     # Add all attributes that have the same shape as dep_parents
     if i >= 0:
         for k, v in list(
-                filter(lambda t: isinstance(t[1], list) and len(t[1]) == N,
-                       s.items())):
+            filter(lambda t: isinstance(t[1], list) and len(t[1]) == N, s.items())
+        ):
             if v[i] is not None:
-                attrib[singular(k)] = scrub(v[i]).encode(
-                    'ascii', 'ignore') if hasattr(v[i], 'encode') else str(
-                        v[i])
+                attrib[singular(k)] = (
+                    scrub(v[i]).encode("ascii", "ignore")
+                    if hasattr(v[i], "encode")
+                    else str(v[i])
+                )
 
         # Add word_idx if not present
-        if 'word_idx' not in attrib:
-            attrib['word_idx'] = str(i)
+        if "word_idx" not in attrib:
+            attrib["word_idx"] = str(i)
 
     # Build tree recursively
-    root = et.Element('node', attrib=attrib)
+    root = et.Element("node", attrib=attrib)
     for i, d in enumerate(dep_parents):
         if d == rid:
             root.append(corenlp_to_xmltree_sub(s, dep_parents, i + 1))
@@ -138,4 +108,4 @@ def corenlp_to_xmltree_sub(s, dep_parents, rid=0):
 
 def singular(s):
     """Get singular form of word s (crudely)"""
-    return re.sub(r'e?s$', '', s, flags=re.I)
+    return re.sub(r"e?s$", "", s, flags=re.I)

@@ -1,12 +1,9 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
-from sqlalchemy import (Column, Float, ForeignKey, Integer, String,
-                        UniqueConstraint)
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.utils import camel_to_under
-from fonduer.models.meta import Meta
+from fonduer.meta import Meta
 
 # Grab pointer to global metadata
 _meta = Meta.init()
@@ -38,7 +35,7 @@ class AnnotationKeyMixin(object):
 
     @declared_attr
     def __table_args__(cls):
-        return (UniqueConstraint('name', 'group'), )
+        return (UniqueConstraint("name", "group"),)
 
     def __repr__(self):
         return str(self.__class__.__name__) + " (" + str(self.name) + ")"
@@ -70,8 +67,8 @@ class AnnotationMixin(object):
 
     .. code-block:: python
 
-        from fonduer.models.annotation import AnnotationMixin
-        from fonduer.models.meta import Meta
+        from fonduer.supervision.models import AnnotationMixin
+        from fonduer.meta import Meta
 
         class NewAnnotation(AnnotationMixin, Meta.Base):
             value = Column(Float, nullable=False)
@@ -91,45 +88,57 @@ class AnnotationMixin(object):
     @declared_attr
     def key_id(cls):
         return Column(
-            'key_id',
+            "key_id",
             Integer,
-            ForeignKey('%s_key.id' % cls.__tablename__, ondelete='CASCADE'),
-            primary_key=True)
+            ForeignKey("%s_key.id" % cls.__tablename__, ondelete="CASCADE"),
+            primary_key=True,
+        )
 
     @declared_attr
     def key(cls):
         return relationship(
-            '%sKey' % cls.__name__,
+            "%sKey" % cls.__name__,
             backref=backref(
-                camel_to_under(cls.__name__) + 's',
-                cascade='all, delete-orphan'))
+                camel_to_under(cls.__name__) + "s", cascade="all, delete-orphan"
+            ),
+        )
 
     # Every annotation is with respect to a candidate
     @declared_attr
     def candidate_id(cls):
         return Column(
-            'candidate_id',
+            "candidate_id",
             Integer,
-            ForeignKey('candidate.id', ondelete='CASCADE'),
-            primary_key=True)
+            ForeignKey("candidate.id", ondelete="CASCADE"),
+            primary_key=True,
+        )
 
     @declared_attr
     def candidate(cls):
         return relationship(
-            'Candidate',
+            "Candidate",
             backref=backref(
-                camel_to_under(cls.__name__) + 's',
-                cascade='all, delete-orphan',
-                cascade_backrefs=False),
-            cascade_backrefs=False)
+                camel_to_under(cls.__name__) + "s",
+                cascade="all, delete-orphan",
+                cascade_backrefs=False,
+            ),
+            cascade_backrefs=False,
+        )
 
     def __repr__(self):
-        return self.__class__.__name__ + " (" + str(
-            self.key.name) + " = " + str(self.value) + ")"
+        return (
+            self.__class__.__name__
+            + " ("
+            + str(self.key.name)
+            + " = "
+            + str(self.value)
+            + ")"
+        )
 
 
 class GoldLabel(AnnotationMixin, _meta.Base):
     """A separate class for labels from human annotators or other gold standards."""
+
     value = Column(Integer, nullable=False)
 
 
@@ -140,6 +149,7 @@ class Label(AnnotationMixin, _meta.Base):
     Labels are used to represent the output of labeling functions. A Label's
     annotation key identifies the labeling function that provided the Label.
     """
+
     value = Column(Integer, nullable=False)
 
 
@@ -151,6 +161,7 @@ class Feature(AnnotationMixin, _meta.Base):
     a function that implements it or the library name and feature name in an
     automatic featurization library.
     """
+
     value = Column(Float, nullable=False)
 
 
@@ -162,6 +173,7 @@ class Prediction(AnnotationMixin, _meta.Base):
     A Prediction's annotation key indicates which process or method produced
     the Prediction, e.g., which model with which ParameterSet.
     """
+
     value = Column(Float, nullable=False)
 
 
@@ -171,14 +183,18 @@ class StableLabel(_meta.Base):
     annotators* in a stable format that does not cascade,
     and is independent of the Candidate ids.
     """
-    __tablename__ = 'stable_label'
+
+    __tablename__ = "stable_label"
     context_stable_ids = Column(
-        String,
-        primary_key=True)  # ~~ delimited list of the context stable ids
+        String, primary_key=True
+    )  # ~~ delimited list of the context stable ids
     annotator_name = Column(String, primary_key=True)
     split = Column(Integer, default=0)
     value = Column(Integer, nullable=False)
 
     def __repr__(self):
-        return "%s (%s : %s)" % (self.__class__.__name__, self.annotator_name,
-                                 self.value)
+        return "%s (%s : %s)" % (
+            self.__class__.__name__,
+            self.annotator_name,
+            self.value,
+        )

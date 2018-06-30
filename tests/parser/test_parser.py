@@ -12,7 +12,7 @@ import os
 import pytest
 
 from fonduer import HTMLPreprocessor, Meta, OmniParser
-from fonduer.models import Document, Phrase
+from fonduer.parser.models import Document, Phrase
 from fonduer.parser import Spacy
 from fonduer.parser.parser import OmniParserUDF
 
@@ -306,6 +306,6 @@ def test_parse_style(caplog):
             'attr': ['class=cell', 'style=text-align: center;']
         }
     ]
-    
+
     # Assertions
     assert(all(phrases[p['index']].html_attrs == p['attr'] for p in sub_phrases))

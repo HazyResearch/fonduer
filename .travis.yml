@@ -42,7 +42,7 @@ before_script:
 - cd tests/e2e/
 - "./download_data.sh"
 - cd ../..
-- flake8 fonduer --count --max-line-length=127 --statistics --show-source --ignore=E731,W503,E741,E123
+- flake8 fonduer --count --max-line-length=127 --statistics --show-source --ignore=E731,W503,E741,E203
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx

@@ -5,9 +5,9 @@ from itertools import product
 
 from sqlalchemy.sql import select
 
-from fonduer.models import Candidate, TemporaryImage, TemporarySpan
-from fonduer.models.context import Document
-from fonduer.udf import UDF, UDFRunner
+from fonduer.candidates.models import Candidate
+from fonduer.parser.models import Document, TemporaryImage, TemporarySpan
+from fonduer.utils.udf import UDF, UDFRunner
 
 
 class CandidateSpace(object):
@@ -29,19 +29,23 @@ class Ngrams(CandidateSpace):
     indexing by **character offset**.
     """
 
-    def __init__(self, n_max=5, split_tokens=('-', '/')):
+    def __init__(self, n_max=5, split_tokens=("-", "/")):
         CandidateSpace.__init__(self)
         self.n_max = n_max
-        self.split_rgx = r'(' + r'|'.join(
-            split_tokens) + r')' if split_tokens and len(
-                split_tokens) > 0 else None
+        self.split_rgx = (
+            r"(" + r"|".join(split_tokens) + r")"
+            if split_tokens and len(split_tokens) > 0
+            else None
+        )
 
     def apply(self, context):
 
-        # These are the character offset--**relative to the sentence start**--for each _token_
+        # These are the character offset--**relative to the sentence
+        # start**--for each _token_
         offsets = context.char_offsets
 
-        # Loop over all n-grams in **reverse** order (to facilitate longest-match semantics)
+        # Loop over all n-grams in **reverse** order (to facilitate
+        # longest-match semantics)
         L = len(offsets)
         seen = set()
         for j in range(1, self.n_max + 1)[::-1]:
@@ -49,8 +53,7 @@ class Ngrams(CandidateSpace):
                 w = context.words[i + j - 1]
                 start = offsets[i]
                 end = offsets[i + j - 1] + len(w) - 1
-                ts = TemporarySpan(
-                    char_start=start, char_end=end, sentence=context)
+                ts = TemporarySpan(char_start=start, char_end=end, sentence=context)
                 if ts not in seen:
                     seen.add(ts)
                     yield ts
@@ -60,19 +63,20 @@ class Ngrams(CandidateSpace):
                 if j == 1 and self.split_rgx is not None and end - start > 0:
                     m = re.search(
                         self.split_rgx,
-                        context.text[start - offsets[0]:end - offsets[0] + 1])
+                        context.text[start - offsets[0] : end - offsets[0] + 1],
+                    )
                     if m is not None and j < self.n_max + 1:
                         ts1 = TemporarySpan(
                             char_start=start,
                             char_end=start + m.start(1) - 1,
-                            sentence=context)
+                            sentence=context,
+                        )
                         if ts1 not in seen:
                             seen.add(ts1)
                             yield ts
                         ts2 = TemporarySpan(
-                            char_start=start + m.end(1),
-                            char_end=end,
-                            sentence=context)
+                            char_start=start + m.end(1), char_end=end, sentence=context
+                        )
                         if ts2 not in seen:
                             seen.add(ts2)
                             yield ts2
@@ -82,38 +86,37 @@ class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
     :param candidate_class: The type of relation to extract, defined using
-                            :func:`fonduer.models.candidate_subclass <snorkel.models.candidate.candidate_subclass>`
+        :func:`fonduer.candidates.candidate_subclass.
     :param cspaces: one or list of :class:`CandidateSpace` objects, one for
-                    each relation argument. Defines space of Contexts to
-                    consider
+        each relation argument. Defines space of Contexts to consider
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
-                     one for each relation argument. Only tuples of Contexts
-                     for which each element is accepted by the corresponding
-                     Matcher will be returned as Candidates
+        one for each relation argument. Only tuples of Contexts for which each
+        element is accepted by the corresponding Matcher will be returned as
+        Candidates
     :param candidate_filter: an optional function for filtering out candidates
-                             which returns a Boolean expressing whether or not
-                             the candidate should be instantiated.
+        which returns a Boolean expressing whether or not the candidate should
+        be instantiated.
     :param self_relations: Boolean indicating whether to extract Candidates
-                           that relate the same context. Only applies to binary
-                           relations. Default is False.
+        that relate the same context. Only applies to binary relations. Default
+        is False.
     :param nested_relations: Boolean indicating whether to extract Candidates
-                             that relate one Context with another that contains
-                             it. Only applies to binary relations. Default is
-                             False.
+        that relate one Context with another that contains it. Only applies to
+        binary relations. Default is False.
     :param symmetric_relations: Boolean indicating whether to extract symmetric
-                                Candidates, i.e., rel(A,B) and rel(B,A), where
-                                A and B are Contexts. Only applies to binary
-                                relations. Default is True.
+        Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
+        Only applies to binary relations. Default is True.
     """
 
-    def __init__(self,
-                 candidate_class,
-                 cspaces,
-                 matchers,
-                 candidate_filter=None,
-                 self_relations=False,
-                 nested_relations=False,
-                 symmetric_relations=True):
+    def __init__(
+        self,
+        candidate_class,
+        cspaces,
+        matchers,
+        candidate_filter=None,
+        self_relations=False,
+        nested_relations=False,
+        symmetric_relations=True,
+    ):
         """Initialize the CandidateExtractor."""
         super(CandidateExtractor, self).__init__(
             CandidateExtractorUDF,
@@ -123,7 +126,8 @@ class CandidateExtractor(UDFRunner):
             candidate_filter=candidate_filter,
             self_relations=self_relations,
             nested_relations=nested_relations,
-            symmetric_relations=symmetric_relations)
+            symmetric_relations=symmetric_relations,
+        )
 
     def apply(self, xs, split=0, **kwargs):
         """Call the CandidateExtractorUDF."""
@@ -137,15 +141,21 @@ class CandidateExtractor(UDFRunner):
 class CandidateExtractorUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_class, cspaces, matchers, candidate_filter,
-                 self_relations, nested_relations, symmetric_relations,
-                 **kwargs):
+    def __init__(
+        self,
+        candidate_class,
+        cspaces,
+        matchers,
+        candidate_filter,
+        self_relations,
+        nested_relations,
+        symmetric_relations,
+        **kwargs
+    ):
         """Initialize the CandidateExtractorUDF."""
         self.candidate_class = candidate_class
-        self.candidate_spaces = cspaces if type(cspaces) in [list, tuple
-                                                             ] else [cspaces]
-        self.matchers = matchers if type(matchers) in [list,
-                                                       tuple] else [matchers]
+        self.candidate_spaces = cspaces if type(cspaces) in [list, tuple] else [cspaces]
+        self.matchers = matchers if type(matchers) in [list, tuple] else [matchers]
         self.candidate_filter = candidate_filter
         self.nested_relations = nested_relations
         self.self_relations = self_relations
@@ -153,8 +163,7 @@ class CandidateExtractorUDF(UDF):
 
         # Check that arity is same
         if len(self.candidate_spaces) != len(self.matchers):
-            raise ValueError(
-                "Mismatched arity of candidate space and matcher.")
+            raise ValueError("Mismatched arity of candidate space and matcher.")
         else:
             self.arity = len(self.candidate_spaces)
 
@@ -176,28 +185,30 @@ class CandidateExtractorUDF(UDF):
         :param clear:
         :param split: Which split to use.
         """
-        # Generate TemporaryContexts that are children of the context using the candidate_space and filtered
-        # by the Matcher
+        # Generate TemporaryContexts that are children of the context using the
+        # candidate_space and filtered by the Matcher
         for i in range(self.arity):
             self.child_context_sets[i].clear()
-            for tc in self.matchers[i].apply(self.candidate_spaces[i].apply(
-                    self.session, context)):
+            for tc in self.matchers[i].apply(
+                self.candidate_spaces[i].apply(self.session, context)
+            ):
                 tc.load_id_or_insert(self.session)
                 self.child_context_sets[i].add(tc)
 
         # Generates and persists candidates
-        candidate_args = {'split': split}
-        for args in product(*[
-                enumerate(child_contexts)
-                for child_contexts in self.child_context_sets
-        ]):
+        candidate_args = {"split": split}
+        for args in product(
+            *[enumerate(child_contexts) for child_contexts in self.child_context_sets]
+        ):
 
             # Apply candidate_filter if one was given
             # Accepts a tuple of Context objects (e.g., (Span, Span))
-            # (candidate_filter returns whether or not proposed candidate passes throttling condition)
+            # (candidate_filter returns whether or not proposed candidate
+            # passes throttling condition)
             if self.candidate_filter:
                 if not self.candidate_filter(
-                        tuple(args[i][1] for i in range(self.arity))):
+                    tuple(args[i][1] for i in range(self.arity))
+                ):
                     continue
 
             # TODO: Make this work for higher-order relations
@@ -205,8 +216,8 @@ class CandidateExtractorUDF(UDF):
                 ai, a = args[0]
                 bi, b = args[1]
 
-                # Check for self-joins, "nested" joins (joins from span to its subspan), and flipped duplicate
-                # "symmetric" relations
+                # Check for self-joins, "nested" joins (joins from span to its
+                # subspan), and flipped duplicate "symmetric" relations
                 if not self.self_relations and a == b:
                     continue
                 elif not self.nested_relations and (a in b or b in a):
@@ -216,7 +227,7 @@ class CandidateExtractorUDF(UDF):
 
             # Assemble candidate arguments
             for i, arg_name in enumerate(self.candidate_class.__argnames__):
-                candidate_args[arg_name + '_id'] = args[i][1].id
+                candidate_args[arg_name + "_id"] = args[i][1].id
 
             # Checking for existence
             if not clear:
@@ -239,7 +250,7 @@ class OmniNgrams(Ngrams):
     divided into Phrases inside of html elements (such as table cells).
     """
 
-    def __init__(self, n_max=5, split_tokens=['-', '/']):
+    def __init__(self, n_max=5, split_tokens=["-", "/"]):
         """
         Initialize OmniNgrams.
         """

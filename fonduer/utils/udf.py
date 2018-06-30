@@ -1,15 +1,9 @@
-from __future__ import absolute_import, division, unicode_literals
-
 import logging
 from multiprocessing import JoinableQueue, Process
 from queue import Empty
 
-from future import standard_library
-
-from fonduer.models.meta import Meta, new_sessionmaker
+from fonduer.meta import Meta, new_sessionmaker
 from fonduer.utils import ProgressBar
-
-standard_library.install_aliases()
 
 QUEUE_TIMEOUT = 3
 
@@ -18,7 +12,10 @@ _meta = Meta.init()
 
 
 class UDFRunner(object):
-    """Class to run UDFs in parallel using simple queue-based multiprocessing setup"""
+    """
+    Class to run UDFs in parallel using simple queue-based multiprocessing
+    setup.
+    """
 
     def __init__(self, udf_class, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
@@ -26,21 +23,17 @@ class UDFRunner(object):
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
 
-        if hasattr(self.udf_class, 'reduce'):
+        if hasattr(self.udf_class, "reduce"):
             self.reducer = self.udf_class(**self.udf_init_kwargs)
         else:
             self.reducer = None
 
-    def apply(self,
-              xs,
-              clear=True,
-              parallelism=None,
-              progress_bar=True,
-              count=None,
-              **kwargs):
+    def apply(
+        self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs
+    ):
         """
-        Apply the given UDF to the set of objects xs, either single or multi-threaded,
-        and optionally calling clear() first.
+        Apply the given UDF to the set of objects xs, either single or
+        multi-threaded, and optionally calling clear() first.
         """
         # Clear everything downstream of this UDF if requested
         if clear:
@@ -67,7 +60,7 @@ class UDFRunner(object):
 
         # Set up ProgressBar if possible
         pb = None
-        if progress_bar and hasattr(xs, '__len__') or count is not None:
+        if progress_bar and hasattr(xs, "__len__") or count is not None:
             n = count if count is not None else len(xs)
             pb = ProgressBar(n)
 
@@ -79,8 +72,9 @@ class UDFRunner(object):
             # Apply UDF and add results to the session
             for y in udf.apply(x, **kwargs):
 
-                # Uf UDF has a reduce step, this will take care of the insert; else add to session
-                if hasattr(self.udf_class, 'reduce'):
+                # If UDF has a reduce step, this will take care of the insert;
+                # else add to session
+                if hasattr(self.udf_class, "reduce"):
                     udf.reduce(y, **kwargs)
                 else:
                     udf.session.add(y)
@@ -93,8 +87,7 @@ class UDFRunner(object):
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if not _meta.postgres:
-            raise ValueError(
-                "Fonduer must use PostgreSQL as a database backend.")
+            raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
         # Fill a JoinableQueue with input objects
         in_queue = JoinableQueue()
@@ -103,7 +96,7 @@ class UDFRunner(object):
 
         # If the UDF has a reduce step, we collect the output of apply in a Queue
         out_queue = None
-        if hasattr(self.udf_class, 'reduce'):
+        if hasattr(self.udf_class, "reduce"):
             out_queue = JoinableQueue()
 
         # Start UDF Processes
@@ -112,7 +105,8 @@ class UDFRunner(object):
                 in_queue=in_queue,
                 out_queue=out_queue,
                 worker_id=i,
-                **self.udf_init_kwargs)
+                **self.udf_init_kwargs
+            )
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
@@ -121,7 +115,7 @@ class UDFRunner(object):
             udf.start()
 
         # If there is a reduce step, do now on this thread
-        if hasattr(self.udf_class, 'reduce'):
+        if hasattr(self.udf_class, "reduce"):
             while any([udf.is_alive() for udf in self.udfs]):
                 while True:
                     try:
@@ -156,7 +150,7 @@ class UDF(Process):
         self.worker_id = worker_id
 
         # Each UDF starts its own Engine
-        # See http://docs.sqlalchemy.org/en/latest/core/pooling.html#using-connection-pools-with-multiprocessing
+        # See SQLalchemy, using connection pools with multiprocessing.
         Session = new_sessionmaker()
         self.session = Session()
 
@@ -165,8 +159,9 @@ class UDF(Process):
 
     def run(self):
         """
-        This method is called when the UDF is run as a Process in a multiprocess setting
-        The basic routine is: get from JoinableQueue, apply, put / add outputs, loop
+        This method is called when the UDF is run as a Process in a
+        multiprocess setting The basic routine is: get from JoinableQueue,
+        apply, put / add outputs, loop
         """
         while True:
             try:

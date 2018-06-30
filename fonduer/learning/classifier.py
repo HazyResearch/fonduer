@@ -1,8 +1,6 @@
-from __future__ import (absolute_import, division, unicode_literals)
-
 import numpy as np
 
-from fonduer.annotations import save_marginals
+from fonduer.supervision.annotations import save_marginals
 from fonduer.learning.utils import MentionScorer
 
 
@@ -32,18 +30,16 @@ class Classifier(object):
         if self.cardinality > 2:
             return self.marginals(X, batch_size=batch_size).argmax(axis=1) + 1
         else:
-            return np.array([
-                1 if p > b else -1 if p < b else 0
-                for p in self.marginals(X, batch_size=batch_size)
-            ])
+            return np.array(
+                [
+                    1 if p > b else -1 if p < b else 0
+                    for p in self.marginals(X, batch_size=batch_size)
+                ]
+            )
 
-    def score(self,
-              X_test,
-              Y_test,
-              b=0.5,
-              set_unlabeled_as_neg=True,
-              beta=1,
-              batch_size=None):
+    def score(
+        self, X_test, Y_test, b=0.5, set_unlabeled_as_neg=True, beta=1, batch_size=None
+    ):
         """
         Returns the summary scores:
             * For binary: precision, recall, F-beta score
@@ -89,21 +85,23 @@ class Classifier(object):
 
             # Compute general F-beta score
             if p + r > 0:
-                f_beta = (1 + beta**2) * ((p * r) / (((beta**2) * p) + r))
+                f_beta = (1 + beta ** 2) * ((p * r) / (((beta ** 2) * p) + r))
             else:
                 f_beta = 0.0
             return p, r, f_beta
 
-    def error_analysis(self,
-                       session,
-                       X_test,
-                       Y_test,
-                       gold_candidate_set=None,
-                       b=0.5,
-                       set_unlabeled_as_neg=True,
-                       display=True,
-                       scorer=MentionScorer,
-                       **kwargs):
+    def error_analysis(
+        self,
+        session,
+        X_test,
+        Y_test,
+        gold_candidate_set=None,
+        b=0.5,
+        set_unlabeled_as_neg=True,
+        display=True,
+        scorer=MentionScorer,
+        **kwargs
+    ):
         """
         Prints full score analysis using the Scorer class, and then returns the
         a tuple of sets conatining the test candidates bucketed for error
@@ -123,9 +121,11 @@ class Classifier(object):
         test_marginals = self.marginals(X_test, **kwargs)
 
         # Get the test candidates
-        test_candidates = [
-            X_test.get_candidate(session, i) for i in range(X_test.shape[0])
-        ] if not self.representation else X_test
+        test_candidates = (
+            [X_test.get_candidate(session, i) for i in range(X_test.shape[0])]
+            if not self.representation
+            else X_test
+        )
 
         # Initialize and return scorer
         s = scorer(test_candidates, Y_test, gold_candidate_set)
@@ -134,7 +134,8 @@ class Classifier(object):
             train_marginals=None,
             b=b,
             display=display,
-            set_unlabeled_as_neg=set_unlabeled_as_neg)
+            set_unlabeled_as_neg=set_unlabeled_as_neg,
+        )
 
     def _preprocess_data(self, X):
         """Generic preprocessing subclass; may be called by external methods."""

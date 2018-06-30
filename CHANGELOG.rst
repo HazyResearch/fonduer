@@ -1,7 +1,19 @@
+Version 0.2.0 (coming soon...)
+------------------------------
+
+.. warning::
+    This release is NOT backwards compatable with v0.1.8. The code has now been
+    refactored into submodules, where each submodule corresponds with a phase
+    of the Fonduer pipeline.
+
+* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
+  only. Also reorganize the codebase into submodules for each pipeline phase.
+  (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
+
 Version 0.1.8
 -------------
 
-* `@senwu`_: Remove the Viewer, which is unused in FOnduer 
+* `@senwu`_: Remove the Viewer, which is unused in Fonduer 
   (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
 * `@senwu`_: Fix SimpleTokenizer for lingual features are disabled 
   (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
