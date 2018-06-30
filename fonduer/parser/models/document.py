@@ -1,7 +1,6 @@
+from fonduer.parser.models import Context
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.types import PickleType
-
-from fonduer.parser.models import Context
 
 
 class Document(Context):
