@@ -1,3 +1,3 @@
-from fonduer.candidates.models.candidate import Candidate, Marginal, candidate_subclass
+from fonduer.candidates.models.candidate import Candidate, candidate_subclass
 
-__all__ = ["Candidate", "Marginal", "candidate_subclass"]
+__all__ = ["Candidate", "candidate_subclass"]
