@@ -38,10 +38,14 @@ def get_all_deps(
     j, is included.
 
     :param n: number of labeling functions
-    :param dep_fixing: whether to include DEP_FIXING dependencies. Default is False.
-    :param dep_reinforcing: whether to include DEP_REINFORCING dependencies. Default is False.
-    :param dep_similar: whether to include DEP_SIMILAR dependencies. Default is False.
-    :param dep_exclusive: whether to include DEP_DEP_EXCLUSIVE dependencies. Default is False.
+    :param dep_fixing: whether to include DEP_FIXING dependencies. Default is
+                       False.
+    :param dep_reinforcing: whether to include DEP_REINFORCING dependencies.
+                            Default is False.
+    :param dep_similar: whether to include DEP_SIMILAR dependencies. Default is
+                        False.
+    :param dep_exclusive: whether to include DEP_DEP_EXCLUSIVE dependencies.
+                          Default is False.
     """
     deps = []
 

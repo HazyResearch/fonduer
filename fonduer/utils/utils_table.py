@@ -5,8 +5,9 @@ from builtins import range
 def _min_range_diff(a_start, a_end, b_start, b_end, absolute=True):
     # if absolute=True, return the absolute value of minimum magnitude difference
     # if absolute=False, return the raw value of minimum magnitude difference
-    # TODO: move back to efficient implementation once it sees that min_range_diff(3,3,2,3) = 0
-    # return max(0, max(a_end - b_start, b_end - a_start))
+    # TODO: move back to efficient implementation once it sees that
+    # min_range_diff(3,3,2,3) = 0 return max(0, max(a_end - b_start, b_end -
+    # a_start))
     f = lambda x: (abs(x) if absolute else x)
     return min(
         [

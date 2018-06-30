@@ -40,10 +40,12 @@ class Ngrams(CandidateSpace):
 
     def apply(self, context):
 
-        # These are the character offset--**relative to the sentence start**--for each _token_
+        # These are the character offset--**relative to the sentence
+        # start**--for each _token_
         offsets = context.char_offsets
 
-        # Loop over all n-grams in **reverse** order (to facilitate longest-match semantics)
+        # Loop over all n-grams in **reverse** order (to facilitate
+        # longest-match semantics)
         L = len(offsets)
         seen = set()
         for j in range(1, self.n_max + 1)[::-1]:
@@ -84,28 +86,25 @@ class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
     :param candidate_class: The type of relation to extract, defined using
-                            :func:`fonduer.candidates.candidate_subclass <snorkel.models.candidate.candidate_subclass>`
+        :func:`fonduer.candidates.candidate_subclass.
     :param cspaces: one or list of :class:`CandidateSpace` objects, one for
-                    each relation argument. Defines space of Contexts to
-                    consider
+        each relation argument. Defines space of Contexts to consider
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
-                     one for each relation argument. Only tuples of Contexts
-                     for which each element is accepted by the corresponding
-                     Matcher will be returned as Candidates
+        one for each relation argument. Only tuples of Contexts for which each
+        element is accepted by the corresponding Matcher will be returned as
+        Candidates
     :param candidate_filter: an optional function for filtering out candidates
-                             which returns a Boolean expressing whether or not
-                             the candidate should be instantiated.
+        which returns a Boolean expressing whether or not the candidate should
+        be instantiated.
     :param self_relations: Boolean indicating whether to extract Candidates
-                           that relate the same context. Only applies to binary
-                           relations. Default is False.
+        that relate the same context. Only applies to binary relations. Default
+        is False.
     :param nested_relations: Boolean indicating whether to extract Candidates
-                             that relate one Context with another that contains
-                             it. Only applies to binary relations. Default is
-                             False.
+        that relate one Context with another that contains it. Only applies to
+        binary relations. Default is False.
     :param symmetric_relations: Boolean indicating whether to extract symmetric
-                                Candidates, i.e., rel(A,B) and rel(B,A), where
-                                A and B are Contexts. Only applies to binary
-                                relations. Default is True.
+        Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
+        Only applies to binary relations. Default is True.
     """
 
     def __init__(
@@ -186,8 +185,8 @@ class CandidateExtractorUDF(UDF):
         :param clear:
         :param split: Which split to use.
         """
-        # Generate TemporaryContexts that are children of the context using the candidate_space and filtered
-        # by the Matcher
+        # Generate TemporaryContexts that are children of the context using the
+        # candidate_space and filtered by the Matcher
         for i in range(self.arity):
             self.child_context_sets[i].clear()
             for tc in self.matchers[i].apply(
@@ -204,7 +203,8 @@ class CandidateExtractorUDF(UDF):
 
             # Apply candidate_filter if one was given
             # Accepts a tuple of Context objects (e.g., (Span, Span))
-            # (candidate_filter returns whether or not proposed candidate passes throttling condition)
+            # (candidate_filter returns whether or not proposed candidate
+            # passes throttling condition)
             if self.candidate_filter:
                 if not self.candidate_filter(
                     tuple(args[i][1] for i in range(self.arity))
@@ -216,8 +216,8 @@ class CandidateExtractorUDF(UDF):
                 ai, a = args[0]
                 bi, b = args[1]
 
-                # Check for self-joins, "nested" joins (joins from span to its subspan), and flipped duplicate
-                # "symmetric" relations
+                # Check for self-joins, "nested" joins (joins from span to its
+                # subspan), and flipped duplicate "symmetric" relations
                 if not self.self_relations and a == b:
                     continue
                 elif not self.nested_relations and (a in b or b in a):

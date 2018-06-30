@@ -52,7 +52,9 @@ class Visualizer(object):
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         if not pdf_file:
-            pdf_file = os.path.join(self.pdf_path, candidates[0][0].sentence.document.name + '.pdf')
+            pdf_file = os.path.join(
+                self.pdf_path, candidates[0][0].sentence.document.name + '.pdf'
+            )
         boxes = [get_box(span) for c in candidates for span in c.get_contexts()]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)
@@ -64,31 +66,40 @@ class Visualizer(object):
         for phrase in phrases:
             for i, word in enumerate(phrase.words):
                 if target is None or word == target:
-                    boxes.append((
-                        phrase.page[i],
-                        phrase.top[i],
-                        phrase.left[i],
-                        phrase.bottom[i],
-                        phrase.right[i]))
+                    boxes.append(
+                        (
+                            phrase.page[i],
+                            phrase.top[i],
+                            phrase.left[i],
+                            phrase.bottom[i],
+                            phrase.right[i],
+                        )
+                    )
         imgs = self.display_boxes(pdf_file, boxes)
         return display(*imgs)
 
 
 def get_box(span):
-    box = (min(span.get_attrib_tokens('page')),
-           min(span.get_attrib_tokens('top')),
-           max(span.get_attrib_tokens('left')),
-           min(span.get_attrib_tokens('bottom')),
-           max(span.get_attrib_tokens('right')))
+    box = (
+        min(span.get_attrib_tokens('page')),
+        min(span.get_attrib_tokens('top')),
+        max(span.get_attrib_tokens('left')),
+        min(span.get_attrib_tokens('bottom')),
+        max(span.get_attrib_tokens('right')),
+    )
     return box
 
 
 def get_pdf_dim(pdf_file):
     html_content = subprocess.check_output(
-        "pdftotext -f {} -l {} -bbox '{}' -".format('1', '1', pdf_file), shell=True)
+        "pdftotext -f {} -l {} -bbox '{}' -".format('1', '1', pdf_file), shell=True
+    )
     soup = BeautifulSoup(html_content, "html.parser")
     pages = soup.find_all('page')
-    page_width, page_height = int(float(pages[0].get('width'))), int(float(pages[0].get('height')))
+    page_width, page_height = (
+        int(float(pages[0].get('width'))),
+        int(float(pages[0].get('height'))),
+    )
     return page_width, page_height
 
 

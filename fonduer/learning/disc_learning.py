@@ -26,8 +26,7 @@ class TFNoiseAwareModel(Classifier):
             potential slight slowdown) for CPU (at least for single-threaded?).
     """
 
-    def __init__(self, n_threads=None, seed=123, deterministic=False,
-                 **kwargs):
+    def __init__(self, n_threads=None, seed=123, deterministic=False, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.n_threads = n_threads
         self.seed = seed
@@ -74,11 +73,10 @@ class TFNoiseAwareModel(Classifier):
         if self.deterministic:
             _ = tf.reshape(loss_fn(logits=self.logits, labels=self.Y), [1, -1])
             self.loss = tf.squeeze(
-                tf.matmul(_, tf.ones_like(_), transpose_b=True)) / tf.cast(
-                    tf.shape(_)[1], tf.float32)
+                tf.matmul(_, tf.ones_like(_), transpose_b=True)
+            ) / tf.cast(tf.shape(_)[1], tf.float32)
         else:
-            self.loss = tf.reduce_mean(
-                loss_fn(logits=self.logits, labels=self.Y))
+            self.loss = tf.reduce_mean(loss_fn(logits=self.logits, labels=self.Y))
 
         # Build training op
         self.lr = tf.placeholder(tf.float32)
@@ -113,31 +111,38 @@ class TFNoiseAwareModel(Classifier):
             self._build_model(**model_kwargs)
 
         # Create new session
-        self.session = tf.Session(
-            config=tf.ConfigProto(
-                intra_op_parallelism_threads=self.n_threads,
-                inter_op_parallelism_threads=self.n_threads),
-            graph=self.graph) if self.n_threads is not None else tf.Session(
-                graph=self.graph)
+        self.session = (
+            tf.Session(
+                config=tf.ConfigProto(
+                    intra_op_parallelism_threads=self.n_threads,
+                    inter_op_parallelism_threads=self.n_threads,
+                ),
+                graph=self.graph,
+            )
+            if self.n_threads is not None
+            else tf.Session(graph=self.graph)
+        )
 
     def _check_input(self, X):
         """Checks correctness of input; optional to implement."""
         pass
 
-    def train(self,
-              X_train,
-              Y_train,
-              n_epochs=25,
-              lr=0.01,
-              batch_size=256,
-              rebalance=False,
-              X_dev=None,
-              Y_dev=None,
-              print_freq=5,
-              dev_ckpt=True,
-              dev_ckpt_delay=0.75,
-              save_dir='checkpoints',
-              **kwargs):
+    def train(
+        self,
+        X_train,
+        Y_train,
+        n_epochs=25,
+        lr=0.01,
+        batch_size=256,
+        rebalance=False,
+        X_dev=None,
+        Y_dev=None,
+        print_freq=5,
+        dev_ckpt=True,
+        dev_ckpt_delay=0.75,
+        save_dir='checkpoints',
+        **kwargs
+    ):
         """
         Generic training procedure for TF model
 
@@ -182,14 +187,16 @@ class TFNoiseAwareModel(Classifier):
         # Check that the cardinality of the training marginals and model agree
         cardinality = Y_train.shape[1] if len(Y_train.shape) > 1 else 2
         if cardinality != self.cardinality:
-            raise ValueError("Training marginals cardinality ({0}) does not"
-                             "match model cardinality ({1}).".format(
-                                 Y_train.shape[1], self.cardinality))
+            raise ValueError(
+                "Training marginals cardinality ({0}) does not"
+                "match model cardinality ({1}).".format(
+                    Y_train.shape[1], self.cardinality
+                )
+            )
         # Make sure marginals are in correct default format
         Y_train = reshape_marginals(Y_train)
         # Make sure marginals are in [0,1] (v.s e.g. [-1, 1])
-        if self.cardinality > 2 and not np.all(
-                Y_train.sum(axis=1) - 1 < 1e-10):
+        if self.cardinality > 2 and not np.all(Y_train.sum(axis=1) - 1 < 1e-10):
             raise ValueError("Y_train must be row-stochastic (rows sum to 1).")
         if not np.all(Y_train >= 0):
             raise ValueError("Y_train must have values in [0,1].")
@@ -200,13 +207,17 @@ class TFNoiseAwareModel(Classifier):
         if self.cardinality == 2:
             # This removes unlabeled examples and optionally rebalances
             train_idxs = LabelBalancer(Y_train).get_train_idxs(
-                rebalance, rand_state=self.rand_state)
+                rebalance, rand_state=self.rand_state
+            )
         else:
             # In categorical setting, just remove unlabeled
             diffs = Y_train.max(axis=1) - Y_train.min(axis=1)
             train_idxs = np.where(diffs > 1e-6)[0]
-        X_train = [X_train[j] for j in train_idxs] if self.representation \
+        X_train = (
+            [X_train[j] for j in train_idxs]
+            if self.representation
             else X_train[train_idxs, :]
+        )
         Y_train = Y_train[train_idxs]
 
         # Create new graph, build network, and start session
@@ -230,53 +241,62 @@ class TFNoiseAwareModel(Classifier):
             self.logger.info("[{0}] Training model".format(self.name))
             self.logger.info(
                 "[{0}] n_train={1}  #epochs={2}  batch size={3}".format(
-                    self.name, n, n_epochs, batch_size))
+                    self.name, n, n_epochs, batch_size
+                )
+            )
         dev_score_opt = 0.0
         for t in range(n_epochs):
             epoch_losses = []
             for i in range(0, n, batch_size):
                 feed_dict = self._construct_feed_dict(
-                    X_train[i:min(n, i + batch_size)],
-                    Y_train[i:min(n, i + batch_size)],
+                    X_train[i : min(n, i + batch_size)],
+                    Y_train[i : min(n, i + batch_size)],
                     lr=lr,
-                    **kwargs)
+                    **kwargs
+                )
                 # Run training step and evaluate loss function
                 epoch_loss, _ = self.session.run(
-                    [self.loss, self.optimizer], feed_dict=feed_dict)
+                    [self.loss, self.optimizer], feed_dict=feed_dict
+                )
                 epoch_losses.append(epoch_loss)
 
             # Reshuffle training data
             train_idxs = self.rand_state.permutation(list(range(n)))
-            X_train = [X_train[j] for j in train_idxs] if self.representation \
+            X_train = (
+                [X_train[j] for j in train_idxs]
+                if self.representation
                 else X_train[train_idxs, :]
+            )
             Y_train = Y_train[train_idxs]
 
             # Print training stats and optionally checkpoint model
             if verbose and (t % print_freq == 0 or t in [0, (n_epochs - 1)]):
                 msg = "[{0}] Epoch {1} ({2:.2f}s)\tAverage loss={3:.6f}".format(
-                    self.name, t,
-                    time() - st, np.mean(epoch_losses))
+                    self.name, t, time() - st, np.mean(epoch_losses)
+                )
                 if X_dev is not None:
                     scores = self.score(X_dev, Y_dev, batch_size=batch_size)
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
-                    msg += '\tDev {0}={1:.2f}'.format(score_label,
-                                                      100. * score)
+                    msg += '\tDev {0}={1:.2f}'.format(score_label, 100. * score)
                 self.logger.info(msg)
 
                 # If best score on dev set so far and dev checkpointing is
                 # active, save checkpoint
-                if (X_dev is not None and dev_ckpt
-                        and t > dev_ckpt_delay * n_epochs
-                        and score > dev_score_opt):
+                if (
+                    X_dev is not None
+                    and dev_ckpt
+                    and t > dev_ckpt_delay * n_epochs
+                    and score > dev_score_opt
+                ):
                     dev_score_opt = score
                     self.save(save_dir=save_dir, global_step=t)
 
         # Conclude training
         if verbose:
-            self.logger.info("[{0}] Training done ({1:.2f}s)".format(
-                self.name,
-                time() - st))
+            self.logger.info(
+                "[{0}] Training done ({1:.2f}s)".format(self.name, time() - st)
+            )
 
         # If checkpointing on, load last checkpoint (i.e. best on dev set)
         if dev_ckpt and X_dev is not None and verbose and dev_score_opt > 0:
@@ -297,7 +317,7 @@ class TFNoiseAwareModel(Classifier):
             # Iterate over batches
             batch_marginals = []
             for b in range(0, N, batch_size):
-                batch = self._marginals_batch(X[b:min(N, b + batch_size)])
+                batch = self._marginals_batch(X[b : min(N, b + batch_size)])
 
                 # Note: if a single marginal in *binary* classification is
                 # returned, it will have shape () rather than (1,)- catch here
@@ -307,11 +327,9 @@ class TFNoiseAwareModel(Classifier):
                 batch_marginals.append(batch)
             return np.concatenate(batch_marginals)
 
-    def save(self,
-             model_name=None,
-             save_dir='checkpoints',
-             verbose=True,
-             global_step=0):
+    def save(
+        self, model_name=None, save_dir='checkpoints', verbose=True, global_step=0
+    ):
         """Save current model."""
         model_name = model_name or self.name
 
@@ -330,12 +348,10 @@ class TFNoiseAwareModel(Classifier):
 
         # Save graph and report if verbose
         saver.save(
-            self.session,
-            os.path.join(model_dir, model_name),
-            global_step=global_step)
+            self.session, os.path.join(model_dir, model_name), global_step=global_step
+        )
         if verbose:
-            self.logger.info("[{0}] Model saved as <{1}>".format(
-                self.name, model_name))
+            self.logger.info("[{0}] Model saved as <{1}>".format(self.name, model_name))
 
     def load(self, model_name=None, save_dir='checkpoints', verbose=True):
         """Load model from file and rebuild in new graph / session."""
@@ -360,8 +376,10 @@ class TFNoiseAwareModel(Classifier):
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(self.session, ckpt.model_checkpoint_path)
             if verbose:
-                self.logger.info("[{0}] Loaded model <{1}>".format(
-                    self.name, model_name))
+                self.logger.info(
+                    "[{0}] Loaded model <{1}>".format(self.name, model_name)
+                )
         else:
-            raise Exception("[{0}] No model found at <{1}>".format(
-                self.name, model_name))
+            raise Exception(
+                "[{0}] No model found at <{1}>".format(self.name, model_name)
+            )

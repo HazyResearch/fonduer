@@ -12,7 +12,10 @@ _meta = Meta.init()
 
 
 class UDFRunner(object):
-    """Class to run UDFs in parallel using simple queue-based multiprocessing setup"""
+    """
+    Class to run UDFs in parallel using simple queue-based multiprocessing
+    setup.
+    """
 
     def __init__(self, udf_class, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
@@ -29,8 +32,8 @@ class UDFRunner(object):
         self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs
     ):
         """
-        Apply the given UDF to the set of objects xs, either single or multi-threaded,
-        and optionally calling clear() first.
+        Apply the given UDF to the set of objects xs, either single or
+        multi-threaded, and optionally calling clear() first.
         """
         # Clear everything downstream of this UDF if requested
         if clear:
@@ -69,7 +72,8 @@ class UDFRunner(object):
             # Apply UDF and add results to the session
             for y in udf.apply(x, **kwargs):
 
-                # Uf UDF has a reduce step, this will take care of the insert; else add to session
+                # If UDF has a reduce step, this will take care of the insert;
+                # else add to session
                 if hasattr(self.udf_class, "reduce"):
                     udf.reduce(y, **kwargs)
                 else:
@@ -146,7 +150,7 @@ class UDF(Process):
         self.worker_id = worker_id
 
         # Each UDF starts its own Engine
-        # See http://docs.sqlalchemy.org/en/latest/core/pooling.html#using-connection-pools-with-multiprocessing
+        # See SQLalchemy, using connection pools with multiprocessing.
         Session = new_sessionmaker()
         self.session = Session()
 
@@ -155,8 +159,9 @@ class UDF(Process):
 
     def run(self):
         """
-        This method is called when the UDF is run as a Process in a multiprocess setting
-        The basic routine is: get from JoinableQueue, apply, put / add outputs, loop
+        This method is called when the UDF is run as a Process in a
+        multiprocess setting The basic routine is: get from JoinableQueue,
+        apply, put / add outputs, loop
         """
         while True:
             try:

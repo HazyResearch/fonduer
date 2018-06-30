@@ -81,7 +81,8 @@ def tablelib_unary_features(span):
             yield "ROW_NUM_[%s]" % row_num, DEF_VALUE
         for col_num in range(phrase.col_start, phrase.col_end + 1):
             yield "COL_NUM_[%s]" % col_num, DEF_VALUE
-        # NOTE: These two features could be accounted for by HTML_ATTR in structural features
+        # NOTE: These two features could be accounted for by HTML_ATTR in
+        # structural features
         yield "ROW_SPAN_[%d]" % num_rows(phrase), DEF_VALUE
         yield "COL_SPAN_[%d]" % num_cols(phrase), DEF_VALUE
         for axis in ["row", "col"]:
@@ -104,11 +105,15 @@ def tablelib_unary_features(span):
             attrib=attrib,
         ):
             yield "COL_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
-            # TODO:
-            # for ngram in get_row_ngrams(span, n_max=2, attrib=attrib, direct=False, infer=True):
-            #     yield "ROW_INFERRED_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
-            # for ngram in get_col_ngrams(span, n_max=2, attrib=attrib, direct=False, infer=True):
-            #     yield "COL_INFERRED_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
+        # TODO:
+        #  for ngram in get_row_ngrams(
+        #      span, n_max=2, attrib=attrib, direct=False, infer=True
+        #  ):
+        #      yield "ROW_INFERRED_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
+        #  for ngram in get_col_ngrams(
+        #      span, n_max=2, attrib=attrib, direct=False, infer=True
+        #  ):
+        #      yield "COL_INFERRED_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
 
 
 def tablelib_binary_features(span1, span2):
