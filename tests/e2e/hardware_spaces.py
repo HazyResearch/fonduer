@@ -4,7 +4,7 @@ from builtins import chr, range, str
 from difflib import SequenceMatcher
 
 from fonduer.candidates import OmniNgrams
-from fonduer.parser.models import TemporaryImplicitSpan
+from fonduer.candidates.models import TemporaryImplicitSpan
 
 logger = logging.getLogger(__name__)
 

@@ -4,9 +4,7 @@ from fonduer.parser.models.figure import Figure
 from fonduer.parser.models.image import Image, TemporaryImage
 from fonduer.parser.models.phrase import Phrase
 from fonduer.parser.models.span import (
-    ImplicitSpan,
     Span,
-    TemporaryImplicitSpan,
     TemporarySpan,
 )
 from fonduer.parser.models.table import Cell, Table
