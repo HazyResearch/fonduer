@@ -2,7 +2,7 @@ from fonduer.parser.models.context import (
     Context,
     split_stable_id,
 )
-from fonduer.parser.models.span import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import backref, relationship
