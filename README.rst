@@ -39,6 +39,7 @@ Data <https://arxiv.org/abs/1703.05028>`__::
     }
 
 .. |Fonduer| image:: docs/static/img/fonduer-logo.png
+   :target: https://github.com/HazyResearch/fonduer
 .. |Travis| image:: https://img.shields.io/travis/HazyResearch/fonduer.svg
    :target: https://travis-ci.org/HazyResearch/fonduer
 .. |Coveralls| image:: https://img.shields.io/coveralls/github/HazyResearch/fonduer.svg
