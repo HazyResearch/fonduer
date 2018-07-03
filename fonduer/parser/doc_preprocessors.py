@@ -19,7 +19,7 @@ class DocPreprocessor(object):
 
     """
 
-    def __init__(self, path, encoding="utf-8", max_docs=float('inf')):
+    def __init__(self, path, encoding="utf-8", max_docs=float("inf")):
         self.path = path
         self.encoding = encoding
         self.max_docs = max_docs
@@ -49,7 +49,7 @@ class DocPreprocessor(object):
         raise NotImplementedError()
 
     def _can_read(self, fpath):
-        return not fpath.startswith('.')
+        return not fpath.startswith(".")
 
     def _get_files(self, path):
         if os.path.isfile(path):
@@ -70,10 +70,10 @@ class TSVDocPreprocessor(DocPreprocessor):
     def parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as tsv:
             for line in tsv:
-                (doc_name, doc_text) = line.split('\t')
+                (doc_name, doc_text) = line.split("\t")
                 stable_id = self.get_stable_id(doc_name)
                 doc = Document(
-                    name=doc_name, stable_id=stable_id, meta={'file_name': file_name}
+                    name=doc_name, stable_id=stable_id, meta={"file_name": file_name}
                 )
                 yield doc, doc_text
 
@@ -83,10 +83,10 @@ class TextDocPreprocessor(DocPreprocessor):
 
     def parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as f:
-            name = os.path.basename(fp).rsplit('.', 1)[0]
+            name = os.path.basename(fp).rsplit(".", 1)[0]
             stable_id = self.get_stable_id(name)
             doc = Document(
-                name=name, stable_id=stable_id, meta={'file_name': file_name}
+                name=name, stable_id=stable_id, meta={"file_name": file_name}
             )
             yield doc, f.read()
 
@@ -112,7 +112,7 @@ class CSVPathsPreprocessor(DocPreprocessor):
         path,
         parser_factory=TextDocPreprocessor,
         column=None,
-        delim=',',
+        delim=",",
         *args,
         **kwargs
     ):
@@ -190,9 +190,9 @@ class XMLMultiDocPreprocessor(DocPreprocessor):
     def __init__(
         self,
         path,
-        doc='.//document',
-        text='./text/text()',
-        id='./id/text()',
+        doc=".//document",
+        text="./text/text()",
+        id="./id/text()",
         keep_xml_tree=False,
         *args,
         **kwargs
@@ -206,15 +206,15 @@ class XMLMultiDocPreprocessor(DocPreprocessor):
     def parse_file(self, f, file_name):
         for i, doc in enumerate(et.parse(f).xpath(self.doc)):
             doc_id = str(doc.xpath(self.id)[0])
-            text = '\n'.join([t for t in doc.xpath(self.text) if t is not None])
-            meta = {'file_name': str(file_name)}
+            text = "\n".join([t for t in doc.xpath(self.text) if t is not None])
+            meta = {"file_name": str(file_name)}
             if self.keep_xml_tree:
-                meta['root'] = et.tostring(doc)
+                meta["root"] = et.tostring(doc)
             stable_id = self.get_stable_id(doc_id)
             yield Document(name=doc_id, stable_id=stable_id, meta=meta), text
 
     def _can_read(self, fpath):
-        return fpath.endswith('.xml')
+        return fpath.endswith(".xml")
 
 
 class HTMLPreprocessor(DocPreprocessor):
@@ -222,16 +222,16 @@ class HTMLPreprocessor(DocPreprocessor):
 
     def parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as f:
-            soup = BeautifulSoup(f, 'lxml')
-            for text in soup.find_all('html'):
-                name = os.path.basename(fp)[: os.path.basename(fp).rfind('.')]
+            soup = BeautifulSoup(f, "lxml")
+            for text in soup.find_all("html"):
+                name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
                 stable_id = self.get_stable_id(name)
                 yield Document(
                     name=name,
                     stable_id=stable_id,
                     text=str(text),
-                    meta={'file_name': file_name},
+                    meta={"file_name": file_name},
                 ), str(text)
 
     def _can_read(self, fpath):
-        return fpath.endswith('html')  # includes both .html and .xhtml
+        return fpath.endswith("html")  # includes both .html and .xhtml

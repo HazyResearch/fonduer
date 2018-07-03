@@ -55,8 +55,8 @@ def camel_to_under(name):
     :param name: String to be converted
     :return: new String with camel-case converted to lowercase, underscored
     """
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 def sparse_nonzero(X):
@@ -185,12 +185,12 @@ def sort_X_on_Y(X, Y):
 
 def corenlp_cleaner(words):
     d = {
-        '-RRB-': ')',
-        '-LRB-': '(',
-        '-RCB-': '}',
-        '-LCB-': '{',
-        '-RSB-': ']',
-        '-LSB-': '[',
+        "-RRB-": ")",
+        "-LRB-": "(",
+        "-RCB-": "}",
+        "-LCB-": "{",
+        "-RSB-": "]",
+        "-LSB-": "[",
     }
     return [d[w] if w in d else w for w in words]
 
@@ -204,9 +204,9 @@ def split_html_attrs(attrs):
     for a in attrs:
         attr = a[0]
         values = (
-            [v.split(';') for v in a[1]]
+            [v.split(";") for v in a[1]]
             if isinstance(a[1], list)
-            else [a[1].split(';')]
+            else [a[1].split(";")]
         )
         for i in range(len(values)):
             while isinstance(values[i], list):
@@ -215,7 +215,7 @@ def split_html_attrs(attrs):
     return html_attrs
 
 
-def tokens_to_ngrams(tokens, n_min=1, n_max=3, delim=' ', lower=False):
+def tokens_to_ngrams(tokens, n_min=1, n_max=3, delim=" ", lower=False):
     f = (lambda x: x.lower()) if lower else (lambda x: x)
     N = len(tokens)
     for root in range(N):
@@ -233,7 +233,7 @@ def get_keys_by_candidate(candidate, annotation_matrix):
 def remove_files(filename):
     logger = logging.getLogger(__name__)
     try:
-        subprocess.check_output('rm -f %s' % filename, shell=True)
+        subprocess.check_output("rm -f %s" % filename, shell=True)
     except OSError as e:
         logger.exception(e)
         pass

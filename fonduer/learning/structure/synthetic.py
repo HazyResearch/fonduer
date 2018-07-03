@@ -116,22 +116,22 @@ def generate_label_matrix(weights, m):
 
     weight = np.zeros(n_weights, Weight)
     for i in range(len(weight)):
-        weight[i]['isFixed'] = True
+        weight[i]["isFixed"] = True
 
     if weights.class_prior != 0.0:
-        weight[0]['initialValue'] = np.float64(weights.class_prior)
+        weight[0]["initialValue"] = np.float64(weights.class_prior)
         w_off = 1
     else:
         w_off = 0
 
     for i in range(weights.n):
-        weight[w_off + i]['initialValue'] = np.float64(weights.lf_accuracy[i])
+        weight[w_off + i]["initialValue"] = np.float64(weights.lf_accuracy[i])
     w_off += weights.n
 
     for optional_name in GenerativeModel.optional_names:
         for i in range(weights.n):
             if getattr(weights, optional_name)[i] != 0.0:
-                weight[w_off]['initialValue'] = np.float64(
+                weight[w_off]["initialValue"] = np.float64(
                     getattr(weights, optional_name)[i]
                 )
                 w_off += 1
@@ -140,7 +140,7 @@ def generate_label_matrix(weights, m):
         for i in range(weights.n):
             for j in range(weights.n):
                 if getattr(weights, dep_name)[i, j] != 0.0:
-                    weight[w_off]['initialValue'] = np.float64(
+                    weight[w_off]["initialValue"] = np.float64(
                         getattr(weights, dep_name)[i, j]
                     )
                     w_off += 1
@@ -148,14 +148,14 @@ def generate_label_matrix(weights, m):
     # Variables
     variable = np.zeros(1 + weights.n, Variable)
 
-    variable[0]['isEvidence'] = 0
-    variable[0]['initialValue'] = 0
+    variable[0]["isEvidence"] = 0
+    variable[0]["initialValue"] = 0
     variable[0]["dataType"] = 0
     variable[0]["cardinality"] = 2
 
     for i in range(weights.n):
-        variable[1 + i]['isEvidence'] = 0
-        variable[1 + i]['initialValue'] = 0
+        variable[1 + i]["isEvidence"] = 0
+        variable[1 + i]["initialValue"] = 0
         variable[1 + i]["dataType"] = 0
         variable[1 + i]["cardinality"] = 3
 
@@ -165,9 +165,9 @@ def generate_label_matrix(weights, m):
     for optional_name in GenerativeModel.optional_names:
         for i in range(weights.n):
             if getattr(weights, optional_name)[i] != 0.0:
-                if optional_name == 'lf_prior' or optional_name == 'lf_propensity':
+                if optional_name == "lf_prior" or optional_name == "lf_propensity":
                     n_edges += 1
-                elif optional_name == 'lf_class_propensity':
+                elif optional_name == "lf_class_propensity":
                     n_edges += 2
                 else:
                     raise ValueError()
@@ -175,9 +175,9 @@ def generate_label_matrix(weights, m):
         for i in range(weights.n):
             for j in range(weights.n):
                 if getattr(weights, dep_name)[i, j] != 0.0:
-                    if dep_name == 'dep_similar' or dep_name == 'dep_exclusive':
+                    if dep_name == "dep_similar" or dep_name == "dep_exclusive":
                         n_edges += 2
-                    elif dep_name == 'dep_fixing' or dep_name == 'dep_reinforcing':
+                    elif dep_name == "dep_fixing" or dep_name == "dep_reinforcing":
                         n_edges += 3
                     else:
                         raise ValueError()
@@ -254,10 +254,10 @@ def generate_label_matrix(weights, m):
         for i in range(weights.n):
             for j in range(weights.n):
                 if getattr(weights, dep_name)[i, j] != 0.0:
-                    if dep_name == 'dep_similar' or dep_name == 'dep_exclusive':
+                    if dep_name == "dep_similar" or dep_name == "dep_exclusive":
                         factor[f_off]["factorFunction"] = (
                             FACTORS["DP_GEN_DEP_SIMILAR"]
-                            if dep_name == 'dep_similar'
+                            if dep_name == "dep_similar"
                             else FACTORS["DP_GEN_DEP_EXCLUSIVE"]
                         )
                         factor[f_off]["weightId"] = f_off
@@ -270,10 +270,10 @@ def generate_label_matrix(weights, m):
 
                         f_off += 1
                         ftv_off += 2
-                    elif dep_name == 'dep_fixing' or dep_name == 'dep_reinforcing':
+                    elif dep_name == "dep_fixing" or dep_name == "dep_reinforcing":
                         factor[f_off]["factorFunction"] = (
                             FACTORS["DP_GEN_DEP_FIXING"]
-                            if dep_name == 'dep_fixing'
+                            if dep_name == "dep_fixing"
                             else FACTORS["DP_GEN_DEP_REINFORCING"]
                         )
 

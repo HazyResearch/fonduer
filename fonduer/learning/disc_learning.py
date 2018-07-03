@@ -140,7 +140,7 @@ class TFNoiseAwareModel(Classifier):
         print_freq=5,
         dev_ckpt=True,
         dev_ckpt_delay=0.75,
-        save_dir='checkpoints',
+        save_dir="checkpoints",
         **kwargs
     ):
         """
@@ -182,7 +182,7 @@ class TFNoiseAwareModel(Classifier):
         # If the data passed in is a feature matrix (representation=False),
         # set the dimensionality here; else assume this is done by sub-class
         if not self.representation:
-            kwargs['d'] = X_train.shape[1]
+            kwargs["d"] = X_train.shape[1]
 
         # Check that the cardinality of the training marginals and model agree
         cardinality = Y_train.shape[1] if len(Y_train.shape) > 1 else 2
@@ -278,7 +278,7 @@ class TFNoiseAwareModel(Classifier):
                     scores = self.score(X_dev, Y_dev, batch_size=batch_size)
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
-                    msg += '\tDev {0}={1:.2f}'.format(score_label, 100. * score)
+                    msg += "\tDev {0}={1:.2f}".format(score_label, 100. * score)
                 self.logger.info(msg)
 
                 # If best score on dev set so far and dev checkpointing is
@@ -328,7 +328,7 @@ class TFNoiseAwareModel(Classifier):
             return np.concatenate(batch_marginals)
 
     def save(
-        self, model_name=None, save_dir='checkpoints', verbose=True, global_step=0
+        self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
     ):
         """Save current model."""
         model_name = model_name or self.name
@@ -343,7 +343,7 @@ class TFNoiseAwareModel(Classifier):
             saver = tf.train.Saver(tf.global_variables())
 
         # Save model kwargs needed to rebuild model
-        with open(os.path.join(model_dir, "model_kwargs.pkl"), 'wb') as f:
+        with open(os.path.join(model_dir, "model_kwargs.pkl"), "wb") as f:
             dump(self.model_kwargs, f)
 
         # Save graph and report if verbose
@@ -353,13 +353,13 @@ class TFNoiseAwareModel(Classifier):
         if verbose:
             self.logger.info("[{0}] Model saved as <{1}>".format(self.name, model_name))
 
-    def load(self, model_name=None, save_dir='checkpoints', verbose=True):
+    def load(self, model_name=None, save_dir="checkpoints", verbose=True):
         """Load model from file and rebuild in new graph / session."""
         model_name = model_name or self.name
         model_dir = os.path.join(save_dir, model_name)
 
         # Load model kwargs needed to rebuild model
-        with open(os.path.join(model_dir, "model_kwargs.pkl"), 'rb') as f:
+        with open(os.path.join(model_dir, "model_kwargs.pkl"), "rb") as f:
             model_kwargs = load(f)
 
         # Create new graph, build network, and start session

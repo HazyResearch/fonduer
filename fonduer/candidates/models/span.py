@@ -1,8 +1,4 @@
-from fonduer.parser.models.context import (
-    Context,
-    TemporaryContext,
-    construct_stable_id,
-)
+from fonduer.parser.models.context import Context, TemporaryContext, construct_stable_id
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.types import PickleType

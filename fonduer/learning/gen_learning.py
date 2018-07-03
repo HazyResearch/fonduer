@@ -78,8 +78,8 @@ class GenerativeModel(Classifier):
     #
     # These names are also used by other related classes, such as
     # GenerativeModelParameters
-    optional_names = ('lf_prior', 'lf_propensity', 'lf_class_propensity')
-    dep_names = ('dep_similar', 'dep_fixing', 'dep_reinforcing', 'dep_exclusive')
+    optional_names = ("lf_prior", "lf_propensity", "lf_class_propensity")
+    dep_names = ("dep_similar", "dep_fixing", "dep_reinforcing", "dep_exclusive")
 
     def train(
         self,
@@ -544,10 +544,10 @@ class GenerativeModel(Classifier):
         :param deps: iterable of tuples of the form (lf_1, lf_2, type)
         """
         dep_name_map = {
-            DEP_SIMILAR: 'dep_similar',
-            DEP_FIXING: 'dep_fixing',
-            DEP_REINFORCING: 'dep_reinforcing',
-            DEP_EXCLUSIVE: 'dep_exclusive',
+            DEP_SIMILAR: "dep_similar",
+            DEP_FIXING: "dep_fixing",
+            DEP_REINFORCING: "dep_reinforcing",
+            DEP_EXCLUSIVE: "dep_exclusive",
         }
 
         for dep_name in GenerativeModel.dep_names:
@@ -626,8 +626,8 @@ class GenerativeModel(Classifier):
         # Compiles weight matrix
         #
         if self.class_prior:
-            weight[0]['isFixed'] = False
-            weight[0]['initialValue'] = np.float64(init_class_prior)
+            weight[0]["isFixed"] = False
+            weight[0]["initialValue"] = np.float64(init_class_prior)
             w_off = 1
         else:
             w_off = 0
@@ -635,22 +635,22 @@ class GenerativeModel(Classifier):
         for i in range(n):
             # Prior on LF acc
             if self.hasPrior[i]:
-                weight[w_off]['isFixed'] = True
-                weight[w_off]['initialValue'] = LF_acc_prior_weights[i]
+                weight[w_off]["isFixed"] = True
+                weight[w_off]["initialValue"] = LF_acc_prior_weights[i]
                 w_off += 1
             # Learnable acc for LF
             if not is_fixed[i]:
-                weight[w_off]['isFixed'] = False
+                weight[w_off]["isFixed"] = False
 
                 # Note: Because we're not doing exact gradient descent, don't
                 # need to add any random noise to initial values here
                 # Setting to 0 = setting to prior value
-                weight[w_off]['initialValue'] = np.float64(0)
+                weight[w_off]["initialValue"] = np.float64(0)
                 w_off += 1
 
         for i in range(w_off, weight.shape[0]):
-            weight[i]['isFixed'] = False
-            weight[i]['initialValue'] = np.float64(init_deps)
+            weight[i]["isFixed"] = False
+            weight[i]["initialValue"] = np.float64(init_deps)
 
         #
         # Compiles variable matrix
@@ -661,8 +661,8 @@ class GenerativeModel(Classifier):
         #                       cardinality is abstain
         # Candidates (variables)
         for i in range(m):
-            variable[i]['isEvidence'] = False
-            variable[i]['initialValue'] = self.rng.randint(cardinalities[i])
+            variable[i]["isEvidence"] = False
+            variable[i]["initialValue"] = self.rng.randint(cardinalities[i])
             variable[i]["dataType"] = 0
             variable[i]["cardinality"] = cardinalities[i]
 
@@ -753,20 +753,20 @@ class GenerativeModel(Classifier):
         )
 
         optional_name_map = {
-            'lf_prior': ('DP_GEN_LF_PRIOR', (lambda m, n, i, j: m + n * i + j,)),
-            'lf_propensity': (
-                'DP_GEN_LF_PROPENSITY',
+            "lf_prior": ("DP_GEN_LF_PRIOR", (lambda m, n, i, j: m + n * i + j,)),
+            "lf_propensity": (
+                "DP_GEN_LF_PROPENSITY",
                 (lambda m, n, i, j: m + n * i + j,),
             ),
-            'lf_class_propensity': (
-                'DP_GEN_LF_CLASS_PROPENSITY',
+            "lf_class_propensity": (
+                "DP_GEN_LF_CLASS_PROPENSITY",
                 (lambda m, n, i, j: i, lambda m, n, i, j: m + n * i + j),
             ),
         }
 
         for optional_name in GenerativeModel.optional_names:
             if getattr(self, optional_name):
-                if optional_name != 'lf_propensity' and self.cardinality != 2:
+                if optional_name != "lf_propensity" and self.cardinality != 2:
                     raise NotImplementedError(
                         optional_name + " not implemented for categorical classes."
                     )
@@ -783,31 +783,31 @@ class GenerativeModel(Classifier):
 
         # Factors for labeling function dependencies
         dep_name_map = {
-            'dep_similar': (
-                'DP_GEN_DEP_SIMILAR',
+            "dep_similar": (
+                "DP_GEN_DEP_SIMILAR",
                 (
                     lambda m, n, i, j, k: m + n * i + j,
                     lambda m, n, i, j, k: m + n * i + k,
                 ),
             ),
-            'dep_fixing': (
-                'DP_GEN_DEP_FIXING',
-                (
-                    lambda m, n, i, j, k: i,
-                    lambda m, n, i, j, k: m + n * i + j,
-                    lambda m, n, i, j, k: m + n * i + k,
-                ),
-            ),
-            'dep_reinforcing': (
-                'DP_GEN_DEP_REINFORCING',
+            "dep_fixing": (
+                "DP_GEN_DEP_FIXING",
                 (
                     lambda m, n, i, j, k: i,
                     lambda m, n, i, j, k: m + n * i + j,
                     lambda m, n, i, j, k: m + n * i + k,
                 ),
             ),
-            'dep_exclusive': (
-                'DP_GEN_DEP_EXCLUSIVE',
+            "dep_reinforcing": (
+                "DP_GEN_DEP_REINFORCING",
+                (
+                    lambda m, n, i, j, k: i,
+                    lambda m, n, i, j, k: m + n * i + j,
+                    lambda m, n, i, j, k: m + n * i + k,
+                ),
+            ),
+            "dep_exclusive": (
+                "DP_GEN_DEP_EXCLUSIVE",
                 (
                     lambda m, n, i, j, k: m + n * i + j,
                     lambda m, n, i, j, k: m + n * i + k,
@@ -815,7 +815,7 @@ class GenerativeModel(Classifier):
             ),
         }
 
-        CATEGORICAL_DEPS = ['dep_similar', 'dep_exclusive']
+        CATEGORICAL_DEPS = ["dep_similar", "dep_exclusive"]
         for dep_name in GenerativeModel.dep_names:
             mat = getattr(self, dep_name)
             if mat.nnz > 0:
@@ -957,7 +957,7 @@ class GenerativeModel(Classifier):
 
         self.weights = weights
 
-    def save(self, model_name=None, save_dir='checkpoints', verbose=True):
+    def save(self, model_name=None, save_dir="checkpoints", verbose=True):
         """Save current model."""
         model_name = model_name or self.name
         if not os.path.exists(save_dir):
@@ -965,16 +965,16 @@ class GenerativeModel(Classifier):
 
         # Save generative model weights
         save_path = os.path.join(save_dir, "{0}.weights.pkl".format(model_name))
-        with open(save_path, 'wb') as f:
+        with open(save_path, "wb") as f:
             dump(self.weights, f)
 
         # Save other model hyperparameters needed to rebuild model
         save_path2 = os.path.join(save_dir, "{0}.hps.pkl".format(model_name))
-        with open(save_path2, 'wb') as f:
+        with open(save_path2, "wb") as f:
             dump(
                 {
-                    'cardinality': self.cardinality,
-                    'cardinality_for_stats': self.cardinality_for_stats,
+                    "cardinality": self.cardinality,
+                    "cardinality_for_stats": self.cardinality_for_stats,
                 },
                 f,
             )
@@ -984,14 +984,14 @@ class GenerativeModel(Classifier):
                 "[{0}] Model saved as <{1}>.".format(self.name, model_name)
             )
 
-    def load(self, model_name=None, save_dir='checkpoints', verbose=True):
+    def load(self, model_name=None, save_dir="checkpoints", verbose=True):
         """Load model."""
         model_name = model_name or self.name
         save_path = os.path.join(save_dir, "{0}.weights.pkl".format(model_name))
-        with open(save_path, 'rb') as f:
+        with open(save_path, "rb") as f:
             self.weights = load(f)
         save_path2 = os.path.join(save_dir, "{0}.hps.pkl".format(model_name))
-        with open(save_path2, 'rb') as f:
+        with open(save_path2, "rb") as f:
             hps = load(f)
             for k, v in list(hps.items()):
                 setattr(self, k, v)

@@ -125,7 +125,7 @@ class SparseLogisticRegression(LogisticRegression):
             self.logits = tf.matmul(f_w_temp, b_temp)
         else:
             z = tf.nn.embedding_lookup_sparse(
-                params=self.w, sp_ids=sparse_ids, sp_weights=sparse_vals, combiner='sum'
+                params=self.w, sp_ids=sparse_ids, sp_weights=sparse_vals, combiner="sum"
             )
             self.logits = tf.nn.bias_add(z, self.b)
 

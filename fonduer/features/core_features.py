@@ -46,7 +46,7 @@ def get_core_feats(candidates):
 
 def _generate_core_feats(span):
     yield "SPAN_TYPE_[%s]" % (
-        'IMPLICIT' if isinstance(span, ImplicitSpan) else 'EXPLICIT'
+        "IMPLICIT" if isinstance(span, ImplicitSpan) else "EXPLICIT"
     )
 
     if span.get_span()[0].isupper():

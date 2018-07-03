@@ -1,11 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Float,
-    ForeignKey,
-    Integer,
-    UniqueConstraint,
-)
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, UniqueConstraint
 
 from fonduer.meta import Meta
 

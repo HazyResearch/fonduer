@@ -26,11 +26,11 @@ def test_parse_structure(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     max_docs = 1
-    docs_path = 'tests/data/html_simple/md.html'
-    pdf_path = 'tests/data/pdf_simple/md.pdf'
+    docs_path = "tests/data/html_simple/md.html"
+    pdf_path = "tests/data/pdf_simple/md.pdf"
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
@@ -44,14 +44,15 @@ def test_parse_structure(caplog):
         True,  # structural
         ["style"],  # blacklist
         ["span", "br"],  # flatten
-        '',  # flatten delim
+        "",  # flatten delim
         True,  # lingual
         True,  # strip
-        [(u'[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]', '-')],  # replace
+        [(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],  # replace
         True,  # tabular
         True,  # visual
         pdf_path,  # pdf path
-        Spacy())  # lingual parser
+        Spacy(),
+    )  # lingual parser
 
     # Grab the phrases parsed by the OmniParser
     phrases = list(omni_udf.parse_structure(doc, text))
@@ -62,12 +63,12 @@ def test_parse_structure(caplog):
 
     header = phrases[0]
     # Test structural attributes
-    assert header.xpath == '/html/body/h1'
-    assert header.html_tag == 'h1'
-    assert header.html_attrs == ['id=sample-markdown']
+    assert header.xpath == "/html/body/h1"
+    assert header.html_tag == "h1"
+    assert header.html_attrs == ["id=sample-markdown"]
 
     # Test the unicode parse of delta
-    assert (phrases[-1].text == "δ13Corg")
+    assert phrases[-1].text == "δ13Corg"
 
     # phrases expected in the "md" document.
     assert len(phrases) == 45
@@ -78,18 +79,17 @@ def test_simple_tokenizer(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     PARALLEL = 2
     max_docs = 2
-    docs_path = 'tests/data/html_simple/'
-    pdf_path = 'tests/data/pdf_simple/'
+    docs_path = "tests/data/html_simple/"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
-    omni = OmniParser(
-        structural=True, lingual=False, visual=True, pdf_path=pdf_path)
+    omni = OmniParser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     doc = session.query(Document).order_by(Document.name).all()[1]
@@ -100,16 +100,16 @@ def test_simple_tokenizer(caplog):
 
     header = doc.phrases[0]
     # Test structural attributes
-    assert header.xpath == '/html/body/h1'
-    assert header.html_tag == 'h1'
-    assert header.html_attrs == ['id=sample-markdown']
+    assert header.xpath == "/html/body/h1"
+    assert header.html_tag == "h1"
+    assert header.html_attrs == ["id=sample-markdown"]
 
     # Test lingual attributes
-    assert header.ner_tags == ['', '']
-    assert header.dep_labels == ['', '']
+    assert header.ner_tags == ["", ""]
+    assert header.dep_labels == ["", ""]
     assert header.dep_parents == [0, 0]
-    assert header.lemmas == ['', '']
-    assert header.pos_tags == ['', '']
+    assert header.lemmas == ["", ""]
+    assert header.pos_tags == ["", ""]
 
     assert len(doc.phrases) == 44
 
@@ -122,19 +122,18 @@ def test_parse_document_md(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     PARALLEL = 1
     max_docs = 2
-    docs_path = 'tests/data/html_simple/'
-    pdf_path = 'tests/data/pdf_simple/'
+    docs_path = "tests/data/html_simple/"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an OmniParser and parse the md document
-    omni = OmniParser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the md document
@@ -146,9 +145,9 @@ def test_parse_document_md(caplog):
 
     header = doc.phrases[0]
     # Test structural attributes
-    assert header.xpath == '/html/body/h1'
-    assert header.html_tag == 'h1'
-    assert header.html_attrs == ['id=sample-markdown']
+    assert header.xpath == "/html/body/h1"
+    assert header.html_tag == "h1"
+    assert header.html_attrs == ["id=sample-markdown"]
 
     # Test visual attributes
     assert header.page == [1, 1]
@@ -158,8 +157,8 @@ def test_parse_document_md(caplog):
     assert header.left == [35, 117]
 
     # Test lingual attributes
-    assert header.ner_tags == ['O', 'O']
-    assert header.dep_labels == ['compound', 'ROOT']
+    assert header.ner_tags == ["O", "O"]
+    assert header.dep_labels == ["compound", "ROOT"]
 
     # 45 phrases expected in the "md" document.
     assert len(doc.phrases) == 45
@@ -172,19 +171,18 @@ def test_parse_document_diseases(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     PARALLEL = 2
     max_docs = 2
-    docs_path = 'tests/data/html_simple/'
-    pdf_path = 'tests/data/pdf_simple/'
+    docs_path = "tests/data/html_simple/"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an OmniParser and parse the diseases document
-    omni = OmniParser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the diseases document
@@ -197,9 +195,9 @@ def test_parse_document_diseases(caplog):
     phrase = sorted(doc.phrases)[11]
     logger.info("  {}".format(phrase))
     # Test structural attributes
-    assert phrase.xpath == '/html/body/table[1]/tbody/tr[3]/td[1]/p'
-    assert phrase.html_tag == 'p'
-    assert phrase.html_attrs == ['class=s6', 'style=padding-top: 1pt']
+    assert phrase.xpath == "/html/body/table[1]/tbody/tr[3]/td[1]/p"
+    assert phrase.html_tag == "p"
+    assert phrase.html_attrs == ["class=s6", "style=padding-top: 1pt"]
 
     # Test visual attributes
     assert phrase.page == [1, 1, 1]
@@ -207,8 +205,8 @@ def test_parse_document_diseases(caplog):
     assert phrase.left == [318, 369, 318]
 
     # Test lingual attributes
-    assert phrase.ner_tags == ['O', 'O', 'GPE']
-    assert phrase.dep_labels == ['ROOT', 'prep', 'pobj']
+    assert phrase.ner_tags == ["O", "O", "GPE"]
+    assert phrase.dep_labels == ["ROOT", "prep", "pobj"]
 
     # 44 phrases expected in the "diseases" document.
     assert len(doc.phrases) == 36
@@ -225,16 +223,17 @@ def test_spacy_integration(caplog):
 
     PARALLEL = 2  # Travis only gives 2 cores
 
-    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    docs_path = 'tests/data/html_simple/'
-    pdf_path = 'tests/data/pdf_simple/'
+    docs_path = "tests/data/html_simple/"
+    pdf_path = "tests/data/pdf_simple/"
 
     max_docs = 2
     doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
 
     corpus_parser = OmniParser(
-        structural=True, lingual=True, visual=False, pdf_path=pdf_path)
+        structural=True, lingual=True, visual=False, pdf_path=pdf_path
+    )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
 
     docs = session.query(Document).order_by(Document.name).all()
@@ -252,11 +251,11 @@ def test_parse_style(caplog):
     """Test style tag parsing."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init('postgres://localhost:5432/' + ATTRIBUTE).Session()
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     max_docs = 1
-    docs_path = 'tests/data/html_extended/ext_diseases.html'
-    pdf_path = 'tests/data/pdf_extended/ext_diseases.pdf'
+    docs_path = "tests/data/html_extended/ext_diseases.html"
+    pdf_path = "tests/data/pdf_extended/ext_diseases.pdf"
 
     # Preprocessor for the Docs
     preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
@@ -267,17 +266,18 @@ def test_parse_style(caplog):
 
     # Create an OmniParserUDF
     omni_udf = OmniParserUDF(
-        True,           # structural
-        [],             # blacklist, empty so that style is not blacklisted
+        True,  # structural
+        [],  # blacklist, empty so that style is not blacklisted
         ["span", "br"],  # flatten
-        '',             # flatten delim
-        True,           # lingual
-        True,           # strip
-        [],             # replace
-        True,           # tabular
-        True,           # visual
-        pdf_path,       # pdf path
-        Spacy())        # lingual parser
+        "",  # flatten delim
+        True,  # lingual
+        True,  # strip
+        [],  # replace
+        True,  # tabular
+        True,  # visual
+        pdf_path,  # pdf path
+        Spacy(),
+    )  # lingual parser
 
     # Grab the phrases parsed by the OmniParser
     phrases = list(omni_udf.parse_structure(doc, text))
@@ -289,23 +289,17 @@ def test_parse_style(caplog):
     # Phrases for testing
     sub_phrases = [
         {
-            'index': 7,
-            'attr': [
-                'class=col-header',
-                'hobbies=work:hard;play:harder',
-                'type=phenotype',
-                'style=background: #f1f1f1; color: aquamarine; font-size: 18px;'
-            ]
+            "index": 7,
+            "attr": [
+                "class=col-header",
+                "hobbies=work:hard;play:harder",
+                "type=phenotype",
+                "style=background: #f1f1f1; color: aquamarine; font-size: 18px;",
+            ],
         },
-        {
-            'index': 10,
-            'attr': ['class=row-header', 'style=background: #f1f1f1;']
-        },
-        {
-            'index': 12,
-            'attr': ['class=cell', 'style=text-align: center;']
-        }
+        {"index": 10, "attr": ["class=row-header", "style=background: #f1f1f1;"]},
+        {"index": 12, "attr": ["class=cell", "style=text-align: center;"]},
     ]
 
     # Assertions
-    assert(all(phrases[p['index']].html_attrs == p['attr'] for p in sub_phrases))
+    assert all(phrases[p["index"]].html_attrs == p["attr"] for p in sub_phrases)

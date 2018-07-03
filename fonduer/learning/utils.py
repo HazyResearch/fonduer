@@ -296,7 +296,7 @@ def binary_scores_from_counts(ntp, nfp, ntn, nfn):
     return prec, rec, f1
 
 
-def print_scores(ntp, nfp, ntn, nfn, title='Scores'):
+def print_scores(ntp, nfp, ntn, nfn, title="Scores"):
     prec, rec, f1 = binary_scores_from_counts(ntp, nfp, ntn, nfn)
     pos_acc = ntp / float(ntp + nfn) if ntp + nfn > 0 else 0.0
     neg_acc = ntn / float(ntn + nfp) if ntn + nfp > 0 else 0.0
@@ -345,7 +345,7 @@ class GridSearch(object):
         Y_train=None,
         model_class_params={},
         model_hyperparams={},
-        save_dir='checkpoints',
+        save_dir="checkpoints",
     ):
         self.model_class = model_class
         self.parameter_dict = parameter_dict
@@ -354,7 +354,7 @@ class GridSearch(object):
         self.Y_train = Y_train
         self.model_class_params = model_class_params
         self.model_hyperparams = model_hyperparams
-        self.save_dir = os.path.join(save_dir, 'grid_search')
+        self.save_dir = os.path.join(save_dir, "grid_search")
 
     def search_space(self):
         return product(*[self.parameter_dict[pn] for pn in self.param_names])
@@ -421,7 +421,7 @@ class GridSearch(object):
             # Initiate the model from scratch each time
             # Some models may have seed set in the init procedure
             model = self.model_class(**self.model_class_params)
-            model_name = '{0}_{1}'.format(model.name, k)
+            model_name = "{0}_{1}".format(model.name, k)
 
             # Set the new hyperparam configuration to test
             for pn, pv in zip(self.param_names, param_vals):
@@ -432,7 +432,7 @@ class GridSearch(object):
                 "[%d] Testing %s"
                 % (
                     k + 1,
-                    ', '.join(
+                    ", ".join(
                         [
                             "%s = %s"
                             % (pn, ("%0.2e" % pv) if isinstance(pv, NUMTYPES) else pv)
@@ -496,11 +496,11 @@ class GridSearch(object):
         opt_model.load(opt_model_name, save_dir=self.save_dir)
 
         # Return optimal model & DataFrame of scores
-        f_score = 'F-{0}'.format(beta)
+        f_score = "F-{0}".format(beta)
         run_score_labels = (
-            ['Acc.'] if opt_model.cardinality > 2 else ['Prec.', 'Rec.', f_score]
+            ["Acc."] if opt_model.cardinality > 2 else ["Prec.", "Rec.", f_score]
         )
-        sort_by = 'Acc.' if opt_model.cardinality > 2 else f_score
+        sort_by = "Acc." if opt_model.cardinality > 2 else f_score
         self.results = DataFrame.from_records(
             run_stats, columns=self.param_names + run_score_labels
         ).sort_values(by=sort_by, ascending=False)
@@ -583,17 +583,17 @@ class GridSearch(object):
         i_opt = np.argmax([s[-1] for s in run_stats])
         k_opt = run_stats[i_opt][0]
         model = self.model_class(**self.model_class_params)
-        model.load('{0}_{1}'.format(model.name, k_opt), save_dir=self.save_dir)
+        model.load("{0}_{1}".format(model.name, k_opt), save_dir=self.save_dir)
 
         # Also save the best model as separate file
         model.save(model_name="{0}_best".format(model.name), save_dir=self.save_dir)
 
         # Return model and DataFrame of scores
         # Test for categorical vs. binary in hack-ey way for now...
-        f_score = 'F-{0}'.format(beta)
+        f_score = "F-{0}".format(beta)
         categorical = len(scores) == 2
-        labels = ['Acc.'] if categorical else ['Prec.', 'Rec.', f_score]
-        sort_by = 'Acc.' if categorical else f_score
+        labels = ["Acc."] if categorical else ["Prec.", "Rec.", f_score]
+        sort_by = "Acc." if categorical else f_score
         self.results = DataFrame.from_records(
             run_stats, columns=["Model"] + self.param_names + labels
         ).sort_values(by=sort_by, ascending=False)
@@ -617,7 +617,7 @@ class ModelTester(Process):
         b=0.5,
         beta=1,
         set_unlabeled_as_neg=True,
-        save_dir='checkpoints',
+        save_dir="checkpoints",
         eval_batch_size=None,
     ):
         Process.__init__(self)
@@ -630,10 +630,10 @@ class ModelTester(Process):
         self.X_valid = X_valid
         self.Y_valid = Y_valid
         self.scorer_params = {
-            'b': b,
-            'beta': beta,
-            'set_unlabeled_as_neg': set_unlabeled_as_neg,
-            'batch_size': eval_batch_size,
+            "b": b,
+            "beta": beta,
+            "set_unlabeled_as_neg": set_unlabeled_as_neg,
+            "batch_size": eval_batch_size,
         }
         self.save_dir = save_dir
 
@@ -646,13 +646,13 @@ class ModelTester(Process):
                 # Initiate the model from scratch each time
                 # Some models may have seed set in the init procedure
                 model = self.model_class(**self.model_class_params)
-                model_name = '{0}_{1}'.format(model.name, k)
+                model_name = "{0}_{1}".format(model.name, k)
 
                 # Pass in the dev set to the train method if applicable, for dev
                 # set score printing, best-score checkpointing
-                if 'X_dev' in inspect.getargspec(model.train):
-                    hps['X_dev'] = self.X_valid
-                    hps['Y_dev'] = self.Y_valid
+                if "X_dev" in inspect.getargspec(model.train):
+                    hps["X_dev"] = self.X_valid
+                    hps["Y_dev"] = self.Y_valid
 
                 # Train model with given hyperparameters
                 if self.Y_train is not None:
@@ -695,7 +695,7 @@ class RandomSearch(GridSearch):
         model_class_params={},
         model_hyperparams={},
         seed=123,
-        save_dir='checkpoints',
+        save_dir="checkpoints",
     ):
         """Search a random sample of size n from a parameter grid"""
         self.rand_state = np.random.RandomState()

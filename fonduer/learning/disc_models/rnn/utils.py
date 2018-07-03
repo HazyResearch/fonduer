@@ -29,10 +29,10 @@ class SymbolTable(object):
 
 
 def scrub(s):
-    return ''.join(c for c in s if ord(c) < 128)
+    return "".join(c for c in s if ord(c) < 128)
 
 
-def candidate_to_tokens(candidate, token_type='words'):
+def candidate_to_tokens(candidate, token_type="words"):
     tokens = candidate.get_parent().__dict__[token_type]
     return [scrub(w).lower() for w in tokens]
 

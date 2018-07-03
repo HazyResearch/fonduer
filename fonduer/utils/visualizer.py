@@ -29,7 +29,7 @@ class Visualizer(object):
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         imgs = []
-        colors = [Color('blue'), Color('red')]
+        colors = [Color("blue"), Color("red")]
         boxes_per_page = defaultdict(int)
         boxes_by_page = defaultdict(list)
         for i, (page, top, left, bottom, right) in enumerate(boxes):
@@ -38,7 +38,7 @@ class Visualizer(object):
         for i, page_num in enumerate(boxes_per_page.keys()):
             img = pdf_to_img(pdf_file, page_num)
             draw = Drawing()
-            draw.fill_color = Color('rgba(0, 0, 0, 0.0)')
+            draw.fill_color = Color("rgba(0, 0, 0, 0.0)")
             for j, (top, left, bottom, right) in enumerate(boxes_by_page[page_num]):
                 draw.stroke_color = colors[j % 2] if alternate_colors else colors[0]
                 draw.rectangle(left=left, top=top, right=right, bottom=bottom)
@@ -53,7 +53,7 @@ class Visualizer(object):
         """
         if not pdf_file:
             pdf_file = os.path.join(
-                self.pdf_path, candidates[0][0].sentence.document.name + '.pdf'
+                self.pdf_path, candidates[0][0].sentence.document.name + ".pdf"
             )
         boxes = [get_box(span) for c in candidates for span in c.get_contexts()]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
@@ -61,7 +61,7 @@ class Visualizer(object):
 
     def display_words(self, phrases, target=None, pdf_file=None):
         if not pdf_file:
-            pdf_file = os.path.join(self.pdf_path, phrases[0].document.name + '.pdf')
+            pdf_file = os.path.join(self.pdf_path, phrases[0].document.name + ".pdf")
         boxes = []
         for phrase in phrases:
             for i, word in enumerate(phrase.words):
@@ -81,24 +81,24 @@ class Visualizer(object):
 
 def get_box(span):
     box = (
-        min(span.get_attrib_tokens('page')),
-        min(span.get_attrib_tokens('top')),
-        max(span.get_attrib_tokens('left')),
-        min(span.get_attrib_tokens('bottom')),
-        max(span.get_attrib_tokens('right')),
+        min(span.get_attrib_tokens("page")),
+        min(span.get_attrib_tokens("top")),
+        max(span.get_attrib_tokens("left")),
+        min(span.get_attrib_tokens("bottom")),
+        max(span.get_attrib_tokens("right")),
     )
     return box
 
 
 def get_pdf_dim(pdf_file):
     html_content = subprocess.check_output(
-        "pdftotext -f {} -l {} -bbox '{}' -".format('1', '1', pdf_file), shell=True
+        "pdftotext -f {} -l {} -bbox '{}' -".format("1", "1", pdf_file), shell=True
     )
     soup = BeautifulSoup(html_content, "html.parser")
-    pages = soup.find_all('page')
+    pages = soup.find_all("page")
     page_width, page_height = (
-        int(float(pages[0].get('width'))),
-        int(float(pages[0].get('height'))),
+        int(float(pages[0].get("width"))),
+        int(float(pages[0].get("height"))),
     )
     return page_width, page_height
 
@@ -113,6 +113,6 @@ def pdf_to_img(pdf_file, page_num, pdf_dim=None):
     if not pdf_dim:
         pdf_dim = get_pdf_dim(pdf_file)
     page_width, page_height = pdf_dim
-    img = Image(filename='{}[{}]'.format(pdf_file, page_num - 1))
+    img = Image(filename="{}[{}]".format(pdf_file, page_num - 1))
     img.resize(page_width, page_height)
     return img

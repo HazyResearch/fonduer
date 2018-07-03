@@ -12,29 +12,29 @@ except Exception as e:
 
 
 class Tokenizer(object):
-    '''
+    """
     Interface for rule-based tokenizers
-    '''
+    """
 
     def apply(self, s):
         raise NotImplementedError()
 
 
 class RegexTokenizer(Tokenizer):
-    '''
+    """
     Regular expression tokenization.
-    '''
+    """
 
     def __init__(self, rgx="\s+"):
         super(RegexTokenizer, self).__init__()
         self.rgx = re.compile(rgx)
 
     def apply(self, s):
-        '''
+        """
 
         :param s:
         :return:
-        '''
+        """
         tokens = []
         offset = 0
         # keep track of char offsets
@@ -47,11 +47,11 @@ class RegexTokenizer(Tokenizer):
 
 
 class SpacyTokenizer(Tokenizer):
-    '''
+    """
     Only use spaCy's tokenizer functionality
-    '''
+    """
 
-    def __init__(self, lang='en'):
+    def __init__(self, lang="en"):
         super(SpacyTokenizer, self).__init__()
         self.lang = lang
         self.model = SpacyTokenizer.load_lang_model(lang)
@@ -72,20 +72,20 @@ class SpacyTokenizer(Tokenizer):
         name = name.lower()  # compare package name against lowercase name
         packages = pkg_resources.working_set.by_key.keys()
         for package in packages:
-            if package.lower().replace('-', '_') == name:
+            if package.lower().replace("-", "_") == name:
                 return True
         return False
 
     @staticmethod
     def model_installed(name):
-        '''
+        """
         Check if spaCy language model is installed
 
         From https://github.com/explosion/spaCy/blob/master/spacy/util.py
 
         :param name:
         :return:
-        '''
+        """
         data_path = util.get_data_path()
         if not data_path or not data_path.exists():
             raise IOError("Can't find spaCy data path: %s" % str(data_path))
@@ -99,7 +99,7 @@ class SpacyTokenizer(Tokenizer):
 
     @staticmethod
     def load_lang_model(lang):
-        '''
+        """
         Load spaCy language model or download if
         model is available and not installed
 
@@ -112,7 +112,7 @@ class SpacyTokenizer(Tokenizer):
 
         :param lang:
         :return:
-        '''
+        """
         if SpacyTokenizer.model_installed:
             model = spacy.load(lang)
         else:
