@@ -1,7 +1,7 @@
 |Fonduer|
 =======
 
-|Travis| |Coveralls| |ReadTheDocs| |GitHubIssues| |PyPI| |PyPIVersion| |GitHubStars| |License|
+|Travis| |Coveralls| |ReadTheDocs| |GitHubIssues| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
 Fonduer is a framework for building knowledge base construction (KBC)
 applications from *richy formatted data* and is implemented as a library on top
@@ -53,6 +53,8 @@ Data <https://arxiv.org/abs/1703.05028>`__::
    :target: https://github.com/HazyResearch/fonduer/stargazers
 .. |License| image:: https://img.shields.io/github/license/HazyResearch/fonduer.svg
    :target: https://github.com/HazyResearch/fonduer/blob/master/LICENSE
+.. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/ambv/black
 
 .. _Snorkel: https://hazyresearch.github.io/snorkel/
 .. _Issues: https://github.com/HazyResearch/fonduer/issues/
