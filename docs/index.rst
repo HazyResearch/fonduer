@@ -1,3 +1,5 @@
+|FonduerLogo|
+
 Welcome to Fonduer
 ==================
 
@@ -11,6 +13,7 @@ submit your contributions as a pull request.
 
 .. _Snorkel: https://github.com/hazyresearch/snorkel
 .. _Issues: https://github.com/hazyresearch/fonduer/issues
+.. |FonduerLogo| image:: static/img/fonduer-logo.png
 
 .. toctree::
     :maxdepth: 2
