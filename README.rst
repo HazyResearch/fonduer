@@ -29,11 +29,13 @@ Reference
 `Fonduer: Knowledge Base Construction from Richly Formatted
 Data <https://arxiv.org/abs/1703.05028>`__::
 
-    @article{wu2017fonduer,
+    @inproceedings{wu2017fonduer,
       title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
       author={Wu, Sen and Hsiao, Luke and Cheng, Xiao and Hancock, Braden and Rekatsinas, Theodoros and Levis, Philip and R{\'e}, Christopher},
-      journal={arXiv preprint arXiv:1703.05028},
-      year={2017}
+      booktitle={Proceedings of the 2018 International Conference on Management of Data},
+      pages={1301--1316},
+      year={2018},
+      organization={ACM}
     }
 
 .. |Fonduer| image:: docs/static/img/fonduer-logo.png
