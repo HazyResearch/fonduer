@@ -30,6 +30,7 @@ submit your contributions as a pull request.
     dev/changelog
     dev/install
     dev/tests
+    dev/codestyle
 
 Acknowledgements
 ----------------
