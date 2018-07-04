@@ -61,7 +61,7 @@ class DocPreprocessor(object):
         if len(fpaths) > 0:
             return fpaths
         else:
-            raise IOError("File or directory not found: %s" % (path,))
+            raise IOError("File or directory not found: {}".format(path))
 
 
 class TSVDocPreprocessor(DocPreprocessor):

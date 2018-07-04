@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# !/usr/bin/env python
+#! /usr/bin/env python
 """
 These tests expect that postgres is installed and that a databased named
 parser_test has been created for the purpose of testing.

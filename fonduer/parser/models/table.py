@@ -63,8 +63,8 @@ class Cell(Context):
         return "Cell(Doc: {}, Table: {}, Row: {}, Col: {}, Pos: {})".format(
             self.document.name,
             self.table.position,
-            tuple(set([self.row_start, self.row_end])),
-            tuple(set([self.col_start, self.col_end])),
+            tuple({self.row_start, self.row_end}),
+            tuple({self.col_start, self.col_end}),
             self.position,
         )
 

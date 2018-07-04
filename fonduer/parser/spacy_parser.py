@@ -90,7 +90,7 @@ class Spacy(object):
         data_path = util.get_data_path()
         if not data_path or not data_path.exists():
             raise IOError("Can't find spaCy data path: %s" % str(data_path))
-        if name in set([d.name for d in data_path.iterdir()]):
+        if name in {d.name for d in data_path.iterdir()}:
             return True
         if Spacy.is_package(name):  # installed as package
             return True
