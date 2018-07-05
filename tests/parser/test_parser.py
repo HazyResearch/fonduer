@@ -82,10 +82,10 @@ def test_simple_tokenizer(caplog):
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     # SpaCy on mac has issue on parallel parseing
-    if os.name == 'posix':
+    if os.name == "posix":
         PARALLEL = 1
     else:
-        PARALLEL = 2 # Travis only gives 2 cores
+        PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 2
     docs_path = "tests/data/html_simple/"
@@ -130,10 +130,10 @@ def test_parse_document_md(caplog):
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     # SpaCy on mac has issue on parallel parseing
-    if os.name == 'posix':
+    if os.name == "posix":
         PARALLEL = 1
     else:
-        PARALLEL = 2 # Travis only gives 2 cores
+        PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 2
     docs_path = "tests/data/html_simple/"
@@ -184,10 +184,10 @@ def test_parse_document_diseases(caplog):
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     # SpaCy on mac has issue on parallel parseing
-    if os.name == 'posix':
+    if os.name == "posix":
         PARALLEL = 1
     else:
-        PARALLEL = 2 # Travis only gives 2 cores
+        PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 2
     docs_path = "tests/data/html_simple/"
@@ -237,10 +237,10 @@ def test_spacy_integration(caplog):
     logger = logging.getLogger(__name__)
 
     # SpaCy on mac has issue on parallel parseing
-    if os.name == 'posix':
+    if os.name == "posix":
         PARALLEL = 1
     else:
-        PARALLEL = 2 # Travis only gives 2 cores
+        PARALLEL = 2  # Travis only gives 2 cores
 
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 

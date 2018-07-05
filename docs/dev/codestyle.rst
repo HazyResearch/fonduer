@@ -1,26 +1,37 @@
 Code Style
 ==========
 
-For code consistency, we use `black`_ as our Python code formatter with its
-default settings. Black helps minimize the line diffs and allows you to not
-worry about formatting during your own development. Just run black on each of
-your files before committing them. You can install black by running::
+For code consistency, we have a `pre-commit`_ configuration file so that you
+can easily install pre-commit hooks to run style checks before you commit your
+files. You can setup our pre-commit hooks be running::
 
-    $ pip install black
+    $ pip install -r requirements-dev.txt
+    $ pre-commit install
+
+Now, each time you commit, checks will be run using the packages explained
+below.
+
+We use `black`_ as our Python code formatter with its default settings. Black
+helps minimize the line diffs and allows you to not worry about formatting
+during your own development. Just run black on each of your files before
+committing them. 
 
 .. tip::
     Whatever editor you use, we recommend checking out `black editor
     integrations`_ to help make the code formatting process just a few
     keystrokes.
 
+For sorting imports, we reply on `isort`_. Our repository already includes
+a `.isort.cfg` that is compatible with black. 
+
 We are using flake8_ to enforce general code style standards. This style check
 is part of our Travis-CI tests which is required before merging. You can check
-this on your local machine by installing flake8::
+this on your local machine by running our checks::
 
-    $ pip install flake8
     $ make check 
 
-
+.. _pre-commit: https://pre-commit.com/
+.. _isort: https://github.com/timothycrosley/isort
 .. _flake8: https://flake8.pycqa.org/en/latest/ 
 .. _black editor integrations: https://github.com/ambv/black#editor-integration
 .. _black: https://github.com/ambv/black 

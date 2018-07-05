@@ -42,10 +42,10 @@ def test_e2e(caplog):
     """Run an end-to-end test on 20 documents of the hardware domain."""
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
-    if os.name == 'posix':
+    if os.name == "posix":
         PARALLEL = 1
     else:
-        PARALLEL = 2 # Travis only gives 2 cores
+        PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 12
 

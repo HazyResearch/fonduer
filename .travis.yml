@@ -54,6 +54,7 @@ before_install:
 install:
 - pip install coveralls
 - pip install flake8
+- pip install black
 - pip install -U pytest
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -79,6 +80,8 @@ before_script:
 - "./download_data.sh"
 - cd ../..
 - flake8 fonduer --count --max-line-length=127 --statistics --show-source --ignore=E731,W503,E741,E203
+- black ./ --check
+- isort -rc -c fonduer/
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
