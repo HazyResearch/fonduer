@@ -7,6 +7,8 @@ import re
 from builtins import range
 
 import pytest
+from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
+from hardware_utils import entity_level_f1, load_hardware_labels
 
 from fonduer import (
     BatchFeatureAnnotator,
@@ -27,10 +29,7 @@ from fonduer import (
     candidate_subclass,
     load_gold_labels,
 )
-
 from fonduer.supervision.lf_helpers import *
-from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
-from hardware_utils import entity_level_f1, load_hardware_labels
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"

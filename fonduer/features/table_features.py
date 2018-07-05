@@ -1,5 +1,6 @@
 from builtins import range, str
 
+from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
 from fonduer.supervision.lf_helpers import (
     get_cell_ngrams,
@@ -7,7 +8,6 @@ from fonduer.supervision.lf_helpers import (
     get_head_ngrams,
     get_row_ngrams,
 )
-from fonduer.candidates.models import TemporarySpan
 from fonduer.utils.utils_table import min_col_diff, min_row_diff, num_cols, num_rows
 
 FEAT_PRE = "TAB_"

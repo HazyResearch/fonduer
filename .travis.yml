@@ -6,13 +6,7 @@ matrix:
   include:
   - os: linux
     env:
-      - PYTHON=3.5
-  - os: linux
-    env:
       - PYTHON=3.6
-  - os: osx
-    env:
-      - PYTHON=3.5
   - os: osx
     env:
       - PYTHON=3.6
@@ -52,10 +46,9 @@ before_install:
 
 
 install:
+# Install fonduer dev deps and check code style
+- make check
 - pip install coveralls
-- pip install flake8
-- pip install black
-- pip install -U pytest
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
@@ -65,12 +58,12 @@ install:
     make
     sudo make install
     cd ..
+    rm -rf poppler-0.53.0
     export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
     echo "Using LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
   else
     brew install poppler
   fi
-- make dev  # install package locally for tests
 - python -m spacy download en
 
 before_script:
@@ -79,9 +72,6 @@ before_script:
 - cd tests/e2e/
 - "./download_data.sh"
 - cd ../..
-- flake8 fonduer --count --max-line-length=127 --statistics --show-source --ignore=E731,W503,E741,E203
-- black ./ --check
-- isort -rc -c fonduer/
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
@@ -100,3 +90,4 @@ deploy:
     tags: true
     branch: master
     python: '3.6'
+    condition: $TRAVIS_OS_NAME = "linux"

@@ -1,2 +1,5 @@
-flake8
+black
+isort
 pre-commit
+pytest
+sphinx

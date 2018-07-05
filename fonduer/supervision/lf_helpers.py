@@ -4,6 +4,9 @@ from collections import defaultdict
 from itertools import chain
 
 import numpy as np
+from lxml import etree
+from lxml.html import fromstring
+
 from fonduer.candidates import Ngrams
 from fonduer.candidates.models import TemporarySpan
 from fonduer.parser.models import Phrase
@@ -24,8 +27,6 @@ from fonduer.utils.utils_visual import (
     bbox_vert_aligned_left,
     bbox_vert_aligned_right,
 )
-from lxml import etree
-from lxml.html import fromstring
 
 
 def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):

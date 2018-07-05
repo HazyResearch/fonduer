@@ -1,3 +1,4 @@
+from fonduer.candidates.models import TemporarySpan
 from fonduer.supervision.lf_helpers import (
     get_visual_aligned_lemmas,
     is_horz_aligned,
@@ -7,7 +8,6 @@ from fonduer.supervision.lf_helpers import (
     is_vert_aligned_right,
     same_page,
 )
-from fonduer.candidates.models import TemporarySpan
 
 FEAT_PRE = "VIZ_"
 DEF_VALUE = 1

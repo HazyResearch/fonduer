@@ -3,7 +3,7 @@ Code Style
 
 For code consistency, we have a `pre-commit`_ configuration file so that you
 can easily install pre-commit hooks to run style checks before you commit your
-files. You can setup our pre-commit hooks be running::
+files. You can setup our pre-commit hooks by running::
 
     $ pip install -r requirements-dev.txt
     $ pre-commit install
@@ -21,17 +21,13 @@ committing them.
     integrations`_ to help make the code formatting process just a few
     keystrokes.
 
-For sorting imports, we reply on `isort`_. Our repository already includes
-a `.isort.cfg` that is compatible with black. 
-
-We are using flake8_ to enforce general code style standards. This style check
-is part of our Travis-CI tests which is required before merging. You can check
-this on your local machine by running our checks::
+For sorting imports, we reply on `isort`_. Our repository already includes a
+`.isort.cfg` that is compatible with black. You can run a code style check on
+your local machine by running our checks::
 
     $ make check 
 
 .. _pre-commit: https://pre-commit.com/
 .. _isort: https://github.com/timothycrosley/isort
-.. _flake8: https://flake8.pycqa.org/en/latest/ 
 .. _black editor integrations: https://github.com/ambv/black#editor-integration
 .. _black: https://github.com/ambv/black 

@@ -1,6 +1,7 @@
-from fonduer.parser.models.context import Context, TemporaryContext
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
+
+from fonduer.parser.models.context import Context, TemporaryContext
 
 
 class TemporaryImage(TemporaryContext):

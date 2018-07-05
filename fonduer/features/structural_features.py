@@ -1,5 +1,6 @@
 from builtins import str
 
+from fonduer.candidates.models import TemporarySpan
 from fonduer.supervision.lf_helpers import (
     common_ancestor,
     get_ancestor_class_names,
@@ -12,7 +13,6 @@ from fonduer.supervision.lf_helpers import (
     get_tag,
     lowest_common_ancestor_depth,
 )
-from fonduer.candidates.models import TemporarySpan
 
 FEAT_PRE = "STR_"
 DEF_VALUE = 1

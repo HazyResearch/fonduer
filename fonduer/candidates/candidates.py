@@ -3,10 +3,11 @@ from builtins import map, range
 from copy import deepcopy
 from itertools import product
 
+from sqlalchemy.sql import select
+
 from fonduer.candidates.models import Candidate, TemporaryImage, TemporarySpan
 from fonduer.parser.models import Document
 from fonduer.utils.udf import UDF, UDFRunner
-from sqlalchemy.sql import select
 
 
 class CandidateSpace(object):

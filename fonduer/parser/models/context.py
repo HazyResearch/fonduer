@@ -1,8 +1,9 @@
 from builtins import object
 
-from fonduer.meta import Meta
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql import select, text
+
+from fonduer.meta import Meta
 
 # Grab pointer to global metadata
 _meta = Meta.init()
