@@ -11,6 +11,9 @@ Version 0.2.0 (coming soon...)
   (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
 * `@lukehsiao`_: Split models into individual files.
   (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_)
+* `@senwu`_: Add branding, OSX tests.
+  (`#61 <https://github.com/HazyResearch/fonduer/pull/60>`_,
+  `#62 <https://github.com/HazyResearch/fonduer/pull/62>`_)
 
 Version 0.1.8
 -------------
