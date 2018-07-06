@@ -21,8 +21,8 @@ from fonduer.parser.models import (
     split_stable_id,
 )
 from fonduer.parser.spacy_parser import Spacy
-from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.parser.visual import VisualLinker
+from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
 

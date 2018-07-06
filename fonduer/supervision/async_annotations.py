@@ -10,10 +10,9 @@ import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame, Series
 
-from fonduer.features.features import get_all_feats
 from fonduer.candidates.models import Candidate
+from fonduer.features.features import get_all_feats
 from fonduer.meta import Meta, new_sessionmaker
-from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils import (
     matrix_conflicts,
     matrix_coverage,
@@ -24,6 +23,7 @@ from fonduer.utils import (
     matrix_tp,
     remove_files,
 )
+from fonduer.utils.udf import UDF, UDFRunner
 
 # Used to conform to existing annotation key API call
 # Note that this anontation matrix class can not be replaced with snorkel one

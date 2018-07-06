@@ -1,11 +1,16 @@
-sudo: false
+language: generic
 dist: trusty
-language: python
 cache: pip
 
-python:
-- '3.5'
-- '3.6'
+matrix:
+  include:
+  - os: linux
+    env:
+      - PYTHON=3.6
+  - os: osx
+    env:
+      - PYTHON=3.6
+  fast_finish: true
 
 services:
 - postgresql
@@ -16,24 +21,49 @@ addons:
 notifications:
   email: false
 
-matrix:
-  fast_finish: true
+before_install:
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
+- wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
+- conda config --set always_yes yes --set changeps1 no
+- conda config --add channels conda-forge
+- conda update -q conda
+- conda install -q conda-build
+- if [ -n "$PYTHON" ]; then conda create -q -n test-environment python=${PYTHON}; fi
+- source activate test-environment
+- conda install pip
+# Start postgresql for osx
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm -rf /usr/local/var/postgres; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then initdb /usr/local/var/postgres; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pg_ctl -D /usr/local/var/postgres start; sleep 5; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then createuser -s postgres; fi
+
+- psql --version
+- python --version
+- pip --version
+
 
 install:
-- sudo apt-get -qq update
+# Install fonduer dev deps and check code style
+- make check
 - pip install coveralls
-- pip install flake8
-- sudo apt-get install build-essential checkinstall
-- wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
-- tar -xf ./poppler-0.53.0.tar.xz
-- cd poppler-0.53.0
-- "./configure"
-- make
-- sudo checkinstall -y
-- cd ..
-- export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-- echo "Using LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-- make dev  # install package locally for tests
+- |
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
+    tar -xf ./poppler-0.53.0.tar.xz
+    cd poppler-0.53.0
+    "./configure"
+    make
+    sudo make install
+    cd ..
+    rm -rf poppler-0.53.0
+    export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+    echo "Using LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+  else
+    brew install poppler
+  fi
 - python -m spacy download en
 
 before_script:
@@ -42,7 +72,6 @@ before_script:
 - cd tests/e2e/
 - "./download_data.sh"
 - cd ../..
-- flake8 fonduer --count --max-line-length=127 --statistics --show-source --ignore=E731,W503,E741,E203
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
@@ -61,3 +90,4 @@ deploy:
     tags: true
     branch: master
     python: '3.6'
+    condition: $TRAVIS_OS_NAME = "linux"

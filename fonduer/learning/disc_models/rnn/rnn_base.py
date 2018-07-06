@@ -4,9 +4,9 @@ import logging
 import numpy as np
 import tensorflow as tf
 
+from fonduer.candidates.models import Candidate
 from fonduer.learning.disc_learning import TFNoiseAwareModel
 from fonduer.learning.disc_models.rnn.utils import SymbolTable, get_bi_rnn_output
-from fonduer.candidates.models import Candidate
 
 SD = 0.1
 

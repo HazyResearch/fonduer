@@ -1,5 +1,6 @@
-from fonduer.parser.models.document import Document
 from sqlalchemy import Column, ForeignKey, Integer, String
+
+from fonduer.parser.models.document import Document
 
 
 class Webpage(Document):

@@ -2,6 +2,8 @@ import logging
 
 import numpy as np
 import scipy.sparse as sparse
+from pandas import DataFrame, Series
+
 from fonduer.candidates.models import Candidate
 from fonduer.learning.models import Marginal
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
@@ -14,7 +16,6 @@ from fonduer.utils import (
     matrix_tn,
     matrix_tp,
 )
-from pandas import DataFrame, Series
 
 
 class csr_AnnotationMatrix(sparse.csr_matrix):

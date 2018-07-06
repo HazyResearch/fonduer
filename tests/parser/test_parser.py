@@ -12,8 +12,8 @@ import os
 import pytest
 
 from fonduer import HTMLPreprocessor, Meta, OmniParser
-from fonduer.parser.models import Document, Phrase
 from fonduer.parser import Spacy
+from fonduer.parser.models import Document, Phrase
 from fonduer.parser.parser import OmniParserUDF
 
 ATTRIBUTE = "parser_test"
@@ -81,7 +81,12 @@ def test_simple_tokenizer(caplog):
     logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 2
+    # SpaCy on mac has issue on parallel parseing
+    if os.name == "posix":
+        PARALLEL = 1
+    else:
+        PARALLEL = 2  # Travis only gives 2 cores
+
     max_docs = 2
     docs_path = "tests/data/html_simple/"
     pdf_path = "tests/data/pdf_simple/"
@@ -124,7 +129,12 @@ def test_parse_document_md(caplog):
     logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
+    # SpaCy on mac has issue on parallel parseing
+    if os.name == "posix":
+        PARALLEL = 1
+    else:
+        PARALLEL = 2  # Travis only gives 2 cores
+
     max_docs = 2
     docs_path = "tests/data/html_simple/"
     pdf_path = "tests/data/pdf_simple/"
@@ -173,7 +183,12 @@ def test_parse_document_diseases(caplog):
     logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 2
+    # SpaCy on mac has issue on parallel parseing
+    if os.name == "posix":
+        PARALLEL = 1
+    else:
+        PARALLEL = 2  # Travis only gives 2 cores
+
     max_docs = 2
     docs_path = "tests/data/html_simple/"
     pdf_path = "tests/data/pdf_simple/"
@@ -221,7 +236,11 @@ def test_spacy_integration(caplog):
     #  caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
-    PARALLEL = 2  # Travis only gives 2 cores
+    # SpaCy on mac has issue on parallel parseing
+    if os.name == "posix":
+        PARALLEL = 1
+    else:
+        PARALLEL = 2  # Travis only gives 2 cores
 
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 

@@ -14,14 +14,14 @@ from treedlib import (
     compile_relation_feature_generator,
 )
 
+from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
+from fonduer.features.tree_structs import corenlp_to_xmltree
 from fonduer.supervision.lf_helpers import (
     get_left_ngrams,
     get_right_ngrams,
     tokens_to_ngrams,
 )
-from fonduer.candidates.models import TemporarySpan
-from fonduer.features.tree_structs import corenlp_to_xmltree
 from fonduer.utils import get_as_dict
 
 DEF_VALUE = 1

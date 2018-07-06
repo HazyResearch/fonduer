@@ -1,7 +1,8 @@
-from fonduer.parser.models.context import Context
 from sqlalchemy import Column, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import backref, relationship
+
+from fonduer.parser.models.context import Context
 
 
 class Table(Context):
