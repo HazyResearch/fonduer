@@ -10,10 +10,11 @@ import os
 
 import pytest
 
-from fonduer import HTMLPreprocessor, Meta, OmniParser
-from fonduer.parser import Spacy
+from fonduer import Meta
+from fonduer.parser import OmniParser, Spacy
 from fonduer.parser.models import Document, Phrase
 from fonduer.parser.parser import OmniParserUDF
+from fonduer.parser.preprocessors import HTMLDocPreprocessor
 
 ATTRIBUTE = "parser_test"
 
@@ -32,7 +33,7 @@ def test_parse_structure(caplog):
     pdf_path = "tests/data/pdf_simple/md.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Grab one document, text tuple from the preprocessor
     doc, text = next(preprocessor.generate())
@@ -91,7 +92,7 @@ def test_simple_tokenizer(caplog):
     pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     omni = OmniParser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
@@ -139,7 +140,7 @@ def test_parse_document_md(caplog):
     pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an OmniParser and parse the md document
     omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
@@ -193,7 +194,7 @@ def test_parse_document_diseases(caplog):
     pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an OmniParser and parse the diseases document
     omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
@@ -247,7 +248,7 @@ def test_spacy_integration(caplog):
     pdf_path = "tests/data/pdf_simple/"
 
     max_docs = 2
-    doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     corpus_parser = OmniParser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path
@@ -276,7 +277,7 @@ def test_parse_style(caplog):
     pdf_path = "tests/data/pdf_extended/ext_diseases.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Grab the document, text tuple from the preprocessor
     doc, text = next(preprocessor.generate())

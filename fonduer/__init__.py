@@ -21,8 +21,9 @@ from fonduer.candidates.matchers import (
 from fonduer.candidates.models import candidate_subclass
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.meta import Meta
-from fonduer.parser import HTMLPreprocessor, OmniParser
+from fonduer.parser import OmniParser
 from fonduer.parser.models import Document, Figure, Phrase
+from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision.annotations import load_gold_labels
 from fonduer.supervision.async_annotations import (
     BatchFeatureAnnotator,
@@ -40,7 +41,7 @@ __all__ = [
     "Document",
     "Figure",
     "GenerativeModel",
-    "HTMLPreprocessor",
+    "HTMLDocPreprocessor",
     "Intersect",
     "Inverse",
     "LambdaFunctionFigureMatcher",
