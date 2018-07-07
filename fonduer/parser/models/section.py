@@ -1,31 +1,28 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context
 
 
-class Figure(Context):
-    """A figure Context in a Document."""
+class Section(Context):
+    """A section Context in a Document."""
 
-    __tablename__ = "figure"
+    __tablename__ = "section"
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
     document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
     position = Column(Integer, nullable=False)
     document = relationship(
         "Document",
-        backref=backref("figures", order_by=position, cascade="all, delete-orphan"),
+        backref=backref("sections", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
-    url = Column(String)
 
-    __mapper_args__ = {"polymorphic_identity": "figure"}
+    __mapper_args__ = {"polymorphic_identity": "section"}
 
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self):
-        return "Figure(Doc: {}, Pos: {}, Url: {})".format(
-            self.document.name, self.position, self.url
-        )
+        return "Section(Doc: {}, Pos: {})".format(self.document.name, self.position)
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
