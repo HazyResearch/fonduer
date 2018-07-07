@@ -17,7 +17,7 @@ from fonduer import (
     DictionaryMatch,
     Document,
     GenerativeModel,
-    HTMLPreprocessor,
+    HTMLDocPreprocessor,
     Intersect,
     LambdaFunctionMatcher,
     Meta,
@@ -55,7 +55,7 @@ def test_e2e(caplog):
     docs_path = "tests/e2e/data/html/"
     pdf_path = "tests/e2e/data/pdf/"
 
-    doc_preprocessor = HTMLPreprocessor(docs_path, max_docs=max_docs)
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     corpus_parser = OmniParser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path

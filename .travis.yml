@@ -47,6 +47,7 @@ before_install:
 
 install:
 # Install fonduer dev deps and check code style
+- make dev 
 - make check
 - pip install coveralls
 - |

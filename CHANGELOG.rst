@@ -9,8 +9,9 @@ Version 0.2.0 (coming soon...)
 * `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
   only. Also reorganize the codebase into submodules for each pipeline phase.
   (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
-* `@lukehsiao`_: Split models into individual files.
-  (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_)
+* `@lukehsiao`_: Split models and preprocessors into individual files.
+  (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_,
+  `#64 <https://github.com/HazyResearch/fonduer/pull/64>`_)
 * `@senwu`_: Add branding, OSX tests.
   (`#61 <https://github.com/HazyResearch/fonduer/pull/60>`_,
   `#62 <https://github.com/HazyResearch/fonduer/pull/62>`_)
