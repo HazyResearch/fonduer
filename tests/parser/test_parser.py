@@ -11,10 +11,11 @@ import os
 import pytest
 
 from fonduer import Meta
-from fonduer.parser import OmniParser, Spacy
+from fonduer.parser import OmniParser
 from fonduer.parser.models import Document, Phrase
 from fonduer.parser.parser import OmniParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.spacy_parser import Spacy
 
 ATTRIBUTE = "parser_test"
 
