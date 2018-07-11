@@ -10,7 +10,7 @@ of a modified version of Snorkel_.
 Note that Fonduer is still *actively under development*, so feedback and
 contributions are welcome. Submit bugs in the Issues_ section or feel free to
 submit your contributions as a pull request. If you have questions, please use
-our `Mailing List`_
+our `Mailing List`_.
 
 Getting Started
 ---------------
