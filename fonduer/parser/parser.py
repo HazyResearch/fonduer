@@ -5,7 +5,6 @@ import re
 from builtins import object, range, str
 from collections import defaultdict
 
-import numpy as np
 from lxml import etree
 from lxml.html import fromstring
 
@@ -20,46 +19,12 @@ from fonduer.parser.models import (
     construct_stable_id,
     split_stable_id,
 )
+from fonduer.parser.simple_tokenizer import SimpleTokenizer
 from fonduer.parser.spacy_parser import Spacy
 from fonduer.parser.visual import VisualLinker
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
-
-
-class SimpleTokenizer(object):
-    """
-    A trivial alternative to CoreNLP which parses (tokenizes) text on
-    whitespace only using the split() command.
-    """
-
-    def __init__(self, delim):
-        self.delim = delim
-
-    def parse(self, document, contents):
-        i = 0
-        for text in contents.split(self.delim):
-            if not len(text.strip()):
-                continue
-            words = text.split()
-            char_offsets = [0] + [
-                int(_) for _ in np.cumsum([len(x) + 1 for x in words])[:-1]
-            ]
-            text = " ".join(words)
-            stable_id = construct_stable_id(document, "phrase", i, i)
-            yield {
-                "text": text,
-                "words": words,
-                "pos_tags": [""] * len(words),
-                "ner_tags": [""] * len(words),
-                "lemmas": [""] * len(words),
-                "dep_parents": [0] * len(words),
-                "dep_labels": [""] * len(words),
-                "char_offsets": char_offsets,
-                "abs_char_offsets": char_offsets,
-                "stable_id": stable_id,
-            }
-            i += 1
 
 
 class OmniParser(UDFRunner):
@@ -149,7 +114,6 @@ class OmniParserUDF(UDF):
             self.lingual_parse = self.lingual_parser.parse
 
         else:
-            self.batch_size = int(1e6)
             self.lingual_parse = SimpleTokenizer(delim=self.delim).parse
 
         # tabular setup
