@@ -11,10 +11,11 @@ import os
 import pytest
 
 from fonduer import Meta
-from fonduer.parser import OmniParser, Spacy
+from fonduer.parser import OmniParser
 from fonduer.parser.models import Document, Phrase
 from fonduer.parser.parser import OmniParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.spacy_parser import Spacy
 
 ATTRIBUTE = "parser_test"
 
@@ -75,8 +76,7 @@ def test_parse_structure(caplog):
 
 
 def test_simple_tokenizer(caplog):
-    """Unit test of OmniParser on a single document with lingual features off.
-    """
+    """Unit test of OmniParser on a single document with lingual features off."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
