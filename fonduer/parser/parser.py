@@ -21,7 +21,7 @@ from fonduer.parser.models import (
 )
 from fonduer.parser.simple_tokenizer import SimpleTokenizer
 from fonduer.parser.spacy_parser import Spacy
-from fonduer.parser.visual import VisualLinker
+from fonduer.parser.visual_linker import VisualLinker
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
