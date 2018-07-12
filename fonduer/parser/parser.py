@@ -126,6 +126,7 @@ class OmniParserUDF(UDF):
             self.vizlink = VisualLinker()
 
     def apply(self, x, **kwargs):
+        # The document is the Document model. Text is string representation.
         document, text = x
         if self.visual:
             if not self.pdf_path:
@@ -135,7 +136,8 @@ class OmniParserUDF(UDF):
             # Add visual attributes
             filename = self.pdf_path + document.name
             create_pdf = (
-                not os.path.isfile(filename + ".pdf")
+                not os.path.isfile(self.pdf_path)
+                and not os.path.isfile(filename + ".pdf")
                 and not os.path.isfile(filename + ".PDF")
                 and not os.path.isfile(filename)
             )
@@ -329,6 +331,28 @@ class OmniParserUDF(UDF):
         tree = etree.ElementTree(root)
         document.text = text
         yield from parse_node(root, table_info, figure_info)
+
+    #  def parse():
+    #      """Depth-first search over the provided tree.
+    #
+    #      Implemented as an iterative procedure.
+    #
+    #      :param c: The binary-Span Candidate to evaluate.
+    #      :param attrib: The token attribute type (e.g. words, lemmas, poses)
+    #      :param n_min: The minimum n of the ngrams that should be returned
+    #      :param n_max: The maximum n of the ngrams that should be returned
+    #      :param lower: If 'True', all ngrams will be returned in lower case
+    #      :rtype: a *generator* of ngrams
+    #      """
+    #      stack = []
+    #      stack.append(node)
+    #      while stack:
+    #          v = stack.pop()
+    #          if not v.visited:
+    #              v.visited = True
+    #              # Process
+    #              for child in v.children:
+    #                  stack.push(child)
 
 
 class TableInfo(object):
