@@ -1,6 +1,30 @@
-Version 0.1.8 (coming soon...)
+Version 0.2.0 (coming soon...)
 ------------------------------
 
+.. warning::
+    This release is NOT backwards compatable with v0.1.8. The code has now been
+    refactored into submodules, where each submodule corresponds with a phase
+    of the Fonduer pipeline.
+
+* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
+  only. Also reorganize the codebase into submodules for each pipeline phase.
+  (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
+* `@lukehsiao`_: Split models and preprocessors into individual files.
+  (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_,
+  `#64 <https://github.com/HazyResearch/fonduer/pull/64>`_)
+* `@senwu`_: Add branding, OSX tests.
+  (`#61 <https://github.com/HazyResearch/fonduer/pull/60>`_,
+  `#62 <https://github.com/HazyResearch/fonduer/pull/62>`_)
+
+Version 0.1.8
+-------------
+
+* `@senwu`_: Remove the Viewer, which is unused in Fonduer 
+  (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
+* `@senwu`_: Fix SimpleTokenizer for lingual features are disabled 
+  (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
+* `@prabh06`_: Extend styles parsing and add regex search 
+  (`#52 <https://github.com/HazyResearch/fonduer/pull/52>`_)
 * `@lukehsiao`_: Remove unnecessary encoding in __repr__
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 * `@lukehsiao`_: Fix LocationMatch NER tags for spaCy 
@@ -103,3 +127,4 @@ Version 0.1.2
 
 .. _@lukehsiao: https://github.com/lukehsiao
 .. _@senwu: https://github.com/senwu
+.. _@prabh06: https://github.com/Prabh06

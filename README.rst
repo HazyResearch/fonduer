@@ -1,7 +1,7 @@
-Fonduer
+|Fonduer|
 =======
 
-|Travis| |Coveralls| |ReadTheDocs| |GitHubIssues| |PyPI| |PyPIVersion| |GitHubStars| |License|
+|Travis| |Coveralls| |ReadTheDocs| |GitHubIssues| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
 Fonduer is a framework for building knowledge base construction (KBC)
 applications from *richy formatted data* and is implemented as a library on top
@@ -10,7 +10,7 @@ of a modified version of Snorkel_.
 Note that Fonduer is still *actively under development*, so feedback and
 contributions are welcome. Submit bugs in the Issues_ section or feel free to
 submit your contributions as a pull request. If you have questions, please use
-our `Mailing List`_
+our `Mailing List`_.
 
 Getting Started
 ---------------
@@ -29,15 +29,18 @@ Reference
 `Fonduer: Knowledge Base Construction from Richly Formatted
 Data <https://arxiv.org/abs/1703.05028>`__::
 
-    @article{wu2017fonduer,
+    @inproceedings{wu2017fonduer,
       title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
       author={Wu, Sen and Hsiao, Luke and Cheng, Xiao and Hancock, Braden and Rekatsinas, Theodoros and Levis, Philip and R{\'e}, Christopher},
-      journal={arXiv preprint arXiv:1703.05028},
-      year={2017}
+      booktitle={Proceedings of the 2018 International Conference on Management of Data},
+      pages={1301--1316},
+      year={2018},
+      organization={ACM}
     }
 
-
-.. |Travis| image:: https://img.shields.io/travis/HazyResearch/fonduer.svg
+.. |Fonduer| image:: docs/static/img/fonduer-logo.png
+   :target: https://github.com/HazyResearch/fonduer
+.. |Travis| image:: https://img.shields.io/travis/HazyResearch/fonduer/master.svg
    :target: https://travis-ci.org/HazyResearch/fonduer
 .. |Coveralls| image:: https://img.shields.io/coveralls/github/HazyResearch/fonduer.svg
    :target: https://coveralls.io/github/HazyResearch/fonduer
@@ -53,6 +56,8 @@ Data <https://arxiv.org/abs/1703.05028>`__::
    :target: https://github.com/HazyResearch/fonduer/stargazers
 .. |License| image:: https://img.shields.io/github/license/HazyResearch/fonduer.svg
    :target: https://github.com/HazyResearch/fonduer/blob/master/LICENSE
+.. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/ambv/black
 
 .. _Snorkel: https://hazyresearch.github.io/snorkel/
 .. _Issues: https://github.com/HazyResearch/fonduer/issues/
