@@ -2,11 +2,10 @@ import itertools
 import logging
 import os
 import re
-from builtins import object, range, str
+from builtins import range
 from collections import defaultdict
 
-from lxml import etree
-from lxml.html import fromstring
+import lxml
 
 from fonduer.candidates.models import Candidate
 from fonduer.parser.models import (
@@ -41,9 +40,6 @@ class OmniParser(UDFRunner):
         visual=False,  # visual information
         pdf_path=None,
     ):
-
-        self.delim = "<NB>"  # NB = New Block
-
         # Use spaCy as our lingual parser
         self.lingual_parser = Spacy()
 
@@ -95,8 +91,6 @@ class OmniParserUDF(UDF):
         """
         super(OmniParserUDF, self).__init__(**kwargs)
 
-        self.delim = "<NB>"  # NB = New Block
-
         # structural (html) setup
         self.structural = structural
         self.blacklist = blacklist if isinstance(blacklist, list) else [blacklist]
@@ -114,7 +108,7 @@ class OmniParserUDF(UDF):
             self.lingual_parse = self.lingual_parser.parse
 
         else:
-            self.lingual_parse = SimpleTokenizer(delim=self.delim).parse
+            self.lingual_parse = SimpleTokenizer().parse
 
         # tabular setup
         self.tabular = tabular
@@ -150,9 +144,15 @@ class OmniParserUDF(UDF):
             yield from self.parse_structure(document, text)
 
     def _flatten(self, node):
-        # if a child of this node is in self.flatten, construct a string
-        # containing all text/tail results of the tree based on that child
-        # and append that to the tail of the previous child or head of node
+        """Construct a string containing the child's text/tail append to the node.
+
+        If a child of this node is in self.flatten, construct a string
+        containing all text/tail results of the tree based on that child and
+        append that to the tail of the previous child or head of node.
+
+
+        :param node: the node to flatten
+        """
         num_children = len(node)
         for i, child in enumerate(node[::-1]):
             if child.tag in self.flatten:
@@ -173,206 +173,45 @@ class OmniParserUDF(UDF):
                     node[j - 1].tail += self.flatten_delim.join(contents)
                 node.remove(child)
 
-    def parse_structure(self, document, text):
-        self.contents = ""
-        block_lengths = []
-        self.parent = document
+    def _parse_table_node(self, node, state):
+        """Parse a table node.
 
-        figure_info = FigureInfo(document, parent=document)
-        self.figure_idx = -1
+        :param node: The lxml table node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        if not self.tabular:
+            logger.error("Called _parse_table_node without tabular activated.")
+            return state
 
-        if self.tabular:
-            table_info = TableInfo(document, parent=document)
-            self.table_idx = -1
-        else:
-            table_info = None
-
-        self.parsed = 0
-        self.parent_idx = 0
-        self.position = 0
-        self.sentence_num = 0
-        self.abs_sentence_offset = 0
-
-        def parse_node(node, table_info=None, figure_info=None):
-            if node.tag is etree.Comment:
-                return
-            if self.blacklist and node.tag in self.blacklist:
-                return
-
-            self.figure_idx = figure_info.enter_figure(node, self.figure_idx)
-
-            if self.tabular:
-                self.table_idx = table_info.enter_tabular(node, self.table_idx)
-
-            # flattens children of node that are in the 'flatten' list
-            if self.flatten:
-                self._flatten(node)
-
-            for field in ["text", "tail"]:
-                text = getattr(node, field)
-                if text is not None:
-                    if self.strip:
-                        text = text.strip()
-                    if len(text):
-                        for (rgx, replace) in self.replacements:
-                            text = rgx.sub(replace, text)
-                        self.contents += text
-                        self.contents += self.delim
-                        block_lengths.append(len(text) + len(self.delim))
-
-                        for parts in self.lingual_parse(document, text):
-                            (_, _, _, char_end) = split_stable_id(parts["stable_id"])
-                            try:
-                                parts["document"] = document
-                                parts["sentence_num"] = self.sentence_num
-                                abs_sentence_offset_end = (
-                                    self.abs_sentence_offset
-                                    + parts["char_offsets"][-1]
-                                    + len(parts["words"][-1])
-                                )
-                                parts["stable_id"] = construct_stable_id(
-                                    document,
-                                    "sentence",
-                                    self.abs_sentence_offset,
-                                    abs_sentence_offset_end,
-                                )
-                                self.abs_sentence_offset = abs_sentence_offset_end
-                                if self.structural:
-                                    context_node = (
-                                        node.getparent() if field == "tail" else node
-                                    )
-                                    parts["xpath"] = tree.getpath(context_node)
-                                    parts["html_tag"] = context_node.tag
-                                    parts["html_attrs"] = [
-                                        "=".join(x)
-                                        for x in list(context_node.attrib.items())
-                                    ]
-
-                                    # Extending html style attribute with the styles
-                                    # from inline style class for the element.
-                                    cur_style_index = None
-                                    for index, attr in enumerate(parts["html_attrs"]):
-                                        if attr.find("style") >= 0:
-                                            cur_style_index = index
-                                            break
-                                    styles = root.find("head").find("style")
-                                    if styles is not None:
-                                        for x in list(context_node.attrib.items()):
-                                            if x[0] == "class":
-                                                exp = (
-                                                    r"(."
-                                                    + x[1]
-                                                    + ")([\n\s\r]*)\{(.*?)\}"
-                                                )
-                                                r = re.compile(exp, re.DOTALL)
-                                                if r.search(styles.text) is not None:
-                                                    if cur_style_index is not None:
-                                                        parts["html_attrs"][
-                                                            cur_style_index
-                                                        ] += (
-                                                            r.search(styles.text)
-                                                            .group(3)
-                                                            .replace("\r", "")
-                                                            .replace("\n", "")
-                                                            .replace("\t", "")
-                                                        )
-                                                    else:
-                                                        parts["html_attrs"].extend(
-                                                            [
-                                                                "style="
-                                                                + re.sub(
-                                                                    r"\s{1,}",
-                                                                    " ",
-                                                                    r.search(
-                                                                        styles.text
-                                                                    )
-                                                                    .group(3)
-                                                                    .replace("\r", "")
-                                                                    .replace("\n", "")
-                                                                    .replace("\t", "")
-                                                                    .strip(),
-                                                                )
-                                                            ]
-                                                        )
-                                                break
-                                if self.tabular:
-                                    parent = table_info.parent
-                                    parts = table_info.apply_tabular(
-                                        parts, parent, self.position
-                                    )
-                                yield Sentence(**parts)
-                                self.position += 1
-                                self.sentence_num += 1
-                            except Exception as e:
-                                # This should never happen
-                                logger.exception(str(e))
-
-            for child in node:
-                if child.tag == "table":
-                    yield from parse_node(
-                        child, TableInfo(document=table_info.document), figure_info
-                    )
-                elif child.tag == "img":
-                    yield from parse_node(
-                        child, table_info, FigureInfo(document=figure_info.document)
-                    )
-                else:
-                    yield from parse_node(child, table_info, figure_info)
-
-            if self.tabular:
-                table_info.exit_tabular(node)
-
-            figure_info.exit_figure(node)
-
-        # Parse document and store text in self.contents, padded with self.delim
-        root = fromstring(text)  # lxml.html.fromstring()
-        tree = etree.ElementTree(root)
-        document.text = text
-        yield from parse_node(root, table_info, figure_info)
-
-
-class TableInfo(object):
-    def __init__(
-        self,
-        document,
-        table=None,
-        table_grid=defaultdict(int),
-        cell=None,
-        cell_idx=0,
-        row_idx=0,
-        col_idx=0,
-        parent=None,
-    ):
-        self.document = document
-        self.table = table
-        self.table_grid = table_grid
-        self.cell = cell
-        self.cell_idx = cell_idx
-        self.row_idx = row_idx
-        self.col_idx = col_idx
-        self.parent = parent
-
-    def enter_tabular(self, node, table_idx):
         if node.tag == "table":
-            table_idx += 1
-            self.table_grid.clear()
-            self.row_idx = 0
-            self.cell_position = 0
-            stable_id = "{}::{}:{}:{}".format(
-                self.document.name, "table", table_idx, table_idx
+            stable_id = "{}::{}:{}".format(
+                state["document"].name, "table", state["table"]["idx"]
             )
-            self.table = Table(
-                document=self.document, stable_id=stable_id, position=table_idx
+            # Create the Cell in the DB
+            state["context"] = Table(
+                document=state["document"],
+                stable_id=stable_id,
+                position=state["table"]["idx"],
             )
-            self.parent = self.table
+
+            # Reset variables
+            state["table"]["cell"]["row_idx"] = -1
+            state["table"]["cell"]["position"] = 0
+            state["table"]["idx"] += 1
+
         elif node.tag == "tr":
-            self.col_idx = 0
+            state["table"]["cell"]["col_idx"] = 0
+            state["table"]["cell"]["row_idx"] += 1
+
         elif node.tag in ["td", "th"]:
             # calculate row_start/col_start
-            while self.table_grid[(self.row_idx, self.col_idx)]:
-                self.col_idx += 1
-            col_start = self.col_idx
-            row_start = self.row_idx
+            while state["table"]["grid"][
+                (state["table"]["cell"]["row_idx"], state["table"]["cell"]["col_idx"])
+            ]:
+                state["table"]["cell"]["col_idx"] += 1
+            col_start = state["table"]["cell"]["col_idx"]
+            row_start = state["table"]["cell"]["row_idx"]
 
             # calculate row_end/col_end
             row_end = row_start
@@ -382,81 +221,245 @@ class TableInfo(object):
             if "colspan" in node.attrib:
                 col_end += int(node.get("colspan")) - 1
 
-            # update table_grid with occupied cells
+            # update grid with occupied cells
             for r, c in itertools.product(
                 list(range(row_start, row_end + 1)), list(range(col_start, col_end + 1))
             ):
-                self.table_grid[r, c] = 1
+                state["table"]["grid"][r, c] = 1
 
             # construct cell
             parts = defaultdict(list)
-            parts["document"] = self.document
-            parts["table"] = self.table
+            parts["document"] = state["document"]
+            parts["table"] = state["parent"][node]
             parts["row_start"] = row_start
             parts["row_end"] = row_end
             parts["col_start"] = col_start
             parts["col_end"] = col_end
-            parts["position"] = self.cell_position
+            parts["position"] = state["table"]["cell"]["position"]
             parts["stable_id"] = "{}::{}:{}:{}:{}".format(
-                self.document.name, "cell", self.table.position, row_start, col_start
+                parts["document"].name,
+                "cell",
+                parts["table"].position,
+                row_start,
+                col_start,
             )
-            self.cell = Cell(**parts)
-            self.parent = self.cell
-        return table_idx
+            # Create the Cell in the DB
+            state["context"] = Cell(**parts)
 
-    def exit_tabular(self, node):
-        if node.tag == "table":
-            self.table = None
-            self.parent = self.document
-        elif node.tag == "tr":
-            self.row_idx += 1
-        elif node.tag in ["td", "th"]:
-            self.cell = None
-            self.col_idx += 1
-            self.cell_idx += 1
-            self.cell_position += 1
-            self.parent = self.table
+            # Update position
+            state["table"]["cell"]["col_idx"] += 1
+            state["table"]["cell"]["position"] += 1
 
-    def apply_tabular(self, parts, parent, position):
-        parts["position"] = position
-        if isinstance(parent, Document):
-            pass
-        elif isinstance(parent, Table):
-            parts["table"] = parent
-        elif isinstance(parent, Cell):
-            parts["table"] = parent.table
-            parts["cell"] = parent
-            parts["row_start"] = parent.row_start
-            parts["row_end"] = parent.row_end
-            parts["col_start"] = parent.col_start
-            parts["col_end"] = parent.col_end
-        else:
-            raise NotImplementedError(
-                "Sentence parent must be Document, Table, or Cell"
-            )
-        return parts
+        return state
 
+    def _parse_figure_node(self, node, state):
+        """Parse the figure node.
 
-class FigureInfo(object):
-    def __init__(self, document, figure=None, parent=None):
-        self.document = document
-        self.figure = figure
-        self.parent = parent
+        :param node: The lxml img node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        if node.tag != "img":
+            return state
 
-    def enter_figure(self, node, figure_idx):
-        if node.tag == "img":
-            figure_idx += 1
-            stable_id = "{}::{}:{}".format(self.document.name, "figure", figure_idx)
-            self.figure = Figure(
-                document=self.document,
-                stable_id=stable_id,
-                position=figure_idx,
-                url=node.get("src"),
-            )
-            self.parent = self.figure
-        return figure_idx
+        # Process the figure
+        stable_id = "{}::{}:{}".format(
+            state["document"].name, "figure", state["figure"]["idx"]
+        )
 
-    def exit_figure(self, node):
-        if node.tag == "img":
-            self.figure = None
-            self.parent = self.document
+        # Create the Figure entry in the DB
+        # Note that state["context"] is not updated since Figure has no children.
+        Figure(
+            document=state["document"],
+            stable_id=stable_id,
+            position=state["figure"]["idx"],
+            url=node.get("src"),
+        )
+        state["figure"]["idx"] += 1
+
+        return state
+
+    def _parse_sentence(self, node, state):
+        """Parse the Sentences of the node.
+
+        :param node: The lxml node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        for field in ["text", "tail"]:
+            text = getattr(node, field)
+            text = text.strip() if text and self.strip else text
+
+            # Skip if "" or None
+            if not text:
+                continue
+
+            # Run RegEx replacements
+            for (rgx, replace) in self.replacements:
+                text = rgx.sub(replace, text)
+
+            # Lingual Parse
+            document = state["document"]
+            for parts in self.lingual_parse(document, document.text):
+                (_, _, _, char_end) = split_stable_id(parts["stable_id"])
+                parts["document"] = document
+                parts["sentence_num"] = state["sentence"]["idx"]
+                abs_sentence_offset_end = (
+                    state["sentence"]["abs_offset"]
+                    + parts["char_offsets"][-1]
+                    + len(parts["words"][-1])
+                )
+                parts["stable_id"] = construct_stable_id(
+                    document,
+                    "sentence",
+                    state["sentence"]["abs_offset"],
+                    abs_sentence_offset_end,
+                )
+                state["sentence"]["abs_offset"] = abs_sentence_offset_end
+                if self.structural:
+                    context_node = node.getparent() if field == "tail" else node
+                    tree = lxml.etree.ElementTree(state["root"])
+                    parts["xpath"] = tree.getpath(context_node)
+                    parts["html_tag"] = context_node.tag
+                    parts["html_attrs"] = [
+                        "=".join(x) for x in list(context_node.attrib.items())
+                    ]
+
+                    # Extending html style attribute with the styles
+                    # from inline style class for the element.
+                    cur_style_index = None
+                    for index, attr in enumerate(parts["html_attrs"]):
+                        if attr.find("style") >= 0:
+                            cur_style_index = index
+                            break
+                    styles = state["root"].find("head").find("style")
+                    if styles is not None:
+                        for x in list(context_node.attrib.items()):
+                            if x[0] == "class":
+                                exp = r"(." + x[1] + ")([\n\s\r]*)\{(.*?)\}"
+                                r = re.compile(exp, re.DOTALL)
+                                if r.search(styles.text) is not None:
+                                    if cur_style_index is not None:
+                                        parts["html_attrs"][cur_style_index] += (
+                                            r.search(styles.text)
+                                            .group(3)
+                                            .replace("\r", "")
+                                            .replace("\n", "")
+                                            .replace("\t", "")
+                                        )
+                                    else:
+                                        parts["html_attrs"].extend(
+                                            [
+                                                "style="
+                                                + re.sub(
+                                                    r"\s{1,}",
+                                                    " ",
+                                                    r.search(styles.text)
+                                                    .group(3)
+                                                    .replace("\r", "")
+                                                    .replace("\n", "")
+                                                    .replace("\t", "")
+                                                    .strip(),
+                                                )
+                                            ]
+                                        )
+                                break
+                if self.tabular:
+                    parts["position"] = state["sentence"]["idx"]
+                    parent = state["parent"][node]
+                    if isinstance(parent, Document):
+                        pass
+                    elif isinstance(parent, Table):
+                        parts["table"] = parent
+                    elif isinstance(parent, Cell):
+                        parts["table"] = parent.table
+                        parts["cell"] = parent
+                        parts["row_start"] = parent.row_start
+                        parts["row_end"] = parent.row_end
+                        parts["col_start"] = parent.col_start
+                        parts["col_end"] = parent.col_end
+                    else:
+                        raise NotImplementedError(
+                            "Sentence parent must be Document, Table, or Cell"
+                        )
+                yield Sentence(**parts)
+                state["sentence"]["idx"] += 1
+
+    def _parse_node(self, node, state):
+        """Entry point for parsing all node types.
+
+        :param node: The lxml HTML node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        :rtype: a *generator* of Sentences
+        """
+        # Process node based on its type
+        if node.tag is lxml.etree.Comment:
+            return
+        if self.blacklist and node.tag in self.blacklist:
+            return
+
+        # Processing on entry of node
+        state = self._parse_figure_node(node, state)
+
+        if self.tabular:
+            state = self._parse_table_node(node, state)
+
+        # flattens children of node that are in the 'flatten' list
+        if self.flatten:
+            self._flatten(node)
+
+        # Now, process the Sentence
+        yield from self._parse_sentence(node, state)
+
+    def parse_structure(self, document, text):
+        """Depth-first search over the provided tree.
+
+        Implemented as an iterative procedure. The structure of the state
+        needed to parse each node is also defined in this function.
+
+        :param document: the Document context
+        :param text: the structured text of the document (e.g. HTML)
+        :rtype: a *generator* of Sentences.
+        """
+        stack = []
+        visited = set()
+
+        root = lxml.html.fromstring(text)
+        document.text = text
+
+        # This dictionary contain the global state necessary to parse a
+        # document and each context element. This reflects the relationships
+        # defined in the parser/models. This contains the state necessary to
+        # create the respective contexts within the document.
+        state = {
+            "parent": {},  # map of parent[child] = node used to discover child
+            "context": None,  # track the most recently created context
+            "root": root,
+            "document": document,
+            "figure": {"idx": 0},
+            "table": {
+                "grid": defaultdict(int),
+                "idx": 0,
+                "cell": {"position": 0, "row_idx": -1, "col_idx": 0},
+            },
+            "sentence": {"idx": 0, "abs_offset": 0},
+        }
+
+        # Iterative Depth-First Search
+        stack.append(root)
+        state["parent"][root] = document
+        state["context"] = document
+        while stack:
+            node = stack.pop()
+            if node not in visited:
+                visited.add(node)  # mark as visited
+
+                # Process
+                yield from self._parse_node(node, state)
+
+                for child in node:
+                    stack.append(child)
+
+                    # store the parent of the node
+                    state["parent"][child] = state["context"]
