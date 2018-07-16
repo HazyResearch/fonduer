@@ -1,7 +1,7 @@
 |Fonduer|
 =======
 
-|Travis| |Coveralls| |ReadTheDocs| |GitHubIssues| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
+|Travis| |CodeClimate| |Coveralls| |ReadTheDocs| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
 Fonduer is a framework for building knowledge base construction (KBC)
 applications from *richy formatted data* and is implemented as a library on top
@@ -38,6 +38,11 @@ Data <https://arxiv.org/abs/1703.05028>`__::
       organization={ACM}
     }
 
+
+
+.. |CodeClimate| image:: https://img.shields.io/codeclimate/maintainability/HazyResearch/fonduer.svg
+   :alt: Code Climate
+   :target: https://codeclimate.com/github/HazyResearch/fonduer
 .. |Fonduer| image:: docs/static/img/fonduer-logo.png
    :target: https://github.com/HazyResearch/fonduer
 .. |Travis| image:: https://img.shields.io/travis/HazyResearch/fonduer/master.svg
@@ -46,8 +51,6 @@ Data <https://arxiv.org/abs/1703.05028>`__::
    :target: https://coveralls.io/github/HazyResearch/fonduer
 .. |ReadTheDocs| image:: https://img.shields.io/readthedocs/fonduer.svg
    :target: https://fonduer.readthedocs.io/
-.. |GitHubIssues| image:: https://img.shields.io/github/issues/HazyResearch/fonduer.svg
-   :target: https://github.com/HazyResearch/fonduer/issues
 .. |PyPI| image:: https://img.shields.io/pypi/v/fonduer.svg
    :target: https://pypi.org/project/fonduer/
 .. |PyPIVersion| image:: https://img.shields.io/pypi/pyversions/fonduer.svg
