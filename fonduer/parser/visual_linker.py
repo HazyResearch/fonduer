@@ -29,7 +29,9 @@ class VisualLinker(object):
 
     def parse_visual(self, document_name, phrases, pdf_path):
         self.phrases = phrases
-        self.pdf_file = pdf_path + document_name + ".pdf"
+        self.pdf_file = (
+            pdf_path if os.path.isfile(pdf_path) else pdf_path + document_name + ".pdf"
+        )
         if not os.path.isfile(self.pdf_file):
             self.pdf_file = self.pdf_file[:-3] + "PDF"
         try:

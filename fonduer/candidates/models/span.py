@@ -2,7 +2,8 @@ from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.types import PickleType
 
-from fonduer.parser.models.context import Context, TemporaryContext, construct_stable_id
+from fonduer.candidates.models.temporarycontext import TemporaryContext
+from fonduer.parser.models.context import Context, construct_stable_id
 
 
 class TemporarySpan(TemporaryContext):
