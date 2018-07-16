@@ -9,7 +9,7 @@ from fonduer.parser.models import construct_stable_id
 class SimpleTokenizer(object):
     """Tokenizes text on whitespace only using split()."""
 
-    def __init__(self, delim):
+    def __init__(self, delim="<NB>"):
         self.delim = delim
 
     def parse(self, document, contents):

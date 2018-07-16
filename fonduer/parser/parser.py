@@ -135,21 +135,19 @@ class OmniParserUDF(UDF):
                 pass
             # Add visual attributes
             filename = self.pdf_path + document.name
-            create_pdf = (
+            missing_pdf = (
                 not os.path.isfile(self.pdf_path)
                 and not os.path.isfile(filename + ".pdf")
                 and not os.path.isfile(filename + ".PDF")
                 and not os.path.isfile(filename)
             )
-            if create_pdf:  # PDF file does not exist
+            if missing_pdf:
                 logger.error("Visual parsing failed: pdf files are required")
-            for phrase in self.vizlink.parse_visual(
+            yield from self.vizlink.parse_visual(
                 document.name, document.phrases, self.pdf_path
-            ):
-                yield phrase
+            )
         else:
-            for phrase in self.parse_structure(document, text):
-                yield phrase
+            yield from self.parse_structure(document, text)
 
     def _flatten(self, node):
         # if a child of this node is in self.flatten, construct a string
@@ -332,28 +330,6 @@ class OmniParserUDF(UDF):
         document.text = text
         yield from parse_node(root, table_info, figure_info)
 
-    #  def parse():
-    #      """Depth-first search over the provided tree.
-    #
-    #      Implemented as an iterative procedure.
-    #
-    #      :param c: The binary-Span Candidate to evaluate.
-    #      :param attrib: The token attribute type (e.g. words, lemmas, poses)
-    #      :param n_min: The minimum n of the ngrams that should be returned
-    #      :param n_max: The maximum n of the ngrams that should be returned
-    #      :param lower: If 'True', all ngrams will be returned in lower case
-    #      :rtype: a *generator* of ngrams
-    #      """
-    #      stack = []
-    #      stack.append(node)
-    #      while stack:
-    #          v = stack.pop()
-    #          if not v.visited:
-    #              v.visited = True
-    #              # Process
-    #              for child in v.children:
-    #                  stack.push(child)
-
 
 class TableInfo(object):
     def __init__(
@@ -468,9 +444,7 @@ class FigureInfo(object):
     def enter_figure(self, node, figure_idx):
         if node.tag == "img":
             figure_idx += 1
-            stable_id = "{}::{}:{}:{}".format(
-                self.document.name, "figure", figure_idx, figure_idx
-            )
+            stable_id = "{}::{}:{}".format(self.document.name, "figure", figure_idx)
             self.figure = Figure(
                 document=self.document,
                 stable_id=stable_id,

@@ -189,12 +189,12 @@ class Phrase(
                 if self.col_start != self.col_end
                 else self.col_start
             )
-            return "Phrase (testDoc: '{}', Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')".format(
+            return "Phrase (Doc: '{}', Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')".format(
                 self.document.name,
                 self.table.position,
                 rows,
                 cols,
-                self.position,
+                self.phrase_num,
                 self.text,
             )
         else:
@@ -218,7 +218,6 @@ class Phrase(
             "row_end": self.row_end,
             "col_start": self.col_start,
             "col_end": self.col_end,
-            "position": self.position,
             # lingual
             "words": self.words,
             "char_offsets": self.char_offsets,
