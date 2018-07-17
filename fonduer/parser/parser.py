@@ -300,7 +300,7 @@ class OmniParserUDF(UDF):
 
             # Lingual Parse
             document = state["document"]
-            for parts in self.lingual_parse(document, document.text):
+            for parts in self.lingual_parse(document, text):
                 (_, _, _, char_end) = split_stable_id(parts["stable_id"])
                 parts["document"] = document
                 parts["sentence_num"] = state["sentence"]["idx"]
