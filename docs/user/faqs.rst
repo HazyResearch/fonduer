@@ -7,7 +7,7 @@ run into anything not covered in this section, feel free to open an Issue_.
 .. _Issue: https://github.com/hazyresearch/fonduer/issues
 
 When I try to createdb, or use psql, I get FATAL: role "<username>" does not exist.
---------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
 If you just installed PostgreSQL, you probably need to add users. You will need
 sudo privileges to do this.
 
