@@ -196,6 +196,7 @@ class OmniParserUDF(UDF):
             )
 
             # Reset variables
+            state["table"]["grid"].clear()
             state["table"]["cell"]["row_idx"] = -1
             state["table"]["cell"]["position"] = 0
             state["table"]["idx"] += 1
