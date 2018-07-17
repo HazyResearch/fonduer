@@ -53,6 +53,6 @@ class DocPreprocessor(object):
         else:
             fpaths = glob.glob(path)
         if len(fpaths) > 0:
-            return fpaths
+            return sorted(fpaths)
         else:
             raise IOError("File or directory not found: {}".format(path))
