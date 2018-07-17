@@ -180,7 +180,7 @@ class CandidateExtractorUDF(UDF):
     def apply(self, context, clear, split, **kwargs):
         """Extract candidates from the given Context.
 
-        Here, we define a context as a Phrase.
+        Here, we define a context as a Sentence.
         :param context:
         :param clear:
         :param split: Which split to use.
@@ -247,7 +247,7 @@ class OmniNgrams(Ngrams):
     Defines the space of candidates.
 
     Defines the space of candidates as all n-grams (n <= n_max) in a Document _x_,
-    divided into Phrases inside of html elements (such as table cells).
+    divided into Sentences inside of html elements (such as table cells).
     """
 
     def __init__(self, n_max=5, split_tokens=["-", "/"]):
@@ -258,7 +258,7 @@ class OmniNgrams(Ngrams):
 
     def apply(self, session, context):
         """
-        Generate OmniNgrams from a Document by parsing all of its Phrases.
+        Generate OmniNgrams from a Document by parsing all of its Sentences.
         """
         if not isinstance(context, Document):
             raise TypeError(
@@ -266,8 +266,8 @@ class OmniNgrams(Ngrams):
             )
 
         doc = session.query(Document).filter(Document.id == context.id).one()
-        for phrase in doc.phrases:
-            for ts in Ngrams.apply(self, phrase):
+        for sentence in doc.sentences:
+            for ts in Ngrams.apply(self, sentence):
                 yield ts
 
 

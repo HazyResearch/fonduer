@@ -14,7 +14,7 @@ from fonduer.parser.models import (
     Context,
     Document,
     Figure,
-    Phrase,
+    Sentence,
     Table,
     construct_stable_id,
     split_stable_id,
@@ -144,7 +144,7 @@ class OmniParserUDF(UDF):
             if missing_pdf:
                 logger.error("Visual parsing failed: pdf files are required")
             yield from self.vizlink.parse_visual(
-                document.name, document.phrases, self.pdf_path
+                document.name, document.sentences, self.pdf_path
             )
         else:
             yield from self.parse_structure(document, text)
@@ -190,8 +190,8 @@ class OmniParserUDF(UDF):
         self.parsed = 0
         self.parent_idx = 0
         self.position = 0
-        self.phrase_num = 0
-        self.abs_phrase_offset = 0
+        self.sentence_num = 0
+        self.abs_sentence_offset = 0
 
         def parse_node(node, table_info=None, figure_info=None):
             if node.tag is etree.Comment:
@@ -224,19 +224,19 @@ class OmniParserUDF(UDF):
                             (_, _, _, char_end) = split_stable_id(parts["stable_id"])
                             try:
                                 parts["document"] = document
-                                parts["phrase_num"] = self.phrase_num
-                                abs_phrase_offset_end = (
-                                    self.abs_phrase_offset
+                                parts["sentence_num"] = self.sentence_num
+                                abs_sentence_offset_end = (
+                                    self.abs_sentence_offset
                                     + parts["char_offsets"][-1]
                                     + len(parts["words"][-1])
                                 )
                                 parts["stable_id"] = construct_stable_id(
                                     document,
-                                    "phrase",
-                                    self.abs_phrase_offset,
-                                    abs_phrase_offset_end,
+                                    "sentence",
+                                    self.abs_sentence_offset,
+                                    abs_sentence_offset_end,
                                 )
-                                self.abs_phrase_offset = abs_phrase_offset_end
+                                self.abs_sentence_offset = abs_sentence_offset_end
                                 if self.structural:
                                     context_node = (
                                         node.getparent() if field == "tail" else node
@@ -300,9 +300,9 @@ class OmniParserUDF(UDF):
                                     parts = table_info.apply_tabular(
                                         parts, parent, self.position
                                     )
-                                yield Phrase(**parts)
+                                yield Sentence(**parts)
                                 self.position += 1
-                                self.phrase_num += 1
+                                self.sentence_num += 1
                             except Exception as e:
                                 # This should never happen
                                 logger.exception(str(e))
@@ -431,7 +431,9 @@ class TableInfo(object):
             parts["col_start"] = parent.col_start
             parts["col_end"] = parent.col_end
         else:
-            raise NotImplementedError("Phrase parent must be Document, Table, or Cell")
+            raise NotImplementedError(
+                "Sentence parent must be Document, Table, or Cell"
+            )
         return parts
 
 

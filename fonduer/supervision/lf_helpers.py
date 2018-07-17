@@ -9,7 +9,7 @@ from lxml.html import fromstring
 
 from fonduer.candidates import Ngrams
 from fonduer.candidates.models import TemporarySpan
-from fonduer.parser.models import Phrase
+from fonduer.parser.models import Sentence
 from fonduer.utils import tokens_to_ngrams
 from fonduer.utils.utils_table import (
     is_axis_aligned,
@@ -19,7 +19,7 @@ from fonduer.utils.utils_table import (
     min_row_diff,
 )
 from fonduer.utils.utils_visual import (
-    bbox_from_phrase,
+    bbox_from_sentence,
     bbox_from_span,
     bbox_horz_aligned,
     bbox_vert_aligned,
@@ -215,8 +215,8 @@ def same_cell(c):
     )
 
 
-def same_phrase(c):
-    """Return True if all Spans in the given candidate are from the same Phrase.
+def same_sentence(c):
+    """Return True if all Spans in the given candidate are from the same Sentence.
 
     :param c: The candidate whose Spans are being compared
     :rtype: boolean
@@ -253,12 +253,12 @@ def get_min_col_num(span):
         return None
 
 
-def get_phrase_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
-    """Get the ngrams that are in the Phrase of the given span, not including itself.
+def get_sentence_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
+    """Get the ngrams that are in the Sentence of the given span, not including itself.
 
     Note that if a candidate is passed in, all of its Spans will be searched.
 
-    :param span: The Span whose Phrase is being searched
+    :param span: The Span whose Sentence is being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
@@ -277,12 +277,14 @@ def get_phrase_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
             yield ngram
 
 
-def get_neighbor_phrase_ngrams(span, d=1, attrib="words", n_min=1, n_max=1, lower=True):
-    """Get the ngrams that are in the neighoring Phrases of the given Span.
+def get_neighbor_sentence_ngrams(
+    span, d=1, attrib="words", n_min=1, n_max=1, lower=True
+):
+    """Get the ngrams that are in the neighoring Sentences of the given Span.
 
     Note that if a candidate is passed in, all of its Spans will be searched.
 
-    :param span: The span whose neighbor Phrases are being searched
+    :param span: The span whose neighbor Sentences are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
@@ -294,11 +296,11 @@ def get_neighbor_phrase_ngrams(span, d=1, attrib="words", n_min=1, n_max=1, lowe
         for ngram in chain.from_iterable(
             [
                 tokens_to_ngrams(
-                    getattr(phrase, attrib), n_min=n_min, n_max=n_max, lower=lower
+                    getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
                 )
-                for phrase in span.sentence.document.phrases
-                if abs(phrase.phrase_num - span.sentence.phrase_num) <= d
-                and phrase != span.sentence
+                for sentence in span.sentence.document.sentences
+                if abs(sentence.sentence_num - span.sentence.sentence_num) <= d
+                and sentence != span.sentence
             ]
         ):
             yield ngram
@@ -318,18 +320,18 @@ def get_cell_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
-        for ngram in get_phrase_ngrams(
+        for ngram in get_sentence_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
         ):
             yield ngram
-        if isinstance(span.sentence, Phrase) and span.sentence.cell is not None:
+        if isinstance(span.sentence, Sentence) and span.sentence.cell is not None:
             for ngram in chain.from_iterable(
                 [
                     tokens_to_ngrams(
-                        getattr(phrase, attrib), n_min=n_min, n_max=n_max, lower=lower
+                        getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
                     )
-                    for phrase in span.sentence.cell.phrases
-                    if phrase != span.sentence
+                    for sentence in span.sentence.cell.sentences
+                    if sentence != span.sentence
                 ]
             ):
                 yield ngram
@@ -355,20 +357,20 @@ def get_neighbor_cell_ngrams(
     # TODO: Fix this to be more efficient (optimize with SQL query)
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
-        for ngram in get_phrase_ngrams(
+        for ngram in get_sentence_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
         ):
             yield ngram
-        if isinstance(span.sentence, Phrase) and span.sentence.cell is not None:
+        if isinstance(span.sentence, Sentence) and span.sentence.cell is not None:
             root_cell = span.sentence.cell
-            for phrase in chain.from_iterable(
+            for sentence in chain.from_iterable(
                 [
-                    _get_aligned_phrases(root_cell, "row"),
-                    _get_aligned_phrases(root_cell, "col"),
+                    _get_aligned_sentences(root_cell, "row"),
+                    _get_aligned_sentences(root_cell, "col"),
                 ]
             ):
-                row_diff = min_row_diff(phrase, root_cell, absolute=False)
-                col_diff = min_col_diff(phrase, root_cell, absolute=False)
+                row_diff = min_row_diff(sentence, root_cell, absolute=False)
+                col_diff = min_col_diff(sentence, root_cell, absolute=False)
                 if (
                     (row_diff or col_diff)
                     and not (row_diff and col_diff)
@@ -387,7 +389,7 @@ def get_neighbor_cell_ngrams(
                             elif 0 > col_diff and col_diff >= -dist:
                                 direction = "LEFT"
                         for ngram in tokens_to_ngrams(
-                            getattr(phrase, attrib),
+                            getattr(sentence, attrib),
                             n_min=n_min,
                             n_max=n_max,
                             lower=lower,
@@ -395,7 +397,7 @@ def get_neighbor_cell_ngrams(
                             yield (ngram, direction)
                     else:
                         for ngram in tokens_to_ngrams(
-                            getattr(phrase, attrib),
+                            getattr(sentence, attrib),
                             n_min=n_min,
                             n_max=n_max,
                             lower=lower,
@@ -506,11 +508,11 @@ def get_head_ngrams(span, axis=None, attrib="words", n_min=1, n_max=1, lower=Tru
             for axis in axes:
                 if getattr(span.sentence, _other_axis(axis) + "_start") == 0:
                     return
-                for phrase in getattr(
-                    _get_head_cell(span.sentence.cell, axis), "phrases", []
+                for sentence in getattr(
+                    _get_head_cell(span.sentence.cell, axis), "sentences", []
                 ):
                     for ngram in tokens_to_ngrams(
-                        getattr(phrase, attrib), n_min=n_min, n_max=n_max, lower=lower
+                        getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
                     ):
                         yield ngram
 
@@ -528,14 +530,14 @@ def _get_head_cell(root_cell, axis):
 def _get_axis_ngrams(
     span, axis, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
 ):
-    for ngram in get_phrase_ngrams(
+    for ngram in get_sentence_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
     ):
         yield ngram
     if span.sentence.cell is not None:
-        for phrase in _get_aligned_phrases(span.sentence, axis, spread=spread):
+        for sentence in _get_aligned_sentences(span.sentence, axis, spread=spread):
             for ngram in tokens_to_ngrams(
-                getattr(phrase, attrib), n_min=n_min, n_max=n_max, lower=lower
+                getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
             ):
                 yield ngram
 
@@ -549,13 +551,13 @@ def _get_aligned_cells(root_cell, axis):
     return aligned_cells
 
 
-def _get_aligned_phrases(root_phrase, axis, spread=[0, 0]):
+def _get_aligned_sentences(root_sentence, axis, spread=[0, 0]):
     return [
-        phrase
-        for cell in root_phrase.table.cells
-        if is_axis_aligned(root_phrase, cell, axis=axis, spread=spread)
-        for phrase in cell.phrases
-        if phrase != root_phrase
+        sentence
+        for cell in root_sentence.table.cells
+        if is_axis_aligned(root_sentence, cell, axis=axis, spread=spread)
+        for sentence in cell.sentences
+        if sentence != root_sentence
     ]
 
 
@@ -566,7 +568,7 @@ def _other_axis(axis):
 def is_superset(a, b):
     """Check if a is a superset of b.
 
-    This is typically used to check if ALL of a list of phrases is in the ngrams returned by an lf_helper.
+    This is typically used to check if ALL of a list of sentences is in the ngrams returned by an lf_helper.
 
     :param a: A collection of items
     :param b: A collection of items
@@ -578,7 +580,7 @@ def is_superset(a, b):
 def overlap(a, b):
     """Check if a overlaps b.
 
-    This is typically used to check if ANY of a list of phrases is in the ngrams returned by an lf_helper.
+    This is typically used to check if ANY of a list of sentences is in the ngrams returned by an lf_helper.
 
     :param a: A collection of items
     :param b: A collection of items
@@ -715,7 +717,7 @@ def same_page(c):
 
 
 def get_horz_ngrams(
-    span, attrib="words", n_min=1, n_max=1, lower=True, from_phrase=True
+    span, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
 ):
     """Return all ngrams which are visually horizontally aligned with the Span.
 
@@ -726,20 +728,20 @@ def get_horz_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :param from_phrase: If True, returns ngrams from any horizontally aligned Phrases,
-                        rather than just horizontally aligned ngrams themselves.
+    :param from_sentence: If True, returns ngrams from any horizontally aligned
+        Sentences, rather than just horizontally aligned ngrams themselves.
     :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
         for ngram in _get_direction_ngrams(
-            "horz", span, attrib, n_min, n_max, lower, from_phrase
+            "horz", span, attrib, n_min, n_max, lower, from_sentence
         ):
             yield ngram
 
 
 def get_vert_ngrams(
-    span, attrib="words", n_min=1, n_max=1, lower=True, from_phrase=True
+    span, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
 ):
     """Return all ngrams which are visually vertivally aligned with the Span.
 
@@ -750,19 +752,19 @@ def get_vert_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :param from_phrase: If True, returns ngrams from any horizontally aligned Phrases,
-                        rather than just horizontally aligned ngrams themselves.
+    :param from_sentence: If True, returns ngrams from any horizontally aligned
+        Sentences, rather than just horizontally aligned ngrams themselves.
     :rtype: a *generator* of ngrams
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
         for ngram in _get_direction_ngrams(
-            "vert", span, attrib, n_min, n_max, lower, from_phrase
+            "vert", span, attrib, n_min, n_max, lower, from_sentence
         ):
             yield ngram
 
 
-def _get_direction_ngrams(direction, c, attrib, n_min, n_max, lower, from_phrase):
+def _get_direction_ngrams(direction, c, attrib, n_min, n_max, lower, from_sentence):
     # TODO: this currently looks only in current table;
     #   precompute over the whole document/page instead
     bbox_direction_aligned = (
@@ -774,24 +776,24 @@ def _get_direction_ngrams(direction, c, attrib, n_min, n_max, lower, from_phrase
     for span in spans:
         if not span.sentence.is_tabular() or not span.sentence.is_visual():
             continue
-        for phrase in span.sentence.table.phrases:
-            if from_phrase:
+        for sentence in span.sentence.table.sentences:
+            if from_sentence:
                 if (
                     bbox_direction_aligned(
-                        bbox_from_phrase(phrase), bbox_from_span(span)
+                        bbox_from_sentence(sentence), bbox_from_span(span)
                     )
-                    and phrase is not span.sentence
+                    and sentence is not span.sentence
                 ):
                     for ngram in tokens_to_ngrams(
-                        getattr(phrase, attrib), n_min=n_min, n_max=n_max, lower=lower
+                        getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
                     ):
                         yield ngram
             else:
-                for ts in ngrams_space.apply(phrase):
+                for ts in ngrams_space.apply(sentence):
                     if bbox_direction_aligned(
                         bbox_from_span(ts), bbox_from_span(span)
                     ) and not (
-                        phrase == span.sentence and ts.get_span() in span.get_span()
+                        sentence == span.sentence and ts.get_span() in span.get_span()
                     ):
                         yield f(ts.get_span())
 
@@ -918,14 +920,14 @@ def get_page_horz_percentile(
     return bbox_from_span(span).left, page_width
 
 
-def _assign_alignment_features(phrases_by_key, align_type):
-    for key, phrases in phrases_by_key.items():
-        if len(phrases) == 1:
+def _assign_alignment_features(sentences_by_key, align_type):
+    for key, sentences in sentences_by_key.items():
+        if len(sentences) == 1:
             continue
         context_lemmas = set()
-        for p in phrases:
+        for p in sentences:
             p._aligned_lemmas.update(context_lemmas)
-            # update lemma context for upcoming phrases in the group
+            # update lemma context for upcoming sentences in the group
             if len(p.lemmas) < 7:
                 new_lemmas = [lemma.lower() for lemma in p.lemmas if lemma.isalpha()]
                 context_lemmas.update(new_lemmas)
@@ -938,28 +940,28 @@ def _preprocess_visual_features(doc):
     # cache flag
     doc._visual_features = True
 
-    phrase_by_page = defaultdict(list)
-    for phrase in doc.phrases:
-        phrase_by_page[phrase.page[0]].append(phrase)
-        phrase._aligned_lemmas = set()
+    sentence_by_page = defaultdict(list)
+    for sentence in doc.sentences:
+        sentence_by_page[sentence.page[0]].append(sentence)
+        sentence._aligned_lemmas = set()
 
-    for page, phrases in phrase_by_page.items():
+    for page, sentences in sentence_by_page.items():
         # process per page alignments
         yc_aligned = defaultdict(list)
         x0_aligned = defaultdict(list)
         xc_aligned = defaultdict(list)
         x1_aligned = defaultdict(list)
-        for phrase in phrases:
-            phrase.bbox = bbox_from_phrase(phrase)
-            phrase.yc = (phrase.bbox.top + phrase.bbox.bottom) / 2
-            phrase.x0 = phrase.bbox.left
-            phrase.x1 = phrase.bbox.right
-            phrase.xc = (phrase.x0 + phrase.x1) / 2
-            # index current phrase by different alignment keys
-            yc_aligned[phrase.yc].append(phrase)
-            x0_aligned[phrase.x0].append(phrase)
-            x1_aligned[phrase.x1].append(phrase)
-            xc_aligned[phrase.xc].append(phrase)
+        for sentence in sentences:
+            sentence.bbox = bbox_from_sentence(sentence)
+            sentence.yc = (sentence.bbox.top + sentence.bbox.bottom) / 2
+            sentence.x0 = sentence.bbox.left
+            sentence.x1 = sentence.bbox.right
+            sentence.xc = (sentence.x0 + sentence.x1) / 2
+            # index current sentence by different alignment keys
+            yc_aligned[sentence.yc].append(sentence)
+            x0_aligned[sentence.x0].append(sentence)
+            x1_aligned[sentence.x1].append(sentence)
+            xc_aligned[sentence.xc].append(sentence)
         for l in yc_aligned.values():
             l.sort(key=lambda p: p.xc)
         for l in x0_aligned.values():
@@ -984,12 +986,12 @@ def get_visual_aligned_lemmas(span):
     """
     spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
     for span in spans:
-        phrase = span.sentence
-        doc = phrase.document
+        sentence = span.sentence
+        doc = sentence.document
         # cache features for the entire document
         _preprocess_visual_features(doc)
 
-        for aligned_lemma in phrase._aligned_lemmas:
+        for aligned_lemma in sentence._aligned_lemmas:
             yield aligned_lemma
 
 
@@ -1036,8 +1038,10 @@ def get_attributes(span):
 
 
 # TODO: Too slow
-def _get_node(phrase):
-    return (etree.ElementTree(fromstring(phrase.document.text)).xpath(phrase.xpath))[0]
+def _get_node(sentence):
+    return (
+        etree.ElementTree(fromstring(sentence.document.text)).xpath(sentence.xpath)
+    )[0]
 
 
 def get_parent_tag(span):

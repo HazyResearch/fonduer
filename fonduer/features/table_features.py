@@ -69,7 +69,7 @@ def tablelib_unary_features(span):
     """
     if not span.sentence.is_tabular():
         return
-    phrase = span.sentence
+    sentence = span.sentence
     for attrib in settings.featurization.table.unary_features.attrib:
         for ngram in get_cell_ngrams(
             span,
@@ -77,14 +77,14 @@ def tablelib_unary_features(span):
             attrib=attrib,
         ):
             yield "CELL_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
-        for row_num in range(phrase.row_start, phrase.row_end + 1):
+        for row_num in range(sentence.row_start, sentence.row_end + 1):
             yield "ROW_NUM_[%s]" % row_num, DEF_VALUE
-        for col_num in range(phrase.col_start, phrase.col_end + 1):
+        for col_num in range(sentence.col_start, sentence.col_end + 1):
             yield "COL_NUM_[%s]" % col_num, DEF_VALUE
         # NOTE: These two features could be accounted for by HTML_ATTR in
         # structural features
-        yield "ROW_SPAN_[%d]" % num_rows(phrase), DEF_VALUE
-        yield "COL_SPAN_[%d]" % num_cols(phrase), DEF_VALUE
+        yield "ROW_SPAN_[%d]" % num_rows(sentence), DEF_VALUE
+        yield "COL_SPAN_[%d]" % num_cols(sentence), DEF_VALUE
         for axis in ["row", "col"]:
             for ngram in get_head_ngrams(
                 span,
@@ -148,7 +148,7 @@ def tablelib_binary_features(span1, span2):
                         span1.char_start - span2.char_start
                     ), DEF_VALUE
                     if span1.sentence == span2.sentence:
-                        yield u"SAME_PHRASE", DEF_VALUE
+                        yield u"SAME_SENTENCE", DEF_VALUE
         else:
             if span1.sentence.cell is not None and span2.sentence.cell is not None:
                 yield u"DIFF_TABLE", DEF_VALUE

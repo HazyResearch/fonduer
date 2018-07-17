@@ -27,8 +27,8 @@ class VisualLinker(object):
         )
         self.separators = re.compile(delimiters)
 
-    def parse_visual(self, document_name, phrases, pdf_path):
-        self.phrases = phrases
+    def parse_visual(self, document_name, sentences, pdf_path):
+        self.sentences = sentences
         self.pdf_file = (
             pdf_path if os.path.isfile(pdf_path) else pdf_path + document_name + ".pdf"
         )
@@ -41,8 +41,8 @@ class VisualLinker(object):
             return
         self.extract_html_words()
         self.link_lists(search_max=200)
-        for phrase in self.update_coordinates():
-            yield phrase
+        for sentence in self.update_coordinates():
+            yield sentence
 
     def extract_pdf_words(self):
         num_pages = subprocess.check_output(
@@ -119,9 +119,9 @@ class VisualLinker(object):
 
     def extract_html_words(self):
         html_word_list = []
-        for phrase in self.phrases:
-            for i, word in enumerate(phrase.words):
-                html_word_list.append(((phrase.stable_id, i), word))
+        for sentence in self.sentences:
+            for i, word in enumerate(sentence.words):
+                html_word_list.append(((sentence.stable_id, i), word))
         self.html_word_list = html_word_list
         if self.verbose:
             self.logger.info("Extracted {} html words".format(len(self.html_word_list)))
@@ -371,20 +371,20 @@ class VisualLinker(object):
         pd.reset_option("display.max_rows")
 
     def update_coordinates(self):
-        for phrase in self.phrases:
+        for sentence in self.sentences:
             (page, top, left, bottom, right) = list(
                 zip(
                     *[
-                        self.coordinate_map[self.links[((phrase.stable_id), i)]]
-                        for i in range(len(phrase.words))
+                        self.coordinate_map[self.links[((sentence.stable_id), i)]]
+                        for i in range(len(sentence.words))
                     ]
                 )
             )
-            phrase.page = list(page)
-            phrase.top = list(top)
-            phrase.left = list(left)
-            phrase.bottom = list(bottom)
-            phrase.right = list(right)
-            yield phrase
+            sentence.page = list(page)
+            sentence.top = list(top)
+            sentence.left = list(left)
+            sentence.bottom = list(bottom)
+            sentence.right = list(right)
+            yield sentence
         if self.verbose:
             self.logger.debug("Updated coordinates in database")

@@ -10,7 +10,7 @@ import os
 
 from fonduer import Meta
 from fonduer.parser import OmniParser
-from fonduer.parser.models import Document, Phrase
+from fonduer.parser.models import Document, Sentence
 from fonduer.parser.parser import OmniParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.parser.spacy_parser import Spacy
@@ -70,14 +70,14 @@ def test_parse_md_details(caplog):
     assert cells[10].document.name == "md"
     assert cells[10].table.position == 0
 
-    # Check that doc has phrases
-    assert len(doc.phrases) == 45
+    # Check that doc has sentences
+    assert len(doc.sentences) == 45
 
     logger.info("Doc: {}".format(doc))
-    for i, phrase in enumerate(doc.phrases):
-        logger.info("    Phrase[{}]: {}".format(i, phrase.text))
+    for i, sentence in enumerate(doc.sentences):
+        logger.info("    Sentence[{}]: {}".format(i, sentence.text))
 
-    header = doc.phrases[0]
+    header = doc.sentences[0]
     # Test structural attributes
     assert header.xpath == "/html/body/h1"
     assert header.html_tag == "h1"
@@ -120,10 +120,10 @@ def test_simple_tokenizer(caplog):
     doc = session.query(Document).order_by(Document.name).all()[1]
 
     logger.info("Doc: {}".format(doc))
-    for i, phrase in enumerate(doc.phrases):
-        logger.info("    Phrase[{}]: {}".format(i, phrase.text))
+    for i, sentence in enumerate(doc.sentences):
+        logger.info("    Sentence[{}]: {}".format(i, sentence.text))
 
-    header = doc.phrases[0]
+    header = doc.sentences[0]
     # Test structural attributes
     assert header.xpath == "/html/body/h1"
     assert header.html_tag == "h1"
@@ -136,7 +136,7 @@ def test_simple_tokenizer(caplog):
     assert header.lemmas == ["", ""]
     assert header.pos_tags == ["", ""]
 
-    assert len(doc.phrases) == 44
+    assert len(doc.sentences) == 44
 
 
 def test_parse_document_diseases(caplog):
@@ -170,27 +170,27 @@ def test_parse_document_diseases(caplog):
     assert doc.name == "diseases"
 
     logger.info("Doc: {}".format(doc))
-    for phrase in doc.phrases:
-        logger.info("    Phrase: {}".format(phrase.text))
+    for sentence in doc.sentences:
+        logger.info("    Sentence: {}".format(sentence.text))
 
-    phrase = sorted(doc.phrases)[11]
-    logger.info("  {}".format(phrase))
+    sentence = sorted(doc.sentences)[11]
+    logger.info("  {}".format(sentence))
     # Test structural attributes
-    assert phrase.xpath == "/html/body/table[1]/tbody/tr[3]/td[1]/p"
-    assert phrase.html_tag == "p"
-    assert phrase.html_attrs == ["class=s6", "style=padding-top: 1pt"]
+    assert sentence.xpath == "/html/body/table[1]/tbody/tr[3]/td[1]/p"
+    assert sentence.html_tag == "p"
+    assert sentence.html_attrs == ["class=s6", "style=padding-top: 1pt"]
 
     # Test visual attributes
-    assert phrase.page == [1, 1, 1]
-    assert phrase.top == [342, 296, 356]
-    assert phrase.left == [318, 369, 318]
+    assert sentence.page == [1, 1, 1]
+    assert sentence.top == [342, 296, 356]
+    assert sentence.left == [318, 369, 318]
 
     # Test lingual attributes
-    assert phrase.ner_tags == ["O", "O", "GPE"]
-    assert phrase.dep_labels == ["ROOT", "prep", "pobj"]
+    assert sentence.ner_tags == ["O", "O", "GPE"]
+    assert sentence.dep_labels == ["ROOT", "prep", "pobj"]
 
-    # 44 phrases expected in the "diseases" document.
-    assert len(doc.phrases) == 36
+    # 44 sentences expected in the "diseases" document.
+    assert len(doc.sentences) == 36
 
 
 def test_spacy_integration(caplog):
@@ -225,11 +225,11 @@ def test_spacy_integration(caplog):
 
     for doc in docs:
         logger.info("Doc: {}".format(doc.name))
-        for phrase in doc.phrases:
-            logger.info("  Phrase: {}".format(phrase.text))
+        for sentence in doc.sentences:
+            logger.info("  Sentence: {}".format(sentence.text))
 
     assert session.query(Document).count() == 2
-    assert session.query(Phrase).count() == 81
+    assert session.query(Sentence).count() == 81
 
 
 def test_parse_style(caplog):
@@ -258,15 +258,15 @@ def test_parse_style(caplog):
     # Grab the document
     doc = session.query(Document).order_by(Document.name).all()[0]
 
-    # Grab the phrases parsed by the OmniParser
-    phrases = list(doc.phrases)
+    # Grab the sentences parsed by the OmniParser
+    sentences = list(session.query(Sentence).order_by(Sentence.sentence_num).all())
 
     logger.warning("Doc: {}".format(doc))
-    for i, phrase in enumerate(phrases):
-        logger.warning("    Phrase[{}]: {}".format(i, phrase.html_attrs))
+    for i, sentence in enumerate(sentences):
+        logger.warning("    Sentence[{}]: {}".format(i, sentence.html_attrs))
 
-    # Phrases for testing
-    sub_phrases = [
+    # sentences for testing
+    sub_sentences = [
         {
             "index": 5,
             "attr": [
@@ -281,4 +281,4 @@ def test_parse_style(caplog):
     ]
 
     # Assertions
-    assert all(phrases[p["index"]].html_attrs == p["attr"] for p in sub_phrases)
+    assert all(sentences[p["index"]].html_attrs == p["attr"] for p in sub_sentences)

@@ -22,7 +22,7 @@ from fonduer.candidates.models import candidate_subclass
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.meta import Meta
 from fonduer.parser import OmniParser
-from fonduer.parser.models import Document, Figure, Phrase
+from fonduer.parser.models import Document, Figure, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision.annotations import load_gold_labels
 from fonduer.supervision.async_annotations import (
@@ -56,9 +56,9 @@ __all__ = [
     "OrganizationMatcher",
     "PDFPreprocessor",
     "PersonMatcher",
-    "Phrase",
     "RegexMatchEach",
     "RegexMatchSpan",
+    "Sentence",
     "SparseLogisticRegression",
     "Union",
     "__version__",
