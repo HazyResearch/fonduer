@@ -74,6 +74,12 @@ def test_parse_md_details(caplog):
 
     # Check that doc has sentences
     assert len(doc.sentences) == 45
+    sent = doc.sentences[25]
+    assert sent.text == "Spicy"
+    assert sent.table.position == 0
+    assert sent.table.position == 0
+    assert sent.cell.row_start == 0
+    assert sent.cell.col_start == 2
 
     logger.info("Doc: {}".format(doc))
     for i, sentence in enumerate(doc.sentences):
@@ -175,8 +181,26 @@ def test_parse_document_diseases(caplog):
     for sentence in doc.sentences:
         logger.info("    Sentence: {}".format(sentence.text))
 
-    sentence = sorted(doc.sentences)[11]
+    # Check figures
+    assert len(doc.figures) == 0
+
+    #  Check that doc has a table
+    assert len(doc.tables) == 3
+    assert doc.tables[0].position == 0
+    assert doc.tables[0].document.name == "diseases"
+
+    # Check that doc has cells
+    assert len(doc.cells) == 25
+
+    sentence = doc.sentences[9]
     logger.info("  {}".format(sentence))
+
+    # Check the sentence's cell
+    assert sentence.table.position == 0
+    assert sentence.cell.row_start == 2
+    assert sentence.cell.col_start == 1
+    assert sentence.cell.position == 4
+
     # Test structural attributes
     assert sentence.xpath == "/html/body/table[1]/tbody/tr[3]/td[1]/p"
     assert sentence.html_tag == "p"
@@ -191,7 +215,6 @@ def test_parse_document_diseases(caplog):
     assert sentence.ner_tags == ["O", "O", "GPE"]
     assert sentence.dep_labels == ["ROOT", "prep", "pobj"]
 
-    # 44 sentences expected in the "diseases" document.
     assert len(doc.sentences) == 36
 
 

@@ -185,34 +185,51 @@ class OmniParserUDF(UDF):
             return state
 
         if node.tag == "table":
+            table_idx = state["table"]["idx"]
             stable_id = "{}::{}:{}".format(
                 state["document"].name, "table", state["table"]["idx"]
             )
             # Create the Cell in the DB
-            state["context"] = Table(
-                document=state["document"],
-                stable_id=stable_id,
-                position=state["table"]["idx"],
+            state["context"][node] = Table(
+                document=state["document"], stable_id=stable_id, position=table_idx
             )
 
-            # Reset variables
-            state["table"]["grid"].clear()
-            state["table"]["cell"]["row_idx"] = -1
-            state["table"]["cell"]["position"] = 0
+            # Local state for each table. This is required to support nested
+            # tables
+            state["table"][table_idx] = {
+                "grid": defaultdict(int),
+                "cell_pos": 0,
+                "row_idx": -1,
+                "col_idx": 0,
+            }
+
+            # Increment table counter
             state["table"]["idx"] += 1
 
         elif node.tag == "tr":
-            state["table"]["cell"]["col_idx"] = 0
-            state["table"]["cell"]["row_idx"] += 1
+            if not isinstance(state["parent"][node], Table):
+                raise NotImplementedError("Table row parent must be a Table.")
+
+            state["table"][state["parent"][node].position]["col_idx"] = 0
+            state["table"][state["parent"][node].position]["row_idx"] += 1
 
         elif node.tag in ["td", "th"]:
+            if not isinstance(state["parent"][node], Table):
+                raise NotImplementedError("Cell parent must be a Table.")
+
+            if not state["table"][state["parent"][node].position]["row_idx"] >= 0:
+                raise NotImplementedError("Table cell encountered before a table row.")
+
             # calculate row_start/col_start
-            while state["table"]["grid"][
-                (state["table"]["cell"]["row_idx"], state["table"]["cell"]["col_idx"])
-            ]:
-                state["table"]["cell"]["col_idx"] += 1
-            col_start = state["table"]["cell"]["col_idx"]
-            row_start = state["table"]["cell"]["row_idx"]
+            while state["table"][state["parent"][node].position]["grid"][
+                (
+                    state["table"][state["parent"][node].position]["row_idx"],
+                    state["table"][state["parent"][node].position]["col_idx"],
+                )
+            ]:  # while a cell on the grid is occupied, keep moving
+                state["table"][state["parent"][node].position]["col_idx"] += 1
+            col_start = state["table"][state["parent"][node].position]["col_idx"]
+            row_start = state["table"][state["parent"][node].position]["row_idx"]
 
             # calculate row_end/col_end
             row_end = row_start
@@ -226,7 +243,7 @@ class OmniParserUDF(UDF):
             for r, c in itertools.product(
                 list(range(row_start, row_end + 1)), list(range(col_start, col_end + 1))
             ):
-                state["table"]["grid"][r, c] = 1
+                state["table"][state["parent"][node].position]["grid"][(r, c)] = 1
 
             # construct cell
             parts = defaultdict(list)
@@ -236,20 +253,23 @@ class OmniParserUDF(UDF):
             parts["row_end"] = row_end
             parts["col_start"] = col_start
             parts["col_end"] = col_end
-            parts["position"] = state["table"]["cell"]["position"]
-            parts["stable_id"] = "{}::{}:{}:{}:{}".format(
+            parts["position"] = state["table"][state["parent"][node].position][
+                "cell_pos"
+            ]
+            stable_id = "{}::{}:{}:{}:{}".format(
                 parts["document"].name,
                 "cell",
                 parts["table"].position,
                 row_start,
                 col_start,
             )
+            parts["stable_id"] = stable_id
             # Create the Cell in the DB
-            state["context"] = Cell(**parts)
+            state["context"][node] = Cell(**parts)
 
             # Update position
-            state["table"]["cell"]["col_idx"] += 1
-            state["table"]["cell"]["position"] += 1
+            state["table"][state["parent"][node].position]["col_idx"] += 1
+            state["table"][state["parent"][node].position]["cell_pos"] += 1
 
         return state
 
@@ -269,8 +289,7 @@ class OmniParserUDF(UDF):
         )
 
         # Create the Figure entry in the DB
-        # Note that state["context"] is not updated since Figure has no children.
-        Figure(
+        state["context"][node] = Figure(
             document=state["document"],
             stable_id=stable_id,
             position=state["figure"]["idx"],
@@ -367,7 +386,11 @@ class OmniParserUDF(UDF):
                                 break
                 if self.tabular:
                     parts["position"] = state["sentence"]["idx"]
-                    parent = state["parent"][node]
+                    parent = (
+                        state["context"][node]
+                        if state["context"][node]
+                        else state["parent"][node]
+                    )
                     if isinstance(parent, Document):
                         pass
                     elif isinstance(parent, Table):
@@ -384,6 +407,7 @@ class OmniParserUDF(UDF):
                             "Sentence parent must be Document, Table, or Cell"
                         )
                 yield Sentence(**parts)
+
                 state["sentence"]["idx"] += 1
 
     def _parse_node(self, node, state):
@@ -394,11 +418,8 @@ class OmniParserUDF(UDF):
             of the document as a whole.
         :rtype: a *generator* of Sentences
         """
-        # Process node based on its type
-        if node.tag is lxml.etree.Comment:
-            return
-        if self.blacklist and node.tag in self.blacklist:
-            return
+        # Initialize the context created by this node as none
+        state["context"][node] = None
 
         # Processing on entry of node
         state = self._parse_figure_node(node, state)
@@ -431,26 +452,22 @@ class OmniParserUDF(UDF):
 
         # This dictionary contain the global state necessary to parse a
         # document and each context element. This reflects the relationships
-        # defined in the parser/models. This contains the state necessary to
-        # create the respective contexts within the document.
+        # defined in parser/models. This contains the state necessary to create
+        # the respective Contexts within the document.
         state = {
             "parent": {},  # map of parent[child] = node used to discover child
-            "context": None,  # track the most recently created context
+            "context": {},  # track the Context created by each node (context['td'] = Cell)
             "root": root,
             "document": document,
             "figure": {"idx": 0},
-            "table": {
-                "grid": defaultdict(int),
-                "idx": 0,
-                "cell": {"position": 0, "row_idx": -1, "col_idx": 0},
-            },
+            "table": {"idx": 0},
             "sentence": {"idx": 0, "abs_offset": 0},
         }
 
         # Iterative Depth-First Search
         stack.append(root)
         state["parent"][root] = document
-        state["context"] = document
+        state["context"][root] = document
         while stack:
             node = stack.pop()
             if node not in visited:
@@ -463,7 +480,19 @@ class OmniParserUDF(UDF):
                 # DFS matches the order that would be produced by a recursive
                 # DFS implementation.
                 for child in reversed(node):
+                    # Skip nodes that are comments or blacklisted
+                    if child.tag is lxml.etree.Comment or (
+                        self.blacklist and child.tag in self.blacklist
+                    ):
+                        continue
+
                     stack.append(child)
 
-                    # store the parent of the node
-                    state["parent"][child] = state["context"]
+                    # store the parent of the node, which is either the parent
+                    # Context, or if the parent did not create a Context, then
+                    # use the node's parent Context.
+                    state["parent"][child] = (
+                        state["context"][node]
+                        if state["context"][node]
+                        else state["parent"][node]
+                    )
