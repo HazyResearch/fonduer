@@ -37,7 +37,9 @@ def test_parse_md_details(caplog):
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an OmniParser and parse the md document
-    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    omni = OmniParser(
+        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the md document
@@ -50,7 +52,7 @@ def test_parse_md_details(caplog):
     assert doc.figures[0].position == 0
     assert doc.figures[0].stable_id == "md::figure:0"
 
-    # Check that doc has a table
+    #  Check that doc has a table
     assert len(doc.tables) == 1
     assert doc.tables[0].position == 0
     assert doc.tables[0].document.name == "md"
