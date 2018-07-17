@@ -3,6 +3,7 @@ TESTDATA=tests/input
 dev:
 	pip install -r requirements-dev.txt
 	pip install -e .
+	pre-commit install
 
 test: dev check
 	pytest tests -v -rsXx	
