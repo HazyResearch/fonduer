@@ -458,7 +458,10 @@ class OmniParserUDF(UDF):
                 # Process
                 yield from self._parse_node(node, state)
 
-                for child in node:
+                # NOTE: This reversed() order is to ensure that the iterative
+                # DFS matches the order that would be produced by a recursive
+                # DFS implementation.
+                for child in reversed(node):
                     stack.append(child)
 
                     # store the parent of the node
