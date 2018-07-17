@@ -123,7 +123,7 @@ class DictionaryMatch(NgramMatcher):
                 w.lower() if self.ignore_case else w for w in self.opts["d"]
             )
         except KeyError:
-            raise Exception("Please supply a dictionary (list of phrases) d as d=d.")
+            raise Exception("Please supply a dictionary (list of sentences) d as d=d.")
 
         # Optionally use a stemmer, preprocess the dictionary
         # Note that user can provide *an object having a stem() method*

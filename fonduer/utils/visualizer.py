@@ -59,20 +59,20 @@ class Visualizer(object):
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)
 
-    def display_words(self, phrases, target=None, pdf_file=None):
+    def display_words(self, sentences, target=None, pdf_file=None):
         if not pdf_file:
-            pdf_file = os.path.join(self.pdf_path, phrases[0].document.name + ".pdf")
+            pdf_file = os.path.join(self.pdf_path, sentences[0].document.name + ".pdf")
         boxes = []
-        for phrase in phrases:
-            for i, word in enumerate(phrase.words):
+        for sentence in sentences:
+            for i, word in enumerate(sentence.words):
                 if target is None or word == target:
                     boxes.append(
                         (
-                            phrase.page[i],
-                            phrase.top[i],
-                            phrase.left[i],
-                            phrase.bottom[i],
-                            phrase.right[i],
+                            sentence.page[i],
+                            sentence.top[i],
+                            sentence.left[i],
+                            sentence.bottom[i],
+                            sentence.right[i],
                         )
                     )
         imgs = self.display_boxes(pdf_file, boxes)

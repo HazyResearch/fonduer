@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.parser.models import Phrase
+from fonduer.parser.models import Sentence
 
 Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"], verbose=False)
 
@@ -19,15 +19,15 @@ def bbox_from_span(span):
         return None
 
 
-def bbox_from_phrase(phrase):
-    # TODO: this may have issues where a phrase is linked to words on different pages
-    if isinstance(phrase, Phrase) and phrase.is_visual():
+def bbox_from_sentence(sentence):
+    # TODO: this may have issues where a sentence is linked to words on different pages
+    if isinstance(sentence, Sentence) and sentence.is_visual():
         return Bbox(
-            phrase.page[0],
-            min(phrase.top),
-            max(phrase.bottom),
-            min(phrase.left),
-            max(phrase.right),
+            sentence.page[0],
+            min(sentence.top),
+            max(sentence.bottom),
+            min(sentence.left),
+            max(sentence.right),
         )
     else:
         return None

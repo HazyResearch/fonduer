@@ -17,7 +17,7 @@ def expand_part_range(text):
         2. Expanding suffixes (123X/Y/Z; 123X, Y, Z)
     Also yields the original input string.
     To get the correct output from complex strings, this function should be fed
-    many Ngrams from a particular phrase.
+    many Ngrams from a particular sentence.
     """
     ### Regex Patterns compile only once per function call.
     # This range pattern will find text that "looks like" a range.
@@ -98,7 +98,7 @@ def expand_part_range(text):
 
     logger.debug("  Inferred Text: \n  " + str(sorted(expanded_parts)))
 
-    ### Step 2: Expand suffixes for each of the inferred phrases
+    ### Step 2: Expand suffixes for each of the inferred sentences
     # NOTE: this only does the simple case of replacing same-length suffixes.
     # we do not handle cases like "BC546A/B/XYZ/QR"
     for part in expanded_parts:

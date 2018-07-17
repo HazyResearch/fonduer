@@ -11,8 +11,8 @@ INT_ARRAY_TYPE = postgresql.ARRAY(Integer)
 STR_ARRAY_TYPE = postgresql.ARRAY(String)
 
 
-class PhraseMixin(object):
-    """A phrase Context in a Document."""
+class SentenceMixin(object):
+    """A sentence Context in a Document."""
 
     def is_lingual(self):
         return False
@@ -27,8 +27,8 @@ class PhraseMixin(object):
         return False
 
     def __repr__(self):
-        return "Phrase (Doc: {}, Index: {}, Text: {})".format(
-            self.document.name, self.phrase_idx, self.text
+        return "Sentence (Doc: {}, Index: {}, Text: {})".format(
+            self.document.name, self.sentence_idx, self.text
         )
 
 
@@ -45,8 +45,8 @@ class LingualMixin(object):
         return self.lemmas is not None
 
     def __repr__(self):
-        return "LingualPhrase (Doc: {}, Index: {}, Text: {})".format(
-            self.document.name, self.phrase_idx, self.text
+        return "LingualSentence (Doc: {}, Index: {}, Text: {})".format(
+            self.document.name, self.sentence_idx, self.text
         )
 
 
@@ -61,7 +61,7 @@ class TabularMixin(object):
     def table(cls):
         return relationship(
             "Table",
-            backref=backref("phrases", cascade="all, delete-orphan"),
+            backref=backref("sentences", cascade="all, delete-orphan"),
             foreign_keys=lambda: cls.table_id,
         )
 
@@ -73,7 +73,7 @@ class TabularMixin(object):
     def cell(cls):
         return relationship(
             "Cell",
-            backref=backref("phrases", cascade="all, delete-orphan"),
+            backref=backref("sentences", cascade="all, delete-orphan"),
             foreign_keys=lambda: cls.cell_id,
         )
 
@@ -100,12 +100,12 @@ class TabularMixin(object):
             if self.col_start != self.col_end
             else self.col_start
         )
-        return "TabularPhrase (Doc: {}, Table: {}, Row: {}, Col: {}, Index: {}, Text: {})".format(
+        return "TabularSentence (Doc: {}, Table: {}, Row: {}, Col: {}, Index: {}, Text: {})".format(
             self.document.name,
             (lambda: self.table).position,
             rows,
             cols,
-            self.phrase_idx,
+            self.sentence_idx,
             self.text,
         )
 
@@ -123,7 +123,7 @@ class VisualMixin(object):
         return self.page is not None and self.page[0] is not None
 
     def __repr__(self):
-        return "VisualPhrase (Doc: {}, Page: {}, (T,B,L,R): ({},{},{},{}), Text: {})".format(
+        return "VisualSentence (Doc: {}, Page: {}, (T,B,L,R): ({},{},{},{}), Text: {})".format(
             self.document.name,
             self.page,
             self.top,
@@ -145,27 +145,29 @@ class StructuralMixin(object):
         return self.html_tag is not None
 
     def __repr__(self):
-        return "StructuralPhrase (Doc: {}, Tag: {}, Text: {})".format(
+        return "StructuralSentence (Doc: {}, Tag: {}, Text: {})".format(
             self.document.name, self.html_tag, self.text
         )
 
 
-# PhraseMixin must come last in arguments to not ovewrite is_* methods
-# class Phrase(Context, StructuralMixin, PhraseMixin): # Memex variant
-class Phrase(
-    Context, TabularMixin, LingualMixin, VisualMixin, StructuralMixin, PhraseMixin
+# SentenceMixin must come last in arguments to not ovewrite is_* methods
+# class Sentence(Context, StructuralMixin, SentenceMixin): # Memex variant
+class Sentence(
+    Context, TabularMixin, LingualMixin, VisualMixin, StructuralMixin, SentenceMixin
 ):
-    """A Phrase subclass with Lingual, Tabular, Visual, and HTML attributes."""
+    """A Sentence subclass with Lingual, Tabular, Visual, and HTML attributes."""
 
-    __tablename__ = "phrase"
+    __tablename__ = "sentence"
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
     document_id = Column(Integer, ForeignKey("document.id"))
     document = relationship(
         "Document",
-        backref=backref("phrases", cascade="all, delete-orphan"),
+        backref=backref("sentences", cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
-    phrase_num = Column(Integer, nullable=False)  # unique Phrase number per document
+    sentence_num = Column(
+        Integer, nullable=False
+    )  # unique sentence number per document
     text = Column(Text, nullable=False)
     words = Column(STR_ARRAY_TYPE)
     char_offsets = Column(INT_ARRAY_TYPE)
@@ -173,9 +175,9 @@ class Phrase(
     entity_types = Column(STR_ARRAY_TYPE)
     abs_char_offsets = Column(INT_ARRAY_TYPE)
 
-    __mapper_args__ = {"polymorphic_identity": "phrase"}
+    __mapper_args__ = {"polymorphic_identity": "sentence"}
 
-    __table_args__ = (UniqueConstraint(document_id, phrase_num),)
+    __table_args__ = (UniqueConstraint(document_id, sentence_num),)
 
     def __repr__(self):
         if self.is_tabular():
@@ -189,17 +191,17 @@ class Phrase(
                 if self.col_start != self.col_end
                 else self.col_start
             )
-            return "Phrase (Doc: '{}', Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')".format(
+            return "Sentence (Doc: '{}', Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')".format(
                 self.document.name,
                 self.table.position,
                 rows,
                 cols,
-                self.phrase_num,
+                self.sentence_num,
                 self.text,
             )
         else:
-            return "Phrase (Doc: '{}', Index: {}, Text: '{}')".format(
-                self.document.name, self.phrase_num, self.text
+            return "Sentence (Doc: '{}', Index: {}, Text: '{}')".format(
+                self.document.name, self.sentence_num, self.text
             )
 
     def _asdict(self):
@@ -207,7 +209,7 @@ class Phrase(
             # base
             "id": self.id,
             # 'document': self.document,
-            "phrase_num": self.phrase_num,
+            "sentence_num": self.sentence_num,
             "text": self.text,
             "entity_cids": self.entity_cids,
             "entity_types": self.entity_types,

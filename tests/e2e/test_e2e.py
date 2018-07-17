@@ -22,8 +22,8 @@ from fonduer import (
     LambdaFunctionMatcher,
     Meta,
     OmniParser,
-    Phrase,
     RegexMatchSpan,
+    Sentence,
     SparseLogisticRegression,
     Union,
     candidate_subclass,
@@ -66,9 +66,9 @@ def test_e2e(caplog):
     logger.info("Docs: {}".format(num_docs))
     assert num_docs == max_docs
 
-    num_phrases = session.query(Phrase).count()
-    logger.info("Phrases: {}".format(num_phrases))
-    #  assert num_phrases == 20
+    num_sentences = session.query(Sentence).count()
+    logger.info("Sentences: {}".format(num_sentences))
+    #  assert num_sentences == 20
 
     # Divide into test and train
     docs = session.query(Document).order_by(Document.name).all()

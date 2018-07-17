@@ -28,7 +28,7 @@ class SimpleTokenizer(object):
                 int(_) for _ in np.cumsum([len(x) + 1 for x in words])[:-1]
             ]
             text = " ".join(words)
-            stable_id = construct_stable_id(document, "phrase", i, i)
+            stable_id = construct_stable_id(document, "sentence", i, i)
             yield {
                 "text": text,
                 "words": words,
