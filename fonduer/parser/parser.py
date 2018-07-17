@@ -386,9 +386,12 @@ class OmniParserUDF(UDF):
                                 break
                 if self.tabular:
                     parts["position"] = state["sentence"]["idx"]
+
+                    # If tabular, consider own Context first in case a Cell
+                    # was just created. Otherwise, defer to the parent.
                     parent = (
                         state["context"][node]
-                        if state["context"][node]
+                        if node in state["context"]
                         else state["parent"][node]
                     )
                     if isinstance(parent, Document):
@@ -418,9 +421,6 @@ class OmniParserUDF(UDF):
             of the document as a whole.
         :rtype: a *generator* of Sentences
         """
-        # Initialize the context created by this node as none
-        state["context"][node] = None
-
         # Processing on entry of node
         state = self._parse_figure_node(node, state)
 
@@ -493,6 +493,6 @@ class OmniParserUDF(UDF):
                     # use the node's parent Context.
                     state["parent"][child] = (
                         state["context"][node]
-                        if state["context"][node]
+                        if node in state["context"]
                         else state["parent"][node]
                     )
