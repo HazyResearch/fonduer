@@ -7,7 +7,7 @@ candidates.
 
 ----
 
-.. automodule:: fonduer.matchers
+.. automodule:: fonduer.candidates.matchers
     :members:
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer

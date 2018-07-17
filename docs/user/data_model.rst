@@ -7,7 +7,7 @@ functions*.
 
 ----
 
-.. automodule:: fonduer.models.context
+.. automodule:: fonduer.parser.models
     :members:
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer
