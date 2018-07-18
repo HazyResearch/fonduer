@@ -5,7 +5,12 @@ from fonduer.parser.models.context import Context
 
 
 class Section(Context):
-    """A section Context in a Document."""
+    """A Section Context in a Document.
+
+    Currently, each document simply has a single Section. Future parsing
+    improvements can add better section recognition, such as the sections of an
+    academic paper.
+    """
 
     __tablename__ = "section"
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)

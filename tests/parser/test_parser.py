@@ -50,11 +50,13 @@ def test_parse_md_details(caplog):
     assert len(doc.figures) == 1
     assert doc.figures[0].url == "http://placebear.com/200/200"
     assert doc.figures[0].position == 0
+    assert doc.figures[0].section.position == 0
     assert doc.figures[0].stable_id == "md::figure:0"
 
     #  Check that doc has a table
     assert len(doc.tables) == 1
     assert doc.tables[0].position == 0
+    assert doc.tables[0].section.position == 0
     assert doc.tables[0].document.name == "md"
 
     # Check that doc has cells
@@ -77,7 +79,7 @@ def test_parse_md_details(caplog):
     sent = doc.sentences[25]
     assert sent.text == "Spicy"
     assert sent.table.position == 0
-    assert sent.table.position == 0
+    assert sent.table.section.position == 0
     assert sent.cell.row_start == 0
     assert sent.cell.col_start == 2
 
@@ -101,6 +103,77 @@ def test_parse_md_details(caplog):
     # Test lingual attributes
     assert header.ner_tags == ["O", "O"]
     assert header.dep_labels == ["compound", "ROOT"]
+
+
+def test_parse_md_paragraphs(caplog):
+    """Unit test of Paragraph parsing."""
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
+
+    PARALLEL = 1
+    max_docs = 1
+    docs_path = "tests/data/html_simple/md_para.html"
+    pdf_path = "tests/data/pdf_simple/md_para.pdf"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+
+    # Create an Parser and parse the md document
+    omni = Parser(
+        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    omni.apply(preprocessor, parallelism=PARALLEL)
+
+    # Grab the document
+    doc = session.query(Document).order_by(Document.name).all()[0]
+    assert doc.name == "md_para"
+
+    # Check that doc has a figure
+    assert len(doc.figures) == 1
+    assert doc.figures[0].url == "http://placebear.com/200/200"
+    assert doc.figures[0].position == 0
+    assert doc.figures[0].section.position == 0
+    assert doc.figures[0].stable_id == "md_para::figure:0"
+
+    #  Check that doc has a table
+    assert len(doc.tables) == 1
+    assert doc.tables[0].position == 0
+    assert doc.tables[0].section.position == 0
+
+    # Check that doc has cells
+    assert len(doc.cells) == 16
+    cells = list(doc.cells)
+    assert cells[0].row_start == 0
+    assert cells[0].col_start == 0
+    assert cells[0].position == 0
+    assert cells[0].table.position == 0
+
+    assert cells[10].row_start == 2
+    assert cells[10].col_start == 2
+    assert cells[10].position == 10
+    assert cells[10].table.position == 0
+
+    # Check that doc has sentences
+    assert len(doc.sentences) == 47
+    sent1 = doc.sentences[1]
+    sent2 = doc.sentences[2]
+    sent3 = doc.sentences[3]
+    assert sent1.text == "This is some basic, sample markdown."
+    assert (
+        sent2.text
+        == "Unlike the other markdown document, however, this document actually contains paragraphs of text."
+    )
+    assert sent1.paragraph.position == 1
+    assert sent1.section.position == 0
+    assert sent2.paragraph.position == 1
+    assert sent2.section.position == 0
+    assert sent3.paragraph.position == 1
+    assert sent3.section.position == 0
+
+    assert len(doc.paragraphs) == 44
+    assert len(doc.paragraphs[1].sentences) == 3
+    assert len(doc.paragraphs[2].sentences) == 1
 
 
 def test_simple_tokenizer(caplog):
@@ -284,7 +357,7 @@ def test_parse_style(caplog):
     doc = session.query(Document).order_by(Document.name).all()[0]
 
     # Grab the sentences parsed by the Parser
-    sentences = list(session.query(Sentence).order_by(Sentence.sentence_num).all())
+    sentences = list(session.query(Sentence).order_by(Sentence.position).all())
 
     logger.warning("Doc: {}".format(doc))
     for i, sentence in enumerate(sentences):

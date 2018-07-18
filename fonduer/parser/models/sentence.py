@@ -165,9 +165,19 @@ class Sentence(
         backref=backref("sentences", cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
-    sentence_num = Column(
-        Integer, nullable=False
-    )  # unique sentence number per document
+    section_id = Column(Integer, ForeignKey("section.id"))
+    section = relationship(
+        "Section",
+        backref=backref("sentences", cascade="all, delete-orphan"),
+        foreign_keys=section_id,
+    )
+    paragraph_id = Column(Integer, ForeignKey("paragraph.id"))
+    paragraph = relationship(
+        "Paragraph",
+        backref=backref("sentences", cascade="all, delete-orphan"),
+        foreign_keys=paragraph_id,
+    )
+    position = Column(Integer, nullable=False)  # unique sentence number per document
     text = Column(Text, nullable=False)
     words = Column(STR_ARRAY_TYPE)
     char_offsets = Column(INT_ARRAY_TYPE)
@@ -177,7 +187,7 @@ class Sentence(
 
     __mapper_args__ = {"polymorphic_identity": "sentence"}
 
-    __table_args__ = (UniqueConstraint(document_id, sentence_num),)
+    __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self):
         if self.is_tabular():
@@ -196,12 +206,16 @@ class Sentence(
                 self.table.position,
                 rows,
                 cols,
-                self.sentence_num,
+                self.position,
                 self.text,
             )
         else:
-            return "Sentence (Doc: '{}', Index: {}, Text: '{}')".format(
-                self.document.name, self.sentence_num, self.text
+            return "Sentence (Doc: '{}', Sec: {}, Par: {}, Index: {}, Text: '{}')".format(
+                self.document.name,
+                self.section.position,
+                self.paragraph.position,
+                self.position,
+                self.text,
             )
 
     def _asdict(self):
@@ -209,7 +223,7 @@ class Sentence(
             # base
             "id": self.id,
             # 'document': self.document,
-            "sentence_num": self.sentence_num,
+            "position": self.position,
             "text": self.text,
             "entity_cids": self.entity_cids,
             "entity_types": self.entity_types,

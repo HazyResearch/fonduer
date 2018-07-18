@@ -11,8 +11,9 @@ from fonduer.candidates.models import Candidate
 from fonduer.parser.models import (
     Cell,
     Context,
-    Document,
     Figure,
+    Paragraph,
+    Section,
     Sentence,
     Table,
     construct_stable_id,
@@ -143,7 +144,7 @@ class ParserUDF(UDF):
         else:
             yield from self.parse(document, text)
 
-    def _parse_table_node(self, node, state):
+    def _parse_table(self, node, state):
         """Parse a table node.
 
         :param node: The lxml table node to parse
@@ -151,7 +152,7 @@ class ParserUDF(UDF):
             of the document as a whole.
         """
         if not self.tabular:
-            logger.error("Called _parse_table_node without tabular activated.")
+            logger.error("Called _parse_table without tabular activated.")
             return state
 
         if node.tag == "table":
@@ -159,10 +160,20 @@ class ParserUDF(UDF):
             stable_id = "{}::{}:{}".format(
                 state["document"].name, "table", state["table"]["idx"]
             )
-            # Create the Cell in the DB
-            state["context"][node] = Table(
-                document=state["document"], stable_id=stable_id, position=table_idx
-            )
+            # Create the Table in the DB
+            parts = {}
+            parts["document"] = state["document"]
+            parts["stable_id"] = stable_id
+            parts["position"] = table_idx
+            parent = state["parent"][node]
+            if isinstance(parent, Cell):
+                parts["section"] = parent.table.section
+            elif isinstance(parent, Section):
+                parts["section"] = parent
+            else:
+                raise NotImplementedError("Table is not within a Section or Cell")
+
+            state["context"][node] = Table(**parts)
 
             # Local state for each table. This is required to support nested
             # tables
@@ -243,7 +254,7 @@ class ParserUDF(UDF):
 
         return state
 
-    def _parse_figure_node(self, node, state):
+    def _parse_figure(self, node, state):
         """Parse the figure node.
 
         :param node: The lxml img node to parse
@@ -258,9 +269,14 @@ class ParserUDF(UDF):
             state["document"].name, "figure", state["figure"]["idx"]
         )
 
+        if not isinstance(state["parent"][node], Section):
+            logger.warning("Figure is nested within {}".format(state["parent"][node]))
+            raise NotImplementedError("Nested Figure not implemented.")
+
         # Create the Figure entry in the DB
         state["context"][node] = Figure(
             document=state["document"],
+            section=state["parent"][node],
             stable_id=stable_id,
             position=state["figure"]["idx"],
             url=node.get("src"),
@@ -269,13 +285,119 @@ class ParserUDF(UDF):
 
         return state
 
-    def _parse_sentence(self, node, state):
+    def _parse_sentence(self, paragraph, node, state):
         """Parse the Sentences of the node.
 
         :param node: The lxml node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
+        text = state["paragraph"]["text"]
+        field = state["paragraph"]["field"]
+        # Lingual Parse
+        document = state["document"]
+        for parts in self.lingual_parse(document, text):
+            (_, _, _, char_end) = split_stable_id(parts["stable_id"])
+            parts["document"] = document
+            parts["position"] = state["sentence"]["idx"]
+            abs_sentence_offset_end = (
+                state["sentence"]["abs_offset"]
+                + parts["char_offsets"][-1]
+                + len(parts["words"][-1])
+            )
+            parts["stable_id"] = construct_stable_id(
+                document,
+                "sentence",
+                state["sentence"]["abs_offset"],
+                abs_sentence_offset_end,
+            )
+            state["sentence"]["abs_offset"] = abs_sentence_offset_end
+            if self.structural:
+                context_node = node.getparent() if field == "tail" else node
+                tree = lxml.etree.ElementTree(state["root"])
+                parts["xpath"] = tree.getpath(context_node)
+                parts["html_tag"] = context_node.tag
+                parts["html_attrs"] = [
+                    "=".join(x) for x in list(context_node.attrib.items())
+                ]
+
+                # Extending html style attribute with the styles
+                # from inline style class for the element.
+                cur_style_index = None
+                for index, attr in enumerate(parts["html_attrs"]):
+                    if attr.find("style") >= 0:
+                        cur_style_index = index
+                        break
+                styles = state["root"].find("head").find("style")
+                if styles is not None:
+                    for x in list(context_node.attrib.items()):
+                        if x[0] == "class":
+                            exp = r"(." + x[1] + ")([\n\s\r]*)\{(.*?)\}"
+                            r = re.compile(exp, re.DOTALL)
+                            if r.search(styles.text) is not None:
+                                if cur_style_index is not None:
+                                    parts["html_attrs"][cur_style_index] += (
+                                        r.search(styles.text)
+                                        .group(3)
+                                        .replace("\r", "")
+                                        .replace("\n", "")
+                                        .replace("\t", "")
+                                    )
+                                else:
+                                    parts["html_attrs"].extend(
+                                        [
+                                            "style="
+                                            + re.sub(
+                                                r"\s{1,}",
+                                                " ",
+                                                r.search(styles.text)
+                                                .group(3)
+                                                .replace("\r", "")
+                                                .replace("\n", "")
+                                                .replace("\t", "")
+                                                .strip(),
+                                            )
+                                        ]
+                                    )
+                            break
+            if self.tabular:
+                parts["position"] = state["sentence"]["idx"]
+
+                # If tabular, consider own Context first in case a Cell
+                # was just created. Otherwise, defer to the parent.
+                parent = paragraph
+                if isinstance(parent, Paragraph):
+                    parts["section"] = parent.section
+                    parts["paragraph"] = parent
+                    if parent.table:
+                        parts["table"] = parent.table
+                    if parent.cell:
+                        parts["cell"] = parent.cell
+                        parts["row_start"] = parent.cell.row_start
+                        parts["row_end"] = parent.cell.row_end
+                        parts["col_start"] = parent.cell.col_start
+                        parts["col_end"] = parent.cell.col_end
+                else:
+                    raise NotImplementedError("Sentence parent must be Paragraph.")
+            yield Sentence(**parts)
+
+            state["sentence"]["idx"] += 1
+
+    def _parse_paragraph(self, node, state):
+        """Parse a Paragraph of the node.
+
+        A Paragraph is defined as
+
+        :param node: The lxml node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        # Both Paragraphs will share the same parent
+        parent = (
+            state["context"][node]
+            if node in state["context"]
+            else state["parent"][node]
+        )
         for field in ["text", "tail"]:
             text = getattr(node, field)
             text = text.strip() if text and self.strip else text
@@ -288,100 +410,66 @@ class ParserUDF(UDF):
             for (rgx, replace) in self.replacements:
                 text = rgx.sub(replace, text)
 
-            # Lingual Parse
-            document = state["document"]
-            for parts in self.lingual_parse(document, text):
-                (_, _, _, char_end) = split_stable_id(parts["stable_id"])
-                parts["document"] = document
-                parts["sentence_num"] = state["sentence"]["idx"]
-                abs_sentence_offset_end = (
-                    state["sentence"]["abs_offset"]
-                    + parts["char_offsets"][-1]
-                    + len(parts["words"][-1])
+            # Process the Paragraph
+            stable_id = "{}::{}:{}".format(
+                state["document"].name, "paragraph", state["paragraph"]["idx"]
+            )
+            parts = {}
+            parts["stable_id"] = stable_id
+            parts["document"] = state["document"]
+            parts["position"] = state["paragraph"]["idx"]
+            if isinstance(parent, Table):
+                parts["section"] = parent.section
+                parts["table"] = parent
+            elif isinstance(parent, Cell):
+                parts["section"] = parent.table.section
+                parts["table"] = parent.table
+                parts["cell"] = parent
+            elif isinstance(parent, Section):
+                parts["section"] = parent
+            else:
+                raise NotImplementedError(
+                    "Paragraph parent must be Section, Table, or Cell"
                 )
-                parts["stable_id"] = construct_stable_id(
-                    document,
-                    "sentence",
-                    state["sentence"]["abs_offset"],
-                    abs_sentence_offset_end,
-                )
-                state["sentence"]["abs_offset"] = abs_sentence_offset_end
-                if self.structural:
-                    context_node = node.getparent() if field == "tail" else node
-                    tree = lxml.etree.ElementTree(state["root"])
-                    parts["xpath"] = tree.getpath(context_node)
-                    parts["html_tag"] = context_node.tag
-                    parts["html_attrs"] = [
-                        "=".join(x) for x in list(context_node.attrib.items())
-                    ]
 
-                    # Extending html style attribute with the styles
-                    # from inline style class for the element.
-                    cur_style_index = None
-                    for index, attr in enumerate(parts["html_attrs"]):
-                        if attr.find("style") >= 0:
-                            cur_style_index = index
-                            break
-                    styles = state["root"].find("head").find("style")
-                    if styles is not None:
-                        for x in list(context_node.attrib.items()):
-                            if x[0] == "class":
-                                exp = r"(." + x[1] + ")([\n\s\r]*)\{(.*?)\}"
-                                r = re.compile(exp, re.DOTALL)
-                                if r.search(styles.text) is not None:
-                                    if cur_style_index is not None:
-                                        parts["html_attrs"][cur_style_index] += (
-                                            r.search(styles.text)
-                                            .group(3)
-                                            .replace("\r", "")
-                                            .replace("\n", "")
-                                            .replace("\t", "")
-                                        )
-                                    else:
-                                        parts["html_attrs"].extend(
-                                            [
-                                                "style="
-                                                + re.sub(
-                                                    r"\s{1,}",
-                                                    " ",
-                                                    r.search(styles.text)
-                                                    .group(3)
-                                                    .replace("\r", "")
-                                                    .replace("\n", "")
-                                                    .replace("\t", "")
-                                                    .strip(),
-                                                )
-                                            ]
-                                        )
-                                break
-                if self.tabular:
-                    parts["position"] = state["sentence"]["idx"]
+            # Create the Figure entry in the DB
+            paragraph = Paragraph(**parts)
 
-                    # If tabular, consider own Context first in case a Cell
-                    # was just created. Otherwise, defer to the parent.
-                    parent = (
-                        state["context"][node]
-                        if node in state["context"]
-                        else state["parent"][node]
-                    )
-                    if isinstance(parent, Document):
-                        pass
-                    elif isinstance(parent, Table):
-                        parts["table"] = parent
-                    elif isinstance(parent, Cell):
-                        parts["table"] = parent.table
-                        parts["cell"] = parent
-                        parts["row_start"] = parent.row_start
-                        parts["row_end"] = parent.row_end
-                        parts["col_start"] = parent.col_start
-                        parts["col_end"] = parent.col_end
-                    else:
-                        raise NotImplementedError(
-                            "Sentence parent must be Document, Table, or Cell"
-                        )
-                yield Sentence(**parts)
+            state["paragraph"]["idx"] += 1
 
-                state["sentence"]["idx"] += 1
+            state["paragraph"]["text"] = text
+            state["paragraph"]["field"] = field
+
+            # Parse the Sentences in the Paragraph
+            yield from self._parse_sentence(paragraph, node, state)
+
+        return state
+
+    def _parse_section(self, node, state):
+        """Parse a Section of the node.
+
+        Note that this implementation currently just creates a single Section
+        for a document.
+
+        :param node: The lxml node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        if node.tag != "html":
+            return state
+
+        # Add a Section
+        stable_id = "{}::{}:{}".format(
+            state["document"].name, "section", state["section"]["idx"]
+        )
+        state["context"][node] = Section(
+            document=state["document"],
+            stable_id=stable_id,
+            position=state["section"]["idx"],
+        )
+        state["section"]["idx"] += 1
+
+        return state
 
     def _parse_node(self, node, state):
         """Entry point for parsing all node types.
@@ -392,17 +480,14 @@ class ParserUDF(UDF):
         :rtype: a *generator* of Sentences
         """
         # Processing on entry of node
-        state = self._parse_figure_node(node, state)
+        state = self._parse_section(node, state)
+
+        state = self._parse_figure(node, state)
 
         if self.tabular:
-            state = self._parse_table_node(node, state)
+            state = self._parse_table(node, state)
 
-        # flattens children of node that are in the 'flatten' list
-        if self.flatten:
-            lxml.etree.strip_tags(node, self.flatten)
-
-        # Now, process the Sentence
-        yield from self._parse_sentence(node, state)
+        yield from self._parse_paragraph(node, state)
 
     def parse(self, document, text):
         """Depth-first search over the provided tree.
@@ -420,6 +505,10 @@ class ParserUDF(UDF):
         root = lxml.html.fromstring(text)
         document.text = text
 
+        # flattens children of node that are in the 'flatten' list
+        if self.flatten:
+            lxml.etree.strip_tags(root, self.flatten)
+
         # This dictionary contain the global state necessary to parse a
         # document and each context element. This reflects the relationships
         # defined in parser/models. This contains the state necessary to create
@@ -429,6 +518,8 @@ class ParserUDF(UDF):
             "context": {},  # track the Context created by each node (context['td'] = Cell)
             "root": root,
             "document": document,
+            "section": {"idx": 0},
+            "paragraph": {"idx": 0},
             "figure": {"idx": 0},
             "table": {"idx": 0},
             "sentence": {"idx": 0, "abs_offset": 0},

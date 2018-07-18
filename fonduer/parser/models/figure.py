@@ -16,6 +16,12 @@ class Figure(Context):
         backref=backref("figures", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
+    section_id = Column(Integer, ForeignKey("section.id"))
+    section = relationship(
+        "Section",
+        backref=backref("figures", order_by=position, cascade="all, delete-orphan"),
+        foreign_keys=section_id,
+    )
     url = Column(String)
 
     __mapper_args__ = {"polymorphic_identity": "figure"}
@@ -23,8 +29,8 @@ class Figure(Context):
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self):
-        return "Figure(Doc: {}, Pos: {}, Url: {})".format(
-            self.document.name, self.position, self.url
+        return "Figure(Doc: {}, Sec: {}, Pos: {}, Url: {})".format(
+            self.document.name, self.section.position, self.position, self.url
         )
 
     def __gt__(self, other):
