@@ -144,12 +144,11 @@ class OmniParserUDF(UDF):
             yield from self.parse_structure(document, text)
 
     def _flatten(self, node):
-        """Construct a string containing the child's text/tail append to the node.
+        """Construct a string containing the child's text/tail appended to the node.
 
         If a child of this node is in self.flatten, construct a string
         containing all text/tail results of the tree based on that child and
         append that to the tail of the previous child or head of node.
-
 
         :param node: the node to flatten
         """
