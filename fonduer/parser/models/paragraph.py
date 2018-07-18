@@ -22,17 +22,17 @@ class Paragraph(Context):
         backref=backref("paragraphs", cascade="all, delete-orphan"),
         foreign_keys=section_id,
     )
-    table_id = Column(Integer, ForeignKey("table.id"))
-    table = relationship(
-        "Table",
-        backref=backref("paragraphs", cascade="all, delete-orphan"),
-        foreign_keys=table_id,
-    )
     cell_id = Column(Integer, ForeignKey("cell.id"))
     cell = relationship(
         "Cell",
         backref=backref("paragraphs", cascade="all, delete-orphan"),
         foreign_keys=cell_id,
+    )
+    caption_id = Column(Integer, ForeignKey("caption.id"))
+    caption = relationship(
+        "Caption",
+        backref=backref("paragraphs", cascade="all, delete-orphan"),
+        foreign_keys=caption_id,
     )
 
     __mapper_args__ = {"polymorphic_identity": "paragraph"}
@@ -40,7 +40,24 @@ class Paragraph(Context):
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self):
-        return "Paragraph(Doc: {}, Pos: {})".format(self.document.name, self.position)
+        if self.cell:
+            return "Paragraph(Doc: {}, Sec: {}, Cell: {}, Pos: {})".format(
+                self.document.name,
+                self.section.position,
+                self.cell.position,
+                self.position,
+            )
+        elif self.caption:
+            return "Paragraph(Doc: {}, Sec: {}, Caption: {}, Pos: {})".format(
+                self.document.name,
+                self.section.position,
+                self.caption.position,
+                self.position,
+            )
+        else:
+            return "Paragraph(Doc: {}, Sec: {}, Pos: {})".format(
+                self.document.name, self.section.position, self.position
+            )
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
