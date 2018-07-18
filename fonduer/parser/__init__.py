@@ -1,3 +1,3 @@
-from fonduer.parser.parser import OmniParser
+from fonduer.parser.parser import Parser
 
-__all__ = ["OmniParser"]
+__all__ = ["Parser"]

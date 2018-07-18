@@ -9,9 +9,9 @@ import logging
 import os
 
 from fonduer import Meta
-from fonduer.parser import OmniParser
+from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
-from fonduer.parser.parser import OmniParserUDF
+from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.parser.spacy_parser import Spacy
 
@@ -22,7 +22,7 @@ def test_parse_md_details(caplog):
     """Unit test of the final results stored in the database of the md document.
 
     This test only looks at the final results such that the implementation of
-    the OmniParserUDF's apply() can be modified.
+    the ParserUDF's apply() can be modified.
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
@@ -36,8 +36,8 @@ def test_parse_md_details(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the md document
-    omni = OmniParser(
+    # Create an Parser and parse the md document
+    omni = Parser(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     omni.apply(preprocessor, parallelism=PARALLEL)
@@ -104,7 +104,7 @@ def test_parse_md_details(caplog):
 
 
 def test_simple_tokenizer(caplog):
-    """Unit test of OmniParser on a single document with lingual features off."""
+    """Unit test of Parser on a single document with lingual features off."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
@@ -122,7 +122,7 @@ def test_simple_tokenizer(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    omni = OmniParser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
+    omni = Parser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     doc = session.query(Document).order_by(Document.name).all()[1]
@@ -148,7 +148,7 @@ def test_simple_tokenizer(caplog):
 
 
 def test_parse_document_diseases(caplog):
-    """Unit test of OmniParser on a single document.
+    """Unit test of Parser on a single document.
 
     This tests both the structural and visual parse of the document.
     """
@@ -169,8 +169,8 @@ def test_parse_document_diseases(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the diseases document
-    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    # Create an Parser and parse the diseases document
+    omni = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the diseases document
@@ -241,7 +241,7 @@ def test_spacy_integration(caplog):
     max_docs = 2
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser = OmniParser(
+    corpus_parser = Parser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
@@ -276,14 +276,14 @@ def test_parse_style(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the md document
-    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    # Create an Parser and parse the md document
+    omni = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the document
     doc = session.query(Document).order_by(Document.name).all()[0]
 
-    # Grab the sentences parsed by the OmniParser
+    # Grab the sentences parsed by the Parser
     sentences = list(session.query(Sentence).order_by(Sentence.sentence_num).all())
 
     logger.warning("Doc: {}".format(doc))

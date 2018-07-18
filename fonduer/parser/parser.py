@@ -26,7 +26,7 @@ from fonduer.utils.udf import UDF, UDFRunner
 logger = logging.getLogger(__name__)
 
 
-class OmniParser(UDFRunner):
+class Parser(UDFRunner):
     def __init__(
         self,
         structural=True,  # structural information
@@ -43,8 +43,8 @@ class OmniParser(UDFRunner):
         # Use spaCy as our lingual parser
         self.lingual_parser = Spacy()
 
-        super(OmniParser, self).__init__(
-            OmniParserUDF,
+        super(Parser, self).__init__(
+            ParserUDF,
             structural=structural,
             blacklist=blacklist,
             flatten=flatten,
@@ -65,7 +65,7 @@ class OmniParser(UDFRunner):
         session.query(Candidate).delete()
 
 
-class OmniParserUDF(UDF):
+class ParserUDF(UDF):
     def __init__(
         self,
         structural,
@@ -89,7 +89,7 @@ class OmniParserUDF(UDF):
         a regex and _replace_ is a character string. All occurents of _pattern_ in the
         text will be replaced by _replace_.
         """
-        super(OmniParserUDF, self).__init__(**kwargs)
+        super(ParserUDF, self).__init__(**kwargs)
 
         # structural (html) setup
         self.structural = structural
@@ -125,7 +125,7 @@ class OmniParserUDF(UDF):
         if self.visual:
             if not self.pdf_path:
                 logger.error("Visual parsing failed: pdf_path is required")
-            for _ in self.parse_structure(document, text):
+            for _ in self.parse(document, text):
                 pass
             # Add visual attributes
             filename = self.pdf_path + document.name
@@ -141,7 +141,7 @@ class OmniParserUDF(UDF):
                 document.name, document.sentences, self.pdf_path
             )
         else:
-            yield from self.parse_structure(document, text)
+            yield from self.parse(document, text)
 
     def _flatten(self, node):
         """Construct a string containing the child's text/tail appended to the node.
@@ -433,7 +433,7 @@ class OmniParserUDF(UDF):
         # Now, process the Sentence
         yield from self._parse_sentence(node, state)
 
-    def parse_structure(self, document, text):
+    def parse(self, document, text):
         """Depth-first search over the provided tree.
 
         Implemented as an iterative procedure. The structure of the state

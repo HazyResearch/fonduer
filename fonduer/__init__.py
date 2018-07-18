@@ -21,7 +21,7 @@ from fonduer.candidates.matchers import (
 from fonduer.candidates.models import candidate_subclass
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.meta import Meta
-from fonduer.parser import OmniParser
+from fonduer.parser import Parser
 from fonduer.parser.models import Document, Figure, Sentence, Table
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision.annotations import load_gold_labels
@@ -52,9 +52,9 @@ __all__ = [
     "NumberMatcher",
     "OmniFigures",
     "OmniNgrams",
-    "OmniParser",
     "OrganizationMatcher",
     "PDFPreprocessor",
+    "Parser",
     "PersonMatcher",
     "RegexMatchEach",
     "RegexMatchSpan",

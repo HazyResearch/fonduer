@@ -21,7 +21,7 @@ from fonduer import (
     Intersect,
     LambdaFunctionMatcher,
     Meta,
-    OmniParser,
+    Parser,
     RegexMatchSpan,
     Sentence,
     SparseLogisticRegression,
@@ -57,7 +57,7 @@ def test_e2e(caplog):
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser = OmniParser(
+    corpus_parser = Parser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
