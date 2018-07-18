@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context

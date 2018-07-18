@@ -283,13 +283,15 @@ class ParserUDF(UDF):
 
         return state
 
-    def _parse_sentence(self, paragraph, node, text, field, state):
+    def _parse_sentence(self, paragraph, node, state):
         """Parse the Sentences of the node.
 
         :param node: The lxml node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
+        text = state["paragraph"]["text"]
+        field = state["paragraph"]["field"]
         # Lingual Parse
         document = state["document"]
         for parts in self.lingual_parse(document, text):
@@ -432,8 +434,11 @@ class ParserUDF(UDF):
 
             state["paragraph"]["idx"] += 1
 
+            state["paragraph"]["text"] = text
+            state["paragraph"]["field"] = field
+
             # Parse the Sentences in the Paragraph
-            yield from self._parse_sentence(paragraph, node, text, field, state)
+            yield from self._parse_sentence(paragraph, node, state)
 
         return state
 
