@@ -171,6 +171,12 @@ class Sentence(
         backref=backref("sentences", cascade="all, delete-orphan"),
         foreign_keys=section_id,
     )
+    paragraph_id = Column(Integer, ForeignKey("paragraph.id"))
+    paragraph = relationship(
+        "Paragraph",
+        backref=backref("sentences", cascade="all, delete-orphan"),
+        foreign_keys=paragraph_id,
+    )
     sentence_num = Column(
         Integer, nullable=False
     )  # unique sentence number per document
@@ -206,8 +212,12 @@ class Sentence(
                 self.text,
             )
         else:
-            return "Sentence (Doc: '{}', Sec: {}, Index: {}, Text: '{}')".format(
-                self.document.name, self.section.position, self.sentence_num, self.text
+            return "Sentence (Doc: '{}', Sec: {}, Par: {}, Index: {}, Text: '{}')".format(
+                self.document.name,
+                self.section.position,
+                self.paragraph.position,
+                self.sentence_num,
+                self.text,
             )
 
     def _asdict(self):
