@@ -9,6 +9,7 @@ import lxml
 
 from fonduer.candidates.models import Candidate
 from fonduer.parser.models import (
+    Caption,
     Cell,
     Context,
     Figure,
@@ -369,9 +370,8 @@ class ParserUDF(UDF):
                 if isinstance(parent, Paragraph):
                     parts["section"] = parent.section
                     parts["paragraph"] = parent
-                    if parent.table:
-                        parts["table"] = parent.table
                     if parent.cell:
+                        parts["table"] = parent.cell.table
                         parts["cell"] = parent.cell
                         parts["row_start"] = parent.cell.row_start
                         parts["row_end"] = parent.cell.row_end
@@ -418,18 +418,20 @@ class ParserUDF(UDF):
             parts["stable_id"] = stable_id
             parts["document"] = state["document"]
             parts["position"] = state["paragraph"]["idx"]
-            if isinstance(parent, Table):
-                parts["section"] = parent.section
-                parts["table"] = parent
+            if isinstance(parent, Caption):
+                if parent.table:
+                    parts["section"] = parent.table.section
+                elif parent.figure:
+                    parts["section"] = parent.figure.section
+                parts["caption"] = parent
             elif isinstance(parent, Cell):
                 parts["section"] = parent.table.section
-                parts["table"] = parent.table
                 parts["cell"] = parent
             elif isinstance(parent, Section):
                 parts["section"] = parent
             else:
                 raise NotImplementedError(
-                    "Paragraph parent must be Section, Table, or Cell"
+                    "Paragraph parent must be Section, Caption, or Cell"
                 )
 
             # Create the Figure entry in the DB
@@ -471,6 +473,43 @@ class ParserUDF(UDF):
 
         return state
 
+    def _parse_caption(self, node, state):
+        """Parse a Caption of the node.
+
+        :param node: The lxml node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        if node.tag != "caption":  # captions used in Tables
+            return state
+
+        # Add a Caption
+        parent = state["parent"][node]
+        stable_id = "{}::{}:{}".format(
+            state["document"].name, "caption", state["caption"]["idx"]
+        )
+        if isinstance(parent, Table):
+            state["context"][node] = Caption(
+                document=state["document"],
+                table=parent,
+                figure=None,
+                stable_id=stable_id,
+                position=state["caption"]["idx"],
+            )
+        elif isinstance(parent, Figure):
+            state["context"][node] = Caption(
+                document=state["document"],
+                table=None,
+                figure=parent,
+                stable_id=stable_id,
+                position=state["caption"]["idx"],
+            )
+        else:
+            raise NotImplementedError("Caption must be a child of Table or Figure.")
+        state["caption"]["idx"] += 1
+
+        return state
+
     def _parse_node(self, node, state):
         """Entry point for parsing all node types.
 
@@ -486,6 +525,8 @@ class ParserUDF(UDF):
 
         if self.tabular:
             state = self._parse_table(node, state)
+
+        state = self._parse_caption(node, state)
 
         yield from self._parse_paragraph(node, state)
 
@@ -521,9 +562,12 @@ class ParserUDF(UDF):
             "section": {"idx": 0},
             "paragraph": {"idx": 0},
             "figure": {"idx": 0},
+            "caption": {"idx": 0},
             "table": {"idx": 0},
             "sentence": {"idx": 0, "abs_offset": 0},
         }
+        # NOTE: Currently the helper functions directly manipulate the state
+        # rather than returning a modified copy.
 
         # Iterative Depth-First Search
         stack.append(root)

@@ -254,6 +254,14 @@ def test_parse_document_diseases(caplog):
     for sentence in doc.sentences:
         logger.info("    Sentence: {}".format(sentence.text))
 
+    # Check captions
+    assert len(doc.captions) == 2
+    caption = doc.sentences[20]
+    assert caption.paragraph.caption.position == 0
+    assert caption.paragraph.caption.table.position == 0
+    assert caption.text == "Table 1: Infectious diseases and where to find them."
+    assert caption.paragraph.position == 18
+
     # Check figures
     assert len(doc.figures) == 0
 
