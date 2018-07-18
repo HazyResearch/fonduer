@@ -72,18 +72,18 @@ def test_e2e(caplog):
     # Divide into test and train
     docs = session.query(Document).order_by(Document.name).all()
     ld = len(docs)
-    assert len(docs[0].sentences) == 829
-    assert len(docs[1].sentences) == 703
+    assert len(docs[0].sentences) == 828
+    assert len(docs[1].sentences) == 706
     assert len(docs[2].sentences) == 819
-    assert len(docs[3].sentences) == 685
-    assert len(docs[4].sentences) == 544
-    assert len(docs[5].sentences) == 757
-    assert len(docs[6].sentences) == 595
+    assert len(docs[3].sentences) == 684
+    assert len(docs[4].sentences) == 552
+    assert len(docs[5].sentences) == 758
+    assert len(docs[6].sentences) == 597
     assert len(docs[7].sentences) == 165
-    assert len(docs[8].sentences) == 252
-    assert len(docs[9].sentences) == 540
-    assert len(docs[10].sentences) == 353
-    assert len(docs[11].sentences) == 546
+    assert len(docs[8].sentences) == 250
+    assert len(docs[9].sentences) == 533
+    assert len(docs[10].sentences) == 354
+    assert len(docs[11].sentences) == 547
 
     # Check table numbers
     assert len(docs[0].tables) == 9
@@ -98,6 +98,20 @@ def test_e2e(caplog):
     assert len(docs[9].tables) == 10
     assert len(docs[10].tables) == 6
     assert len(docs[11].tables) == 9
+
+    # Check figure numbers
+    assert len(docs[0].figures) == 32
+    assert len(docs[1].figures) == 11
+    assert len(docs[2].figures) == 38
+    assert len(docs[3].figures) == 31
+    assert len(docs[4].figures) == 7
+    assert len(docs[5].figures) == 38
+    assert len(docs[6].figures) == 10
+    assert len(docs[7].figures) == 31
+    assert len(docs[8].figures) == 4
+    assert len(docs[9].figures) == 27
+    assert len(docs[10].figures) == 5
+    assert len(docs[11].figures) == 27
 
     train_docs = set()
     dev_docs = set()

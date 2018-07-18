@@ -192,7 +192,7 @@ def test_parse_document_diseases(caplog):
     # Check that doc has cells
     assert len(doc.cells) == 25
 
-    sentence = doc.sentences[9]
+    sentence = doc.sentences[10]
     logger.info("  {}".format(sentence))
 
     # Check the sentence's cell
@@ -215,7 +215,7 @@ def test_parse_document_diseases(caplog):
     assert sentence.ner_tags == ["O", "O", "GPE"]
     assert sentence.dep_labels == ["ROOT", "prep", "pobj"]
 
-    assert len(doc.sentences) == 36
+    assert len(doc.sentences) == 37
 
 
 def test_spacy_integration(caplog):
@@ -254,7 +254,7 @@ def test_spacy_integration(caplog):
             logger.info("  Sentence: {}".format(sentence.text))
 
     assert session.query(Document).count() == 2
-    assert session.query(Sentence).count() == 81
+    assert session.query(Sentence).count() == 82
 
 
 def test_parse_style(caplog):
@@ -293,7 +293,7 @@ def test_parse_style(caplog):
     # sentences for testing
     sub_sentences = [
         {
-            "index": 5,
+            "index": 6,
             "attr": [
                 "class=col-header",
                 "hobbies=work:hard;play:harder",
@@ -301,8 +301,8 @@ def test_parse_style(caplog):
                 "style=background: #f1f1f1; color: aquamarine; font-size: 18px;",
             ],
         },
-        {"index": 8, "attr": ["class=row-header", "style=background: #f1f1f1;"]},
-        {"index": 10, "attr": ["class=cell", "style=text-align: center;"]},
+        {"index": 9, "attr": ["class=row-header", "style=background: #f1f1f1;"]},
+        {"index": 11, "attr": ["class=cell", "style=text-align: center;"]},
     ]
 
     # Assertions

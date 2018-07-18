@@ -143,35 +143,6 @@ class ParserUDF(UDF):
         else:
             yield from self.parse(document, text)
 
-    def _flatten(self, node):
-        """Construct a string containing the child's text/tail appended to the node.
-
-        If a child of this node is in self.flatten, construct a string
-        containing all text/tail results of the tree based on that child and
-        append that to the tail of the previous child or head of node.
-
-        :param node: the node to flatten
-        """
-        num_children = len(node)
-        for i, child in enumerate(node[::-1]):
-            if child.tag in self.flatten:
-                j = num_children - 1 - i  # child index walking backwards
-                contents = [""]
-                for descendant in child.getiterator():
-                    if descendant.text and descendant.text.strip():
-                        contents.append(descendant.text)
-                    if descendant.tail and descendant.tail.strip():
-                        contents.append(descendant.tail)
-                if j == 0:
-                    if node.text is None:
-                        node.text = ""
-                    node.text += self.flatten_delim.join(contents)
-                else:
-                    if node[j - 1].tail is None:
-                        node[j - 1].tail = ""
-                    node[j - 1].tail += self.flatten_delim.join(contents)
-                node.remove(child)
-
     def _parse_table_node(self, node, state):
         """Parse a table node.
 
@@ -428,7 +399,7 @@ class ParserUDF(UDF):
 
         # flattens children of node that are in the 'flatten' list
         if self.flatten:
-            self._flatten(node)
+            lxml.etree.strip_tags(node, self.flatten)
 
         # Now, process the Sentence
         yield from self._parse_sentence(node, state)
