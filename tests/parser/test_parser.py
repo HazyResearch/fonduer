@@ -50,11 +50,13 @@ def test_parse_md_details(caplog):
     assert len(doc.figures) == 1
     assert doc.figures[0].url == "http://placebear.com/200/200"
     assert doc.figures[0].position == 0
+    assert doc.figures[0].section.position == 0
     assert doc.figures[0].stable_id == "md::figure:0"
 
     #  Check that doc has a table
     assert len(doc.tables) == 1
     assert doc.tables[0].position == 0
+    assert doc.tables[0].section.position == 0
     assert doc.tables[0].document.name == "md"
 
     # Check that doc has cells
@@ -77,7 +79,7 @@ def test_parse_md_details(caplog):
     sent = doc.sentences[25]
     assert sent.text == "Spicy"
     assert sent.table.position == 0
-    assert sent.table.position == 0
+    assert sent.table.section.position == 0
     assert sent.cell.row_start == 0
     assert sent.cell.col_start == 2
 

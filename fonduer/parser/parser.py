@@ -11,8 +11,8 @@ from fonduer.candidates.models import Candidate
 from fonduer.parser.models import (
     Cell,
     Context,
-    Document,
     Figure,
+    Section,
     Sentence,
     Table,
     construct_stable_id,
@@ -159,9 +159,17 @@ class ParserUDF(UDF):
             stable_id = "{}::{}:{}".format(
                 state["document"].name, "table", state["table"]["idx"]
             )
-            # Create the Cell in the DB
+            # Create the Table in the DB
+            parent = state["parent"][node]
+            if not isinstance(parent, Section):
+                logger.warning("Table is nested within {}".format(parent))
             state["context"][node] = Table(
-                document=state["document"], stable_id=stable_id, position=table_idx
+                document=state["document"],
+                # TODO: This just takes the one and only Section in a document
+                # and assigns it as the Table's parent.
+                section=state["document"].sections[0],
+                stable_id=stable_id,
+                position=table_idx,
             )
 
             # Local state for each table. This is required to support nested
@@ -258,9 +266,14 @@ class ParserUDF(UDF):
             state["document"].name, "figure", state["figure"]["idx"]
         )
 
+        if not isinstance(state["parent"][node], Section):
+            logger.warning("Figure is nested within {}".format(state["parent"][node]))
+            raise NotImplementedError("Nested Figure not implemented.")
+
         # Create the Figure entry in the DB
         state["context"][node] = Figure(
             document=state["document"],
+            section=state["parent"][node],
             stable_id=stable_id,
             position=state["figure"]["idx"],
             url=node.get("src"),
@@ -364,8 +377,8 @@ class ParserUDF(UDF):
                         if node in state["context"]
                         else state["parent"][node]
                     )
-                    if isinstance(parent, Document):
-                        pass
+                    if isinstance(parent, Section):
+                        parts["section"] = parent
                     elif isinstance(parent, Table):
                         parts["table"] = parent
                     elif isinstance(parent, Cell):
@@ -377,11 +390,37 @@ class ParserUDF(UDF):
                         parts["col_end"] = parent.col_end
                     else:
                         raise NotImplementedError(
-                            "Sentence parent must be Document, Table, or Cell"
+                            "Sentence parent must be Section, Table, or Cell"
                         )
                 yield Sentence(**parts)
 
                 state["sentence"]["idx"] += 1
+
+    def _parse_section_node(self, node, state):
+        """Parse a Section of the node.
+
+        Note that this implementation currently just creates a single Section
+        for a document.
+
+        :param node: The lxml node to parse
+        :param state: The global state necessary to place the node in context
+            of the document as a whole.
+        """
+        if node.tag != "html":
+            return state
+
+        # Add a Section
+        stable_id = "{}::{}:{}".format(
+            state["document"].name, "section", state["section"]["idx"]
+        )
+        state["context"][node] = Section(
+            document=state["document"],
+            stable_id=stable_id,
+            position=state["section"]["idx"],
+        )
+        state["section"]["idx"] += 1
+
+        return state
 
     def _parse_node(self, node, state):
         """Entry point for parsing all node types.
@@ -392,6 +431,8 @@ class ParserUDF(UDF):
         :rtype: a *generator* of Sentences
         """
         # Processing on entry of node
+        state = self._parse_section_node(node, state)
+
         state = self._parse_figure_node(node, state)
 
         if self.tabular:
@@ -429,6 +470,7 @@ class ParserUDF(UDF):
             "context": {},  # track the Context created by each node (context['td'] = Cell)
             "root": root,
             "document": document,
+            "section": {"idx": 0},
             "figure": {"idx": 0},
             "table": {"idx": 0},
             "sentence": {"idx": 0, "abs_offset": 0},
