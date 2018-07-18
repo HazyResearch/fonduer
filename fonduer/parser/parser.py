@@ -161,17 +161,19 @@ class ParserUDF(UDF):
                 state["document"].name, "table", state["table"]["idx"]
             )
             # Create the Table in the DB
+            parts = {}
+            parts["document"] = state["document"]
+            parts["stable_id"] = stable_id
+            parts["position"] = table_idx
             parent = state["parent"][node]
-            if not isinstance(parent, Section):
-                logger.warning("Table is nested within {}".format(parent))
-            state["context"][node] = Table(
-                document=state["document"],
-                # TODO: This just takes the one and only Section in a document
-                # and assigns it as the Table's parent.
-                section=state["document"].sections[0],
-                stable_id=stable_id,
-                position=table_idx,
-            )
+            if isinstance(parent, Cell):
+                parts["section"] = parent.table.section
+            elif isinstance(parent, Section):
+                parts["section"] = parent
+            else:
+                raise NotImplementedError("Table is not within a Section or Cell")
+
+            state["context"][node] = Table(**parts)
 
             # Local state for each table. This is required to support nested
             # tables
@@ -416,14 +418,15 @@ class ParserUDF(UDF):
             parts["stable_id"] = stable_id
             parts["document"] = state["document"]
             parts["position"] = state["paragraph"]["idx"]
-            parts["section"] = state["document"].sections[0]
             if isinstance(parent, Table):
+                parts["section"] = parent.section
                 parts["table"] = parent
             elif isinstance(parent, Cell):
+                parts["section"] = parent.table.section
                 parts["table"] = parent.table
                 parts["cell"] = parent
             elif isinstance(parent, Section):
-                pass
+                parts["section"] = parent
             else:
                 raise NotImplementedError(
                     "Paragraph parent must be Section, Table, or Cell"
