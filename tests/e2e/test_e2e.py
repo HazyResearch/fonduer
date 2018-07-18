@@ -36,9 +36,9 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+#  @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
-    """Run an end-to-end test on 20 documents of the hardware domain."""
+    """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
     if os.name == "posix":
@@ -68,11 +68,36 @@ def test_e2e(caplog):
 
     num_sentences = session.query(Sentence).count()
     logger.info("Sentences: {}".format(num_sentences))
-    #  assert num_sentences == 20
 
     # Divide into test and train
     docs = session.query(Document).order_by(Document.name).all()
     ld = len(docs)
+    assert len(docs[0].sentences) == 829
+    assert len(docs[1].sentences) == 703
+    assert len(docs[2].sentences) == 819
+    assert len(docs[3].sentences) == 685
+    assert len(docs[4].sentences) == 544
+    assert len(docs[5].sentences) == 757
+    assert len(docs[6].sentences) == 595
+    assert len(docs[7].sentences) == 165
+    assert len(docs[8].sentences) == 252
+    assert len(docs[9].sentences) == 540
+    assert len(docs[10].sentences) == 353
+    assert len(docs[11].sentences) == 546
+
+    # Check table numbers
+    assert len(docs[0].tables) == 9
+    assert len(docs[1].tables) == 9
+    assert len(docs[2].tables) == 14
+    assert len(docs[3].tables) == 11
+    assert len(docs[4].tables) == 11
+    assert len(docs[5].tables) == 10
+    assert len(docs[6].tables) == 10
+    assert len(docs[7].tables) == 2
+    assert len(docs[8].tables) == 7
+    assert len(docs[9].tables) == 10
+    assert len(docs[10].tables) == 6
+    assert len(docs[11].tables) == 9
 
     train_docs = set()
     dev_docs = set()
