@@ -52,9 +52,12 @@ class Visualizer(object):
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         if not pdf_file:
-            pdf_file = os.path.join(
-                self.pdf_path, candidates[0][0].sentence.document.name + ".pdf"
-            )
+            if os.path.isfile(self.pdf_path):
+                pdf_file = self.pdf_path
+            if os.path.isdir(self.pdf_path):
+                pdf_file = os.path.join(
+                    self.pdf_path, candidates[0][0].sentence.document.name + ".pdf"
+                )
         boxes = [get_box(span) for c in candidates for span in c.get_contexts()]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)

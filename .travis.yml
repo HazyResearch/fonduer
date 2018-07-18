@@ -23,7 +23,7 @@ notifications:
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
 - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
@@ -66,10 +66,15 @@ install:
     brew install poppler
   fi
 - python -m spacy download en
+- pip install Wand
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmagickwand-dev; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype imagemagick; fi
+
 
 before_script:
 - psql -c 'create database parser_test;' -U postgres
 - psql -c 'create database e2e_test;' -U postgres
+- psql -c 'create database visualizer_test;' -U postgres
 - cd tests/e2e/
 - "./download_data.sh"
 - cd ../..
