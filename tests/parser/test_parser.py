@@ -354,7 +354,7 @@ def test_parse_style(caplog):
     doc = session.query(Document).order_by(Document.name).all()[0]
 
     # Grab the sentences parsed by the Parser
-    sentences = list(session.query(Sentence).order_by(Sentence.sentence_num).all())
+    sentences = list(session.query(Sentence).order_by(Sentence.position).all())
 
     logger.warning("Doc: {}".format(doc))
     for i, sentence in enumerate(sentences):
