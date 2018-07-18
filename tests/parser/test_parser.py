@@ -9,9 +9,9 @@ import logging
 import os
 
 from fonduer import Meta
-from fonduer.parser import OmniParser
+from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
-from fonduer.parser.parser import OmniParserUDF
+from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.parser.spacy_parser import Spacy
 
@@ -22,7 +22,7 @@ def test_parse_md_details(caplog):
     """Unit test of the final results stored in the database of the md document.
 
     This test only looks at the final results such that the implementation of
-    the OmniParserUDF's apply() can be modified.
+    the ParserUDF's apply() can be modified.
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
@@ -36,8 +36,10 @@ def test_parse_md_details(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the md document
-    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    # Create an Parser and parse the md document
+    omni = Parser(
+        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the md document
@@ -50,7 +52,7 @@ def test_parse_md_details(caplog):
     assert doc.figures[0].position == 0
     assert doc.figures[0].stable_id == "md::figure:0"
 
-    # Check that doc has a table
+    #  Check that doc has a table
     assert len(doc.tables) == 1
     assert doc.tables[0].position == 0
     assert doc.tables[0].document.name == "md"
@@ -72,6 +74,12 @@ def test_parse_md_details(caplog):
 
     # Check that doc has sentences
     assert len(doc.sentences) == 45
+    sent = doc.sentences[25]
+    assert sent.text == "Spicy"
+    assert sent.table.position == 0
+    assert sent.table.position == 0
+    assert sent.cell.row_start == 0
+    assert sent.cell.col_start == 2
 
     logger.info("Doc: {}".format(doc))
     for i, sentence in enumerate(doc.sentences):
@@ -96,7 +104,7 @@ def test_parse_md_details(caplog):
 
 
 def test_simple_tokenizer(caplog):
-    """Unit test of OmniParser on a single document with lingual features off."""
+    """Unit test of Parser on a single document with lingual features off."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
@@ -114,7 +122,7 @@ def test_simple_tokenizer(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    omni = OmniParser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
+    omni = Parser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     doc = session.query(Document).order_by(Document.name).all()[1]
@@ -140,7 +148,7 @@ def test_simple_tokenizer(caplog):
 
 
 def test_parse_document_diseases(caplog):
-    """Unit test of OmniParser on a single document.
+    """Unit test of Parser on a single document.
 
     This tests both the structural and visual parse of the document.
     """
@@ -161,8 +169,8 @@ def test_parse_document_diseases(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the diseases document
-    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    # Create an Parser and parse the diseases document
+    omni = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the diseases document
@@ -173,8 +181,26 @@ def test_parse_document_diseases(caplog):
     for sentence in doc.sentences:
         logger.info("    Sentence: {}".format(sentence.text))
 
-    sentence = sorted(doc.sentences)[11]
+    # Check figures
+    assert len(doc.figures) == 0
+
+    #  Check that doc has a table
+    assert len(doc.tables) == 3
+    assert doc.tables[0].position == 0
+    assert doc.tables[0].document.name == "diseases"
+
+    # Check that doc has cells
+    assert len(doc.cells) == 25
+
+    sentence = doc.sentences[10]
     logger.info("  {}".format(sentence))
+
+    # Check the sentence's cell
+    assert sentence.table.position == 0
+    assert sentence.cell.row_start == 2
+    assert sentence.cell.col_start == 1
+    assert sentence.cell.position == 4
+
     # Test structural attributes
     assert sentence.xpath == "/html/body/table[1]/tbody/tr[3]/td[1]/p"
     assert sentence.html_tag == "p"
@@ -189,8 +215,7 @@ def test_parse_document_diseases(caplog):
     assert sentence.ner_tags == ["O", "O", "GPE"]
     assert sentence.dep_labels == ["ROOT", "prep", "pobj"]
 
-    # 44 sentences expected in the "diseases" document.
-    assert len(doc.sentences) == 36
+    assert len(doc.sentences) == 37
 
 
 def test_spacy_integration(caplog):
@@ -216,7 +241,7 @@ def test_spacy_integration(caplog):
     max_docs = 2
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser = OmniParser(
+    corpus_parser = Parser(
         structural=True, lingual=True, visual=False, pdf_path=pdf_path
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
@@ -229,7 +254,7 @@ def test_spacy_integration(caplog):
             logger.info("  Sentence: {}".format(sentence.text))
 
     assert session.query(Document).count() == 2
-    assert session.query(Sentence).count() == 81
+    assert session.query(Sentence).count() == 82
 
 
 def test_parse_style(caplog):
@@ -251,14 +276,14 @@ def test_parse_style(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    # Create an OmniParser and parse the md document
-    omni = OmniParser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    # Create an Parser and parse the md document
+    omni = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
     omni.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the document
     doc = session.query(Document).order_by(Document.name).all()[0]
 
-    # Grab the sentences parsed by the OmniParser
+    # Grab the sentences parsed by the Parser
     sentences = list(session.query(Sentence).order_by(Sentence.sentence_num).all())
 
     logger.warning("Doc: {}".format(doc))
@@ -268,7 +293,7 @@ def test_parse_style(caplog):
     # sentences for testing
     sub_sentences = [
         {
-            "index": 5,
+            "index": 6,
             "attr": [
                 "class=col-header",
                 "hobbies=work:hard;play:harder",
@@ -276,8 +301,8 @@ def test_parse_style(caplog):
                 "style=background: #f1f1f1; color: aquamarine; font-size: 18px;",
             ],
         },
-        {"index": 8, "attr": ["class=row-header", "style=background: #f1f1f1;"]},
-        {"index": 10, "attr": ["class=cell", "style=text-align: center;"]},
+        {"index": 9, "attr": ["class=row-header", "style=background: #f1f1f1;"]},
+        {"index": 11, "attr": ["class=cell", "style=text-align: center;"]},
     ]
 
     # Assertions

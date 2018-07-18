@@ -21,7 +21,7 @@ from fonduer import (
     Intersect,
     LambdaFunctionMatcher,
     Meta,
-    OmniParser,
+    Parser,
     RegexMatchSpan,
     Sentence,
     SparseLogisticRegression,
@@ -38,7 +38,7 @@ DB = "e2e_test"
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
-    """Run an end-to-end test on 20 documents of the hardware domain."""
+    """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
     if os.name == "posix":
@@ -57,7 +57,7 @@ def test_e2e(caplog):
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser = OmniParser(
+    corpus_parser = Parser(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
@@ -68,11 +68,50 @@ def test_e2e(caplog):
 
     num_sentences = session.query(Sentence).count()
     logger.info("Sentences: {}".format(num_sentences))
-    #  assert num_sentences == 20
 
     # Divide into test and train
     docs = session.query(Document).order_by(Document.name).all()
     ld = len(docs)
+    assert len(docs[0].sentences) == 828
+    assert len(docs[1].sentences) == 706
+    assert len(docs[2].sentences) == 819
+    assert len(docs[3].sentences) == 684
+    assert len(docs[4].sentences) == 552
+    assert len(docs[5].sentences) == 758
+    assert len(docs[6].sentences) == 597
+    assert len(docs[7].sentences) == 165
+    assert len(docs[8].sentences) == 250
+    assert len(docs[9].sentences) == 533
+    assert len(docs[10].sentences) == 354
+    assert len(docs[11].sentences) == 547
+
+    # Check table numbers
+    assert len(docs[0].tables) == 9
+    assert len(docs[1].tables) == 9
+    assert len(docs[2].tables) == 14
+    assert len(docs[3].tables) == 11
+    assert len(docs[4].tables) == 11
+    assert len(docs[5].tables) == 10
+    assert len(docs[6].tables) == 10
+    assert len(docs[7].tables) == 2
+    assert len(docs[8].tables) == 7
+    assert len(docs[9].tables) == 10
+    assert len(docs[10].tables) == 6
+    assert len(docs[11].tables) == 9
+
+    # Check figure numbers
+    assert len(docs[0].figures) == 32
+    assert len(docs[1].figures) == 11
+    assert len(docs[2].figures) == 38
+    assert len(docs[3].figures) == 31
+    assert len(docs[4].figures) == 7
+    assert len(docs[5].figures) == 38
+    assert len(docs[6].figures) == 10
+    assert len(docs[7].figures) == 31
+    assert len(docs[8].figures) == 4
+    assert len(docs[9].figures) == 27
+    assert len(docs[10].figures) == 5
+    assert len(docs[11].figures) == 27
 
     train_docs = set()
     dev_docs = set()
