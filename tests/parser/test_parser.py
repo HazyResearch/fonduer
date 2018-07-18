@@ -165,8 +165,11 @@ def test_parse_md_paragraphs(caplog):
         == "Unlike the other markdown document, however, this document actually contains paragraphs of text."
     )
     assert sent1.paragraph.position == 1
+    assert sent1.section.position == 0
     assert sent2.paragraph.position == 1
+    assert sent2.section.position == 0
     assert sent3.paragraph.position == 1
+    assert sent3.section.position == 0
 
     assert len(doc.paragraphs) == 44
     assert len(doc.paragraphs[1].sentences) == 3
