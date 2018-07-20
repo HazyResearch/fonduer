@@ -262,7 +262,7 @@ class ParserUDF(UDF):
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-        if node.tag != "img":
+        if node.tag not in ["img", "figure"]:
             return state
 
         # Process the figure
@@ -270,20 +270,45 @@ class ParserUDF(UDF):
             state["document"].name, "figure", state["figure"]["idx"]
         )
 
+        # img within a Figure get's processed in the parent Figure
+        if node.tag == "img" and isinstance(state["parent"][node], Figure):
+            return state
+
+        # NOTE: We currently do NOT support nested figures.
         if not isinstance(state["parent"][node], Section):
             logger.warning("Figure is nested within {}".format(state["parent"][node]))
-            raise NotImplementedError("Nested Figure not implemented.")
+            return state
 
-        # Create the Figure entry in the DB
-        state["context"][node] = Figure(
-            document=state["document"],
-            section=state["parent"][node],
-            stable_id=stable_id,
-            position=state["figure"]["idx"],
-            url=node.get("src"),
-        )
+        # If processing a raw img
+        if node.tag == "img":
+            # Create the Figure entry in the DB
+            state["context"][node] = Figure(
+                document=state["document"],
+                section=state["parent"][node],
+                stable_id=stable_id,
+                position=state["figure"]["idx"],
+                url=node.get("src"),
+            )
+        elif node.tag == "figure":
+            # Pull the image from a child img node, if one exists
+            imgs = [child for child in node if child.tag == "img"]
+
+            if len(imgs) > 1:
+                logger.warning("Figure contains multiple images.")
+                raise NotImplementedError("No support for figures with multiple <img>")
+
+            img = imgs[0]
+
+            # Create the Figure entry in the DB
+            state["context"][node] = Figure(
+                document=state["document"],
+                section=state["parent"][node],
+                stable_id=stable_id,
+                position=state["figure"]["idx"],
+                url=img.get("src"),
+            )
+
         state["figure"]["idx"] += 1
-
         return state
 
     def _parse_sentence(self, paragraph, node, state):
@@ -480,7 +505,7 @@ class ParserUDF(UDF):
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-        if node.tag != "caption":  # captions used in Tables
+        if node.tag not in ["caption", "figcaption"]:  # captions used in Tables
             return state
 
         # Add a Caption
