@@ -130,7 +130,7 @@ def test_parse_md_paragraphs(caplog):
     assert doc.name == "md_para"
 
     # Check that doc has a figure
-    assert len(doc.figures) == 2
+    assert len(doc.figures) == 5
     assert doc.figures[0].url == "http://placebear.com/200/200"
     assert doc.figures[0].position == 0
     assert doc.figures[0].section.position == 0
@@ -146,6 +146,11 @@ def test_parse_md_paragraphs(caplog):
     assert (
         doc.figures[1].captions[0].paragraphs[0].sentences[0].text
         == "Australian Birds."
+    )
+    assert len(doc.figures[3].captions) == 0
+    assert (
+        doc.figures[3].url
+        == "http://html5doctor.com/wp-content/uploads/2010/03/pelican.jpg"
     )
 
     #  Check that doc has a table

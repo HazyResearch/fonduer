@@ -295,9 +295,16 @@ class ParserUDF(UDF):
 
             if len(imgs) > 1:
                 logger.warning("Figure contains multiple images.")
-                raise NotImplementedError("No support for figures with multiple <img>")
+                # Right now we don't support multiple URLs in the Figure context
+                # As a workaround, just ignore the outer Figure and allow processing
+                # of the individual images. We ignore the accompanying figcaption
+                # by marking it as visited.
+                captions = [child for child in node if child.tag == "figcaption"]
+                state["visited"].update(captions)
+                return state
 
             img = imgs[0]
+            state["visited"].add(img)
 
             # Create the Figure entry in the DB
             state["context"][node] = Figure(
@@ -566,7 +573,6 @@ class ParserUDF(UDF):
         :rtype: a *generator* of Sentences.
         """
         stack = []
-        visited = set()
 
         root = lxml.html.fromstring(text)
         document.text = text
@@ -580,6 +586,7 @@ class ParserUDF(UDF):
         # defined in parser/models. This contains the state necessary to create
         # the respective Contexts within the document.
         state = {
+            "visited": set(),
             "parent": {},  # map of parent[child] = node used to discover child
             "context": {},  # track the Context created by each node (context['td'] = Cell)
             "root": root,
@@ -600,8 +607,8 @@ class ParserUDF(UDF):
         state["context"][root] = document
         while stack:
             node = stack.pop()
-            if node not in visited:
-                visited.add(node)  # mark as visited
+            if node not in state["visited"]:
+                state["visited"].add(node)  # mark as visited
 
                 # Process
                 yield from self._parse_node(node, state)
