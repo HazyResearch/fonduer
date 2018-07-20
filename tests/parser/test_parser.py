@@ -76,7 +76,7 @@ def test_parse_md_details(caplog):
 
     # Check that doc has sentences
     assert len(doc.sentences) == 45
-    sent = doc.sentences[25]
+    sent = sorted(doc.sentences, key=lambda x: x.position)[25]
     assert sent.text == "Spicy"
     assert sent.table.position == 0
     assert sent.table.section.position == 0
@@ -130,11 +130,28 @@ def test_parse_md_paragraphs(caplog):
     assert doc.name == "md_para"
 
     # Check that doc has a figure
-    assert len(doc.figures) == 1
+    assert len(doc.figures) == 5
     assert doc.figures[0].url == "http://placebear.com/200/200"
     assert doc.figures[0].position == 0
     assert doc.figures[0].section.position == 0
+    assert len(doc.figures[0].captions) == 0
     assert doc.figures[0].stable_id == "md_para::figure:0"
+    assert (
+        doc.figures[1].url
+        == "http://html5doctor.com/wp-content/uploads/2010/03/kookaburra.jpg"
+    )
+    assert doc.figures[1].position == 1
+    assert len(doc.figures[1].captions) == 1
+    assert len(doc.figures[1].captions[0].paragraphs[0].sentences) == 3
+    assert (
+        doc.figures[1].captions[0].paragraphs[0].sentences[0].text
+        == "Australian Birds."
+    )
+    assert len(doc.figures[3].captions) == 0
+    assert (
+        doc.figures[3].url
+        == "http://html5doctor.com/wp-content/uploads/2010/03/pelican.jpg"
+    )
 
     #  Check that doc has a table
     assert len(doc.tables) == 1
@@ -155,10 +172,11 @@ def test_parse_md_paragraphs(caplog):
     assert cells[10].table.position == 0
 
     # Check that doc has sentences
-    assert len(doc.sentences) == 47
-    sent1 = doc.sentences[1]
-    sent2 = doc.sentences[2]
-    sent3 = doc.sentences[3]
+    assert len(doc.sentences) == 51
+    sentences = sorted(doc.sentences, key=lambda x: x.position)
+    sent1 = sentences[1]
+    sent2 = sentences[2]
+    sent3 = sentences[3]
     assert sent1.text == "This is some basic, sample markdown."
     assert (
         sent2.text
@@ -171,7 +189,7 @@ def test_parse_md_paragraphs(caplog):
     assert sent3.paragraph.position == 1
     assert sent3.section.position == 0
 
-    assert len(doc.paragraphs) == 44
+    assert len(doc.paragraphs) == 46
     assert len(doc.paragraphs[1].sentences) == 3
     assert len(doc.paragraphs[2].sentences) == 1
 

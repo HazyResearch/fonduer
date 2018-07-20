@@ -262,7 +262,7 @@ class ParserUDF(UDF):
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-        if node.tag != "img":
+        if node.tag not in ["img", "figure"]:
             return state
 
         # Process the figure
@@ -270,20 +270,52 @@ class ParserUDF(UDF):
             state["document"].name, "figure", state["figure"]["idx"]
         )
 
+        # img within a Figure get's processed in the parent Figure
+        if node.tag == "img" and isinstance(state["parent"][node], Figure):
+            return state
+
+        # NOTE: We currently do NOT support nested figures.
         if not isinstance(state["parent"][node], Section):
             logger.warning("Figure is nested within {}".format(state["parent"][node]))
-            raise NotImplementedError("Nested Figure not implemented.")
+            return state
 
-        # Create the Figure entry in the DB
-        state["context"][node] = Figure(
-            document=state["document"],
-            section=state["parent"][node],
-            stable_id=stable_id,
-            position=state["figure"]["idx"],
-            url=node.get("src"),
-        )
+        # If processing a raw img
+        if node.tag == "img":
+            # Create the Figure entry in the DB
+            state["context"][node] = Figure(
+                document=state["document"],
+                section=state["parent"][node],
+                stable_id=stable_id,
+                position=state["figure"]["idx"],
+                url=node.get("src"),
+            )
+        elif node.tag == "figure":
+            # Pull the image from a child img node, if one exists
+            imgs = [child for child in node if child.tag == "img"]
+
+            if len(imgs) > 1:
+                logger.warning("Figure contains multiple images.")
+                # Right now we don't support multiple URLs in the Figure context
+                # As a workaround, just ignore the outer Figure and allow processing
+                # of the individual images. We ignore the accompanying figcaption
+                # by marking it as visited.
+                captions = [child for child in node if child.tag == "figcaption"]
+                state["visited"].update(captions)
+                return state
+
+            img = imgs[0]
+            state["visited"].add(img)
+
+            # Create the Figure entry in the DB
+            state["context"][node] = Figure(
+                document=state["document"],
+                section=state["parent"][node],
+                stable_id=stable_id,
+                position=state["figure"]["idx"],
+                url=img.get("src"),
+            )
+
         state["figure"]["idx"] += 1
-
         return state
 
     def _parse_sentence(self, paragraph, node, state):
@@ -480,7 +512,7 @@ class ParserUDF(UDF):
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-        if node.tag != "caption":  # captions used in Tables
+        if node.tag not in ["caption", "figcaption"]:  # captions used in Tables
             return state
 
         # Add a Caption
@@ -541,7 +573,6 @@ class ParserUDF(UDF):
         :rtype: a *generator* of Sentences.
         """
         stack = []
-        visited = set()
 
         root = lxml.html.fromstring(text)
         document.text = text
@@ -555,6 +586,7 @@ class ParserUDF(UDF):
         # defined in parser/models. This contains the state necessary to create
         # the respective Contexts within the document.
         state = {
+            "visited": set(),
             "parent": {},  # map of parent[child] = node used to discover child
             "context": {},  # track the Context created by each node (context['td'] = Cell)
             "root": root,
@@ -575,8 +607,8 @@ class ParserUDF(UDF):
         state["context"][root] = document
         while stack:
             node = stack.pop()
-            if node not in visited:
-                visited.add(node)  # mark as visited
+            if node not in state["visited"]:
+                state["visited"].add(node)  # mark as visited
 
                 # Process
                 yield from self._parse_node(node, state)
