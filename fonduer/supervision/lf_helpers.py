@@ -917,7 +917,7 @@ def get_page_horz_percentile(
     :rtype: float in [0.0, 1.0]
     """
     span = span if isinstance(span, TemporarySpan) else span[0]
-    return bbox_from_span(span).left, page_width
+    return bbox_from_span(span).left / page_width
 
 
 def _assign_alignment_features(sentences_by_key, align_type):
