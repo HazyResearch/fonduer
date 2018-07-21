@@ -21,6 +21,10 @@ unary_strlib_feats = {}
 binary_strlib_feats = {}
 
 
+def wrap(feature, deliminter="%$%"):
+    return feature.replace(" ", deliminter)
+
+
 def get_structural_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
@@ -40,7 +44,7 @@ def get_structural_feats(candidates):
                         unary_strlib_feats[span.stable_id].add((f, v))
 
                 for f, v in unary_strlib_feats[span.stable_id]:
-                    yield candidate.id, FEAT_PRE + f, v
+                    yield candidate.id, FEAT_PRE + wrap(f), v
 
         # Binary candidates
         elif len(args) == 2:
@@ -53,7 +57,7 @@ def get_structural_feats(candidates):
                             unary_strlib_feats[span.stable_id].add((f, v))
 
                     for f, v in unary_strlib_feats[span.stable_id]:
-                        yield candidate.id, FEAT_PRE + pre + f, v
+                        yield candidate.id, FEAT_PRE + pre + wrap(f), v
 
                 if candidate.id not in binary_strlib_feats:
                     binary_strlib_feats[candidate.id] = set()
@@ -61,7 +65,7 @@ def get_structural_feats(candidates):
                         binary_strlib_feats[candidate.id].add((f, v))
 
                 for f, v in binary_strlib_feats[candidate.id]:
-                    yield candidate.id, FEAT_PRE + f, v
+                    yield candidate.id, FEAT_PRE + wrap(f), v
         else:
             raise NotImplementedError(
                 "Only handles unary and binary candidates currently"

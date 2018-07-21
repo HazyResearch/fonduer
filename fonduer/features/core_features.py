@@ -6,6 +6,10 @@ DEF_VALUE = 1
 unary_feats = {}
 
 
+def wrap(feature, deliminter="%$%"):
+    return feature.replace(" ", deliminter)
+
+
 def get_core_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
@@ -25,7 +29,7 @@ def get_core_feats(candidates):
                     unary_feats[span.stable_id].add(f)
 
             for f in unary_feats[span.stable_id]:
-                yield candidate.id, FEAT_PRE + f, DEF_VALUE
+                yield candidate.id, FEAT_PRE + wrap(f), DEF_VALUE
 
         # Binary candidates
         elif len(args) == 2:
@@ -37,7 +41,7 @@ def get_core_feats(candidates):
                         unary_feats[span.stable_id].add(f)
 
                 for f in unary_feats[span.stable_id]:
-                    yield candidate.id, FEAT_PRE + pre + f, DEF_VALUE
+                    yield candidate.id, FEAT_PRE + pre + wrap(f), DEF_VALUE
         else:
             raise NotImplementedError(
                 "Only handles unary and binary candidates currently"
