@@ -17,6 +17,7 @@ from treedlib import (
 from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
 from fonduer.features.tree_structs import corenlp_to_xmltree
+from fonduer.features.utils import wrap
 from fonduer.supervision.lf_helpers import (
     get_left_ngrams,
     get_right_ngrams,
@@ -52,17 +53,17 @@ def get_content_feats(candidates):
                 if len(sidxs) > 0:
                     # Add DDLIB entity features
                     for f in get_ddlib_feats(span, sent, sidxs):
-                        yield candidate.id, "DDL_" + f, DEF_VALUE
+                        yield candidate.id, "DDL_" + wrap(f), DEF_VALUE
                     # Add TreeDLib entity features
                     if span.stable_id not in unary_tdl_feats:
                         unary_tdl_feats[span.stable_id] = set()
                         for f in get_tdl_feats(xmltree.root, sidxs):
                             unary_tdl_feats[span.stable_id].add(f)
                     for f in unary_tdl_feats[span.stable_id]:
-                        yield candidate.id, "TDL_" + f, DEF_VALUE
+                        yield candidate.id, "TDL_" + wrap(f), DEF_VALUE
             else:
                 for f in get_word_feats(span):
-                    yield candidate.id, "BASIC_" + f, DEF_VALUE
+                    yield candidate.id, "BASIC_" + wrap(f), DEF_VALUE
 
         # Binary candidates
         elif len(args) == 2:
@@ -78,10 +79,10 @@ def get_content_feats(candidates):
 
                     # Add DDLIB entity features for relation
                     for f in get_ddlib_feats(span1, sent1, s1_idxs):
-                        yield candidate.id, "DDL_e1_" + f, DEF_VALUE
+                        yield candidate.id, "DDL_e1_" + wrap(f), DEF_VALUE
 
                     for f in get_ddlib_feats(span2, sent2, s2_idxs):
-                        yield candidate.id, "DDL_e2_" + f, DEF_VALUE
+                        yield candidate.id, "DDL_e2_" + wrap(f), DEF_VALUE
 
                     # Add TreeDLib relation features
                     if candidate.id not in binary_tdl_feats:
@@ -89,13 +90,13 @@ def get_content_feats(candidates):
                         for f in get_tdl_feats(xmltree.root, s1_idxs, s2_idxs):
                             binary_tdl_feats[candidate.id].add(f)
                     for f in binary_tdl_feats[candidate.id]:
-                        yield candidate.id, "TDL_" + f, DEF_VALUE
+                        yield candidate.id, "TDL_" + wrap(f), DEF_VALUE
             else:
                 for f in get_word_feats(span1):
-                    yield candidate.id, "BASIC_e1_" + f, DEF_VALUE
+                    yield candidate.id, "BASIC_e1_" + wrap(f), DEF_VALUE
 
                 for f in get_word_feats(span2):
-                    yield candidate.id, "BASIC_e2_" + f, DEF_VALUE
+                    yield candidate.id, "BASIC_e2_" + wrap(f), DEF_VALUE
 
         else:
             raise NotImplementedError(

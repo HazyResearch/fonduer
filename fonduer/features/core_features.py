@@ -1,4 +1,5 @@
 from fonduer.candidates.models import ImplicitSpan, TemporarySpan
+from fonduer.features.utils import wrap
 
 FEAT_PRE = "CORE_"
 DEF_VALUE = 1
@@ -25,7 +26,7 @@ def get_core_feats(candidates):
                     unary_feats[span.stable_id].add(f)
 
             for f in unary_feats[span.stable_id]:
-                yield candidate.id, FEAT_PRE + f, DEF_VALUE
+                yield candidate.id, FEAT_PRE + wrap(f), DEF_VALUE
 
         # Binary candidates
         elif len(args) == 2:
@@ -37,7 +38,7 @@ def get_core_feats(candidates):
                         unary_feats[span.stable_id].add(f)
 
                 for f in unary_feats[span.stable_id]:
-                    yield candidate.id, FEAT_PRE + pre + f, DEF_VALUE
+                    yield candidate.id, FEAT_PRE + pre + wrap(f), DEF_VALUE
         else:
             raise NotImplementedError(
                 "Only handles unary and binary candidates currently"
