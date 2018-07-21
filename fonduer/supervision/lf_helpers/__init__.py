@@ -1,6 +1,6 @@
 import logging
 
-from fonduer.supervision.utils.structural import (
+from fonduer.supervision.lf_helpers.structural import (
     common_ancestor,
     get_ancestor_class_names,
     get_ancestor_id_names,
@@ -12,7 +12,7 @@ from fonduer.supervision.utils.structural import (
     get_tag,
     lowest_common_ancestor_depth,
 )
-from fonduer.supervision.utils.tabular import (
+from fonduer.supervision.lf_helpers.tabular import (
     same_document,
     same_table,
     same_row,
@@ -31,12 +31,12 @@ from fonduer.supervision.utils.tabular import (
     get_aligned_ngrams,
     get_head_ngrams,
 )
-from fonduer.supervision.utils.textual import (
+from fonduer.supervision.lf_helpers.textual import (
     get_between_ngrams,
     get_left_ngrams,
     get_right_ngrams,
 )
-from fonduer.supervision.utils.visual import (
+from fonduer.supervision.lf_helpers.visual import (
     get_page,
     is_horz_aligned,
     is_vert_aligned,

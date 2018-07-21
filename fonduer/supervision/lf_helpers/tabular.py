@@ -7,7 +7,7 @@ from itertools import chain
 
 from fonduer.candidates.models import TemporarySpan
 from fonduer.parser.models import Sentence
-from fonduer.supervision.utils.textual import get_left_ngrams, get_right_ngrams
+from fonduer.supervision.lf_helpers.textual import get_left_ngrams, get_right_ngrams
 from fonduer.utils import tokens_to_ngrams
 from fonduer.utils.utils_table import (
     is_axis_aligned,
