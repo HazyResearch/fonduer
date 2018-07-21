@@ -5,7 +5,9 @@ import os
 import pickle
 import re
 from builtins import range
+from itertools import chain
 
+import numpy as np
 import pytest
 from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
 from hardware_utils import entity_level_f1, load_hardware_labels
