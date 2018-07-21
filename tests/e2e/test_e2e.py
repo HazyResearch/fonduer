@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 import csv
 import logging
 import os
@@ -112,6 +112,20 @@ def test_e2e(caplog):
     assert len(docs[9].figures) == 27
     assert len(docs[10].figures) == 5
     assert len(docs[11].figures) == 27
+
+    # Check caption numbers
+    assert len(docs[0].captions) == 0
+    assert len(docs[1].captions) == 0
+    assert len(docs[2].captions) == 0
+    assert len(docs[3].captions) == 0
+    assert len(docs[4].captions) == 0
+    assert len(docs[5].captions) == 0
+    assert len(docs[6].captions) == 0
+    assert len(docs[7].captions) == 0
+    assert len(docs[8].captions) == 0
+    assert len(docs[9].captions) == 0
+    assert len(docs[10].captions) == 0
+    assert len(docs[11].captions) == 0
 
     train_docs = set()
     dev_docs = set()
