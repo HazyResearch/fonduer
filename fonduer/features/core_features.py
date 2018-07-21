@@ -1,13 +1,10 @@
 from fonduer.candidates.models import ImplicitSpan, TemporarySpan
+from fonduer.features.utils import wrap
 
 FEAT_PRE = "CORE_"
 DEF_VALUE = 1
 
 unary_feats = {}
-
-
-def wrap(feature, deliminter="%$%"):
-    return feature.replace(" ", deliminter)
 
 
 def get_core_feats(candidates):

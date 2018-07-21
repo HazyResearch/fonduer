@@ -1,6 +1,7 @@
 from builtins import str
 
 from fonduer.candidates.models import TemporarySpan
+from fonduer.features.utils import wrap
 from fonduer.supervision.lf_helpers import (
     common_ancestor,
     get_ancestor_class_names,
@@ -19,10 +20,6 @@ DEF_VALUE = 1
 
 unary_strlib_feats = {}
 binary_strlib_feats = {}
-
-
-def wrap(feature, deliminter="%$%"):
-    return feature.replace(" ", deliminter)
 
 
 def get_structural_feats(candidates):

@@ -17,6 +17,7 @@ from treedlib import (
 from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
 from fonduer.features.tree_structs import corenlp_to_xmltree
+from fonduer.features.utils import wrap
 from fonduer.supervision.lf_helpers import (
     get_left_ngrams,
     get_right_ngrams,
@@ -30,10 +31,6 @@ unary_ddlib_feats = {}
 unary_word_feats = {}
 unary_tdl_feats = {}
 binary_tdl_feats = {}
-
-
-def wrap(feature, deliminter="%$%"):
-    return feature.replace(" ", deliminter)
 
 
 def get_content_feats(candidates):

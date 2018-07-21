@@ -2,6 +2,7 @@ from builtins import range, str
 
 from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
+from fonduer.features.utils import wrap
 from fonduer.supervision.lf_helpers import (
     get_cell_ngrams,
     get_col_ngrams,
@@ -15,10 +16,6 @@ DEF_VALUE = 1
 
 unary_tablelib_feats = {}
 binary_tablelib_feats = {}
-
-
-def wrap(feature, deliminter="%$%"):
-    return feature.replace(" ", deliminter)
 
 
 def get_table_feats(candidates):
