@@ -438,27 +438,3 @@ def _get_aligned_sentences(root_sentence, axis, spread=[0, 0]):
 
 def _other_axis(axis):
     return "row" if axis == "col" else "col"
-
-
-def is_superset(a, b):
-    """Check if a is a superset of b.
-
-    This is typically used to check if ALL of a list of sentences is in the ngrams returned by an lf_helper.
-
-    :param a: A collection of items
-    :param b: A collection of items
-    :rtype: boolean
-    """
-    return set(a).issuperset(b)
-
-
-def overlap(a, b):
-    """Check if a overlaps b.
-
-    This is typically used to check if ANY of a list of sentences is in the ngrams returned by an lf_helper.
-
-    :param a: A collection of items
-    :param b: A collection of items
-    :rtype: boolean
-    """
-    return not set(a).isdisjoint(b)
