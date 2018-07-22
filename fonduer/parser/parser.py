@@ -462,10 +462,12 @@ class ParserUDF(UDF):
                 parts["cell"] = parent
             elif isinstance(parent, Section):
                 parts["section"] = parent
+            elif isinstance(parent, Figure):  # occurs with text in the tail of an img
+                parts["section"] = parent.section
             else:
                 raise NotImplementedError(
-                    "Paragraph parent must be Section, Caption, or Cell, not {}".format(
-                        parent
+                    'Paragraph "{}" parent must be Section, Caption, or Cell, not {}'.format(
+                        text, parent
                     )
                 )
 

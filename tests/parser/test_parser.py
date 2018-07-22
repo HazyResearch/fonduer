@@ -173,7 +173,7 @@ def test_parse_md_paragraphs(caplog):
     assert cells[10].table.position == 0
 
     # Check that doc has sentences
-    assert len(doc.sentences) == 50
+    assert len(doc.sentences) == 51
     sentences = sorted(doc.sentences, key=lambda x: x.position)
     sent1 = sentences[1]
     sent2 = sentences[2]
@@ -190,7 +190,7 @@ def test_parse_md_paragraphs(caplog):
     assert sent3.paragraph.position == 1
     assert sent3.section.position == 0
 
-    assert len(doc.paragraphs) == 45
+    assert len(doc.paragraphs) == 46
     assert len(doc.paragraphs[1].sentences) == 3
     assert len(doc.paragraphs[2].sentences) == 1
 
