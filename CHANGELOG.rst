@@ -1,5 +1,10 @@
-Version 0.2.0
+Version 0.2.2
 -------------
+
+.. note::
+    Version 0.2.0 and 0.2.1 had to be skipped due to errors in uploading those
+    versions to PyPi. Consequently, v0.2.2 is the version directly after
+    v0.1.8.
 
 .. warning::
     This release is NOT backwards compatable with v0.1.8. The code has now been
