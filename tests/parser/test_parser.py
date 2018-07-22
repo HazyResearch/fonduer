@@ -87,7 +87,7 @@ def test_parse_md_details(caplog):
     for i, sentence in enumerate(doc.sentences):
         logger.info("    Sentence[{}]: {}".format(i, sentence.text))
 
-    header = doc.sentences[0]
+    header = sorted(doc.sentences, key=lambda x: x.position)[0]
     # Test structural attributes
     assert header.xpath == "/html/body/h1"
     assert header.html_tag == "h1"
@@ -223,7 +223,7 @@ def test_simple_tokenizer(caplog):
     for i, sentence in enumerate(doc.sentences):
         logger.info("    Sentence[{}]: {}".format(i, sentence.text))
 
-    header = doc.sentences[0]
+    header = sorted(doc.sentences, key=lambda x: x.position)[0]
     # Test structural attributes
     assert header.xpath == "/html/body/h1"
     assert header.html_tag == "h1"
@@ -275,7 +275,7 @@ def test_parse_document_diseases(caplog):
 
     # Check captions
     assert len(doc.captions) == 2
-    caption = doc.sentences[20]
+    caption = sorted(doc.sentences, key=lambda x: x.position)[20]
     assert caption.paragraph.caption.position == 0
     assert caption.paragraph.caption.table.position == 0
     assert caption.text == "Table 1: Infectious diseases and where to find them."
@@ -292,7 +292,7 @@ def test_parse_document_diseases(caplog):
     # Check that doc has cells
     assert len(doc.cells) == 25
 
-    sentence = doc.sentences[10]
+    sentence = sorted(doc.sentences, key=lambda x: x.position)[10]
     logger.info("  {}".format(sentence))
 
     # Check the sentence's cell
