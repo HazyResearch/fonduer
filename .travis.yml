@@ -90,5 +90,4 @@ deploy:
   on:
     tags: true
     branch: master
-    python: '3.6'
     condition: $TRAVIS_OS_NAME = "linux"

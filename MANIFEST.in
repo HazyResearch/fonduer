@@ -1,1 +1,1 @@
-include fonduer/settings.yaml
+include fonduer/features/settings.yaml
