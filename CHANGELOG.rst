@@ -1,10 +1,11 @@
-Version 0.2.0 (coming soon...)
-------------------------------
+Version 0.2.0
+-------------
 
 .. warning::
     This release is NOT backwards compatable with v0.1.8. The code has now been
     refactored into submodules, where each submodule corresponds with a phase
-    of the Fonduer pipeline.
+    of the Fonduer pipeline. Consequently, you may need to adjust the paths
+    of your imports from Fonduer. 
 
 * `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
   only. Also reorganize the codebase into submodules for each pipeline phase.
@@ -13,8 +14,18 @@ Version 0.2.0 (coming soon...)
   (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_,
   `#64 <https://github.com/HazyResearch/fonduer/pull/64>`_)
 * `@senwu`_: Add branding, OSX tests.
-  (`#61 <https://github.com/HazyResearch/fonduer/pull/60>`_,
+  (`#61 <https://github.com/HazyResearch/fonduer/pull/61>`_,
   `#62 <https://github.com/HazyResearch/fonduer/pull/62>`_)
+* `@lukehsiao`_: Rename to Phrase to Sentence.
+  (`#72 <https://github.com/HazyResearch/fonduer/pull/72>`_)
+* `@lukehsiao`_: Update the Data Model to include Caption, Section, Paragraph.
+  (`#76 <https://github.com/HazyResearch/fonduer/pull/76>`_,
+  `#77 <https://github.com/HazyResearch/fonduer/pull/77>`_,
+  `#78 <https://github.com/HazyResearch/fonduer/pull/78>`_)
+* `@senwu`_: Split up lf_helpers into separate files for each modaility.
+  (`#81 <https://github.com/HazyResearch/fonduer/pull/81>`_)
+* A variety of small bugfixes and code cleanup.
+  (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)
 
 Version 0.1.8
 -------------
