@@ -1,7 +1,9 @@
 Version 0.2.3
 -------------
 
-* `@lukehsiao`_: Support Figures nested in Cell contexts.
+* `@lukehsiao`_: Support Figures nested in Cell contexts and Paragraphs in
+  Figure contexts.
+  (`#84 <https://github.com/HazyResearch/fonduer/pull/84>`_)
 
 Version 0.2.2
 -------------
