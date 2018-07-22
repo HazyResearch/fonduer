@@ -87,7 +87,7 @@ def test_parse_md_details(caplog):
     for i, sentence in enumerate(doc.sentences):
         logger.info("    Sentence[{}]: {}".format(i, sentence.text))
 
-    header = doc.sentences[0]
+    header = sorted(doc.sentences, key=lambda x: x.position)[0]
     # Test structural attributes
     assert header.xpath == "/html/body/h1"
     assert header.html_tag == "h1"
@@ -130,26 +130,27 @@ def test_parse_md_paragraphs(caplog):
     assert doc.name == "md_para"
 
     # Check that doc has a figure
-    assert len(doc.figures) == 5
+    assert len(doc.figures) == 6
     assert doc.figures[0].url == "http://placebear.com/200/200"
     assert doc.figures[0].position == 0
     assert doc.figures[0].section.position == 0
     assert len(doc.figures[0].captions) == 0
     assert doc.figures[0].stable_id == "md_para::figure:0"
+    assert doc.figures[0].cell.position == 13
     assert (
-        doc.figures[1].url
+        doc.figures[2].url
         == "http://html5doctor.com/wp-content/uploads/2010/03/kookaburra.jpg"
     )
-    assert doc.figures[1].position == 1
-    assert len(doc.figures[1].captions) == 1
-    assert len(doc.figures[1].captions[0].paragraphs[0].sentences) == 3
+    assert doc.figures[2].position == 2
+    assert len(doc.figures[2].captions) == 1
+    assert len(doc.figures[2].captions[0].paragraphs[0].sentences) == 3
     assert (
-        doc.figures[1].captions[0].paragraphs[0].sentences[0].text
+        doc.figures[2].captions[0].paragraphs[0].sentences[0].text
         == "Australian Birds."
     )
-    assert len(doc.figures[3].captions) == 0
+    assert len(doc.figures[4].captions) == 0
     assert (
-        doc.figures[3].url
+        doc.figures[4].url
         == "http://html5doctor.com/wp-content/uploads/2010/03/pelican.jpg"
     )
 
@@ -222,7 +223,7 @@ def test_simple_tokenizer(caplog):
     for i, sentence in enumerate(doc.sentences):
         logger.info("    Sentence[{}]: {}".format(i, sentence.text))
 
-    header = doc.sentences[0]
+    header = sorted(doc.sentences, key=lambda x: x.position)[0]
     # Test structural attributes
     assert header.xpath == "/html/body/h1"
     assert header.html_tag == "h1"
@@ -274,7 +275,7 @@ def test_parse_document_diseases(caplog):
 
     # Check captions
     assert len(doc.captions) == 2
-    caption = doc.sentences[20]
+    caption = sorted(doc.sentences, key=lambda x: x.position)[20]
     assert caption.paragraph.caption.position == 0
     assert caption.paragraph.caption.table.position == 0
     assert caption.text == "Table 1: Infectious diseases and where to find them."
@@ -291,7 +292,7 @@ def test_parse_document_diseases(caplog):
     # Check that doc has cells
     assert len(doc.cells) == 25
 
-    sentence = doc.sentences[10]
+    sentence = sorted(doc.sentences, key=lambda x: x.position)[10]
     logger.info("  {}".format(sentence))
 
     # Check the sentence's cell
