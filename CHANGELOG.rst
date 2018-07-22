@@ -1,3 +1,8 @@
+Version 0.2.3
+-------------
+
+* `@lukehsiao`_: Support Figures nested in Cell contexts.
+
 Version 0.2.2
 -------------
 

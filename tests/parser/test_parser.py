@@ -130,26 +130,27 @@ def test_parse_md_paragraphs(caplog):
     assert doc.name == "md_para"
 
     # Check that doc has a figure
-    assert len(doc.figures) == 5
+    assert len(doc.figures) == 6
     assert doc.figures[0].url == "http://placebear.com/200/200"
     assert doc.figures[0].position == 0
     assert doc.figures[0].section.position == 0
     assert len(doc.figures[0].captions) == 0
     assert doc.figures[0].stable_id == "md_para::figure:0"
+    assert doc.figures[0].cell.position == 13
     assert (
-        doc.figures[1].url
+        doc.figures[2].url
         == "http://html5doctor.com/wp-content/uploads/2010/03/kookaburra.jpg"
     )
-    assert doc.figures[1].position == 1
-    assert len(doc.figures[1].captions) == 1
-    assert len(doc.figures[1].captions[0].paragraphs[0].sentences) == 3
+    assert doc.figures[2].position == 2
+    assert len(doc.figures[2].captions) == 1
+    assert len(doc.figures[2].captions[0].paragraphs[0].sentences) == 3
     assert (
-        doc.figures[1].captions[0].paragraphs[0].sentences[0].text
+        doc.figures[2].captions[0].paragraphs[0].sentences[0].text
         == "Australian Birds."
     )
-    assert len(doc.figures[3].captions) == 0
+    assert len(doc.figures[4].captions) == 0
     assert (
-        doc.figures[3].url
+        doc.figures[4].url
         == "http://html5doctor.com/wp-content/uploads/2010/03/pelican.jpg"
     )
 
@@ -172,7 +173,7 @@ def test_parse_md_paragraphs(caplog):
     assert cells[10].table.position == 0
 
     # Check that doc has sentences
-    assert len(doc.sentences) == 51
+    assert len(doc.sentences) == 50
     sentences = sorted(doc.sentences, key=lambda x: x.position)
     sent1 = sentences[1]
     sent2 = sentences[2]
@@ -189,7 +190,7 @@ def test_parse_md_paragraphs(caplog):
     assert sent3.paragraph.position == 1
     assert sent3.section.position == 0
 
-    assert len(doc.paragraphs) == 46
+    assert len(doc.paragraphs) == 45
     assert len(doc.paragraphs[1].sentences) == 3
     assert len(doc.paragraphs[2].sentences) == 1
 

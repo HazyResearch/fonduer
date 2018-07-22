@@ -22,6 +22,12 @@ class Figure(Context):
         backref=backref("figures", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=section_id,
     )
+    cell_id = Column(Integer, ForeignKey("cell.id"))
+    cell = relationship(
+        "Cell",
+        backref=backref("figures", order_by=position, cascade="all, delete-orphan"),
+        foreign_keys=cell_id,
+    )
     url = Column(String)
 
     __mapper_args__ = {"polymorphic_identity": "figure"}
@@ -29,9 +35,18 @@ class Figure(Context):
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self):
-        return "Figure(Doc: {}, Sec: {}, Pos: {}, Url: {})".format(
-            self.document.name, self.section.position, self.position, self.url
-        )
+        if self.cell:
+            return "Figure(Doc: {}, Sec: {}, Cell: {}, Pos: {}, Url: {})".format(
+                self.document.name,
+                self.section.position,
+                self.cell.position,
+                self.position,
+                self.url,
+            )
+        else:
+            return "Figure(Doc: {}, Sec: {}, Pos: {}, Url: {})".format(
+                self.document.name, self.section.position, self.position, self.url
+            )
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each

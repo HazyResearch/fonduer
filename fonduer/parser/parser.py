@@ -275,20 +275,26 @@ class ParserUDF(UDF):
             return state
 
         # NOTE: We currently do NOT support nested figures.
-        if not isinstance(state["parent"][node], Section):
+        parts = {}
+        parent = state["parent"][node]
+        if isinstance(parent, Section):
+            parts["section"] = parent
+        elif isinstance(parent, Cell):
+            parts["section"] = parent.table.section
+            parts["cell"] = parent
+        else:
             logger.warning("Figure is nested within {}".format(state["parent"][node]))
             return state
+
+        parts["document"] = state["document"]
+        parts["stable_id"] = stable_id
+        parts["position"] = state["figure"]["idx"]
 
         # If processing a raw img
         if node.tag == "img":
             # Create the Figure entry in the DB
-            state["context"][node] = Figure(
-                document=state["document"],
-                section=state["parent"][node],
-                stable_id=stable_id,
-                position=state["figure"]["idx"],
-                url=node.get("src"),
-            )
+            parts["url"] = node.get("src")
+            state["context"][node] = Figure(**parts)
         elif node.tag == "figure":
             # Pull the image from a child img node, if one exists
             imgs = [child for child in node if child.tag == "img"]
@@ -307,13 +313,8 @@ class ParserUDF(UDF):
             state["visited"].add(img)
 
             # Create the Figure entry in the DB
-            state["context"][node] = Figure(
-                document=state["document"],
-                section=state["parent"][node],
-                stable_id=stable_id,
-                position=state["figure"]["idx"],
-                url=img.get("src"),
-            )
+            parts["url"] = img.get("src")
+            state["context"][node] = Figure(**parts)
 
         state["figure"]["idx"] += 1
         return state
@@ -463,7 +464,9 @@ class ParserUDF(UDF):
                 parts["section"] = parent
             else:
                 raise NotImplementedError(
-                    "Paragraph parent must be Section, Caption, or Cell"
+                    "Paragraph parent must be Section, Caption, or Cell, not {}".format(
+                        parent
+                    )
                 )
 
             # Create the Figure entry in the DB
