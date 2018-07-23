@@ -1,3 +1,9 @@
+Version 0.2.4 (coming soon...)
+------------------------------
+
+* `@lukehsiao`_: Organize documentation for lf_helpers by modality.
+  (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
+
 Version 0.2.3
 -------------
 
