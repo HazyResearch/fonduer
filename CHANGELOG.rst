@@ -1,8 +1,16 @@
-Version 0.2.4 (coming soon...)
+Version 0.3.0 (coming soon...)
 ------------------------------
+
+.. warning::
+    This release is NOT backwards compatable with v0.2.3. Specifically we have
+    removed the ``get_parent()``, ``get_children()``, and
+    ``get_sentence_generator()`` functions from the classes inhereting from
+    Context in the data model.
 
 * `@lukehsiao`_: Organize documentation for lf_helpers by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
+* `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
+  (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 
 Version 0.2.3
 -------------

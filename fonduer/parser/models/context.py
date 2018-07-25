@@ -18,15 +18,6 @@ class Context(_meta.Base):
 
     __mapper_args__ = {"polymorphic_identity": "context", "polymorphic_on": type}
 
-    def get_parent(self):
-        raise NotImplementedError()
-
-    def get_children(self):
-        raise NotImplementedError()
-
-    def get_sentence_generator(self):
-        raise NotImplementedError()
-
 
 def construct_stable_id(
     parent_context,

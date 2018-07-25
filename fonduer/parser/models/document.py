@@ -17,16 +17,6 @@ class Document(Context):
 
     __mapper_args__ = {"polymorphic_identity": "document"}
 
-    def get_parent(self):
-        return None
-
-    def get_children(self):
-        return self.sentences
-
-    def get_sentence_generator(self):
-        for sentence in self.sentences:
-            yield sentence
-
     def __repr__(self):
         return "Document " + str(self.name)
 

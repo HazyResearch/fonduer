@@ -177,12 +177,6 @@ class Span(Context, TemporarySpan):
         foreign_keys=sentence_id,
     )
 
-    def get_parent(self):
-        return self.sentence
-
-    def get_children(self):
-        return None
-
     def _get_instance(self, **kwargs):
         return Span(**kwargs)
 
