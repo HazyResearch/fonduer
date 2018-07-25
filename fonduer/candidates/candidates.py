@@ -1,3 +1,4 @@
+import logging
 import re
 from builtins import map, range
 from copy import deepcopy
@@ -8,6 +9,8 @@ from sqlalchemy.sql import select
 from fonduer.candidates.models import Candidate, TemporaryImage, TemporarySpan
 from fonduer.parser.models import Document
 from fonduer.utils.udf import UDF, UDFRunner
+
+logger = logging.getLogger(__name__)
 
 
 class CandidateSpace(object):
@@ -128,13 +131,22 @@ class CandidateExtractor(UDFRunner):
             nested_relations=nested_relations,
             symmetric_relations=symmetric_relations,
         )
+        self.candidate_class = candidate_class
 
     def apply(self, xs, split=0, **kwargs):
         """Call the CandidateExtractorUDF."""
         super(CandidateExtractor, self).apply(xs, split=split, **kwargs)
 
     def clear(self, session, split, **kwargs):
-        """Delete Candidates from given split the database."""
+        """Delete Candidates of the CandidateClass from given split the database."""
+        logger.info("Clearing {}".format(self.candidate_class.__tablename__))
+        session.query(Candidate).filter(
+            Candidate.type == self.candidate_class.__tablename__
+        ).filter(Candidate.split == split).delete()
+
+    def clear_all(self, session, split, **kwargs):
+        """Delete all Candidates from given split the database."""
+        logger.info("Clearing ALL Candidates.")
         session.query(Candidate).filter(Candidate.split == split).delete()
 
 
