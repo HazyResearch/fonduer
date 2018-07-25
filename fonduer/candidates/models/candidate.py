@@ -150,9 +150,9 @@ def candidate_subclass(
             "__argnames__": args,
         }
 
-        # Create named arguments, i.e. the entity mentions comprising the relation
-        # mention
-        # For each entity mention: id, cid ("canonical id"), and pointer to Context
+        # Create named arguments, i.e. the entity mentions comprising the
+        # relation mention. For each entity mention: id, cid ("canonical id"),
+        # and pointer to Context
         unique_args = []
         for arg in args:
 
