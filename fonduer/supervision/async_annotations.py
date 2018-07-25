@@ -264,6 +264,7 @@ class BatchAnnotator(UDFRunner):
     """Abstract class for annotating candidates and persisting these annotations to DB"""
 
     def __init__(self, candidate_type, annotation_type, f, batch_size=50, **kwargs):
+        self.candidate_type = candidate_type
         if isinstance(candidate_type, type):
             candidate_type = candidate_type.__name__
         self.table_name = get_sql_name(candidate_type) + "_" + annotation_type
@@ -288,10 +289,18 @@ class BatchAnnotator(UDFRunner):
         # Get the cids based on the split, and also the count
         Session = new_sessionmaker()
         session = Session()
-        # Note: In the current UDFRunner implementation, we load all these into memory and fill a
-        # multiprocessing JoinableQueue with them before starting... so might as well load them here and pass in.
-        # Also, if we try to pass in a query iterator instead, with AUTOCOMMIT on, we get a TXN error...
-        candidates = session.query(Candidate).filter(Candidate.split == split).all()
+
+        # NOTE: In the current UDFRunner implementation, we load all these into
+        # memory and fill a multiprocessing JoinableQueue with them before
+        # starting... so might as well load them here and pass in. Also, if we
+        # try to pass in a query iterator instead, with AUTOCOMMIT on, we get a
+        # TXN error...
+        candidates = (
+            session.query(Candidate)
+            .filter(Candidate.type == self.candidate_type.__tablename__)
+            .filter(Candidate.split == split)
+            .all()
+        )
         cids_count = len(candidates)
         if cids_count == 0:
             raise ValueError("No candidates in current split")
