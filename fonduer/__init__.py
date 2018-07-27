@@ -1,7 +1,7 @@
 import logging
 
 from fonduer._version import __version__
-from fonduer.candidates import CandidateExtractor, OmniFigures, OmniNgrams
+from fonduer.candidates import CandidateExtractor, MentionFigures, MentionNgrams
 from fonduer.candidates.matchers import (
     DateMatcher,
     DictionaryMatch,
@@ -47,11 +47,11 @@ __all__ = [
     "LambdaFunctionFigureMatcher",
     "LambdaFunctionMatcher",
     "LocationMatcher",
+    "MentionFigures",
+    "MentionNgrams",
     "Meta",
     "MiscMatcher",
     "NumberMatcher",
-    "OmniFigures",
-    "OmniNgrams",
     "OrganizationMatcher",
     "PDFPreprocessor",
     "Parser",

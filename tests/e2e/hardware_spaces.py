@@ -3,7 +3,7 @@ import re
 from builtins import chr, range, str
 from difflib import SequenceMatcher
 
-from fonduer.candidates import OmniNgrams
+from fonduer.candidates import MentionNgrams
 from fonduer.candidates.models import TemporaryImplicitSpan
 
 logger = logging.getLogger(__name__)
@@ -166,15 +166,15 @@ def char_range(a, b):
         yield chr(c)
 
 
-class OmniNgramsPart(OmniNgrams):
+class MentionNgramsPart(MentionNgrams):
     def __init__(self, parts_by_doc=None, n_max=3, expand=True, split_tokens=None):
         """:param parts_by_doc: a dictionary d where d[document_name.upper()] = [partA, partB, ...]"""
-        OmniNgrams.__init__(self, n_max=n_max, split_tokens=None)
+        MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
         self.parts_by_doc = parts_by_doc
         self.expander = expand_part_range if expand else (lambda x: [x])
 
     def apply(self, session, context):
-        for ts in OmniNgrams.apply(self, session, context):
+        for ts in MentionNgrams.apply(self, session, context):
             enumerated_parts = [
                 part.upper() for part in expand_part_range(ts.get_span())
             ]
@@ -223,12 +223,12 @@ class OmniNgramsPart(OmniNgrams):
                     )
 
 
-class OmniNgramsTemp(OmniNgrams):
+class MentionNgramsTemp(MentionNgrams):
     # def __init__(self, n_max=2, split_tokens=None):
-    #     OmniNgrams.__init__(self, n_max=n_max, split_tokens=None)
+    #     MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
 
     def apply(self, session, context):
-        for ts in OmniNgrams.apply(self, session, context):
+        for ts in MentionNgrams.apply(self, session, context):
             m = re.match(
                 u"^([\+\-\u2010\u2011\u2012\u2013\u2014\u2212\uf02d])?(\s*)(\d+)$",
                 ts.get_span(),
@@ -279,12 +279,12 @@ class OmniNgramsTemp(OmniNgrams):
                 yield ts
 
 
-class OmniNgramsVolt(OmniNgrams):
+class MentionNgramsVolt(MentionNgrams):
     # def __init__(self, n_max=1, split_tokens=None):
-    #     OmniNgrams.__init__(self, n_max=n_max, split_tokens=None)
+    #     MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
 
     def apply(self, session, context):
-        for ts in OmniNgrams.apply(self, session, context):
+        for ts in MentionNgrams.apply(self, session, context):
             if ts.get_span().endswith(".0"):
                 value = ts.get_span()[:-2]
                 yield TemporaryImplicitSpan(

@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class MentionSpace(object):
-    """
-    Defines the **space** of Mention objects
+    """Defines the **space** of Mention objects.
+
     Calling _apply(x)_ given an object _x_ returns a generator over mentions in _x_.
     """
 
@@ -80,9 +80,8 @@ class Ngrams(MentionSpace):
                             yield ts2
 
 
-class OmniNgrams(Ngrams):
-    """
-    Defines the space of mentions.
+class MentionNgrams(Ngrams):
+    """Defines the **space** of Mentions.
 
     Defines the space of mentions as all n-grams (n <= n_max) in a Document _x_,
     divided into Sentences inside of html elements (such as table cells).
@@ -90,17 +89,17 @@ class OmniNgrams(Ngrams):
 
     def __init__(self, n_max=5, split_tokens=["-", "/"]):
         """
-        Initialize OmniNgrams.
+        Initialize MentionNgrams.
         """
         Ngrams.__init__(self, n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, session, context):
         """
-        Generate OmniNgrams from a Document by parsing all of its Sentences.
+        Generate MentionNgrams from a Document by parsing all of its Sentences.
         """
         if not isinstance(context, Document):
             raise TypeError(
-                "Input Contexts to OmniNgrams.apply() must be of type Document"
+                "Input Contexts to MentionNgrams.apply() must be of type Document"
             )
 
         doc = session.query(Document).filter(Document.id == context.id).one()
@@ -109,7 +108,7 @@ class OmniNgrams(Ngrams):
                 yield ts
 
 
-class OmniFigures(MentionSpace):
+class MentionFigures(MentionSpace):
     """
     Defines the space of mentions as all figures in a Document _x_,
     indexing by **position offset**.
@@ -117,7 +116,7 @@ class OmniFigures(MentionSpace):
 
     def __init__(self, type=None):
         """
-        Initialize OmniFigures.
+        Initialize MentionFigures.
 
         Only support figure type filter.
         """
@@ -128,11 +127,11 @@ class OmniFigures(MentionSpace):
 
     def apply(self, session, context):
         """
-        Generate OmniFigures from a Document by parsing all of its Figures.
+        Generate MentionFigures from a Document by parsing all of its Figures.
         """
         if not isinstance(context, Document):
             raise TypeError(
-                "Input Contexts to OmniFigures.apply() must be of type Document"
+                "Input Contexts to MentionFigures.apply() must be of type Document"
             )
 
         doc = session.query(Document).filter(Document.id == context.id).one()

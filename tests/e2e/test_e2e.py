@@ -9,7 +9,7 @@ from itertools import chain
 
 import numpy as np
 import pytest
-from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
+from hardware_spaces import MentionNgramsPart, MentionNgramsTemp
 from hardware_utils import entity_level_f1, load_hardware_labels
 
 from fonduer import (
@@ -202,8 +202,8 @@ def test_e2e(caplog):
 
     part_matcher = Union(part_rgx_matcher, part_dict_matcher, part_file_name_matcher)
 
-    part_ngrams = OmniNgramsPart(parts_by_doc=None, n_max=3)
-    attr_ngrams = OmniNgramsTemp(n_max=2)
+    part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
+    attr_ngrams = MentionNgramsTemp(n_max=2)
 
     def stg_temp_filter(c):
         (part, attr) = c
