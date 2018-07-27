@@ -15,8 +15,8 @@ WORDS = "words"
 
 class Matcher(object):
     """
-    Applies a function ``f : c -> {True,False}`` to a generator of candidates,
-    returning only candidates *c* s.t. *f(c) == True*,
+    Applies a function ``f : m -> {True,False}`` to a generator of mentions,
+    returning only mentions *c* s.t. *f(m) == True*,
     where f can be compositionally defined.
     """
 
@@ -39,80 +39,80 @@ class Matcher(object):
             if opt not in self.__dict__:
                 raise Exception("Unsupported option: %s" % opt)
 
-    def _f(self, c):
+    def _f(self, m):
         """The internal (non-composed) version of filter function f"""
         return True
 
-    def f(self, c):
+    def f(self, m):
         """
         The recursively composed version of filter function f.
         By default, returns logical **conjunction** of operator and single
         child operator
         """
         if len(self.children) == 0:
-            return self._f(c)
+            return self._f(m)
         elif len(self.children) == 1:
-            return self._f(c) and self.children[0].f(c)
+            return self._f(m) and self.children[0].f(m)
         else:
             raise Exception(
                 "%s does not support more than one child Matcher" % self.__name__
             )
 
-    def _is_subspan(self, c, span):
+    def _is_subspan(self, m, span):
         """
-        Tests if candidate c is subspan of span, where span is defined specific
-        to candidate type.
+        Tests if mention m is subspan of span, where span is defined specific
+        to mention type.
         """
         return False
 
-    def _get_span(self, c):
+    def _get_span(self, m):
         """
-        Gets a tuple that identifies a span for the specific candidate class
-        that c belongs to.
+        Gets a tuple that identifies a span for the specific mention class
+        that m belongs to.
         """
-        return c
+        return m
 
-    def apply(self, candidates):
+    def apply(self, mentions):
         """
-        Apply the Matcher to a **generator** of candidates.
+        Apply the Matcher to a **generator** of mentions.
         Optionally only takes the longest match (NOTE: assumes this is the
         *first* match)
         """
         seen_spans = set()
-        for c in candidates:
-            if self.f(c) and (
+        for m in mentions:
+            if self.f(m) and (
                 not self.longest_match_only
-                or not any([self._is_subspan(c, s) for s in seen_spans])
+                or not any([self._is_subspan(m, s) for s in seen_spans])
             ):
                 if self.longest_match_only:
-                    seen_spans.add(self._get_span(c))
-                yield c
+                    seen_spans.add(self._get_span(m))
+                yield m
 
 
 class NgramMatcher(Matcher):
     """Matcher base class for Ngram objects"""
 
-    def _is_subspan(self, c, span):
+    def _is_subspan(self, m, span):
         """
-        Tests if candidate c is subspan of span, where span is defined
-        specific to candidate type.
+        Tests if mention m is subspan of span, where span is defined
+        specific to mention type.
         """
         return (
-            c.sentence.id == span[0]
-            and c.char_start >= span[1]
-            and c.char_end <= span[2]
+            m.sentence.id == span[0]
+            and m.char_start >= span[1]
+            and m.char_end <= span[2]
         )
 
-    def _get_span(self, c):
+    def _get_span(self, m):
         """
-        Gets a tuple that identifies a span for the specific candidate class
-        that c belongs to.
+        Gets a tuple that identifies a span for the specific mention class
+        that m belongs to.
         """
-        return (c.sentence.id, c.char_start, c.char_end)
+        return (m.sentence.id, m.char_start, m.char_end)
 
 
 class DictionaryMatch(NgramMatcher):
-    """Selects candidate Ngrams that match against a given list d"""
+    """Selects mention Ngrams that match against a given list d"""
 
     def init(self):
         self.ignore_case = self.opts.get("ignore_case", True)
@@ -140,15 +140,15 @@ class DictionaryMatch(NgramMatcher):
         except UnicodeDecodeError:
             return w
 
-    def _f(self, c):
-        p = c.get_attrib_span(self.attrib)
+    def _f(self, m):
+        p = m.get_attrib_span(self.attrib)
         p = p.lower() if self.ignore_case else p
         p = self._stem(p) if self.stemmer is not None else p
         return (not self.reverse) if p in self.d else self.reverse
 
 
 class LambdaFunctionMatcher(NgramMatcher):
-    """Selects candidate Ngrams that return True when fed to a function f."""
+    """Selects mention Ngrams that return True when fed to a function f."""
 
     def init(self):
         self.ignore_case = self.opts.get("ignore_case", True)
@@ -158,27 +158,27 @@ class LambdaFunctionMatcher(NgramMatcher):
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
 
-    def _f(self, c):
+    def _f(self, m):
         """The internal (non-composed) version of filter function f"""
-        return self.func(c)
+        return self.func(m)
 
 
 class Union(NgramMatcher):
-    """Takes the union of candidate sets returned by child operators"""
+    """Takes the union of mention sets returned by child operators"""
 
-    def f(self, c):
+    def f(self, m):
         for child in self.children:
-            if child.f(c) > 0:
+            if child.f(m) > 0:
                 return True
         return False
 
 
 class Intersect(Matcher):
-    """Takes the intersection of candidate sets returned by child operators"""
+    """Takes the intersection of mention sets returned by child operators"""
 
-    def f(self, c):
+    def f(self, m):
         for child in self.children:
-            if not child.f(c):
+            if not child.f(m):
                 return False
         return True
 
@@ -187,14 +187,14 @@ class Inverse(Matcher):
     """Returns the opposite result of its child operator"""
 
     # TODO: confirm that this only has one child
-    def f(self, c):
+    def f(self, m):
         for child in self.children:
-            return not child.f(c)
+            return not child.f(m)
 
 
 class Concat(NgramMatcher):
     """
-    Selects candidates which are the concatenation of adjacent matches from
+    Selects mentions which are the concatenation of adjacent matches from
     child operators
 
     NOTE: Currently slices on **word index** and considers concatenation along
@@ -208,30 +208,30 @@ class Concat(NgramMatcher):
         self.ignore_sep = self.opts.get("ignore_sep", True)
         self.sep = self.opts.get("sep", " ")
 
-    def f(self, c):
+    def f(self, m):
         if len(self.children) != 2:
             raise ValueError("Concat takes two child Matcher objects as arguments.")
-        if not self.left_required and self.children[1].f(c):
+        if not self.left_required and self.children[1].f(m):
             return True
-        if not self.right_required and self.children[0].f(c):
+        if not self.right_required and self.children[0].f(m):
             return True
 
-        # Iterate over candidate splits **at the word boundaries**
-        for wsplit in range(c.get_word_start() + 1, c.get_word_end() + 1):
+        # Iterate over mention splits **at the word boundaries**
+        for wsplit in range(m.get_word_start() + 1, m.get_word_end() + 1):
             csplit = (
-                c.word_to_char_index(wsplit) - c.char_start
-            )  # NOTE the switch to **candidate-relative** char index
+                m.word_to_char_index(wsplit) - m.char_start
+            )  # NOTE the switch to **mention-relative** char index
 
             # Optionally check for specific separator
-            if self.ignore_sep or c.get_span()[csplit - 1] == self.sep:
-                c1 = c[: csplit - len(self.sep)]
-                c2 = c[csplit:]
-                if self.children[0].f(c1) and self.children[1].f(c2):
+            if self.ignore_sep or m.get_span()[csplit - 1] == self.sep:
+                m1 = m[: csplit - len(self.sep)]
+                m2 = m[csplit:]
+                if self.children[0].f(m1) and self.children[1].f(m2):
                     return True
                 if (
                     self.permutations
-                    and self.children[1].f(c1)
-                    and self.children[0].f(c2)
+                    and self.children[1].f(m1)
+                    and self.children[0].f(m2)
                 ):
                     return True
         return False
@@ -272,7 +272,7 @@ class RegexMatch(NgramMatcher):
             self.rgx, flags=(re.I if self.ignore_case else 0) | re.UNICODE
         )
 
-    def _f(self, c):
+    def _f(self, m):
         raise NotImplementedError()
 
 
@@ -283,18 +283,18 @@ class RegexMatchSpan(RegexMatch):
             Search regex pattern in **full concatenated span**
     """
 
-    def _f(self, c):
+    def _f(self, m):
         if self.search:
             return (
                 True
-                if self.r.search(c.get_attrib_span(self.attrib, sep=self.sep))
+                if self.r.search(m.get_attrib_span(self.attrib, sep=self.sep))
                 is not None
                 else False
             )
         else:
             return (
                 True
-                if self.r.match(c.get_attrib_span(self.attrib, sep=self.sep))
+                if self.r.match(m.get_attrib_span(self.attrib, sep=self.sep))
                 is not None
                 else False
             )
@@ -303,8 +303,8 @@ class RegexMatchSpan(RegexMatch):
 class RegexMatchEach(RegexMatch):
     """Matches regex pattern on **each token**"""
 
-    def _f(self, c):
-        tokens = c.get_attrib_tokens(self.attrib)
+    def _f(self, m):
+        tokens = m.get_attrib_tokens(self.attrib)
         return (
             True
             if tokens and all([self.r.match(t) is not None for t in tokens])
@@ -399,20 +399,20 @@ class MiscMatcher(RegexMatchEach):
 class FigureMatcher(Matcher):
     """Matcher base class for Figure objects"""
 
-    def _is_subspan(self, c, span):
-        """Tests if candidate c does exist"""
-        return c.figure.document.id == span[0] and c.figure.position == span[1]
+    def _is_subspan(self, m, span):
+        """Tests if mention m does exist"""
+        return m.figure.document.id == span[0] and m.figure.position == span[1]
 
-    def _get_span(self, c):
+    def _get_span(self, m):
         """
-        Gets a tuple that identifies a figure for the specific candidate class
-        that c belongs to.
+        Gets a tuple that identifies a figure for the specific mention class
+        that m belongs to.
         """
-        return (c.figure.document.id, c.figure.position)
+        return (m.figure.document.id, m.figure.position)
 
 
 class LambdaFunctionFigureMatcher(FigureMatcher):
-    """Selects candidate Figures that return True when fed to a function f."""
+    """Selects mention Figures that return True when fed to a function f."""
 
     def init(self):
         try:
@@ -420,6 +420,6 @@ class LambdaFunctionFigureMatcher(FigureMatcher):
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
 
-    def _f(self, c):
+    def _f(self, m):
         """The internal (non-composed) version of filter function f"""
-        return self.func(c)
+        return self.func(m)

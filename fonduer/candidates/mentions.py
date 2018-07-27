@@ -23,7 +23,7 @@ class MentionSpace(object):
 
 class Ngrams(MentionSpace):
     """
-    Defines the space of mentions as all n-grams (n <= n_max) in a Sentence _x_,
+    Defines the space of Mentions as all n-grams (n <= n_max) in a Sentence _x_,
     indexing by **character offset**.
     """
 
@@ -83,7 +83,7 @@ class Ngrams(MentionSpace):
 class MentionNgrams(Ngrams):
     """Defines the **space** of Mentions.
 
-    Defines the space of mentions as all n-grams (n <= n_max) in a Document _x_,
+    Defines the space of Mentions as all n-grams (n <= n_max) in a Document _x_,
     divided into Sentences inside of html elements (such as table cells).
     """
 
@@ -110,7 +110,7 @@ class MentionNgrams(Ngrams):
 
 class MentionFigures(MentionSpace):
     """
-    Defines the space of mentions as all figures in a Document _x_,
+    Defines the space of Mentions as all figures in a Document _x_,
     indexing by **position offset**.
     """
 
