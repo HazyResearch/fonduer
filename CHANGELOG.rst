@@ -1,5 +1,5 @@
-Version 0.3.0 (coming soon...)
-------------------------------
+[Unreleased]
+------------
 
 .. warning::
     This release is NOT backwards compatable with v0.2.3. Specifically we have
@@ -7,20 +7,32 @@ Version 0.3.0 (coming soon...)
     ``get_sentence_generator()`` functions from the classes inhereting from
     Context in the data model.
 
+Added
+^^^^^
+
+Changed
+^^^^^^^
 * `@lukehsiao`_: Organize documentation for lf_helpers by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
+* `@lukehsiao`_: Update the CHANGELOG to follow `KeepAChangelog
+  <https://keepachangelog.com/en/1.0.0/>`_ conventions.
+
+Removed
+^^^^^^^
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 
-Version 0.2.3
--------------
+
+
+[0.2.3] - 2018-07-23
+--------------------
 
 * `@lukehsiao`_: Support Figures nested in Cell contexts and Paragraphs in
   Figure contexts.
   (`#84 <https://github.com/HazyResearch/fonduer/pull/84>`_)
 
-Version 0.2.2
--------------
+[0.2.2] - 2018-07-22
+--------------------
 
 .. note::
     Version 0.2.0 and 0.2.1 had to be skipped due to errors in uploading those
@@ -53,8 +65,8 @@ Version 0.2.2
 * A variety of small bugfixes and code cleanup.
   (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)
 
-Version 0.1.8
--------------
+[0.1.8] - 2018-06-01
+--------------------
 
 * `@senwu`_: Remove the Viewer, which is unused in Fonduer 
   (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
@@ -67,8 +79,8 @@ Version 0.1.8
 * `@lukehsiao`_: Fix LocationMatch NER tags for spaCy 
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 
-Version 0.1.7
--------------
+[0.1.7] - 2018-04-04
+--------------------
 
 .. warning::
     This release is NOT backwards compatable with v0.1.6. Specifically, the
@@ -106,16 +118,16 @@ Version 0.1.7
 * `@lukehsiao`_: Remove unused package dependencies 
   (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
 
-Version 0.1.6
--------------
+[0.1.6] - 2018-03-31
+--------------------
 
 * `@senwu`_: Fix support for providing a PostgreSQL username and password as
   part of the connection string provided to Meta.init() 
   (`#40 <https://github.com/HazyResearch/fonduer/pull/40>`_)
 * `@lukehsiao`_: Switch README from Markdown to reStructuredText 
 
-Version 0.1.5 
--------------
+[0.1.5] - 2018-03-31
+--------------------
 .. warning::
     This release is NOT backwards compatable with v0.1.4. Specifically, in order
     to initialize a session with postgresql, you no longer do
@@ -142,19 +154,19 @@ Version 0.1.5
 * `@lukehsiao`_: Bring codebase in PEP8 compliance and add automatic code-style
   checks (`#37 <https://github.com/HazyResearch/fonduer/pull/37>`_)
 
-Version 0.1.4 
--------------
+[0.1.4] - 2018-03-30
+--------------------
 
 * `@lukehsiao`_: Separate tutorials into their own repo (`#31
   <https://github.com/HazyResearch/fonduer/pull/31>`_)
 
-Version 0.1.3
--------------
+[0.1.3] - 2018-03-29
+--------------------
 
 Minor hotfix to the README formatting for PyPi.
 
-Version 0.1.2
--------------
+[0.1.2] - 2018-03-29
+--------------------
 
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI 
 
