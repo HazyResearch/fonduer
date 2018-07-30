@@ -1,28 +1,24 @@
 [Unreleased]
 ------------
 
-.. warning::
-    This release is NOT backwards compatable with v0.2.3. Specifically we have
-    removed the ``get_parent()``, ``get_children()``, and
-    ``get_sentence_generator()`` functions from the classes inhereting from
-    Context in the data model.
-
 Added
 ^^^^^
+* Generate candidates from Mentions, such that mentions can be easily componsed
+  and reused in different relations.
+* Enforce flake8 checks on tests directory.
 
 Changed
 ^^^^^^^
 * `@lukehsiao`_: Organize documentation for lf_helpers by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
-* `@lukehsiao`_: Update the CHANGELOG to follow `KeepAChangelog
+* `@lukehsiao`_: Update the CHANGELOG to start following `KeepAChangelog
   <https://keepachangelog.com/en/1.0.0/>`_ conventions.
+* Change learning framework from Tensorflow to PyTorch.
 
 Removed
 ^^^^^^^
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
-
-
 
 [0.2.3] - 2018-07-23
 --------------------

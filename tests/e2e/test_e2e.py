@@ -31,7 +31,15 @@ from fonduer import (
     candidate_subclass,
     load_gold_labels,
 )
-from fonduer.supervision.lf_helpers import *
+from fonduer.supervision.lf_helpers import (
+    get_aligned_ngrams,
+    get_left_ngrams,
+    get_row_ngrams,
+    is_horz_aligned,
+    is_vert_aligned,
+    overlap,
+    same_table,
+)
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -146,7 +154,7 @@ def test_e2e(caplog):
 
     attr_matcher = RegexMatchSpan(rgx=r"(?:[1][5-9]|20)[05]", longest_match_only=False)
 
-    ### Transistor Naming Conventions as Regular Expressions ###
+    # Transistor Naming Conventions as Regular Expressions ###
     eeca_rgx = r"([ABC][A-Z][WXYZ]?[0-9]{3,5}(?:[A-Z]){0,5}[0-9]?[A-Z]?(?:-[A-Z0-9]{1,7})?(?:[-][A-Z0-9]{1,2})?(?:\/DG)?)"
     jedec_rgx = r"(2N\d{3,4}[A-Z]{0,5}[0-9]?[A-Z]?)"
     jis_rgx = r"(2S[ABCDEFGHJKMQRSTVZ]{1}[\d]{2,4})"
@@ -167,7 +175,7 @@ def test_e2e(caplog):
                 all_parts.add(part)
         return all_parts
 
-    ### Dictionary of known transistor parts ###
+    # Dictionary of known transistor parts ###
     dict_path = "tests/e2e/data/digikey_part_dictionary.csv"
     part_dict_matcher = DictionaryMatch(d=get_digikey_parts_set(dict_path))
 
@@ -286,7 +294,7 @@ def test_e2e(caplog):
     L_train = labeler.apply(split=0, clear=True, parallelism=PARALLEL)
     logger.info(L_train.shape)
 
-    L_gold_train = load_gold_labels(session, annotator_name="gold", split=0)
+    load_gold_labels(session, annotator_name="gold", split=0)
 
     gen_model = GenerativeModel()
     gen_model.train(
@@ -294,14 +302,14 @@ def test_e2e(caplog):
     )
     logger.info("LF Accuracy: {}".format(gen_model.weights.lf_accuracy))
 
-    L_gold_dev = load_gold_labels(session, annotator_name="gold", split=1)
+    load_gold_labels(session, annotator_name="gold", split=1)
 
     train_marginals = gen_model.marginals(L_train)
 
     disc_model = SparseLogisticRegression()
     disc_model.train(F_train, train_marginals, n_epochs=200, lr=0.001)
 
-    L_gold_test = load_gold_labels(session, annotator_name="gold", split=2)
+    load_gold_labels(session, annotator_name="gold", split=2)
 
     test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
     test_score = disc_model.predictions(F_test)

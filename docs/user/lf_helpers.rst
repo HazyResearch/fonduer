@@ -21,7 +21,7 @@ Textual Labeling Function Helpers
     :members:
 
 Structural Labeling Function Helpers
----------------------------------
+------------------------------------
 
 .. automodule:: fonduer.supervision.lf_helpers.structural
     :members:
@@ -33,7 +33,7 @@ Tabular Labeling Function Helpers
     :members:
 
 Visual Labeling Function Helpers
----------------------------------
+--------------------------------
 
 .. automodule:: fonduer.supervision.lf_helpers.visual
     :members:

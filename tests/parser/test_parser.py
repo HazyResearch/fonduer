@@ -11,9 +11,7 @@ import os
 from fonduer import Meta
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
-from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.spacy_parser import Spacy
 
 ATTRIBUTE = "parser_test"
 
@@ -108,7 +106,6 @@ def test_parse_md_details(caplog):
 def test_parse_md_paragraphs(caplog):
     """Unit test of Paragraph parsing."""
     caplog.set_level(logging.INFO)
-    logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     PARALLEL = 1

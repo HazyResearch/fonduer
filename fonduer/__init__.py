@@ -18,7 +18,7 @@ from fonduer.candidates.matchers import (
     RegexMatchSpan,
     Union,
 )
-from fonduer.candidates.models import candidate_subclass
+from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.meta import Meta
 from fonduer.parser import Parser
@@ -65,4 +65,5 @@ __all__ = [
     "__version__",
     "candidate_subclass",
     "load_gold_labels",
+    "mention_subclass",
 ]

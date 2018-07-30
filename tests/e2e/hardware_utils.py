@@ -5,7 +5,6 @@ import csv
 import logging
 from builtins import range
 
-from fonduer.supervision.lf_helpers import *
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
 from fonduer.utils import ProgressBar
 
@@ -57,7 +56,6 @@ def load_hardware_labels(
         doc = (c[0].sentence.document.name).upper()
         part = (c[0].get_span()).upper()
         val = ("".join(c[1].get_span().split())).upper()
-        context_stable_ids = "~~".join([i.stable_id for i in c.get_contexts()])
         label = (
             session.query(GoldLabel)
             .filter(GoldLabel.key == ak)
