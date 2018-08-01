@@ -57,6 +57,10 @@ class CandidateExtractor(UDFRunner):
             nested_relations=nested_relations,
             symmetric_relations=symmetric_relations,
         )
+        # Check that arity is same
+        if len(cspaces) != len(matchers):
+            raise ValueError("Mismatched arity of candidate space and matcher.")
+
         self.candidate_class = candidate_class
 
     def apply(self, xs, split=0, **kwargs):
@@ -99,11 +103,7 @@ class CandidateExtractorUDF(UDF):
         self.self_relations = self_relations
         self.symmetric_relations = symmetric_relations
 
-        # Check that arity is same
-        if len(self.candidate_spaces) != len(self.matchers):
-            raise ValueError("Mismatched arity of candidate space and matcher.")
-        else:
-            self.arity = len(self.candidate_spaces)
+        self.arity = len(self.candidate_spaces)
 
         # Make sure the candidate spaces are different so generators aren't expended!
         self.candidate_spaces = list(map(deepcopy, self.candidate_spaces))

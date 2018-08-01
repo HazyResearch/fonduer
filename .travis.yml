@@ -73,6 +73,9 @@ before_script:
 - cd tests/e2e/
 - "./download_data.sh"
 - cd ../..
+- cd tests/candidates/
+- "./download_data.sh"
+- cd ../..
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx

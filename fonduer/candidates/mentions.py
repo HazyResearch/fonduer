@@ -1,9 +1,13 @@
 import logging
 import re
-from builtins import range
+from builtins import map, range
+from copy import deepcopy
 
-from fonduer.candidates.models import TemporaryImage, TemporarySpan
+from sqlalchemy.sql import select
+
+from fonduer.candidates.models import Mention, TemporaryImage, TemporarySpan
 from fonduer.parser.models import Document
+from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
 
@@ -138,3 +142,112 @@ class MentionFigures(MentionSpace):
         for figure in doc.figures:
             if self.type is None or figure.url.lower().endswith(self.type):
                 yield TemporaryImage(figure)
+
+
+class MentionExtractor(UDFRunner):
+    """An operator to extract Mention objects from a Context.
+
+    :param mention_classes: The type of relation to extract, defined using
+        :func:`fonduer.mentions.mention_subclass.
+    :param mspaces: one or list of :class:`MentionSpace` objects, one for
+        each relation argument. Defines space of Contexts to consider
+    :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
+        one for each relation argument. Only tuples of Contexts for which each
+        element is accepted by the corresponding Matcher will be returned as
+        Mentions
+    """
+
+    def __init__(self, mention_classes, mspaces, matchers):
+        """Initialize the MentionExtractor."""
+        super(MentionExtractor, self).__init__(
+            MentionExtractorUDF,
+            mention_classes=mention_classes,
+            mspaces=mspaces,
+            matchers=matchers,
+        )
+        # Check that arity is same
+        arity = len(mention_classes)
+        if not all(len(x) == arity for x in [mention_classes, mspaces, matchers]):
+            raise ValueError(
+                "Mismatched arity of mention classes, spaces, and matchers."
+            )
+
+        self.mention_classes = mention_classes
+
+    def apply(self, xs, split=0, **kwargs):
+        """Call the MentionExtractorUDF."""
+        super(MentionExtractor, self).apply(xs, split=split, **kwargs)
+
+    def clear(self, session, split, **kwargs):
+        """Delete Mentions of each class in the extractor from given split the database."""
+        for mention_class in self.mention_classes:
+            logger.info("Clearing table: {}".format(mention_class.__tablename__))
+            session.query(Mention).filter(
+                Mention.type == mention_class.__tablename__
+            ).filter(Mention.split == split).delete()
+
+    def clear_all(self, session, split, **kwargs):
+        """Delete all Mentions from given split the database."""
+        logger.info("Clearing ALL Mentions.")
+        session.query(Mention).filter(Mention.split == split).delete()
+
+
+class MentionExtractorUDF(UDF):
+    """UDF for performing mention extraction."""
+
+    def __init__(self, mention_classes, mspaces, matchers, **kwargs):
+        """Initialize the MentionExtractorUDF."""
+        self.mention_classes = (
+            mention_classes
+            if type(mention_classes) in [list, tuple]
+            else [mention_classes]
+        )
+        self.mention_spaces = mspaces if type(mspaces) in [list, tuple] else [mspaces]
+        self.matchers = matchers if type(matchers) in [list, tuple] else [matchers]
+
+        # Make sure the mention spaces are different so generators aren't expended!
+        self.mention_spaces = list(map(deepcopy, self.mention_spaces))
+
+        # Preallocates internal data structure
+        self.child_context_set = set()
+
+        super(MentionExtractorUDF, self).__init__(**kwargs)
+
+    def apply(self, context, clear, split, **kwargs):
+        """Extract mentions from the given Context.
+
+        :param context: Here, we define a context as a Sentence.
+        :param clear: Whether or not to clear the existing database entries.
+        :param split: Which split to use.
+        """
+
+        # Iterate over each mention class
+        for i, mention_class in enumerate(self.mention_classes):
+            # Generate TemporaryContexts that are children of the context using the
+            # mention_space and filtered by the Matcher
+            self.child_context_set.clear()
+            for tc in self.matchers[i].apply(
+                self.mention_spaces[i].apply(self.session, context)
+            ):
+                tc.load_id_or_insert(self.session)
+                self.child_context_set.add(tc)
+
+            # Generates and persists mentions
+            mention_args = {"split": split}
+            for child_context in self.child_context_set:
+
+                # Assemble mention arguments
+                for arg_name in mention_class.__argnames__:
+                    mention_args[arg_name + "_id"] = child_context.id
+
+                # Checking for existence
+                if not clear:
+                    q = select([mention_class.id])
+                    for key, value in list(mention_args.items()):
+                        q = q.where(getattr(mention_class, key) == value)
+                    mention_id = self.session.execute(q).first()
+                    if mention_id is not None:
+                        continue
+
+                # Add Mention to session
+                yield mention_class(**mention_args)

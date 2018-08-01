@@ -29,14 +29,6 @@ class Mention(_meta.Base):
         """Get the consituent context making up this mention."""
         return tuple(getattr(self, name) for name in self.__argnames__)
 
-    def get_parent(self):
-        # Fails if both contexts don't have same parent
-        p = [c.get_parent() for c in self.get_contexts()]
-        if p.count(p[0]) == len(p):
-            return p[0]
-        else:
-            raise Exception("Contexts do not all have same parent")
-
     def get_cids(self):
         """Get the canonical IDs (CIDs) of the context making up this mention."""
         return tuple(getattr(self, name + "_cid") for name in self.__argnames__)
@@ -53,9 +45,9 @@ class Mention(_meta.Base):
             ", ".join(map(str, self.get_contexts())),
         )
 
-    def __gt__(self, other_cand):
+    def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
-        return self.__repr__() > other_cand.__repr__()
+        return self.__repr__() > other.__repr__()
 
 
 # This global dictionary contains all classes that have been declared in this
@@ -64,7 +56,7 @@ class Mention(_meta.Base):
 mention_subclasses = {}
 
 
-def mention_subclass(class_name, args, table_name=None):
+def mention_subclass(class_name, cardinality=None, values=None, table_name=None):
     """
     Creates and returns a Mention subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
@@ -77,15 +69,43 @@ def mention_subclass(class_name, args, table_name=None):
 
     :param class_name: The name of the class, should be "camel case" e.g.
         NewMention
-    :param args: A list of names of consituent arguments, which refer to the
-        Contexts--representing mentions--that comprise the mention
     :param table_name: The name of the corresponding table in DB; if not
         provided, is converted from camel case by default, e.g. new_mention
+    :param values: The values that the variable corresponding to the Mention
+        can take. By default it will be [True, False].
+    :param cardinality: The cardinality of the variable corresponding to the
+        Mention. By default is 2 i.e. is a binary value, e.g. is or is not
+        a true mention.
     """
     if table_name is None:
         table_name = camel_to_under(class_name)
 
-    class_spec = (args, table_name)
+    # If cardinality and values are None, default to binary classification
+    if cardinality is None and values is None:
+        values = [True, False]
+        cardinality = 2
+    # Else use values if present, and validate proper input
+    elif values is not None:
+        if cardinality is not None and len(values) != cardinality:
+            raise ValueError("Number of values must match cardinality.")
+        if None in values:
+            raise ValueError("`None` is a protected value.")
+        # Note that bools are instances of ints in Python...
+        if any([isinstance(v, int) and not isinstance(v, bool) for v in values]):
+            raise ValueError(
+                (
+                    "Default usage of values is consecutive integers."
+                    "Leave values unset if trying to define values as integers."
+                )
+            )
+        cardinality = len(values)
+
+    # If cardinality is specified but not values, fill in with ints
+    elif cardinality is not None:
+        values = list(range(cardinality))
+
+    args = [camel_to_under(class_name)]
+    class_spec = (args, table_name, cardinality, values)
     if class_name in mention_subclasses:
         if class_spec == mention_subclasses[class_name][1]:
             return mention_subclasses[class_name][0]
@@ -106,6 +126,9 @@ def mention_subclass(class_name, args, table_name=None):
             "id": Column(
                 Integer, ForeignKey("mention.id", ondelete="CASCADE"), primary_key=True
             ),
+            # Store values & cardinality information in the class only
+            "values": values,
+            "cardinality": cardinality,
             # Polymorphism information for SQLAlchemy
             "__mapper_args__": {"polymorphic_identity": table_name},
             # Helper method to get argument names

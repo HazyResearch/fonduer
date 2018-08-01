@@ -1,7 +1,12 @@
 import logging
 
 from fonduer._version import __version__
-from fonduer.candidates import CandidateExtractor, MentionFigures, MentionNgrams
+from fonduer.candidates import (
+    CandidateExtractor,
+    MentionExtractor,
+    MentionFigures,
+    MentionNgrams,
+)
 from fonduer.candidates.matchers import (
     DateMatcher,
     DictionaryMatch,
@@ -47,6 +52,7 @@ __all__ = [
     "LambdaFunctionFigureMatcher",
     "LambdaFunctionMatcher",
     "LocationMatcher",
+    "MentionExtractor",
     "MentionFigures",
     "MentionNgrams",
     "Meta",
