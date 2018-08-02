@@ -81,9 +81,13 @@ def test_cand_gen(caplog):
     )
     mention_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(Part).count() == 234
+    parts = session.query(Part).order_by(Part.id).all()
+    assert len(parts) == 234
     assert session.query(Volt).count() == 108
     assert session.query(Temp).count() == 118
+
+    assert parts[1].part.sentence.text == "BC546"
+    assert parts[1].part.sentence.position == 25
 
     # Candidate Extraction
     Part_Temp = candidate_subclass("PartTemp", [Part, Temp])
