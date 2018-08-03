@@ -6,6 +6,7 @@ Added
 * Generate candidates from Mentions, such that mentions can be easily componsed
   and reused in different relations.
 * Enforce flake8 checks on tests directory.
+* Improved connection-string validation for the Meta class. 
 
 Changed
 ^^^^^^^

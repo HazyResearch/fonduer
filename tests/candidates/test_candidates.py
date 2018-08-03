@@ -34,7 +34,6 @@ def test_cand_gen(caplog):
         PARALLEL = 1  # Travis only gives 2 cores
 
     max_docs = 10
-
     session = Meta.init("postgres://localhost:5432/" + DB).Session()
 
     docs_path = "tests/candidates/data/html/"
