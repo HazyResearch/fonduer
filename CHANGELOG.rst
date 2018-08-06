@@ -7,6 +7,7 @@ Added
   and reused in different relations.
 * Enforce flake8 checks on tests directory.
 * Improved connection-string validation for the Meta class. 
+* Add unit test for Meta class. 
 
 Changed
 ^^^^^^^

@@ -80,25 +80,29 @@ def test_cand_gen(caplog):
     )
     mention_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    parts = session.query(Part).order_by(Part.id).all()
-    assert len(parts) == 234
+    assert session.query(Part).count() == 234
     assert session.query(Volt).count() == 108
     assert session.query(Temp).count() == 118
-
-    assert parts[1].part.sentence.text == "BC546"
-    assert parts[1].part.sentence.position == 25
+    part = session.query(Part).order_by(Part.id).all()[0]
+    volt = session.query(Volt).order_by(Volt.id).all()[0]
+    temp = session.query(Temp).order_by(Temp.id).all()[0]
+    logger.info("Part: {}".format(part.span))
+    logger.info("Volt: {}".format(volt.span))
+    logger.info("Temp: {}".format(temp.span))
 
     # Candidate Extraction
-    Part_Temp = candidate_subclass("PartTemp", [Part, Temp])
-    Part_Volt = candidate_subclass("PartVolt", [Part, Volt])
-
-    assert False
+    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+    PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
     candidate_extractor = CandidateExtractor(
-        [Part_Temp, Part_Volt], candidate_filter=[temp_throttler, volt_throttler]
+        [PartTemp, PartVolt], candidate_throttlers=[temp_throttler, volt_throttler]
     )
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    train_cands = session.query(Part_Temp).filter(Part_Temp.split == 0).all()
+    assert False
+
+    train_cands = session.query(PartTemp).filter(PartTemp.split == 0).all()
     logger.info("Number of candidates: {}".format(len(train_cands)))
+
+    assert session.query(PartTemp).count() == 100

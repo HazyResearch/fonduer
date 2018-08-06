@@ -104,7 +104,7 @@ def mention_subclass(class_name, cardinality=None, values=None, table_name=None)
     elif cardinality is not None:
         values = list(range(cardinality))
 
-    args = [camel_to_under(class_name)]
+    args = ["span"]
     class_spec = (args, table_name, cardinality, values)
     if class_name in mention_subclasses:
         if class_spec == mention_subclasses[class_name][1]:

@@ -147,14 +147,14 @@ def candidate_subclass(
             # Polymorphism information for SQLAlchemy
             "__mapper_args__": {"polymorphic_identity": table_name},
             # Helper method to get argument names
-            "__argnames__": args,
+            "__argnames__": [_.__tablename__ for _ in args],
         }
 
         # Create named arguments, i.e. the entity mentions comprising the
         # relation mention. For each entity mention: id, cid ("canonical id"),
         # and pointer to Context
         unique_args = []
-        for arg in args:
+        for arg in [_.__tablename__ for _ in args]:
 
             # Primary arguments are constituent Contexts, and their ids
             class_attribs[arg + "_id"] = Column(
