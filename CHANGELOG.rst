@@ -22,6 +22,11 @@ Removed
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 
+Fixed
+^^^^^
+* Fix Meta bug which would not switch databases when init() was called with
+  a new connection string.
+
 [0.2.3] - 2018-07-23
 --------------------
 

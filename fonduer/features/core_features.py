@@ -9,7 +9,7 @@ unary_feats = {}
 def get_core_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = candidate.get_contexts()
+        args = tuple([arg.span for arg in candidate.get_contexts()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
@@ -17,7 +17,7 @@ def get_core_feats(candidates):
 
         # Unary candidates
         if len(args) == 1:
-            span = args[0]
+            span = args[0].span
 
             if span.stable_id not in unary_feats:
                 unary_feats[span.stable_id] = set()

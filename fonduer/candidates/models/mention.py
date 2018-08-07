@@ -134,6 +134,14 @@ def mention_subclass(class_name, cardinality=None, values=None, table_name=None)
             # Helper method to get argument names
             "__argnames__": args,
         }
+        class_attribs["document_id"] = Column(
+            Integer, ForeignKey("document.id", ondelete="CASCADE")
+        )
+        class_attribs["document"] = relationship(
+            "Document",
+            backref=backref(table_name + "s", cascade="all, delete-orphan"),
+            foreign_keys=class_attribs["document_id"],
+        )
 
         # Create named arguments, i.e. the entity mentions comprising the
         # relation mention. For each entity mention: id, cid ("canonical id"),

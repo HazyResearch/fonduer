@@ -148,32 +148,40 @@ def candidate_subclass(
             "__mapper_args__": {"polymorphic_identity": table_name},
             # Helper method to get argument names
             "__argnames__": [_.__tablename__ for _ in args],
+            "mentions": args,
         }
+        class_attribs["document_id"] = Column(
+            Integer, ForeignKey("document.id", ondelete="CASCADE")
+        )
+        class_attribs["document"] = relationship(
+            "Document",
+            backref=backref(table_name + "s", cascade="all, delete-orphan"),
+            foreign_keys=class_attribs["document_id"],
+        )
 
         # Create named arguments, i.e. the entity mentions comprising the
         # relation mention. For each entity mention: id, cid ("canonical id"),
         # and pointer to Context
         unique_args = []
-        for arg in [_.__tablename__ for _ in args]:
-
+        for arg in args:
             # Primary arguments are constituent Contexts, and their ids
-            class_attribs[arg + "_id"] = Column(
-                Integer, ForeignKey("context.id", ondelete="CASCADE")
+            class_attribs[arg.__tablename__ + "_id"] = Column(
+                Integer, ForeignKey(arg.__tablename__ + ".id", ondelete="CASCADE")
             )
-            class_attribs[arg] = relationship(
-                "Context",
+            class_attribs[arg.__tablename__] = relationship(
+                arg.__name__,
                 backref=backref(
-                    table_name + "_" + arg + "s",
+                    table_name + "_" + arg.__tablename__ + "s",
                     cascade_backrefs=False,
                     cascade="all, delete-orphan",
                 ),
                 cascade_backrefs=False,
-                foreign_keys=class_attribs[arg + "_id"],
+                foreign_keys=class_attribs[arg.__tablename__ + "_id"],
             )
-            unique_args.append(class_attribs[arg + "_id"])
+            unique_args.append(class_attribs[arg.__tablename__ + "_id"])
 
             # Canonical ids, to be set post-entity normalization stage
-            class_attribs[arg + "_cid"] = Column(String)
+            class_attribs[arg.__tablename__ + "_cid"] = Column(String)
 
         # Add unique constraints to the arguments
         class_attribs["__table_args__"] = (UniqueConstraint(*unique_args),)

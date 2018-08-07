@@ -216,7 +216,7 @@ class MentionExtractorUDF(UDF):
     def apply(self, context, clear, split, **kwargs):
         """Extract mentions from the given Context.
 
-        :param context: Here, we define a context as a Sentence.
+        :param context: A document to process.
         :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
@@ -234,8 +234,8 @@ class MentionExtractorUDF(UDF):
 
             # Generates and persists mentions
             mention_args = {"split": split}
+            mention_args["document_id"] = context.id
             for child_context in self.child_context_set:
-
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
                     mention_args[arg_name + "_id"] = child_context.id

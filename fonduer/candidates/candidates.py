@@ -1,6 +1,5 @@
 import logging
-from builtins import map, range
-from copy import deepcopy
+from builtins import range
 from itertools import product
 
 from sqlalchemy.sql import select
@@ -105,76 +104,74 @@ class CandidateExtractorUDF(UDF):
         self.symmetric_relations = symmetric_relations
         self.arities = [len(cclass.__argnames__) for cclass in self.candidate_classes]
 
-        # Iterate over each candidate class
-        for i, candidate_class in enumerate(self.candidate_classes):
-
-            # Preallocates internal data structures
-            self.child_context_sets[i] = [None] * self.arities[i]
-            for j in range(self.arities[i]):
-                self.child_context_sets[i][j] = set()
-
-            super(CandidateExtractorUDF, self).__init__(**kwargs)
+        super(CandidateExtractorUDF, self).__init__(**kwargs)
 
     def apply(self, context, clear, split, **kwargs):
         """Extract candidates from the given Context.
 
-        Here, we define a context as a Sentence.
-        :param context:
-        :param clear:
+        :param context: A document to process.
+        :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
+        logger.info("Document: {}".format(context))
         # Iterate over each candidate class
         for i, candidate_class in enumerate(self.candidate_classes):
-
-            import pdb
-
-            pdb.set_trace()
-
+            logger.info("  Relation: {}".format(candidate_class.__name__))
             # Generates and persists candidates
             candidate_args = {"split": split}
-            for args in product(
+            candidate_args["document_id"] = context.id
+            cands = product(
                 *[
-                    enumerate(child_contexts)
-                    for child_contexts in self.child_context_sets
+                    enumerate(
+                        self.session.query(mention)
+                        .filter(mention.document_id == context.id)
+                        .order_by(mention.id)
+                        .all()
+                    )
+                    for mention in candidate_class.mentions
                 ]
-            ):
+            )
+            for k, cand in enumerate(cands):
 
-                # Apply candidate_throttler if one was given
+                # Apply candidate_throttler if one was given.
                 # Accepts a tuple of Context objects (e.g., (Span, Span))
                 # (candidate_throttler returns whether or not proposed candidate
                 # passes throttling condition)
-                if self.candidate_throttler:
-                    if not self.candidate_throttler(
-                        tuple(args[i][1] for i in range(self.arity))
+                if self.candidate_throttlers[i]:
+                    if not self.candidate_throttlers[i](
+                        tuple(cand[j][1].span for j in range(self.arities[i]))
                     ):
                         continue
 
                 # TODO: Make this work for higher-order relations
-                if self.arity == 2:
-                    ai, a = args[0]
-                    bi, b = args[1]
+                if self.arities[i] == 2:
+                    ai, a = (cand[0][0], cand[0][1].span)
+                    bi, b = (cand[1][0], cand[1][1].span)
 
-                    # Check for self-joins, "nested" joins (joins from span to its
-                    # subspan), and flipped duplicate "symmetric" relations
+                    # Check for self-joins, "nested" joins (joins from span to
+                    # its subspan), and flipped duplicate "symmetric" relations
                     if not self.self_relations and a == b:
+                        logger.info("Skipping self-joined candidate {}".format(cand))
                         continue
-                    elif not self.nested_relations and (a in b or b in a):
+                    if not self.nested_relations and (a in b or b in a):
+                        logger.info("Skipping nested candidate {}".format(cand))
                         continue
-                    elif not self.symmetric_relations and ai > bi:
+                    if not self.symmetric_relations and ai > bi:
+                        logger.info("Skipping symmetric candidate {}".format(cand))
                         continue
 
                 # Assemble candidate arguments
-                for i, arg_name in enumerate(self.candidate_class.__argnames__):
-                    candidate_args[arg_name + "_id"] = args[i][1].id
+                for j, arg_name in enumerate(candidate_class.__argnames__):
+                    candidate_args[arg_name + "_id"] = cand[j][1].id
 
                 # Checking for existence
                 if not clear:
-                    q = select([self.candidate_class.id])
+                    q = select([candidate_class.id])
                     for key, value in list(candidate_args.items()):
-                        q = q.where(getattr(self.candidate_class, key) == value)
+                        q = q.where(getattr(candidate_class, key) == value)
                     candidate_id = self.session.execute(q).first()
                     if candidate_id is not None:
                         continue
 
                 # Add Candidate to session
-                yield self.candidate_class(**candidate_args)
+                yield candidate_class(**candidate_args)

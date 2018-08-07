@@ -1,6 +1,4 @@
 #! /usr/bin/env python
-import os
-
 import pytest
 
 from fonduer import Meta
@@ -21,3 +19,6 @@ def test_meta_connection_strings(caplog):
         Meta.init("postgres://somethingsilly:5432/").Session()
 
     Meta.init("postgres://localhost:5432/" + DB).Session()
+    assert Meta.DBNAME == DB
+    Meta.init("postgres://localhost:5432/" + "cand_test").Session()
+    assert Meta.DBNAME == "cand_test"

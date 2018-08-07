@@ -18,6 +18,7 @@ from fonduer import (
     candidate_subclass,
     mention_subclass,
 )
+from fonduer.candidates.models import Candidate
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -25,13 +26,13 @@ DB = "cand_test"
 
 
 def test_cand_gen(caplog):
-    """Run an end-to-end test on documents of the hardware domain."""
+    """Test extracting candidates from mentions from documents of the hardware domain."""
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
     if os.name == "posix":
         PARALLEL = 1
     else:
-        PARALLEL = 1  # Travis only gives 2 cores
+        PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 10
     session = Meta.init("postgres://localhost:5432/" + DB).Session()
@@ -42,6 +43,7 @@ def test_cand_gen(caplog):
     # Parsing
     num_docs = session.query(Document).count()
     if num_docs != max_docs:
+        logger.info("Skipping parsing...")
         doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
         corpus_parser = Parser(
             structural=True, lingual=True, visual=True, pdf_path=pdf_path
@@ -100,9 +102,10 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert False
-
-    train_cands = session.query(PartTemp).filter(PartTemp.split == 0).all()
-    logger.info("Number of candidates: {}".format(len(train_cands)))
-
-    assert session.query(PartTemp).count() == 100
+    assert session.query(PartTemp).count() == 3385
+    assert session.query(PartVolt).count() == 3364
+    assert session.query(Candidate).count() == 6749
+    assert docs[0].name == "112823"
+    assert len(docs[0].parts) == 70
+    assert len(docs[0].volts) == 33
+    assert len(docs[0].temps) == 18

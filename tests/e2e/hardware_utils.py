@@ -53,9 +53,9 @@ def load_hardware_labels(
     labels = []
     for i, c in enumerate(candidates):
         pb.bar(i)
-        doc = (c[0].sentence.document.name).upper()
-        part = (c[0].get_span()).upper()
-        val = ("".join(c[1].get_span().split())).upper()
+        doc = (c[0].span.sentence.document.name).upper()
+        part = (c[0].span.get_span()).upper()
+        val = ("".join(c[1].span.get_span().split())).upper()
         label = (
             session.query(GoldLabel)
             .filter(GoldLabel.key == ak)
@@ -122,10 +122,10 @@ def entity_level_f1(
     entities = set()
     for i, c in enumerate(candidates):
         pb.bar(i)
-        part = c[0].get_span()
-        doc = c[0].sentence.document.name.upper()
+        part = c[0].span.get_span()
+        doc = c[0].span.sentence.document.name.upper()
         if attribute:
-            val = c[1].get_span()
+            val = c[1].span.get_span()
         for p in get_implied_parts(part, doc, parts_by_doc):
             if attribute:
                 entities.add((doc, p, val))
@@ -165,8 +165,8 @@ def entity_to_candidates(entity, candidate_subset):
     matches = []
     for c in candidate_subset:
         c_entity = tuple(
-            [c[0].sentence.document.name.upper()]
-            + [c[i].get_span().upper() for i in range(len(c))]
+            [c[0].span.sentence.document.name.upper()]
+            + [c[i].span.get_span().upper() for i in range(len(c))]
         )
         c_entity = tuple([str(x) for x in c_entity])
         if c_entity == entity:

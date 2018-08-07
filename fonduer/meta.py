@@ -16,13 +16,15 @@ def new_sessionmaker():
     # http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/
     # Otherwise any e.g. query starts a transaction, locking tables... very
     # bad for e.g. multiple notebooks open, multiple processes, etc.
-    if Meta.ready:
+    if Meta.postgres and Meta.ready:
         engine = create_engine(Meta.conn_string, isolation_level="AUTOCOMMIT")
-        # New sessionmaker
-        session = sessionmaker(bind=engine)
-        return session
-
-    return None
+    else:
+        raise ValueError(
+            "Meta variables have not been initialized with a postgres connection string."
+        )
+    # New sessionmaker
+    session = sessionmaker(bind=engine)
+    return session
 
 
 def _validate_conn_string(conn_string):
@@ -51,7 +53,6 @@ def _validate_conn_string(conn_string):
                 conn_string, "postgres://<user>:<pw>@<host>:<port>/<database_name>"
             )
         )
-
     return True
 
 
@@ -78,7 +79,7 @@ class Meta(object):
     @classmethod
     def init(cls, conn_string=None):
         """Return the unique Meta class."""
-        if conn_string and not Meta.ready:
+        if conn_string:
             Meta.ready = _validate_conn_string(conn_string)
             # We initialize the engine within the models module because models'
             # schema can depend on which data types are supported by the engine
@@ -100,8 +101,5 @@ class Meta(object):
         This call must be performed after all classes that extend
         Base are declared to ensure the storage schema is initialized.
         """
-        if Meta.ready:
-            logger.info("Initializing the storage schema")
-            Meta.Base.metadata.create_all(Meta.engine)
-        else:
-            raise ValueError("The Meta variables haven't been initialized.")
+        logger.info("Initializing the storage schema")
+        Meta.Base.metadata.create_all(Meta.engine)

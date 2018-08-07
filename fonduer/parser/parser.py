@@ -7,7 +7,6 @@ from collections import defaultdict
 
 import lxml
 
-from fonduer.candidates.models import Candidate
 from fonduer.parser.models import (
     Caption,
     Cell,
@@ -62,9 +61,6 @@ class Parser(UDFRunner):
 
     def clear(self, session, **kwargs):
         session.query(Context).delete()
-
-        # We cannot cascade up from child contexts to parent Candidates, so we delete all Candidates too
-        session.query(Candidate).delete()
 
 
 class ParserUDF(UDF):

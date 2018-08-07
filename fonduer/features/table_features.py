@@ -20,7 +20,7 @@ binary_tablelib_feats = {}
 def get_table_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = candidate.get_contexts()
+        args = tuple([arg.span for arg in candidate.get_contexts()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
