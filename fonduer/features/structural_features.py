@@ -1,7 +1,7 @@
 from builtins import str
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.supervision.lf_helpers import (
+from fonduer.utils.data_model_utils import (
     common_ancestor,
     get_ancestor_class_names,
     get_ancestor_id_names,

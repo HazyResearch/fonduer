@@ -277,10 +277,10 @@ class RegexMatch(NgramMatcher):
 
 
 class RegexMatchSpan(RegexMatch):
-    """
-        Matches regex pattern on **full concatenated span**
-        If search flag is set to True:
-            Search regex pattern in **full concatenated span**
+    """Matches regex pattern on **full concatenated span**.
+
+    If search flag is set to True, searches regex pattern in **full
+    concatenated span**
     """
 
     def _f(self, m):

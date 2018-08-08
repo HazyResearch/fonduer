@@ -1,5 +1,5 @@
 from fonduer.candidates.models import TemporarySpan
-from fonduer.supervision.lf_helpers import (
+from fonduer.utils.data_model_utils import (
     get_visual_aligned_lemmas,
     is_horz_aligned,
     is_vert_aligned,

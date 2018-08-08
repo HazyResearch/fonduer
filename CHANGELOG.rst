@@ -3,11 +3,12 @@
 
 Added
 ^^^^^
-* Generate candidates from Mentions, such that mentions can be easily componsed
-  and reused in different relations.
 * Enforce flake8 checks on tests directory.
 * Improved connection-string validation for the Meta class. 
 * Add unit test for Meta class. 
+* Add a new Mention object, and have Candidate objects be composed of Mention
+  objects, rather than directly of Spans. This allows a single Mention to be
+  reused in multiple relations.
 
 Changed
 ^^^^^^^
@@ -16,6 +17,9 @@ Changed
 * `@lukehsiao`_: Update the CHANGELOG to start following `KeepAChangelog
   <https://keepachangelog.com/en/1.0.0/>`_ conventions.
 * Change learning framework from Tensorflow to PyTorch.
+* Change ``lf_helpers`` to ``data_model_utils``, since they can be applied
+  more generally to throttlers or used for error analysis, and are not limited
+  to just being used in labeling functions.
 
 Removed
 ^^^^^^^
@@ -26,6 +30,49 @@ Fixed
 ^^^^^
 * Fix Meta bug which would not switch databases when init() was called with
   a new connection string.
+
+.. note::
+    With the addition of Mentions, the process of Candidate extraction has
+    changed. In Fonduer v0.2.3, Candidate extraction was as follows:
+
+    .. code:: python
+
+        candidate_extractor = CandidateExtractor(PartAttr, 
+                                [part_ngrams, attr_ngrams], 
+                                [part_matcher, attr_matcher], 
+                                candidate_filter=candidate_filter)
+
+        candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+    With this release, you will now first extract Mentions and then extract
+    Candidates based on those Mentions:
+
+    .. code:: python
+
+        # Mention Extraction
+        part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
+        temp_ngrams = MentionNgramsTemp(n_max=2)
+        volt_ngrams = MentionNgramsVolt(n_max=1)
+
+        Part = mention_subclass("Part")
+        Temp = mention_subclass("Temp")
+        Volt = mention_subclass("Volt")
+        mention_extractor = MentionExtractor(
+            [Part, Temp, Volt],
+            [part_ngrams, temp_ngrams, volt_ngrams],
+            [part_matcher, temp_matcher, volt_matcher],
+        )
+        mention_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+        # Candidate Extraction
+        PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+        PartVolt = candidate_subclass("PartVolt", [Part, Volt])
+
+        candidate_extractor = CandidateExtractor(
+            [PartTemp, PartVolt], candidate_throttlers=[temp_throttler, volt_throttler]
+        )
+
+        candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
 [0.2.3] - 2018-07-23
 --------------------

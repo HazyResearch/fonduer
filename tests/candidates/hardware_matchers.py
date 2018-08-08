@@ -7,7 +7,7 @@ from fonduer import (
     RegexMatchSpan,
     Union,
 )
-from fonduer.supervision.lf_helpers import get_row_ngrams, overlap
+from fonduer.utils.data_model_utils import get_row_ngrams, overlap
 
 temp_matcher = RegexMatchSpan(rgx=r"(?:[1][5-9]|20)[05]", longest_match_only=False)
 

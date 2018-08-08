@@ -2,7 +2,7 @@ import re
 
 from hardware_spaces import expand_part_range
 
-from fonduer.supervision.lf_helpers import (
+from fonduer.utils.data_model_utils import (
     get_horz_ngrams,
     get_vert_ngrams,
     is_horz_aligned,

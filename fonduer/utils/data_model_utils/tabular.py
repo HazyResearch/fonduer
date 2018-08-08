@@ -1,14 +1,14 @@
-############################
+##########################
 # Tabular modality helpers
-############################
+##########################
 
 from builtins import range
 from itertools import chain
 
-from fonduer.candidates.models import TemporarySpan
 from fonduer.parser.models import Sentence
-from fonduer.supervision.lf_helpers.textual import get_left_ngrams, get_right_ngrams
 from fonduer.utils import tokens_to_ngrams
+from fonduer.utils.data_model_utils.textual import get_left_ngrams, get_right_ngrams
+from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils_table import (
     is_axis_aligned,
     is_col_aligned,
@@ -19,128 +19,133 @@ from fonduer.utils.utils_table import (
 
 
 def same_document(c):
-    """Return True if all Spans in the given candidate are from the same Document.
+    """Return True if all Mentions in the given candidate are from the same Document.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return all(
-        c[i].sentence.document is not None
-        and c[i].sentence.document == c[0].sentence.document
+        _to_span(c[i]).sentence.document is not None
+        and _to_span(c[i]).sentence.document == _to_span(c[0]).sentence.document
         for i in range(len(c))
     )
 
 
 def same_table(c):
-    """Return True if all Spans in the given candidate are from the same Table.
+    """Return True if all Mentions in the given candidate are from the same Table.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return all(
-        c[i].sentence.is_tabular() and c[i].sentence.table == c[0].sentence.table
+        _to_span(c[i]).sentence.is_tabular()
+        and _to_span(c[i]).sentence.table == _to_span(c[0]).sentence.table
         for i in range(len(c))
     )
 
 
 def same_row(c):
-    """Return True if all Spans in the given candidate are from the same Row.
+    """Return True if all Mentions in the given candidate are from the same Row.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return same_table(c) and all(
-        is_row_aligned(c[i].sentence, c[0].sentence) for i in range(len(c))
+        is_row_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
+        for i in range(len(c))
     )
 
 
 def same_col(c):
-    """Return True if all Spans in the given candidate are from the same Col.
+    """Return True if all Mentions in the given candidate are from the same Col.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return same_table(c) and all(
-        is_col_aligned(c[i].sentence, c[0].sentence) for i in range(len(c))
+        is_col_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
+        for i in range(len(c))
     )
 
 
 def is_tabular_aligned(c):
-    """Return True if all Spans in the given candidate are from the same Row or Col.
+    """Return True if all Mentions in the given candidate are from the same Row or Col.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return same_table(c) and (
-        is_col_aligned(c[i].sentence, c[0].sentence)
-        or is_row_aligned(c[i].sentence, c[0].sentence)
+        is_col_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
+        or is_row_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
         for i in range(len(c))
     )
 
 
 def same_cell(c):
-    """Return True if all Spans in the given candidate are from the same Cell.
+    """Return True if all Mentions in the given candidate are from the same Cell.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return all(
-        c[i].sentence.cell is not None and c[i].sentence.cell == c[0].sentence.cell
+        _to_span(c[i]).sentence.cell is not None
+        and _to_span(c[i]).sentence.cell == _to_span(c[0]).sentence.cell
         for i in range(len(c))
     )
 
 
 def same_sentence(c):
-    """Return True if all Spans in the given candidate are from the same Sentence.
+    """Return True if all Mentions in the given candidate are from the same Sentence.
 
-    :param c: The candidate whose Spans are being compared
+    :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
     return all(
-        c[i].sentence is not None and c[i].sentence == c[0].sentence
+        _to_span(c[i]).sentence is not None
+        and _to_span(c[i]).sentence == _to_span(c[0]).sentence
         for i in range(len(c))
     )
 
 
-def get_max_col_num(span):
-    """Return the largest column number that a Span occupies.
+def get_max_col_num(mention):
+    """Return the largest column number that a Mention occupies.
 
-    :param span: The Span to evaluate. If a candidate is given, default to its last Span.
+    :param mention: The Mention to evaluate. If a candidate is given, default to its last Mention.
     :rtype: integer or None
     """
-    span = span if isinstance(span, TemporarySpan) else span[-1]
+    span = _to_span(mention)
     if span.sentence.is_tabular():
         return span.sentence.cell.col_end
     else:
         return None
 
 
-def get_min_col_num(span):
-    """Return the lowest column number that a Span occupies.
+def get_min_col_num(mention):
+    """Return the lowest column number that a Mention occupies.
 
-    :param span: The Span to evaluate. If a candidate is given, default to its first Span.
+    :param mention: The Mention to evaluate. If a candidate is given, default to its first Mention.
     :rtype: integer or None
     """
-    span = span if isinstance(span, TemporarySpan) else span[0]
+    span = _to_span(mention)
     if span.sentence.is_tabular():
         return span.sentence.cell.col_start
     else:
         return None
 
 
-def get_sentence_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
-    """Get the ngrams that are in the Sentence of the given span, not including itself.
+def get_sentence_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
+    """Get the ngrams that are in the Sentence of the given Mention, not including itself.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The Span whose Sentence is being searched
+    :param mention: The Mention whose Sentence is being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in get_left_ngrams(
             span, window=100, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
@@ -153,20 +158,20 @@ def get_sentence_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
 
 
 def get_neighbor_sentence_ngrams(
-    span, d=1, attrib="words", n_min=1, n_max=1, lower=True
+    mention, d=1, attrib="words", n_min=1, n_max=1, lower=True
 ):
-    """Get the ngrams that are in the neighoring Sentences of the given Span.
+    """Get the ngrams that are in the neighoring Sentences of the given Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The span whose neighbor Sentences are being searched
+    :param mention: The Mention whose neighbor Sentences are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in chain.from_iterable(
             [
@@ -181,19 +186,19 @@ def get_neighbor_sentence_ngrams(
             yield ngram
 
 
-def get_cell_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
-    """Get the ngrams that are in the Cell of the given span, not including itself.
+def get_cell_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
+    """Get the ngrams that are in the Cell of the given mention, not including itself.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The span whose Cell is being searched
+    :param mention: The Mention whose Cell is being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in get_sentence_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
@@ -213,16 +218,21 @@ def get_cell_ngrams(span, attrib="words", n_min=1, n_max=1, lower=True):
 
 
 def get_neighbor_cell_ngrams(
-    span, dist=1, directions=False, attrib="words", n_min=1, n_max=1, lower=True
+    mention, dist=1, directions=False, attrib="words", n_min=1, n_max=1, lower=True
 ):
-    """Get the ngrams from all Cells that are within a given Cell distance in one direction from the given Span.
+    """
+    Get the ngrams from all Cells that are within a given Cell distance in one
+    direction from the given Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
-    If `directions=True``, each ngram will be returned with a direction in {'UP', 'DOWN', 'LEFT', 'RIGHT'}.
+    Note that if a candidate is passed in, all of its Mentions will be
+    searched. If `directions=True``, each ngram will be returned with a
+    direction in {'UP', 'DOWN', 'LEFT', 'RIGHT'}.
 
-    :param span: The span whose neighbor Cells are being searched
-    :param dist: The Cell distance within which a neighbor Cell must be to be considered
-    :param directions: A Boolean expressing whether or not to return the direction of each ngram
+    :param mention: The Mention whose neighbor Cells are being searched
+    :param dist: The Cell distance within which a neighbor Cell must be to be
+        considered
+    :param directions: A Boolean expressing whether or not to return the
+        direction of each ngram
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
@@ -230,7 +240,7 @@ def get_neighbor_cell_ngrams(
     :rtype: a *generator* of ngrams (or (ngram, direction) tuples if directions=True)
     """
     # TODO: Fix this to be more efficient (optimize with SQL query)
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in get_sentence_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
@@ -280,19 +290,21 @@ def get_neighbor_cell_ngrams(
                             yield ngram
 
 
-def get_row_ngrams(span, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True):
-    """Get the ngrams from all Cells that are in the same row as the given Span.
+def get_row_ngrams(
+    mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
+):
+    """Get the ngrams from all Cells that are in the same row as the given Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The span whose row Cells are being searched
+    :param mention: The Mention whose row Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in _get_axis_ngrams(
             span,
@@ -306,19 +318,21 @@ def get_row_ngrams(span, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=
             yield ngram
 
 
-def get_col_ngrams(span, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True):
-    """Get the ngrams from all Cells that are in the same column as the given Span.
+def get_col_ngrams(
+    mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
+):
+    """Get the ngrams from all Cells that are in the same column as the given Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The span whose column Cells are being searched
+    :param mention: The Mention whose column Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in _get_axis_ngrams(
             span,
@@ -333,20 +347,20 @@ def get_col_ngrams(span, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=
 
 
 def get_aligned_ngrams(
-    span, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
+    mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
 ):
-    """Get the ngrams from all Cells that are in the same row or column as the given Span.
+    """Get the ngrams from all Cells that are in the same row or column as the given Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The span whose row and column Cells are being searched
+    :param mention: The Mention whose row and column Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in get_row_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, spread=spread, lower=lower
@@ -358,23 +372,24 @@ def get_aligned_ngrams(
             yield ngram
 
 
-def get_head_ngrams(span, axis=None, attrib="words", n_min=1, n_max=1, lower=True):
+def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=True):
     """Get the ngrams from the cell in the head of the row or column.
 
     More specifically, this returns the ngrams in the leftmost cell in a row and/or the
     ngrams in the topmost cell in the column, depending on the axis parameter.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The span whose head Cells are being returned
-    :param axis: Which axis {'row', 'col'} to search. If None, then both row and col are searched.
+    :param mention: The Mention whose head Cells are being returned
+    :param axis: Which axis {'row', 'col'} to search. If None, then both row
+        and col are searched.
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     axes = [axis] if axis else ["row", "col"]
     for span in spans:
         if not span.sentence.cell:
@@ -403,8 +418,9 @@ def _get_head_cell(root_cell, axis):
 
 
 def _get_axis_ngrams(
-    span, axis, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
+    mention, axis, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
 ):
+    span = _to_span(mention)
     for ngram in get_sentence_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
     ):

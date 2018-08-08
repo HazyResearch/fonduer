@@ -1,18 +1,18 @@
-############################
+#########################
 # Visual modality helpers
-############################
+#########################
 
-from fonduer.candidates.models import TemporarySpan
 from fonduer.utils import tokens_to_ngrams
+from fonduer.utils.data_model_utils.utils import _to_span
 
 
 def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
-    """Return the ngrams *between* two unary Spans of a binary-Span Candidate.
+    """Return the ngrams *between* two unary Mentions of a binary-Mention Candidate.
 
-    Get the ngrams *between* two unary Spans of a binary-Span Candidate, where
-    both share the same sentence Context.
+    Get the ngrams *between* two unary Mentions of a binary-Mention Candidate,
+    where both share the same sentence Context.
 
-    :param c: The binary-Span Candidate to evaluate.
+    :param c: The binary-Mention Candidate to evaluate.
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
@@ -21,8 +21,8 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
     """
     if len(c) != 2:
         raise ValueError("Only applicable to binary Candidates")
-    span0 = c[0]
-    span1 = c[1]
+    span0 = _to_span(c[0])
+    span1 = _to_span(c[1])
     if span0.sentence != span1.sentence:
         raise ValueError(
             "Only applicable to Candidates where both spans are \
@@ -51,20 +51,22 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
             yield ngram
 
 
-def get_left_ngrams(span, window=3, attrib="words", n_min=1, n_max=1, lower=True):
+def get_left_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=True):
     """Get the ngrams within a window to the *left* of the Candidate from its sentence Context.
 
     For higher-arity Candidates, defaults to the *first* argument.
 
-    :param span: The Span to evaluate. If a candidate is given, default to its first Span.
-    :param window: The number of tokens to the left of the first argument to return
+    :param mention: The Mention to evaluate. If a candidate is given, default
+        to its first Mention.
+    :param window: The number of tokens to the left of the first argument to
+        return.
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    span = span if isinstance(span, TemporarySpan) else span[0]  # get first Span
+    span = _to_span(mention)
     i = span.get_word_start()
     for ngram in tokens_to_ngrams(
         getattr(span.sentence, attrib)[max(0, i - window) : i],
@@ -75,20 +77,22 @@ def get_left_ngrams(span, window=3, attrib="words", n_min=1, n_max=1, lower=True
         yield ngram
 
 
-def get_right_ngrams(span, window=3, attrib="words", n_min=1, n_max=1, lower=True):
+def get_right_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=True):
     """Get the ngrams within a window to the *right* of the Candidate from its sentence Context.
 
     For higher-arity Candidates, defaults to the *last* argument.
 
-    :param span: The Span to evaluate. If a candidate is given, default to its last Span.
-    :param window: The number of tokens to the left of the first argument to return
+    :param mention: The Mention to evaluate. If a candidate is given, default
+        to its last Mention.
+    :param window: The number of tokens to the left of the first argument to
+        return
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
-    span = span if isinstance(span, TemporarySpan) else span[-1]  # get last Span
+    span = _to_span(mention, idx=-1)
     i = span.get_word_end()
     for ngram in tokens_to_ngrams(
         getattr(span.sentence, attrib)[i + 1 : i + 1 + window],

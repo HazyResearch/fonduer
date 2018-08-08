@@ -21,8 +21,11 @@ check:
 	flake8 fonduer/ --count --max-line-length=127 --statistics --ignore=E731,W503,E741,E203
 	flake8 tests/ --count --max-line-length=195 --statistics --ignore=E731,W503,E741,E203
 
+docs:
+	sphinx-build -b html docs/ _build/html
+
 clean:
 	pip uninstall fonduer
 	rm -r fonduer.egg-info
 
-.PHONY: dev test clean check
+.PHONY: dev test clean check docs
