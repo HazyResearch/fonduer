@@ -17,7 +17,6 @@ setup(
         "numbskull",
         "numpy>=1.11",
         "pandas",
-        "pdftotree",
         "psycopg2-binary",
         "pyyaml",
         "scipy>=0.18",

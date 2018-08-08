@@ -25,6 +25,7 @@ Removed
 ^^^^^^^
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
+* Remove dependency on ``pdftotree``, which is currently unused.
 
 Fixed
 ^^^^^

@@ -16,7 +16,7 @@ WORDS = "words"
 class Matcher(object):
     """
     Applies a function ``f : m -> {True,False}`` to a generator of mentions,
-    returning only mentions *c* s.t. *f(m) == True*,
+    returning only mentions *m* s.t. *f(m) == True*,
     where f can be compositionally defined.
     """
 
