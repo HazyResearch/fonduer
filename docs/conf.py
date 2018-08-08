@@ -29,7 +29,8 @@ autodoc_mock_imports = [
     "psycopg2",
     "scipy",
     "spacy",
-    "tensorflow",
+    "torch",
+    "torchvision",
     "treedlib",
     "wand",
 ]

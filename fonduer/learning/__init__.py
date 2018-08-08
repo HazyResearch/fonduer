@@ -1,11 +1,8 @@
 """
 Subpackage for Snorkel machine learning modules.
 """
-from fonduer.learning.disc_models.logistic_regression import (
-    LogisticRegression,
-    SparseLogisticRegression,
-)
-from fonduer.learning.disc_models.rnn import TextRNN, reRNN
+from fonduer.learning.disc_models.logistic_regression import LogisticRegression
+
 from fonduer.learning.gen_learning import GenerativeModel, GenerativeModelWeights
 from fonduer.learning.utils import (
     GridSearch,
@@ -42,15 +39,12 @@ __all__ = [
     "ModelTester",
     "RandomSearch",
     "Scorer",
-    "SparseLogisticRegression",
-    "TextRNN",
     "binary_scores_from_counts",
     "candidate_conflict",
     "candidate_converage",
     "candidate_coverage",
     "candidate_overlap",
     "print_scores",
-    "reRNN",
     "reshape_marginals",
     "sparse_abs",
     "training_set_summary_stats",

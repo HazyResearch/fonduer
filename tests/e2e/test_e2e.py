@@ -15,10 +15,10 @@ from fonduer import (
     HTMLDocPreprocessor,
     LabelAnnotator,
     MentionExtractor,
+    LogisticRegression,
     Meta,
     Parser,
     Sentence,
-    SparseLogisticRegression,
     candidate_subclass,
     load_gold_labels,
     mention_subclass,
@@ -224,13 +224,15 @@ def test_e2e(caplog):
 
     train_marginals = gen_model.marginals(L_train)
 
-    disc_model = SparseLogisticRegression()
-    disc_model.train(F_train, train_marginals, n_epochs=200, lr=0.001)
+    disc_model = LogisticRegression()
+    disc_model.train(
+        (train_candidates, F_train), train_marginals, n_epochs=200, lr=0.001
+    )
 
     load_gold_labels(session, annotator_name="gold", split=2)
 
     test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
-    test_score = disc_model.predictions(F_test)
+    test_score = disc_model.predictions((test_candidates, F_test))
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
@@ -278,11 +280,12 @@ def test_e2e(caplog):
     )
     train_marginals = gen_model.marginals(L_train)
 
-    disc_model = SparseLogisticRegression()
-    disc_model.train(F_train, train_marginals, n_epochs=200, lr=0.001)
+    disc_model = LogisticRegression()
+    disc_model.train(
+        (train_candidates, F_train), train_marginals, n_epochs=200, lr=0.001
+    )
 
-    test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
-    test_score = disc_model.predictions(F_test)
+    test_score = disc_model.predictions((test_candidates, F_test))
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
