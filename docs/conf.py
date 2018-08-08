@@ -32,7 +32,6 @@ autodoc_mock_imports = [
     "tensorflow",
     "treedlib",
     "wand",
-    "yaml",
 ]
 
 # -- Project information -----------------------------------------------------

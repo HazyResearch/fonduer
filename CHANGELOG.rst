@@ -20,6 +20,8 @@ Changed
 * Change ``lf_helpers`` to ``data_model_utils``, since they can be applied
   more generally to throttlers or used for error analysis, and are not limited
   to just being used in labeling functions.
+* Change featurization settings to load from JSON, rather than YAML, allowing
+  us to remove the ``pyyaml`` dependency.
 
 Removed
 ^^^^^^^

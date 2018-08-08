@@ -1,6 +1,5 @@
+import json
 import os
-
-import yaml
 
 
 def dict2obj(d):
@@ -20,5 +19,5 @@ def dict2obj(d):
 
 # Load the settings relative to this config file.
 directory = os.path.dirname(__file__)
-with open(directory + "/" + "settings.yaml", "r") as f:
-    settings = dict2obj(yaml.safe_load(f))
+with open(directory + "/" + "settings.json", "r") as f:
+    settings = dict2obj(json.load(f))
