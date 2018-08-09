@@ -26,7 +26,7 @@ autodoc_mock_imports = [
     "numbskull",
     "numpy",
     "pandas",
-    "psycopyg2",
+    "psycopg2",
     "scipy",
     "spacy",
     "tensorflow",
