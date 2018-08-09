@@ -9,6 +9,11 @@ from fonduer.utils import camel_to_under
 _meta = Meta.init()
 logger = logging.getLogger(__name__)
 
+# This global dictionary contains all classes that have been declared in this
+# Python environment, so that candidate_subclass() can return a class if it
+# already exists and is identical in specification to the requested class
+candidate_subclasses = {}
+
 
 class Candidate(_meta.Base):
     """
@@ -59,12 +64,6 @@ class Candidate(_meta.Base):
     def __gt__(self, other_cand):
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other_cand.__repr__()
-
-
-# This global dictionary contains all classes that have been declared in this
-# Python environment, so that candidate_subclass() can return a class if it
-# already exists and is identical in specification to the requested class
-candidate_subclasses = {}
 
 
 def candidate_subclass(
