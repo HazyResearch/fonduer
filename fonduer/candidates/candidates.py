@@ -21,7 +21,7 @@ class CandidateExtractor(UDFRunner):
         one for each relation argument. Only tuples of Contexts for which each
         element is accepted by the corresponding Matcher will be returned as
         Candidates
-    :param candidate_throttler: an optional function for filtering out candidates
+    :param throttlers: optional functions for filtering out candidates
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.
     :param self_relations: Boolean indicating whether to extract Candidates
@@ -38,7 +38,7 @@ class CandidateExtractor(UDFRunner):
     def __init__(
         self,
         candidate_classes,
-        candidate_throttlers=None,
+        throttlers=None,
         self_relations=False,
         nested_relations=False,
         symmetric_relations=True,
@@ -47,13 +47,13 @@ class CandidateExtractor(UDFRunner):
         super(CandidateExtractor, self).__init__(
             CandidateExtractorUDF,
             candidate_classes=candidate_classes,
-            candidate_throttlers=candidate_throttlers,
+            throttlers=throttlers,
             self_relations=self_relations,
             nested_relations=nested_relations,
             symmetric_relations=symmetric_relations,
         )
         # Check that arity is sensible
-        if len(candidate_classes) < len(candidate_throttlers):
+        if len(candidate_classes) < len(throttlers):
             raise ValueError("Provided more throttlers than candidate classes.")
 
         self.candidate_classes = candidate_classes
@@ -82,7 +82,7 @@ class CandidateExtractorUDF(UDF):
     def __init__(
         self,
         candidate_classes,
-        candidate_throttlers,
+        throttlers,
         self_relations,
         nested_relations,
         symmetric_relations,
@@ -94,10 +94,8 @@ class CandidateExtractorUDF(UDF):
             if type(candidate_classes) in [list, tuple]
             else [candidate_classes]
         )
-        self.candidate_throttlers = (
-            candidate_throttlers
-            if type(candidate_throttlers) in [list, tuple]
-            else [candidate_throttlers]
+        self.throttlers = (
+            throttlers if type(throttlers) in [list, tuple] else [throttlers]
         )
         self.nested_relations = nested_relations
         self.self_relations = self_relations
@@ -133,12 +131,12 @@ class CandidateExtractorUDF(UDF):
             )
             for k, cand in enumerate(cands):
 
-                # Apply candidate_throttler if one was given.
+                # Apply throttler if one was given.
                 # Accepts a tuple of Context objects (e.g., (Span, Span))
-                # (candidate_throttler returns whether or not proposed candidate
+                # (throttler returns whether or not proposed candidate
                 # passes throttling condition)
-                if self.candidate_throttlers[i]:
-                    if not self.candidate_throttlers[i](
+                if self.throttlers[i]:
+                    if not self.throttlers[i](
                         tuple(cand[j][1].span for j in range(self.arities[i]))
                     ):
                         continue

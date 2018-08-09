@@ -72,7 +72,7 @@ Fixed
         PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
         candidate_extractor = CandidateExtractor(
-            [PartTemp, PartVolt], candidate_throttlers=[temp_throttler, volt_throttler]
+            [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
         )
 
         candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)

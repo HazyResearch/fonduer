@@ -180,9 +180,7 @@ def test_e2e(caplog):
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    candidate_extractor = CandidateExtractor(
-        [PartTemp], candidate_throttlers=[temp_throttler]
-    )
+    candidate_extractor = CandidateExtractor([PartTemp], throttlers=[temp_throttler])
 
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
