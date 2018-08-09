@@ -183,7 +183,11 @@ class MentionExtractor(UDFRunner):
     def clear(self, session, split, **kwargs):
         """Delete Mentions of each class in the extractor from the given split."""
         for mention_class in self.mention_classes:
-            logger.info("Clearing table: {}".format(mention_class.__tablename__))
+            logger.info(
+                "Clearing table: {} (split {})".format(
+                    mention_class.__tablename__, split
+                )
+            )
             session.query(Mention).filter(
                 Mention.type == mention_class.__tablename__
             ).filter(Mention.split == split).delete()
