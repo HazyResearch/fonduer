@@ -75,7 +75,7 @@ requires input from you as you build your Fonduer application.
       invalid candidates to achieve better class balance.
   #. Multimodal Featurization, Supervision, and Classification 
       Finally, users provide labeling functions (which can leverage our
-      `labeling function helpers`_) to provide weak supervision.
+      `data model utilities`_) to provide weak supervision.
 
 To demonstrate how to set up and use Fonduer in your applications, we walk
 through each of these phases in real-world examples in our Tutorials_.
@@ -84,10 +84,10 @@ Check out the `Fonduer paper`_ for more details about the system.
 
 
 .. _Fonduer paper: https://arxiv.org/abs/1703.05028
-.. _labeling function helpers: lf_helpers.html
-.. _preprocessors: preprocessors.html
-.. _matchers: matchers.html
 .. _Tutorials: https://github.com/HazyResearch/fonduer-tutorials
+.. _data model utilities: data_model_utils.html
 .. _homebrew: https://brew.sh
+.. _matchers: matchers.html
+.. _preprocessors: preprocessors.html
 .. _see changelog: https://poppler.freedesktop.org/releases.html
 .. _virtualenv: https://virtualenv.pypa.io/en/stable/

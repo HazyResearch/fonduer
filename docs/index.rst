@@ -23,8 +23,8 @@ submit your contributions as a pull request.
     user/getting_started
     user/preprocessors
     user/data_model
+    user/data_model_utils
     user/matchers
-    user/lf_helpers
     user/faqs
 
 .. toctree::

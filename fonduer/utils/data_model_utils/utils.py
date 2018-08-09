@@ -1,5 +1,31 @@
 import logging
 
+from fonduer.candidates.models import Candidate, Mention, TemporarySpan
+
+
+def _to_span(x, idx=0):
+    """Convert a Candidate, Mention, or Span to a span."""
+    if isinstance(x, Candidate):
+        return x[idx].span
+    elif isinstance(x, Mention):
+        return x.span
+    elif isinstance(x, TemporarySpan):
+        return x
+    else:
+        raise ValueError("{} is an invalid argument type".format(type(x)))
+
+
+def _to_spans(x):
+    """Convert a Candidate, Mention, or Span to a list of spans."""
+    if isinstance(x, Candidate):
+        return [_to_span(m) for m in x]
+    elif isinstance(x, Mention):
+        return [x.span]
+    elif isinstance(x, TemporarySpan):
+        return [x]
+    else:
+        raise ValueError("{} is an invalid argument type".format(type(x)))
+
 
 def is_superset(a, b):
     """Check if a is a superset of b.

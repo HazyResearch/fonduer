@@ -1,4 +1,4 @@
-from fonduer.supervision.lf_helpers.structural import (
+from fonduer.utils.data_model_utils.structural import (
     common_ancestor,
     get_ancestor_class_names,
     get_ancestor_id_names,
@@ -10,7 +10,7 @@ from fonduer.supervision.lf_helpers.structural import (
     get_tag,
     lowest_common_ancestor_depth,
 )
-from fonduer.supervision.lf_helpers.tabular import (
+from fonduer.utils.data_model_utils.tabular import (
     get_aligned_ngrams,
     get_cell_ngrams,
     get_col_ngrams,
@@ -29,13 +29,13 @@ from fonduer.supervision.lf_helpers.tabular import (
     same_sentence,
     same_table,
 )
-from fonduer.supervision.lf_helpers.textual import (
+from fonduer.utils.data_model_utils.textual import (
     get_between_ngrams,
     get_left_ngrams,
     get_right_ngrams,
 )
-from fonduer.supervision.lf_helpers.utils import get_matches, is_superset, overlap
-from fonduer.supervision.lf_helpers.visual import (
+from fonduer.utils.data_model_utils.utils import get_matches, is_superset, overlap
+from fonduer.utils.data_model_utils.visual import (
     get_aligned_lemmas,
     get_horz_ngrams,
     get_page,

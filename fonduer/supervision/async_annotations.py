@@ -50,8 +50,8 @@ def _to_annotation_generator(fns):
 
 class csr_AnnotationMatrix(sparse.csr_matrix):
     """
-    An extension of the scipy.sparse.csr_matrix class for holding sparse annotation matrices
-    and related helper methods.
+    An extension of the scipy.sparse.csr_matrix class for holding sparse
+    annotation matrices and related helper methods.
     """
 
     def __init__(self, arg1, **kwargs):
@@ -66,7 +66,8 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
         # Map key str to col number
         self.key_index = kwargs.pop("key_index", {})
 
-        # Note that scipy relies on the first three letters of the class to define matrix type...
+        # Note that scipy relies on the first three letters of the class to
+        # define matrix type...
         super(csr_AnnotationMatrix, self).__init__(arg1, **kwargs)
 
     def get_candidate(self, session, i):
@@ -205,8 +206,8 @@ class BatchAnnotatorUDF(UDF):
         """
         Applies a given function to a range of candidates
 
-        Note: Accepts a id_range as argument, because of issues with putting Candidate subclasses
-        into Queues (can't pickle...)
+        Note: Accepts a id_range as argument, because of issues with putting
+        Candidate subclasses into Queues (can't pickle...)
         """
         start, end = batch_range
         file_name = _segment_filename(_meta.DBNAME, table_name, split, self.worker_id)
@@ -261,7 +262,9 @@ class BatchAnnotatorUDF(UDF):
 
 
 class BatchAnnotator(UDFRunner):
-    """Abstract class for annotating candidates and persisting these annotations to DB"""
+    """Abstract class for annotating candidates and persisting these
+    annotations to DB.
+    """
 
     def __init__(self, candidate_type, annotation_type, f, batch_size=50, **kwargs):
         self.candidate_type = candidate_type
@@ -340,8 +343,8 @@ class BatchAnnotator(UDFRunner):
             # Insert and update keys
             if not table_already_exists or old_table_name:
                 con.execute(
-                    "CREATE TABLE %s(candidate_id integer PRIMARY KEY, keys text[] NOT NULL, values real[] NOT NULL)"
-                    % table_name
+                    "CREATE TABLE %s(candidate_id integer PRIMARY KEY, "
+                    "keys text[] NOT NULL, values real[] NOT NULL)" % table_name
                 )
             copy_postgres(segment_file_blob, table_name, "candidate_id, keys, values")
             remove_files(segment_file_blob)
@@ -351,8 +354,8 @@ class BatchAnnotator(UDFRunner):
                 temp_coo_table = table_name + "_COO"
                 con.execute(
                     "CREATE TABLE %s AS "
-                    "(SELECT candidate_id, UNNEST(keys) as key, UNNEST(values) as value from %s)"
-                    % (temp_coo_table, table_name)
+                    "(SELECT candidate_id, UNNEST(keys) as key, "
+                    "UNNEST(values) as value from %s)" % (temp_coo_table, table_name)
                 )
                 con.execute("DROP TABLE %s" % table_name)
                 con.execute(
@@ -364,7 +367,8 @@ class BatchAnnotator(UDFRunner):
                 # Update old table
                 if old_table_name:
                     con.execute(
-                        "INSERT INTO %s SELECT * FROM %s ON CONFLICT(candidate_id, key) "
+                        "INSERT INTO %s SELECT * FROM %s "
+                        "ON CONFLICT(candidate_id, key) "
                         "DO UPDATE SET value=EXCLUDED.value"
                         % (old_table_name, table_name)
                     )
@@ -373,7 +377,8 @@ class BatchAnnotator(UDFRunner):
                 # Update old table
                 if old_table_name:
                     con.execute(
-                        "INSERT INTO %s AS old SELECT * FROM %s ON CONFLICT(candidate_id) "
+                        "INSERT INTO %s AS old SELECT * FROM %s "
+                        "ON CONFLICT(candidate_id) "
                         "DO UPDATE SET "
                         "values=old.values || EXCLUDED.values,"
                         "keys=old.keys || EXCLUDED.keys" % (old_table_name, table_name)
@@ -402,8 +407,9 @@ class BatchAnnotator(UDFRunner):
     def clear(self, session, split, replace_key_set=False, **kwargs):
         """
         Deletes the Annotations for the Candidates in the given split.
-        If replace_key_set=True, deletes *all* Annotations (of this Annotation sub-class)
-        and also deletes all AnnotationKeys (of this sub-class)
+
+        If replace_key_set=True, deletes *all* Annotations (of this Annotation
+        sub-class) and also deletes all AnnotationKeys (of this sub-class)
         """
         with _meta.engine.connect() as con:
             if split is None:
@@ -530,8 +536,10 @@ def load_annotation_matrix(
                 "ON CONFLICT(key) DO NOTHING" % (key_table_name, table_name)
             )
 
-    # The result should be a list of all feature strings, small enough to hold in memory
-    # TODO: store the actual index in table in case row number is unstable between queries
+    # The result should be a list of all feature strings, small enough to hold
+    # in memory
+    # TODO: store the actual index in table in case row number is unstable
+    # between queries
     ignore_keys = set(ignore_keys)
     keys = [
         row[0]
@@ -545,8 +553,9 @@ def load_annotation_matrix(
     row_index = []
     candidate_index = {}
     # Load annotations from database
-    # TODO: move this for-loop computation to database for automatic parallelization,
-    # avoid communication overhead etc. Try to avoid the log sorting factor using unnest
+    # TODO: move this for-loop computation to database for automatic
+    # parallelization, avoid communication overhead etc. Try to avoid the log
+    # sorting factor using unnest
     if storage == "COO":
         logger.info("key size: {}".format(len(keys)))
         logger.info("candidate size {}".format(len(candidates)))

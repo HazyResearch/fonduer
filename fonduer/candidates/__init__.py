@@ -1,8 +1,15 @@
-from fonduer.candidates.candidates import (
-    CandidateExtractor,
+from fonduer.candidates.candidates import CandidateExtractor
+from fonduer.candidates.mentions import (
+    MentionExtractor,
+    MentionFigures,
+    MentionNgrams,
     Ngrams,
-    OmniFigures,
-    OmniNgrams,
 )
 
-__all__ = ["CandidateExtractor", "Ngrams", "OmniFigures", "OmniNgrams"]
+__all__ = [
+    "CandidateExtractor",
+    "MentionExtractor",
+    "MentionFigures",
+    "MentionNgrams",
+    "Ngrams",
+]

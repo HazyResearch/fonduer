@@ -17,8 +17,8 @@ from treedlib import (
 from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
 from fonduer.features.tree_structs import corenlp_to_xmltree
-from fonduer.supervision.lf_helpers import get_left_ngrams, get_right_ngrams
 from fonduer.utils import get_as_dict, tokens_to_ngrams
+from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
 
 DEF_VALUE = 1
 
@@ -31,7 +31,7 @@ binary_tdl_feats = {}
 def get_content_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = candidate.get_contexts()
+        args = tuple([arg.span for arg in candidate.get_contexts()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
@@ -101,8 +101,9 @@ def get_content_feats(candidates):
 
 def compile_entity_feature_generator():
     """
-    Given optional arguments, returns a generator function which accepts an xml root
-    and a list of indexes for a mention, and will generate relation features for this entity
+    Given optional arguments, returns a generator function which accepts an xml
+    root and a list of indexes for a mention, and will generate relation
+    features for this entity.
     """
 
     BASIC_ATTRIBS_REL = ["lemma", "dep_label"]

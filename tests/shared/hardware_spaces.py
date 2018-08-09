@@ -3,7 +3,7 @@ import re
 from builtins import chr, range, str
 from difflib import SequenceMatcher
 
-from fonduer.candidates import OmniNgrams
+from fonduer.candidates import MentionNgrams
 from fonduer.candidates.models import TemporaryImplicitSpan
 
 logger = logging.getLogger(__name__)
@@ -19,10 +19,11 @@ def expand_part_range(text):
     To get the correct output from complex strings, this function should be fed
     many Ngrams from a particular sentence.
     """
-    ### Regex Patterns compile only once per function call.
+    # Regex Patterns compile only once per function call.
     # This range pattern will find text that "looks like" a range.
     range_pattern = re.compile(
-        r"^(?P<start>[\w\/]+)(?:\s*(\.{3,}|\~|\-+|to|thru|through|\u2011+|\u2012+|\u2013+|\u2014+|\u2012+|\u2212+)\s*)(?P<end>[\w\/]+)$",
+        r"^(?P<start>[\w\/]+)(?:\s*(\.{3,}|\~|\-+|to|thru|through"
+        r"|\u2011+|\u2012+|\u2013+|\u2014+|\u2012+|\u2212+)\s*)(?P<end>[\w\/]+)$",
         re.IGNORECASE | re.UNICODE,
     )
     suffix_pattern = re.compile(r"(?P<spacer>(?:,|\/)\s*)(?P<suffix>[\w\-]+)")
@@ -34,7 +35,7 @@ def expand_part_range(text):
     expanded_parts = set()
     final_set = set()
 
-    ### Step 1: Search and expand ranges
+    # Step 1: Search and expand ranges
     m = re.search(range_pattern, text)
     if m:
         start = m.group("start")
@@ -98,7 +99,7 @@ def expand_part_range(text):
 
     logger.debug("  Inferred Text: \n  " + str(sorted(expanded_parts)))
 
-    ### Step 2: Expand suffixes for each of the inferred sentences
+    # Step 2: Expand suffixes for each of the inferred sentences
     # NOTE: this only does the simple case of replacing same-length suffixes.
     # we do not handle cases like "BC546A/B/XYZ/QR"
     for part in expanded_parts:
@@ -119,7 +120,6 @@ def expand_part_range(text):
                     all_suffix_lengths.add(suffix_len)
                 if len(all_suffix_lengths) == 1:
                     for m in re.finditer(suffix_pattern, part):
-                        spacer = m.group("spacer")
                         suffix = m.group("suffix")
                         suffix_len = len(suffix)
                         old_suffix = base[-suffix_len:]
@@ -153,7 +153,7 @@ def atoi(num_str):
     """
     try:
         return int(num_str)
-    except:
+    except Exception:
         pass
     return None
 
@@ -166,15 +166,19 @@ def char_range(a, b):
         yield chr(c)
 
 
-class OmniNgramsPart(OmniNgrams):
+class MentionNgramsPart(MentionNgrams):
     def __init__(self, parts_by_doc=None, n_max=3, expand=True, split_tokens=None):
-        """:param parts_by_doc: a dictionary d where d[document_name.upper()] = [partA, partB, ...]"""
-        OmniNgrams.__init__(self, n_max=n_max, split_tokens=None)
+        """MentionNgrams specifically for transistor parts.
+
+        :param parts_by_doc: a dictionary d where d[document_name.upper()] =
+            [partA, partB, ...]
+        """
+        MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
         self.parts_by_doc = parts_by_doc
         self.expander = expand_part_range if expand else (lambda x: [x])
 
     def apply(self, session, context):
-        for ts in OmniNgrams.apply(self, session, context):
+        for ts in MentionNgrams.apply(self, session, context):
             enumerated_parts = [
                 part.upper() for part in expand_part_range(ts.get_span())
             ]
@@ -223,12 +227,12 @@ class OmniNgramsPart(OmniNgrams):
                     )
 
 
-class OmniNgramsTemp(OmniNgrams):
+class MentionNgramsTemp(MentionNgrams):
     # def __init__(self, n_max=2, split_tokens=None):
-    #     OmniNgrams.__init__(self, n_max=n_max, split_tokens=None)
+    #     MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
 
     def apply(self, session, context):
-        for ts in OmniNgrams.apply(self, session, context):
+        for ts in MentionNgrams.apply(self, session, context):
             m = re.match(
                 u"^([\+\-\u2010\u2011\u2012\u2013\u2014\u2212\uf02d])?(\s*)(\d+)$",
                 ts.get_span(),
@@ -239,10 +243,13 @@ class OmniNgramsTemp(OmniNgrams):
                     temp = ""
                 elif m.group(1) == "+":
                     if m.group(2) != "":
-                        continue  # If bigram '+ 150' is seen, accept the unigram '150', not both
+                        # If bigram '+ 150' is seen, accept the unigram '150',
+                        # not both
+                        continue
                     temp = ""
                 else:  # m.group(1) is a type of negative sign
-                    # A bigram '- 150' is different from unigram '150', so we keep the implicit '-150'
+                    # A bigram '- 150' is different from unigram '150', so we
+                    # keep the implicit '-150'
                     temp = "-"
                 temp += m.group(3)
                 yield TemporaryImplicitSpan(
@@ -279,12 +286,12 @@ class OmniNgramsTemp(OmniNgrams):
                 yield ts
 
 
-class OmniNgramsVolt(OmniNgrams):
+class MentionNgramsVolt(MentionNgrams):
     # def __init__(self, n_max=1, split_tokens=None):
-    #     OmniNgrams.__init__(self, n_max=n_max, split_tokens=None)
+    #     MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
 
     def apply(self, session, context):
-        for ts in OmniNgrams.apply(self, session, context):
+        for ts in MentionNgrams.apply(self, session, context):
             if ts.get_span().endswith(".0"):
                 value = ts.get_span()[:-2]
                 yield TemporaryImplicitSpan(

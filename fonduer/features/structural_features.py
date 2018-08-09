@@ -1,7 +1,7 @@
 from builtins import str
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.supervision.lf_helpers import (
+from fonduer.utils.data_model_utils import (
     common_ancestor,
     get_ancestor_class_names,
     get_ancestor_id_names,
@@ -24,7 +24,7 @@ binary_strlib_feats = {}
 def get_structural_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = candidate.get_contexts()
+        args = tuple([arg.span for arg in candidate.get_contexts()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)

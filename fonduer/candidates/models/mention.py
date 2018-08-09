@@ -10,43 +10,32 @@ _meta = Meta.init()
 logger = logging.getLogger(__name__)
 
 # This global dictionary contains all classes that have been declared in this
-# Python environment, so that candidate_subclass() can return a class if it
-# already exists and is identical in specification to the requested class
-candidate_subclasses = {}
+# Python environment, so that mention_subclass() can return a class if it
+# already exists and is identical in specification to the requested class.
+mention_subclasses = {}
 
 
-class Candidate(_meta.Base):
+class Mention(_meta.Base):
     """
-    An abstract candidate relation.
+    An abstract Mention.
 
-    New relation types should be defined by calling candidate_subclass(),
+    New mention types should be defined by calling mention_subclass(),
     **not** subclassing this class directly.
     """
 
-    __tablename__ = "candidate"
+    __tablename__ = "mention"
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)
     split = Column(Integer, nullable=False, default=0, index=True)
 
-    __mapper_args__ = {"polymorphic_identity": "candidate", "polymorphic_on": type}
-
-    # __table_args__ = {"extend_existing" : True}
+    __mapper_args__ = {"polymorphic_identity": "mention", "polymorphic_on": type}
 
     def get_contexts(self):
-        """Get a tuple of the consituent contexts making up this candidate"""
+        """Get the consituent context making up this mention."""
         return tuple(getattr(self, name) for name in self.__argnames__)
 
-    def get_parent(self):
-        # Fails if both contexts don't have same parent
-        p = [c.get_parent() for c in self.get_contexts()]
-        if p.count(p[0]) == len(p):
-            return p[0]
-        else:
-            raise Exception("Contexts do not all have same parent")
-
     def get_cids(self):
-        """Get a tuple of the canonical IDs (CIDs) of the contexts making up
-        this candidate"""
+        """Get the canonical IDs (CIDs) of the context making up this mention."""
         return tuple(getattr(self, name + "_cid") for name in self.__argnames__)
 
     def __len__(self):
@@ -61,32 +50,30 @@ class Candidate(_meta.Base):
             ", ".join(map(str, self.get_contexts())),
         )
 
-    def __gt__(self, other_cand):
+    def __gt__(self, other):
         # Allow sorting by comparing the string representations of each
-        return self.__repr__() > other_cand.__repr__()
+        return self.__repr__() > other.__repr__()
 
 
-def candidate_subclass(
-    class_name, args, table_name=None, cardinality=None, values=None
-):
+def mention_subclass(class_name, cardinality=None, values=None, table_name=None):
     """
-    Creates and returns a Candidate subclass with provided argument names,
+    Creates and returns a Mention subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
 
     Import using:
 
     .. code-block:: python
 
-        from fonduer.candidates.models import candidate_subclass
+        from fonduer.candidates.models import mention_subclass
 
     :param class_name: The name of the class, should be "camel case" e.g.
-        NewCandidate
-    :param args: A list of names of consituent arguments, which refer to the
-        Contexts--representing mentions--that comprise the candidate
+        NewMention
     :param table_name: The name of the corresponding table in DB; if not
-        provided, is converted from camel case by default, e.g. new_candidate
+        provided, is converted from camel case by default, e.g. new_mention
+    :param values: The values that the variable corresponding to the Mention
+        can take. By default it will be [True, False].
     :param cardinality: The cardinality of the variable corresponding to the
-        Candidate. By default is 2 i.e. is a binary value, e.g. is or is not
+        Mention. By default is 2 i.e. is a binary value, e.g. is or is not
         a true mention.
     """
     if table_name is None:
@@ -96,7 +83,6 @@ def candidate_subclass(
     if cardinality is None and values is None:
         values = [True, False]
         cardinality = 2
-
     # Else use values if present, and validate proper input
     elif values is not None:
         if cardinality is not None and len(values) != cardinality:
@@ -117,28 +103,27 @@ def candidate_subclass(
     elif cardinality is not None:
         values = list(range(cardinality))
 
+    args = ["span"]
     class_spec = (args, table_name, cardinality, values)
-    if class_name in candidate_subclasses:
-        if class_spec == candidate_subclasses[class_name][1]:
-            return candidate_subclasses[class_name][0]
+    if class_name in mention_subclasses:
+        if class_spec == mention_subclasses[class_name][1]:
+            return mention_subclasses[class_name][0]
         else:
             raise ValueError(
-                "Candidate subclass "
+                "Mention subclass "
                 + class_name
                 + " already exists in memory with incompatible "
                 + "specification: "
-                + str(candidate_subclasses[class_name][1])
+                + str(mention_subclasses[class_name][1])
             )
     else:
         # Set the class attributes == the columns in the database
         class_attribs = {
             # Declares name for storage table
             "__tablename__": table_name,
-            # Connects candidate_subclass records to generic Candidate records
+            # Connects mention_subclass records to generic Mention records
             "id": Column(
-                Integer,
-                ForeignKey("candidate.id", ondelete="CASCADE"),
-                primary_key=True,
+                Integer, ForeignKey("mention.id", ondelete="CASCADE"), primary_key=True
             ),
             # Store values & cardinality information in the class only
             "values": values,
@@ -146,8 +131,7 @@ def candidate_subclass(
             # Polymorphism information for SQLAlchemy
             "__mapper_args__": {"polymorphic_identity": table_name},
             # Helper method to get argument names
-            "__argnames__": [_.__tablename__ for _ in args],
-            "mentions": args,
+            "__argnames__": args,
         }
         class_attribs["document_id"] = Column(
             Integer, ForeignKey("document.id", ondelete="CASCADE")
@@ -163,35 +147,36 @@ def candidate_subclass(
         # and pointer to Context
         unique_args = []
         for arg in args:
+
             # Primary arguments are constituent Contexts, and their ids
-            class_attribs[arg.__tablename__ + "_id"] = Column(
-                Integer, ForeignKey(arg.__tablename__ + ".id", ondelete="CASCADE")
+            class_attribs[arg + "_id"] = Column(
+                Integer, ForeignKey("context.id", ondelete="CASCADE")
             )
-            class_attribs[arg.__tablename__] = relationship(
-                arg.__name__,
+            class_attribs[arg] = relationship(
+                "Context",
                 backref=backref(
-                    table_name + "_" + arg.__tablename__ + "s",
+                    table_name + "_" + arg + "s",
                     cascade_backrefs=False,
                     cascade="all, delete-orphan",
                 ),
                 cascade_backrefs=False,
-                foreign_keys=class_attribs[arg.__tablename__ + "_id"],
+                foreign_keys=class_attribs[arg + "_id"],
             )
-            unique_args.append(class_attribs[arg.__tablename__ + "_id"])
+            unique_args.append(class_attribs[arg + "_id"])
 
             # Canonical ids, to be set post-entity normalization stage
-            class_attribs[arg.__tablename__ + "_cid"] = Column(String)
+            class_attribs[arg + "_cid"] = Column(String)
 
         # Add unique constraints to the arguments
         class_attribs["__table_args__"] = (UniqueConstraint(*unique_args),)
 
         # Create class
-        C = type(class_name, (Candidate,), class_attribs)
+        C = type(class_name, (Mention,), class_attribs)
 
         # Create table in DB
         if not _meta.engine.dialect.has_table(_meta.engine, table_name):
             C.__table__.create(bind=_meta.engine)
 
-        candidate_subclasses[class_name] = C, class_spec
+        mention_subclasses[class_name] = C, class_spec
 
         return C

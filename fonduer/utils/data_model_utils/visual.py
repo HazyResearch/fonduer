@@ -1,13 +1,13 @@
-############################
-# Visual modality helpers
-############################
+###########################
+# Visual modality utilities
+###########################
 
 from builtins import range
 from collections import defaultdict
 
 from fonduer.candidates import Ngrams
-from fonduer.candidates.models import TemporarySpan
 from fonduer.utils import tokens_to_ngrams
+from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils_visual import (
     bbox_from_sentence,
     bbox_from_span,
@@ -19,31 +19,33 @@ from fonduer.utils.utils_visual import (
 )
 
 
-def get_page(span):
-    """Return the page number of the given span.
+def get_page(mention):
+    """Return the page number of the given mention.
 
-    If a candidate is passed in, this returns the page of its first Span.
+    If a candidate is passed in, this returns the page of its first Mention.
 
-    :param span: The Span to get the page number of.
+    :param mention: The Mention to get the page number of.
     :rtype: integer
     """
-    span = span if isinstance(span, TemporarySpan) else span[0]
+    span = _to_span(mention)
     return span.get_attrib_tokens("page")[0]
 
 
 def is_horz_aligned(c):
     """Return True if all the components of c are horizontally aligned.
 
-    Horizontal alignment means that the bounding boxes of each Span of c shares
-    a similar y-axis value in the visual rendering of the document.
+    Horizontal alignment means that the bounding boxes of each Mention of c
+    shares a similar y-axis value in the visual rendering of the document.
 
     :param c: The candidate to evaluate
     :rtype: boolean
     """
     return all(
         [
-            c[i].sentence.is_visual()
-            and bbox_horz_aligned(bbox_from_span(c[i]), bbox_from_span(c[0]))
+            _to_span(c[i]).sentence.is_visual()
+            and bbox_horz_aligned(
+                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+            )
             for i in range(len(c))
         ]
     )
@@ -52,73 +54,84 @@ def is_horz_aligned(c):
 def is_vert_aligned(c):
     """Return true if all the components of c are vertically aligned.
 
-    Vertical alignment means that the bounding boxes of each Span of c shares
-    a similar x-axis value in the visual rendering of the document.
+    Vertical alignment means that the bounding boxes of each Mention of c
+    shares a similar x-axis value in the visual rendering of the document.
 
     :param c: The candidate to evaluate
     :rtype: boolean
     """
     return all(
         [
-            c[i].sentence.is_visual()
-            and bbox_vert_aligned(bbox_from_span(c[i]), bbox_from_span(c[0]))
+            _to_span(c[i]).sentence.is_visual()
+            and bbox_vert_aligned(
+                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+            )
             for i in range(len(c))
         ]
     )
 
 
 def is_vert_aligned_left(c):
-    """Return true if all the components of c are vertically aligned based on their left border.
+    """Return true if all components are vertically aligned on their left border.
 
-    Vertical alignment means that the bounding boxes of each Span of c shares
-    a similar x-axis value in the visual rendering of the document. In this function
-    the similarity of the x-axis value is based on the left border of their bounding boxes.
+    Vertical alignment means that the bounding boxes of each Mention of c
+    shares a similar x-axis value in the visual rendering of the document. In
+    this function the similarity of the x-axis value is based on the left
+    border of their bounding boxes.
 
     :param c: The candidate to evaluate
     :rtype: boolean
     """
     return all(
         [
-            c[i].sentence.is_visual()
-            and bbox_vert_aligned_left(bbox_from_span(c[i]), bbox_from_span(c[0]))
+            _to_span(c[i]).sentence.is_visual()
+            and bbox_vert_aligned_left(
+                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+            )
             for i in range(len(c))
         ]
     )
 
 
 def is_vert_aligned_right(c):
-    """Return true if all the components of c are vertically aligned based on their right border.
+    """Return true if all components vertically aligned on their right border.
 
-    Vertical alignment means that the bounding boxes of each Span of c shares
-    a similar x-axis value in the visual rendering of the document. In this function
-    the similarity of the x-axis value is based on the right border of their bounding boxes.
+    Vertical alignment means that the bounding boxes of each Mention of c
+    shares a similar x-axis value in the visual rendering of the document. In
+    this function the similarity of the x-axis value is based on the right
+    border of their bounding boxes.
 
     :param c: The candidate to evaluate
     :rtype: boolean
     """
     return all(
         [
-            c[i].sentence.is_visual()
-            and bbox_vert_aligned_right(bbox_from_span(c[i]), bbox_from_span(c[0]))
+            _to_span(c[i]).sentence.is_visual()
+            and bbox_vert_aligned_right(
+                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+            )
             for i in range(len(c))
         ]
     )
 
 
 def is_vert_aligned_center(c):
-    """Return true if all the components of c are vertically aligned based on their left border.
+    """Return true if all the components are vertically aligned on their center.
 
-    Vertical alignment means that the bounding boxes of each Span of c shares
-    a similar x-axis value in the visual rendering of the document. In this function
-    the similarity of the x-axis value is based on the center of their bounding boxes.
+    Vertical alignment means that the bounding boxes of each Mention of c
+    shares a similar x-axis value in the visual rendering of the document. In
+    this function the similarity of the x-axis value is based on the center of
+    their bounding boxes.
 
     :param c: The candidate to evaluate
     :rtype: boolean
     """
     return all(
         [
-            c[i].sentence.is_visual()
-            and bbox_vert_aligned_center(bbox_from_span(c[i]), bbox_from_span(c[0]))
+            _to_span(c[i]).sentence.is_visual()
+            and bbox_vert_aligned_center(
+                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+            )
             for i in range(len(c))
         ]
     )
@@ -129,28 +142,29 @@ def same_page(c):
 
     Page numbers are based on the PDF rendering of the document. If a PDF file is
     provided, it is used. Otherwise, if only a HTML/XML document is provided, a
-    PDF is created and then used to determine the page number of a Span.
+    PDF is created and then used to determine the page number of a Mention.
 
     :param c: The candidate to evaluate
     :rtype: boolean
     """
     return all(
         [
-            c[i].sentence.is_visual()
-            and bbox_from_span(c[i]).page == bbox_from_span(c[0]).page
+            _to_span(c[i]).sentence.is_visual()
+            and bbox_from_span(_to_span(c[i])).page
+            == bbox_from_span(_to_span(c[0])).page
             for i in range(len(c))
         ]
     )
 
 
 def get_horz_ngrams(
-    span, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
+    mention, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
 ):
-    """Return all ngrams which are visually horizontally aligned with the Span.
+    """Return all ngrams which are visually horizontally aligned with the Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The Span to evaluate
+    :param mention: The Mention to evaluate
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
@@ -159,7 +173,7 @@ def get_horz_ngrams(
         Sentences, rather than just horizontally aligned ngrams themselves.
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in _get_direction_ngrams(
             "horz", span, attrib, n_min, n_max, lower, from_sentence
@@ -168,13 +182,13 @@ def get_horz_ngrams(
 
 
 def get_vert_ngrams(
-    span, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
+    mention, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
 ):
-    """Return all ngrams which are visually vertivally aligned with the Span.
+    """Return all ngrams which are visually vertivally aligned with the Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The Span to evaluate
+    :param mention: The Mention to evaluate
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
@@ -183,7 +197,7 @@ def get_vert_ngrams(
         Sentences, rather than just horizontally aligned ngrams themselves.
     :rtype: a *generator* of ngrams
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         for ngram in _get_direction_ngrams(
             "vert", span, attrib, n_min, n_max, lower, from_sentence
@@ -199,7 +213,7 @@ def _get_direction_ngrams(direction, c, attrib, n_min, n_max, lower, from_senten
     )
     ngrams_space = Ngrams(n_max=n_max, split_tokens=[])
     f = (lambda w: w.lower()) if lower else (lambda w: w)
-    spans = [c] if isinstance(c, TemporarySpan) else c.get_contexts()
+    spans = _to_spans(c)
     for span in spans:
         if not span.sentence.is_tabular() or not span.sentence.is_visual():
             continue
@@ -261,13 +275,13 @@ DEFAULT_HEIGHT = 792
 
 
 def get_page_vert_percentile(
-    span, page_width=DEFAULT_WIDTH, page_height=DEFAULT_HEIGHT
+    mention, page_width=DEFAULT_WIDTH, page_height=DEFAULT_HEIGHT
 ):
-    """Return which percentile from the TOP in the page Span candidate is located in.
+    """Return which percentile from the TOP in the page the Mention is located in.
 
-    Percentile is calculated where the top of the page is 0.0, and the bottom of
-    the page is 1.0. For example, a Span in at the top 1/4 of the page will have
-    a percentil of 0.25.
+    Percentile is calculated where the top of the page is 0.0, and the bottom
+    of the page is 1.0. For example, a Mention in at the top 1/4 of the page
+    will have a percentile of 0.25.
 
     Page width and height are based on pt values::
 
@@ -293,21 +307,21 @@ def get_page_vert_percentile(
     and should match the source documents. Letter size is used by default.
 
     Note that if a candidate is passed in, only the vertical percentil of its
-    first Span is returned.
+    first Mention is returned.
 
-    :param span: The Span to evaluate
+    :param mention: The Mention to evaluate
     :param page_width: The width of the page. Default to Letter paper width.
     :param page_height: The heigh of the page. Default to Letter paper height.
     :rtype: float in [0.0, 1.0]
     """
-    span = span if isinstance(span, TemporarySpan) else span[0]
+    span = _to_span(mention)
     return bbox_from_span(span).top / page_height
 
 
 def get_page_horz_percentile(
-    span, page_width=DEFAULT_WIDTH, page_height=DEFAULT_HEIGHT
+    mention, page_width=DEFAULT_WIDTH, page_height=DEFAULT_HEIGHT
 ):
-    """Return which percentile from the LEFT in the page the Span is located in.
+    """Return which percentile from the LEFT in the page the Mention is located in.
 
     Percentile is calculated where the left of the page is 0.0, and the right
     of the page is 1.0.
@@ -335,15 +349,15 @@ def get_page_horz_percentile(
 
     and should match the source documents. Letter size is used by default.
 
-    Note that if a candidate is passed in, only the vertical percentil of its
-    first Span is returned.
+    Note that if a candidate is passed in, only the vertical percentile of its
+    first Mention is returned.
 
-    :param c: The Span to evaluate
+    :param c: The Mention to evaluate
     :param page_width: The width of the page. Default to Letter paper width.
     :param page_height: The heigh of the page. Default to Letter paper height.
     :rtype: float in [0.0, 1.0]
     """
-    span = span if isinstance(span, TemporarySpan) else span[0]
+    span = _to_span(mention)
     return bbox_from_span(span).left / page_width
 
 
@@ -403,15 +417,15 @@ def _preprocess_visual_features(doc):
         _assign_alignment_features(xc_aligned, "CENTER_")
 
 
-def get_visual_aligned_lemmas(span):
-    """Return a generator of the lemmas aligned visually with the Span.
+def get_visual_aligned_lemmas(mention):
+    """Return a generator of the lemmas aligned visually with the Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The Span to evaluate.
+    :param mention: The Mention to evaluate.
     :rtype: a *generator* of lemmas
     """
-    spans = [span] if isinstance(span, TemporarySpan) else span.get_contexts()
+    spans = _to_spans(mention)
     for span in spans:
         sentence = span.sentence
         doc = sentence.document
@@ -422,12 +436,12 @@ def get_visual_aligned_lemmas(span):
             yield aligned_lemma
 
 
-def get_aligned_lemmas(span):
-    """Return a set of the lemmas aligned visually with the Span.
+def get_aligned_lemmas(mention):
+    """Return a set of the lemmas aligned visually with the Mention.
 
-    Note that if a candidate is passed in, all of its Spans will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be searched.
 
-    :param span: The Span to evaluate.
+    :param mention: The Mention to evaluate.
     :rtype: a set of lemmas
     """
-    return set(get_visual_aligned_lemmas(span))
+    return set(get_visual_aligned_lemmas(mention))

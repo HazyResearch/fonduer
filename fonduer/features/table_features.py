@@ -2,7 +2,7 @@ from builtins import range, str
 
 from fonduer.candidates.models import TemporarySpan
 from fonduer.features.config import settings
-from fonduer.supervision.lf_helpers import (
+from fonduer.utils.data_model_utils import (
     get_cell_ngrams,
     get_col_ngrams,
     get_head_ngrams,
@@ -20,7 +20,7 @@ binary_tablelib_feats = {}
 def get_table_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = candidate.get_contexts()
+        args = tuple([arg.span for arg in candidate.get_contexts()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
@@ -120,6 +120,7 @@ def tablelib_binary_features(span1, span2):
     """
     Table-/structure-related features for a pair of spans
     """
+    binary_features = settings.featurization.table.binary_features
     if span1.sentence.is_tabular() and span2.sentence.is_tabular():
         if span1.sentence.table == span2.sentence.table:
             yield u"SAME_TABLE", DEF_VALUE
@@ -127,12 +128,12 @@ def tablelib_binary_features(span1, span2):
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_row_diff.absolute,
+                    absolute=binary_features.min_row_diff.absolute,
                 )
                 col_diff = min_col_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_col_diff.absolute,
+                    absolute=binary_features.min_col_diff.absolute,
                 )
                 yield u"SAME_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
                 yield u"SAME_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE
@@ -155,12 +156,12 @@ def tablelib_binary_features(span1, span2):
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_row_diff.absolute,
+                    absolute=binary_features.min_row_diff.absolute,
                 )
                 col_diff = min_col_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_col_diff.absolute,
+                    absolute=binary_features.min_col_diff.absolute,
                 )
                 yield u"DIFF_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
                 yield u"DIFF_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE

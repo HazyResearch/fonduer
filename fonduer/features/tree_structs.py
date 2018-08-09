@@ -4,9 +4,10 @@ import lxml.etree as et
 
 
 class XMLTree:
-    """
-    A generic tree representation which takes XML as input
-    Includes subroutines for conversion to JSON & for visualization based on js form
+    """A generic tree representation which takes XML as input.
+
+    Includes subroutines for conversion to JSON & for visualization based on js
+    form
     """
 
     def __init__(self, xml_root, words=None):
@@ -32,9 +33,10 @@ class XMLTree:
 
 def corenlp_to_xmltree(s, prune_root=True):
     """
-    Transforms an object with CoreNLP dep_path and dep_parent attributes into an XMLTree
-    Will include elements of any array having the same dimensiion as dep_* as node attributes
-    Also adds special word_idx attribute corresponding to original sequence order in sentence
+    Transforms an object with CoreNLP dep_path and dep_parent attributes into
+    an XMLTree. Will include elements of any array having the same dimensiion
+    as dep_* as node attributes. Also adds special word_idx attribute
+    corresponding to original sequence order in sentence.
     """
     # Convert input object to dictionary
     if not isinstance(s, dict):
@@ -43,7 +45,8 @@ def corenlp_to_xmltree(s, prune_root=True):
         except Exception as e:
             raise ValueError("Cannot convert input object to dict")
 
-    # Use the dep_parents array as a guide: ensure it is present and a list of ints
+    # Use the dep_parents array as a guide: ensure it is present and a list of
+    # ints
     if not ("dep_parents" in s and isinstance(s["dep_parents"], list)):
         raise ValueError(
             "Input CoreNLP object must have a 'dep_parents' attribute which is a list"
@@ -53,7 +56,8 @@ def corenlp_to_xmltree(s, prune_root=True):
     except Exception as e:
         raise ValueError("'dep_parents' attribute must be a list of ints")
 
-    # Also ensure that we are using CoreNLP-native indexing (root=0, 1-base word indexes)!
+    # Also ensure that we are using CoreNLP-native indexing
+    # (root=0, 1-base word indexes)!
     b = min(dep_parents)
     if b != 0:
         dep_parents = list(map(lambda j: j - b, dep_parents))
@@ -61,9 +65,11 @@ def corenlp_to_xmltree(s, prune_root=True):
     # Parse recursively
     root = corenlp_to_xmltree_sub(s, dep_parents, 0)
 
-    # Often the return tree will have several roots, where one is the actual root
-    # And the rest are just singletons not included in the dep tree parse...
-    # We optionally remove these singletons and then collapse the root if only one child left
+    # Often the return tree will have several roots, where one is the actual
+    # root and the rest are just singletons not included in the dep tree
+    # parse...
+    # We optionally remove these singletons and then collapse the root if only
+    # one child left.
     if prune_root:
         for c in root:
             if len(c) == 0:

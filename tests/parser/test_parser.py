@@ -11,9 +11,7 @@ import os
 from fonduer import Meta
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
-from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.spacy_parser import Spacy
 
 ATTRIBUTE = "parser_test"
 
@@ -37,10 +35,10 @@ def test_parse_md_details(caplog):
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an Parser and parse the md document
-    omni = Parser(
+    parser = Parser(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    omni.apply(preprocessor, parallelism=PARALLEL)
+    parser.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the md document
     doc = session.query(Document).order_by(Document.name).all()[0]
@@ -108,7 +106,6 @@ def test_parse_md_details(caplog):
 def test_parse_md_paragraphs(caplog):
     """Unit test of Paragraph parsing."""
     caplog.set_level(logging.INFO)
-    logger = logging.getLogger(__name__)
     session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
     PARALLEL = 1
@@ -120,10 +117,10 @@ def test_parse_md_paragraphs(caplog):
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an Parser and parse the md document
-    omni = Parser(
+    parser = Parser(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    omni.apply(preprocessor, parallelism=PARALLEL)
+    parser.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the document
     doc = session.query(Document).order_by(Document.name).all()[0]
@@ -179,9 +176,9 @@ def test_parse_md_paragraphs(caplog):
     sent2 = sentences[2]
     sent3 = sentences[3]
     assert sent1.text == "This is some basic, sample markdown."
-    assert (
-        sent2.text
-        == "Unlike the other markdown document, however, this document actually contains paragraphs of text."
+    assert sent2.text == (
+        "Unlike the other markdown document, however, "
+        "this document actually contains paragraphs of text."
     )
     assert sent1.paragraph.position == 1
     assert sent1.section.position == 0
@@ -214,8 +211,8 @@ def test_simple_tokenizer(caplog):
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    omni = Parser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallelism=PARALLEL)
+    parser = Parser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
+    parser.apply(preprocessor, parallelism=PARALLEL)
 
     doc = session.query(Document).order_by(Document.name).all()[1]
 
@@ -262,8 +259,8 @@ def test_parse_document_diseases(caplog):
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an Parser and parse the diseases document
-    omni = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallelism=PARALLEL)
+    parser = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    parser.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the diseases document
     doc = session.query(Document).order_by(Document.name).all()[0]
@@ -377,8 +374,8 @@ def test_parse_style(caplog):
     preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     # Create an Parser and parse the md document
-    omni = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    omni.apply(preprocessor, parallelism=PARALLEL)
+    parser = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
+    parser.apply(preprocessor, parallelism=PARALLEL)
 
     # Grab the document
     doc = session.query(Document).order_by(Document.name).all()[0]

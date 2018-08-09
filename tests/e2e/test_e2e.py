@@ -1,37 +1,51 @@
 #! /usr/bin/env python
-import csv
 import logging
 import os
 import pickle
-import re
 from builtins import range
-from itertools import chain
 
 import numpy as np
 import pytest
-from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
-from hardware_utils import entity_level_f1, load_hardware_labels
 
 from fonduer import (
     BatchFeatureAnnotator,
     BatchLabelAnnotator,
     CandidateExtractor,
-    DictionaryMatch,
     Document,
     GenerativeModel,
     HTMLDocPreprocessor,
-    Intersect,
-    LambdaFunctionMatcher,
+    MentionExtractor,
     Meta,
     Parser,
-    RegexMatchSpan,
     Sentence,
     SparseLogisticRegression,
-    Union,
     candidate_subclass,
     load_gold_labels,
+    mention_subclass,
 )
-from fonduer.supervision.lf_helpers import *
+from tests.shared.hardware_lfs import (
+    LF_collector_aligned,
+    LF_complement_left_row,
+    LF_current_aligned,
+    LF_negative_number_left,
+    LF_not_temp_relevant,
+    LF_operating_row,
+    LF_storage_row,
+    LF_temp_on_high_page_num,
+    LF_temp_outside_table,
+    LF_temperature_row,
+    LF_test_condition_aligned,
+    LF_to_left,
+    LF_too_many_numbers_row,
+    LF_tstg_row,
+    LF_typ_row,
+    LF_voltage_row_part,
+    LF_voltage_row_temp,
+)
+from tests.shared.hardware_matchers import part_matcher, temp_matcher
+from tests.shared.hardware_spaces import MentionNgramsPart, MentionNgramsTemp
+from tests.shared.hardware_throttlers import temp_throttler
+from tests.shared.hardware_utils import entity_level_f1, load_hardware_labels
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -52,10 +66,8 @@ def test_e2e(caplog):
 
     session = Meta.init("postgres://localhost:5432/" + DB).Session()
 
-    Part_Attr = candidate_subclass("Part_Attr", ["part", "attr"])
-
-    docs_path = "tests/e2e/data/html/"
-    pdf_path = "tests/e2e/data/pdf/"
+    docs_path = "tests/data/html/"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
@@ -144,96 +156,40 @@ def test_e2e(caplog):
             test_docs.add(doc)
     logger.info([x.name for x in train_docs])
 
-    attr_matcher = RegexMatchSpan(rgx=r"(?:[1][5-9]|20)[05]", longest_match_only=False)
+    # Mention Extraction
+    part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
+    temp_ngrams = MentionNgramsTemp(n_max=2)
 
-    ### Transistor Naming Conventions as Regular Expressions ###
-    eeca_rgx = r"([ABC][A-Z][WXYZ]?[0-9]{3,5}(?:[A-Z]){0,5}[0-9]?[A-Z]?(?:-[A-Z0-9]{1,7})?(?:[-][A-Z0-9]{1,2})?(?:\/DG)?)"
-    jedec_rgx = r"(2N\d{3,4}[A-Z]{0,5}[0-9]?[A-Z]?)"
-    jis_rgx = r"(2S[ABCDEFGHJKMQRSTVZ]{1}[\d]{2,4})"
-    others_rgx = r"((?:NSVBC|SMBT|MJ|MJE|MPS|MRF|RCA|TIP|ZTX|ZT|ZXT|TIS|TIPL|DTC|MMBT|SMMBT|PZT|FZT|STD|BUV|PBSS|KSC|CXT|FCX|CMPT){1}[\d]{2,4}[A-Z]{0,5}(?:-[A-Z0-9]{0,6})?(?:[-][A-Z0-9]{0,1})?)"
+    Part = mention_subclass("Part")
+    Temp = mention_subclass("Temp")
 
-    part_rgx = "|".join([eeca_rgx, jedec_rgx, jis_rgx, others_rgx])
-    part_rgx_matcher = RegexMatchSpan(rgx=part_rgx, longest_match_only=True)
-
-    def get_digikey_parts_set(path):
-        """
-        Reads in the digikey part dictionary and yeilds each part.
-        """
-        all_parts = set()
-        with open(path, "r") as csvinput:
-            reader = csv.reader(csvinput)
-            for line in reader:
-                (part, url) = line
-                all_parts.add(part)
-        return all_parts
-
-    ### Dictionary of known transistor parts ###
-    dict_path = "tests/e2e/data/digikey_part_dictionary.csv"
-    part_dict_matcher = DictionaryMatch(d=get_digikey_parts_set(dict_path))
-
-    def common_prefix_length_diff(str1, str2):
-        for i in range(min(len(str1), len(str2))):
-            if str1[i] != str2[i]:
-                return min(len(str1), len(str2)) - i
-        return 0
-
-    def part_file_name_conditions(attr):
-        file_name = attr.sentence.document.name
-        if len(file_name.split("_")) != 2:
-            return False
-        if attr.get_span()[0] == "-":
-            return False
-        name = attr.get_span().replace("-", "")
-        return (
-            any(char.isdigit() for char in name)
-            and any(char.isalpha() for char in name)
-            and common_prefix_length_diff(file_name.split("_")[1], name) <= 2
-        )
-
-    add_rgx = "^[A-Z0-9\-]{5,15}$"
-
-    part_file_name_lambda_matcher = LambdaFunctionMatcher(
-        func=part_file_name_conditions
-    )
-    part_file_name_matcher = Intersect(
-        RegexMatchSpan(rgx=add_rgx, longest_match_only=True),
-        part_file_name_lambda_matcher,
+    mention_extractor = MentionExtractor(
+        [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
 
-    part_matcher = Union(part_rgx_matcher, part_dict_matcher, part_file_name_matcher)
+    for i, docs in enumerate([train_docs, dev_docs, test_docs]):
+        mention_extractor.apply(docs, split=i, parallelism=PARALLEL)
 
-    part_ngrams = OmniNgramsPart(parts_by_doc=None, n_max=3)
-    attr_ngrams = OmniNgramsTemp(n_max=2)
+    assert session.query(Part).filter(Part.split == 0).count() == 201
+    assert session.query(Part).filter(Part.split == 1).count() == 20
+    assert session.query(Part).filter(Part.split == 2).count() == 78
+    assert session.query(Temp).filter(Temp.split == 0).count() == 100
+    assert session.query(Temp).filter(Temp.split == 1).count() == 8
+    assert session.query(Temp).filter(Temp.split == 2).count() == 19
 
-    def stg_temp_filter(c):
-        (part, attr) = c
-        if same_table((part, attr)):
-            return is_horz_aligned((part, attr)) or is_vert_aligned((part, attr))
-        return True
+    # Candidate Extraction
+    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    candidate_filter = stg_temp_filter
+    candidate_extractor = CandidateExtractor([PartTemp], throttlers=[temp_throttler])
 
-    candidate_extractor = CandidateExtractor(
-        Part_Attr,
-        [part_ngrams, attr_ngrams],
-        [part_matcher, attr_matcher],
-        candidate_filter=candidate_filter,
-    )
+    for i, docs in enumerate([train_docs, dev_docs, test_docs]):
+        candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
 
-    candidate_extractor.apply(train_docs, split=0, parallelism=PARALLEL)
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3201
+    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
+    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
 
-    train_cands = session.query(Part_Attr).filter(Part_Attr.split == 0).all()
-    logger.info("Number of candidates: {}".format(len(train_cands)))
-
-    for i, docs in enumerate([dev_docs, test_docs]):
-        candidate_extractor.apply(docs, split=i + 1)
-        logger.info(
-            "Number of candidates: {}".format(
-                session.query(Part_Attr).filter(Part_Attr.split == i + 1).count()
-            )
-        )
-
-    featurizer = BatchFeatureAnnotator(Part_Attr)
+    featurizer = BatchFeatureAnnotator(PartTemp)
     F_train = featurizer.apply(split=0, replace_key_set=True, parallelism=PARALLEL)
     logger.info(F_train.shape)
     F_dev = featurizer.apply(split=1, replace_key_set=False, parallelism=PARALLEL)
@@ -241,37 +197,8 @@ def test_e2e(caplog):
     F_test = featurizer.apply(split=2, replace_key_set=False, parallelism=PARALLEL)
     logger.info(F_test.shape)
 
-    gold_file = "tests/e2e/data/hardware_tutorial_gold.csv"
-    load_hardware_labels(
-        session, Part_Attr, gold_file, ATTRIBUTE, annotator_name="gold"
-    )
-
-    def LF_storage_row(c):
-        return 1 if "storage" in get_row_ngrams(c.attr) else 0
-
-    def LF_temperature_row(c):
-        return 1 if "temperature" in get_row_ngrams(c.attr) else 0
-
-    def LF_operating_row(c):
-        return 1 if "operating" in get_row_ngrams(c.attr) else 0
-
-    def LF_tstg_row(c):
-        return 1 if overlap(["tstg", "stg", "ts"], list(get_row_ngrams(c.attr))) else 0
-
-    def LF_to_left(c):
-        return 1 if "to" in get_left_ngrams(c.attr, window=2) else 0
-
-    def LF_negative_number_left(c):
-        return (
-            1
-            if any(
-                [
-                    re.match(r"-\s*\d+", ngram)
-                    for ngram in get_left_ngrams(c.attr, window=4)
-                ]
-            )
-            else 0
-        )
+    gold_file = "tests/data/hardware_tutorial_gold.csv"
+    load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -282,11 +209,11 @@ def test_e2e(caplog):
         LF_negative_number_left,
     ]
 
-    labeler = BatchLabelAnnotator(Part_Attr, lfs=stg_temp_lfs)
+    labeler = BatchLabelAnnotator(PartTemp, lfs=stg_temp_lfs)
     L_train = labeler.apply(split=0, clear=True, parallelism=PARALLEL)
     logger.info(L_train.shape)
 
-    L_gold_train = load_gold_labels(session, annotator_name="gold", split=0)
+    load_gold_labels(session, annotator_name="gold", split=0)
 
     gen_model = GenerativeModel()
     gen_model.train(
@@ -294,20 +221,20 @@ def test_e2e(caplog):
     )
     logger.info("LF Accuracy: {}".format(gen_model.weights.lf_accuracy))
 
-    L_gold_dev = load_gold_labels(session, annotator_name="gold", split=1)
+    load_gold_labels(session, annotator_name="gold", split=1)
 
     train_marginals = gen_model.marginals(L_train)
 
     disc_model = SparseLogisticRegression()
     disc_model.train(F_train, train_marginals, n_epochs=200, lr=0.001)
 
-    L_gold_test = load_gold_labels(session, annotator_name="gold", split=2)
+    load_gold_labels(session, annotator_name="gold", split=2)
 
     test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
     test_score = disc_model.predictions(F_test)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
-    pickle_file = "tests/e2e/data/parts_by_doc_dict.pkl"
+    pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
         parts_by_doc = pickle.load(f)
 
@@ -328,90 +255,6 @@ def test_e2e(caplog):
 
     assert f1 < 0.7 and f1 > 0.3
 
-    def LF_test_condition_aligned(c):
-        return (
-            -1
-            if overlap(["test", "condition"], list(get_aligned_ngrams(c.attr)))
-            else 0
-        )
-
-    def LF_collector_aligned(c):
-        return (
-            -1
-            if overlap(
-                [
-                    "collector",
-                    "collector-current",
-                    "collector-base",
-                    "collector-emitter",
-                ],
-                list(get_aligned_ngrams(c.attr)),
-            )
-            else 0
-        )
-
-    def LF_current_aligned(c):
-        return (
-            -1
-            if overlap(["current", "dc", "ic"], list(get_aligned_ngrams(c.attr)))
-            else 0
-        )
-
-    def LF_voltage_row_temp(c):
-        return (
-            -1
-            if overlap(
-                ["voltage", "cbo", "ceo", "ebo", "v"], list(get_aligned_ngrams(c.attr))
-            )
-            else 0
-        )
-
-    def LF_voltage_row_part(c):
-        return (
-            -1
-            if overlap(
-                ["voltage", "cbo", "ceo", "ebo", "v"], list(get_aligned_ngrams(c.attr))
-            )
-            else 0
-        )
-
-    def LF_typ_row(c):
-        return -1 if overlap(["typ", "typ."], list(get_row_ngrams(c.attr))) else 0
-
-    def LF_complement_left_row(c):
-        return (
-            -1
-            if (
-                overlap(
-                    ["complement", "complementary"],
-                    chain.from_iterable(
-                        [get_row_ngrams(c.part), get_left_ngrams(c.part, window=10)]
-                    ),
-                )
-            )
-            else 0
-        )
-
-    def LF_too_many_numbers_row(c):
-        num_numbers = list(get_row_ngrams(c.attr, attrib="ner_tags")).count("number")
-        return -1 if num_numbers >= 3 else 0
-
-    def LF_temp_on_high_page_num(c):
-        return -1 if c.attr.get_attrib_tokens("page")[0] > 2 else 0
-
-    def LF_temp_outside_table(c):
-        return -1 if not c.attr.sentence.is_tabular() is None else 0
-
-    def LF_not_temp_relevant(c):
-        return (
-            -1
-            if not overlap(
-                ["storage", "temperature", "tstg", "stg", "ts"],
-                list(get_aligned_ngrams(c.attr)),
-            )
-            else 0
-        )
-
     stg_temp_lfs_2 = [
         LF_test_condition_aligned,
         LF_collector_aligned,
@@ -426,7 +269,7 @@ def test_e2e(caplog):
         LF_not_temp_relevant,
     ]
 
-    labeler = BatchLabelAnnotator(Part_Attr, lfs=stg_temp_lfs_2)
+    labeler = BatchLabelAnnotator(PartTemp, lfs=stg_temp_lfs_2)
     L_train = labeler.apply(
         split=0, clear=False, update_keys=True, update_values=True, parallelism=PARALLEL
     )

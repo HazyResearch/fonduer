@@ -1,26 +1,91 @@
-Version 0.3.0 (coming soon...)
-------------------------------
+[Unreleased]
+------------
 
-.. warning::
-    This release is NOT backwards compatable with v0.2.3. Specifically we have
-    removed the ``get_parent()``, ``get_children()``, and
-    ``get_sentence_generator()`` functions from the classes inhereting from
-    Context in the data model.
+Added
+^^^^^
+* Enforce flake8 checks on tests directory.
+* Improved connection-string validation for the Meta class. 
+* Add unit test for Meta class. 
+* Add a new Mention object, and have Candidate objects be composed of Mention
+  objects, rather than directly of Spans. This allows a single Mention to be
+  reused in multiple relations.
 
+Changed
+^^^^^^^
 * `@lukehsiao`_: Organize documentation for lf_helpers by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
+* `@lukehsiao`_: Update the CHANGELOG to start following `KeepAChangelog
+  <https://keepachangelog.com/en/1.0.0/>`_ conventions.
+* Change learning framework from Tensorflow to PyTorch.
+* Change ``lf_helpers`` to ``data_model_utils``, since they can be applied
+  more generally to throttlers or used for error analysis, and are not limited
+  to just being used in labeling functions.
+* Change featurization settings to load from JSON, rather than YAML, allowing
+  us to remove the ``pyyaml`` dependency.
+
+Removed
+^^^^^^^
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
+* Remove dependency on ``pdftotree``, which is currently unused.
 
-Version 0.2.3
--------------
+Fixed
+^^^^^
+* Fix Meta bug which would not switch databases when init() was called with
+  a new connection string.
+
+.. note::
+    With the addition of Mentions, the process of Candidate extraction has
+    changed. In Fonduer v0.2.3, Candidate extraction was as follows:
+
+    .. code:: python
+
+        candidate_extractor = CandidateExtractor(PartAttr, 
+                                [part_ngrams, attr_ngrams], 
+                                [part_matcher, attr_matcher], 
+                                candidate_filter=candidate_filter)
+
+        candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+    With this release, you will now first extract Mentions and then extract
+    Candidates based on those Mentions:
+
+    .. code:: python
+
+        # Mention Extraction
+        part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
+        temp_ngrams = MentionNgramsTemp(n_max=2)
+        volt_ngrams = MentionNgramsVolt(n_max=1)
+
+        Part = mention_subclass("Part")
+        Temp = mention_subclass("Temp")
+        Volt = mention_subclass("Volt")
+        mention_extractor = MentionExtractor(
+            [Part, Temp, Volt],
+            [part_ngrams, temp_ngrams, volt_ngrams],
+            [part_matcher, temp_matcher, volt_matcher],
+        )
+        mention_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+        # Candidate Extraction
+        PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+        PartVolt = candidate_subclass("PartVolt", [Part, Volt])
+
+        candidate_extractor = CandidateExtractor(
+            [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
+        )
+
+        candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+[0.2.3] - 2018-07-23
+--------------------
 
 * `@lukehsiao`_: Support Figures nested in Cell contexts and Paragraphs in
   Figure contexts.
   (`#84 <https://github.com/HazyResearch/fonduer/pull/84>`_)
 
-Version 0.2.2
--------------
+[0.2.2] - 2018-07-22
+--------------------
 
 .. note::
     Version 0.2.0 and 0.2.1 had to be skipped due to errors in uploading those
@@ -53,8 +118,8 @@ Version 0.2.2
 * A variety of small bugfixes and code cleanup.
   (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)
 
-Version 0.1.8
--------------
+[0.1.8] - 2018-06-01
+--------------------
 
 * `@senwu`_: Remove the Viewer, which is unused in Fonduer 
   (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
@@ -67,8 +132,8 @@ Version 0.1.8
 * `@lukehsiao`_: Fix LocationMatch NER tags for spaCy 
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 
-Version 0.1.7
--------------
+[0.1.7] - 2018-04-04
+--------------------
 
 .. warning::
     This release is NOT backwards compatable with v0.1.6. Specifically, the
@@ -106,16 +171,16 @@ Version 0.1.7
 * `@lukehsiao`_: Remove unused package dependencies 
   (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
 
-Version 0.1.6
--------------
+[0.1.6] - 2018-03-31
+--------------------
 
 * `@senwu`_: Fix support for providing a PostgreSQL username and password as
   part of the connection string provided to Meta.init() 
   (`#40 <https://github.com/HazyResearch/fonduer/pull/40>`_)
 * `@lukehsiao`_: Switch README from Markdown to reStructuredText 
 
-Version 0.1.5 
--------------
+[0.1.5] - 2018-03-31
+--------------------
 .. warning::
     This release is NOT backwards compatable with v0.1.4. Specifically, in order
     to initialize a session with postgresql, you no longer do
@@ -142,19 +207,19 @@ Version 0.1.5
 * `@lukehsiao`_: Bring codebase in PEP8 compliance and add automatic code-style
   checks (`#37 <https://github.com/HazyResearch/fonduer/pull/37>`_)
 
-Version 0.1.4 
--------------
+[0.1.4] - 2018-03-30
+--------------------
 
 * `@lukehsiao`_: Separate tutorials into their own repo (`#31
   <https://github.com/HazyResearch/fonduer/pull/31>`_)
 
-Version 0.1.3
--------------
+[0.1.3] - 2018-03-29
+--------------------
 
 Minor hotfix to the README formatting for PyPi.
 
-Version 0.1.2
--------------
+[0.1.2] - 2018-03-29
+--------------------
 
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI 
 

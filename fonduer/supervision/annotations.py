@@ -20,19 +20,21 @@ from fonduer.utils import (
 
 class csr_AnnotationMatrix(sparse.csr_matrix):
     """
-    An extension of the scipy.sparse.csr_matrix class for holding sparse annotation matrices
-    and related helper methods.
+    An extension of the scipy.sparse.csr_matrix class for holding sparse
+    annotation matrices and related helper methods.
     """
 
     def __init__(self, arg1, **kwargs):
-        # Note: Currently these need to return None if unset, otherwise matrix copy operations break...
+        # Note: Currently these need to return None if unset, otherwise matrix
+        # copy operations break...
         self.candidate_index = kwargs.pop("candidate_index", None)
         self.row_index = kwargs.pop("row_index", None)
         self.annotation_key_cls = kwargs.pop("annotation_key_cls", None)
         self.key_index = kwargs.pop("key_index", None)
         self.col_index = kwargs.pop("col_index", None)
 
-        # Note that scipy relies on the first three letters of the class to define matrix type...
+        # Note that scipy relies on the first three letters of the class to
+        # define matrix type...
         super(csr_AnnotationMatrix, self).__init__(arg1, **kwargs)
 
     def get_candidate(self, session, i):
