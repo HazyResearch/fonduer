@@ -13,14 +13,8 @@ logger = logging.getLogger(__name__)
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
-    :param candidate_class: The type of relation to extract, defined using
+    :param candidate_classes: The types of relation to extract, defined using
         :func:`fonduer.candidates.candidate_subclass.
-    :param cspaces: one or list of :class:`CandidateSpace` objects, one for
-        each relation argument. Defines space of Contexts to consider
-    :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
-        one for each relation argument. Only tuples of Contexts for which each
-        element is accepted by the corresponding Matcher will be returned as
-        Candidates
     :param throttlers: optional functions for filtering out candidates
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.

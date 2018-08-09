@@ -149,7 +149,7 @@ class MentionExtractor(UDFRunner):
 
     :param mention_classes: The type of relation to extract, defined using
         :func:`fonduer.mentions.mention_subclass.
-    :param mspaces: one or list of :class:`MentionSpace` objects, one for
+    :param mention_spaces: one or list of :class:`MentionSpace` objects, one for
         each relation argument. Defines space of Contexts to consider
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
         one for each relation argument. Only tuples of Contexts for which each
@@ -157,17 +157,19 @@ class MentionExtractor(UDFRunner):
         Mentions
     """
 
-    def __init__(self, mention_classes, mspaces, matchers):
+    def __init__(self, mention_classes, mention_spaces, matchers):
         """Initialize the MentionExtractor."""
         super(MentionExtractor, self).__init__(
             MentionExtractorUDF,
             mention_classes=mention_classes,
-            mspaces=mspaces,
+            mention_spaces=mention_spaces,
             matchers=matchers,
         )
         # Check that arity is same
         arity = len(mention_classes)
-        if not all(len(x) == arity for x in [mention_classes, mspaces, matchers]):
+        if not all(
+            len(x) == arity for x in [mention_classes, mention_spaces, matchers]
+        ):
             raise ValueError(
                 "Mismatched arity of mention classes, spaces, and matchers."
             )
@@ -195,14 +197,18 @@ class MentionExtractor(UDFRunner):
 class MentionExtractorUDF(UDF):
     """UDF for performing mention extraction."""
 
-    def __init__(self, mention_classes, mspaces, matchers, **kwargs):
+    def __init__(self, mention_classes, mention_spaces, matchers, **kwargs):
         """Initialize the MentionExtractorUDF."""
         self.mention_classes = (
             mention_classes
             if type(mention_classes) in [list, tuple]
             else [mention_classes]
         )
-        self.mention_spaces = mspaces if type(mspaces) in [list, tuple] else [mspaces]
+        self.mention_spaces = (
+            mention_spaces
+            if type(mention_spaces) in [list, tuple]
+            else [mention_spaces]
+        )
         self.matchers = matchers if type(matchers) in [list, tuple] else [matchers]
 
         # Make sure the mention spaces are different so generators aren't expended!
