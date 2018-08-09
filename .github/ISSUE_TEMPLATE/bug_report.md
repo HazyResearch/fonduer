@@ -12,17 +12,19 @@ Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Execute the code '...'
+If necessary, attach example data which can be used to replicate the issue.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Error Logs/Screenshots**
+If applicable, add error logs or screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
+**Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 16.04]
- - PostgreSQL [e.g. 9.6]
- - Fonduer Version [e.g. v0.2.3]
+ - PostgreSQL Version: [e.g. 9.6]
+ - Poppler Utils Version: [e.g. 0.62.0]
+ - Fonduer Version: [e.g. 0.2.3]
 
 **Additional context**
 Add any other context about the problem here.
