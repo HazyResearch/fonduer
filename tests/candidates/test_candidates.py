@@ -84,7 +84,7 @@ def test_cand_gen(caplog):
         [part_ngrams, temp_ngrams, volt_ngrams],
         [part_matcher, temp_matcher, volt_matcher],
     )
-    mention_extractor.apply(docs, split=0, parallelism=PARALLEL)
+    mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 234
     assert session.query(Volt).count() == 108
