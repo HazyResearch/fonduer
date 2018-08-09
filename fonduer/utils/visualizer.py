@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from builtins import object
@@ -8,6 +9,8 @@ from IPython.display import display
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
+
+logger = logging.getLogger(__name__)
 
 
 class Visualizer(object):
@@ -53,9 +56,17 @@ class Visualizer(object):
         """
         if not pdf_file:
             pdf_file = os.path.join(
-                self.pdf_path, candidates[0][0].sentence.document.name + ".pdf"
+                self.pdf_path, candidates[0][0].span.sentence.document.name
             )
-        boxes = [get_box(span) for c in candidates for span in c.get_contexts()]
+            if os.path.isfile(pdf_file + ".pdf"):
+                pdf_file += ".pdf"
+            elif os.path.isfile(pdf_file + ".PDF"):
+                pdf_file += ".PDF"
+            else:
+                logger.error("display_candidates failed: pdf file missing.")
+        boxes = [
+            get_box(mention.span) for c in candidates for mention in c.get_contexts()
+        ]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)
 
