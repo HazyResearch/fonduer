@@ -169,12 +169,8 @@ def test_e2e(caplog):
 
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
-    assert session.query(Part).filter(Part.split == 0).count() == 201
-    assert session.query(Part).filter(Part.split == 1).count() == 20
-    assert session.query(Part).filter(Part.split == 2).count() == 78
-    assert session.query(Temp).filter(Temp.split == 0).count() == 100
-    assert session.query(Temp).filter(Temp.split == 1).count() == 8
-    assert session.query(Temp).filter(Temp.split == 2).count() == 19
+    assert session.query(Part).count() == 299
+    assert session.query(Temp).count() == 127
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
