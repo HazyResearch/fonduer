@@ -72,7 +72,7 @@ def is_vert_aligned(c):
 
 
 def is_vert_aligned_left(c):
-    """Return true if all the components of c are vertically aligned based on their left border.
+    """Return true if all components are vertically aligned on their left border.
 
     Vertical alignment means that the bounding boxes of each Mention of c
     shares a similar x-axis value in the visual rendering of the document. In
@@ -94,7 +94,7 @@ def is_vert_aligned_left(c):
 
 
 def is_vert_aligned_right(c):
-    """Return true if all the components of c are vertically aligned based on their right border.
+    """Return true if all components vertically aligned on their right border.
 
     Vertical alignment means that the bounding boxes of each Mention of c
     shares a similar x-axis value in the visual rendering of the document. In
@@ -116,11 +116,12 @@ def is_vert_aligned_right(c):
 
 
 def is_vert_aligned_center(c):
-    """Return true if all the components of c are vertically aligned based on their left border.
+    """Return true if all the components are vertically aligned on their center.
 
-    Vertical alignment means that the bounding boxes of each Mention of c shares
-    a similar x-axis value in the visual rendering of the document. In this function
-    the similarity of the x-axis value is based on the center of their bounding boxes.
+    Vertical alignment means that the bounding boxes of each Mention of c
+    shares a similar x-axis value in the visual rendering of the document. In
+    this function the similarity of the x-axis value is based on the center of
+    their bounding boxes.
 
     :param c: The candidate to evaluate
     :rtype: boolean

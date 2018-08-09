@@ -17,7 +17,7 @@ def get_core_feats(candidates):
 
         # Unary candidates
         if len(args) == 1:
-            span = args[0].span
+            span = args[0]
 
             if span.stable_id not in unary_feats:
                 unary_feats[span.stable_id] = set()

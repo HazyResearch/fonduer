@@ -12,10 +12,17 @@ from fonduer.utils.data_model_utils import get_row_ngrams, overlap
 temp_matcher = RegexMatchSpan(rgx=r"(?:[1][5-9]|20)[05]", longest_match_only=False)
 
 # Transistor Naming Conventions as Regular Expressions ###
-eeca_rgx = r"([ABC][A-Z][WXYZ]?[0-9]{3,5}(?:[A-Z]){0,5}[0-9]?[A-Z]?(?:-[A-Z0-9]{1,7})?(?:[-][A-Z0-9]{1,2})?(?:\/DG)?)"
+eeca_rgx = (
+    r"([ABC][A-Z][WXYZ]?[0-9]{3,5}(?:[A-Z]){0,5}"
+    r"[0-9]?[A-Z]?(?:-[A-Z0-9]{1,7})?(?:[-][A-Z0-9]{1,2})?(?:\/DG)?)"
+)
 jedec_rgx = r"(2N\d{3,4}[A-Z]{0,5}[0-9]?[A-Z]?)"
 jis_rgx = r"(2S[ABCDEFGHJKMQRSTVZ]{1}[\d]{2,4})"
-others_rgx = r"((?:NSVBC|SMBT|MJ|MJE|MPS|MRF|RCA|TIP|ZTX|ZT|ZXT|TIS|TIPL|DTC|MMBT|SMMBT|PZT|FZT|STD|BUV|PBSS|KSC|CXT|FCX|CMPT){1}[\d]{2,4}[A-Z]{0,5}(?:-[A-Z0-9]{0,6})?(?:[-][A-Z0-9]{0,1})?)"
+others_rgx = (
+    r"((?:NSVBC|SMBT|MJ|MJE|MPS|MRF|RCA|TIP|ZTX|ZT|ZXT|TIS|"
+    r"TIPL|DTC|MMBT|SMMBT|PZT|FZT|STD|BUV|PBSS|KSC|CXT|FCX|CMPT){1}"
+    r"[\d]{2,4}[A-Z]{0,5}(?:-[A-Z0-9]{0,6})?(?:[-][A-Z0-9]{0,1})?)"
+)
 
 part_rgx = "|".join([eeca_rgx, jedec_rgx, jis_rgx, others_rgx])
 part_rgx_matcher = RegexMatchSpan(rgx=part_rgx, longest_match_only=True)
@@ -35,7 +42,7 @@ def get_digikey_parts_set(path):
 
 
 # Dictionary of known transistor parts ###
-dict_path = "tests/e2e/data/digikey_part_dictionary.csv"
+dict_path = "tests/data/digikey_part_dictionary.csv"
 part_dict_matcher = DictionaryMatch(d=get_digikey_parts_set(dict_path))
 
 

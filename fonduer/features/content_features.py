@@ -101,8 +101,9 @@ def get_content_feats(candidates):
 
 def compile_entity_feature_generator():
     """
-    Given optional arguments, returns a generator function which accepts an xml root
-    and a list of indexes for a mention, and will generate relation features for this entity
+    Given optional arguments, returns a generator function which accepts an xml
+    root and a list of indexes for a mention, and will generate relation
+    features for this entity.
     """
 
     BASIC_ATTRIBS_REL = ["lemma", "dep_label"]

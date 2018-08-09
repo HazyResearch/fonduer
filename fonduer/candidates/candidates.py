@@ -105,10 +105,10 @@ class CandidateExtractorUDF(UDF):
         :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
-        logger.info("Document: {}".format(context))
+        logger.debug("Document: {}".format(context))
         # Iterate over each candidate class
         for i, candidate_class in enumerate(self.candidate_classes):
-            logger.info("  Relation: {}".format(candidate_class.__name__))
+            logger.debug("  Relation: {}".format(candidate_class.__name__))
             # Generates and persists candidates
             candidate_args = {"split": split}
             candidate_args["document_id"] = context.id
@@ -126,12 +126,12 @@ class CandidateExtractorUDF(UDF):
             for cand in cands:
 
                 # Apply throttler if one was given.
-                # Accepts a tuple of Context objects (e.g., (Span, Span))
+                # Accepts a tuple of Mention objects
                 # (throttler returns whether or not proposed candidate
                 # passes throttling condition)
                 if self.throttlers[i]:
                     if not self.throttlers[i](
-                        tuple(cand[j][1].span for j in range(self.arities[i]))
+                        tuple(cand[j][1] for j in range(self.arities[i]))
                     ):
                         continue
 

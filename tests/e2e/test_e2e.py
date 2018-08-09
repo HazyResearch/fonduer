@@ -6,7 +6,24 @@ from builtins import range
 
 import numpy as np
 import pytest
-from hardware_lfs import (
+
+from fonduer import (
+    BatchFeatureAnnotator,
+    BatchLabelAnnotator,
+    CandidateExtractor,
+    Document,
+    GenerativeModel,
+    HTMLDocPreprocessor,
+    MentionExtractor,
+    Meta,
+    Parser,
+    Sentence,
+    SparseLogisticRegression,
+    candidate_subclass,
+    load_gold_labels,
+    mention_subclass,
+)
+from tests.shared.hardware_lfs import (
     LF_collector_aligned,
     LF_complement_left_row,
     LF_current_aligned,
@@ -25,27 +42,10 @@ from hardware_lfs import (
     LF_voltage_row_part,
     LF_voltage_row_temp,
 )
-from hardware_matchers import part_matcher, temp_matcher
-from hardware_spaces import MentionNgramsPart, MentionNgramsTemp
-from hardware_throttlers import temp_throttler
-from hardware_utils import entity_level_f1, load_hardware_labels
-
-from fonduer import (
-    BatchFeatureAnnotator,
-    BatchLabelAnnotator,
-    CandidateExtractor,
-    Document,
-    GenerativeModel,
-    HTMLDocPreprocessor,
-    MentionExtractor,
-    Meta,
-    Parser,
-    Sentence,
-    SparseLogisticRegression,
-    candidate_subclass,
-    load_gold_labels,
-    mention_subclass,
-)
+from tests.shared.hardware_matchers import part_matcher, temp_matcher
+from tests.shared.hardware_spaces import MentionNgramsPart, MentionNgramsTemp
+from tests.shared.hardware_throttlers import temp_throttler
+from tests.shared.hardware_utils import entity_level_f1, load_hardware_labels
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -66,8 +66,8 @@ def test_e2e(caplog):
 
     session = Meta.init("postgres://localhost:5432/" + DB).Session()
 
-    docs_path = "tests/e2e/data/html/"
-    pdf_path = "tests/e2e/data/pdf/"
+    docs_path = "tests/data/html/"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
@@ -197,7 +197,7 @@ def test_e2e(caplog):
     F_test = featurizer.apply(split=2, replace_key_set=False, parallelism=PARALLEL)
     logger.info(F_test.shape)
 
-    gold_file = "tests/e2e/data/hardware_tutorial_gold.csv"
+    gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
 
     stg_temp_lfs = [
@@ -234,7 +234,7 @@ def test_e2e(caplog):
     test_score = disc_model.predictions(F_test)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
-    pickle_file = "tests/e2e/data/parts_by_doc_dict.pkl"
+    pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
         parts_by_doc = pickle.load(f)
 

@@ -52,7 +52,7 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
 
 
 def get_left_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=True):
-    """Get the ngrams within a window to the *left* of the Candidate from its sentence Context.
+    """Get the ngrams within a window to the *left* from the sentence Context.
 
     For higher-arity Candidates, defaults to the *first* argument.
 
@@ -78,7 +78,7 @@ def get_left_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=T
 
 
 def get_right_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=True):
-    """Get the ngrams within a window to the *right* of the Candidate from its sentence Context.
+    """Get the ngrams within a window to the *right* from the sentence Context.
 
     For higher-arity Candidates, defaults to the *last* argument.
 

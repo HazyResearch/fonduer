@@ -120,6 +120,7 @@ def tablelib_binary_features(span1, span2):
     """
     Table-/structure-related features for a pair of spans
     """
+    binary_features = settings.featurization.table.binary_features
     if span1.sentence.is_tabular() and span2.sentence.is_tabular():
         if span1.sentence.table == span2.sentence.table:
             yield u"SAME_TABLE", DEF_VALUE
@@ -127,12 +128,12 @@ def tablelib_binary_features(span1, span2):
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_row_diff.absolute,
+                    absolute=binary_features.min_row_diff.absolute,
                 )
                 col_diff = min_col_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_col_diff.absolute,
+                    absolute=binary_features.min_col_diff.absolute,
                 )
                 yield u"SAME_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
                 yield u"SAME_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE
@@ -155,12 +156,12 @@ def tablelib_binary_features(span1, span2):
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_row_diff.absolute,
+                    absolute=binary_features.min_row_diff.absolute,
                 )
                 col_diff = min_col_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=settings.featurization.table.binary_features.min_col_diff.absolute,
+                    absolute=binary_features.min_col_diff.absolute,
                 )
                 yield u"DIFF_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
                 yield u"DIFF_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE

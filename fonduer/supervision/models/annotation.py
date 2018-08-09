@@ -74,7 +74,8 @@ class AnnotationMixin(object):
             value = Column(Float, nullable=False)
 
 
-        # The entire storage schema, including NewAnnotation, can now be initialized with the following import
+        # The entire storage schema, including NewAnnotation, can now be
+        # initialized with the following import
         import fonduer.models
 
     The annotation class should include a Column attribute named value.
@@ -84,7 +85,8 @@ class AnnotationMixin(object):
     def __tablename__(cls):
         return camel_to_under(cls.__name__)
 
-    # The key is the "name" or "type" of the Annotation- e.g. the name of a feature, or of a human annotator
+    # The key is the "name" or "type" of the Annotation- e.g. the name of a
+    # feature, or of a human annotator
     @declared_attr
     def key_id(cls):
         return Column(

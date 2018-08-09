@@ -90,8 +90,6 @@ class TemporaryImplicitSpan(TemporarySpan):
 
     def get_stable_id(self):
         doc_id, _, parent_doc_char_start, _ = split_stable_id(self.sentence.stable_id)
-        # return (construct_stable_id(self.sentence, self._get_polymorphic_identity(), self.char_start, self.char_end)
-        #     + ':%s:%s' % (self.expander_key, self.position))
         return "%s::%s:%s:%s:%s:%s" % (
             self.sentence.document.name,
             self._get_polymorphic_identity(),
@@ -152,11 +150,11 @@ class TemporaryImplicitSpan(TemporarySpan):
         }
 
     def get_attrib_tokens(self, a="words"):
-        """Get the tokens of sentence attribute *a* over the range defined by word_offset, n"""
+        """Get the tokens of sentence attribute *a*."""
         return self.__getattribute__(a)
 
     def get_attrib_span(self, a, sep=" "):
-        """Get the span of sentence attribute *a* over the range defined by word_offset, n"""
+        """Get the span of sentence attribute *a*."""
         if a == "words":
             return self.text
         else:
@@ -165,7 +163,8 @@ class TemporaryImplicitSpan(TemporarySpan):
     def __getitem__(self, key):
         """Slice operation returns a new candidate sliced according to **char index**.
 
-        Note that the slicing is w.r.t. the candidate range (not the abs. sentence char indexing)
+        Note that the slicing is w.r.t. the candidate range (not the abs.
+        sentence char indexing)
         """
         if isinstance(key, slice):
             char_start = (
@@ -267,7 +266,8 @@ class ImplicitSpan(Context, TemporaryImplicitSpan):
     def _get_instance(self, **kwargs):
         return ImplicitSpan(**kwargs)
 
-    # We redefine these to use default semantics, overriding the operators inherited from TemporarySpan
+    # We redefine these to use default semantics, overriding the operators
+    # inherited from TemporarySpan
     def __eq__(self, other):
         return self is other
 

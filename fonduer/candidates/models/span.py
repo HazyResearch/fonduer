@@ -57,7 +57,10 @@ class TemporarySpan(TemporaryContext):
         return "span"
 
     def _get_insert_query(self):
-        return """INSERT INTO span VALUES(:id, :sentence_id, :char_start, :char_end, :meta)"""
+        return (
+            "INSERT INTO span VALUES"
+            + "(:id, :sentence_id, :char_start, :char_end, :meta)"
+        )
 
     def _get_insert_args(self):
         return {
@@ -77,7 +80,7 @@ class TemporarySpan(TemporaryContext):
         return self.get_word_end() - self.get_word_start() + 1
 
     def char_to_word_index(self, ci):
-        """Given a character-level index (offset), return the index of the **word this char is in**"""
+        """Return the index of the **word this char is in**"""
         i = None
         for i, co in enumerate(self.sentence.char_offsets):
             if ci == co:
@@ -87,18 +90,19 @@ class TemporarySpan(TemporaryContext):
         return i
 
     def word_to_char_index(self, wi):
-        """Given a word-level index, return the character-level index (offset) of the word's start"""
+        """Return the character-level index (offset) of the word's start"""
         return self.sentence.char_offsets[wi]
 
     def get_attrib_tokens(self, a="words"):
-        """Get the tokens of sentence attribute *a* over the range defined by word_offset, n"""
+        """Get the tokens of sentence attribute *a*."""
         return self.sentence.__getattribute__(a)[
             self.get_word_start() : self.get_word_end() + 1
         ]
 
     def get_attrib_span(self, a, sep=" "):
-        """Get the span of sentence attribute *a* over the range defined by word_offset, n"""
-        # NOTE: Special behavior for words currently (due to correspondence with char_offsets)
+        """Get the span of sentence attribute *a*."""
+        # NOTE: Special behavior for words currently (due to correspondence
+        # with char_offsets)
         if a == "words":
             return self.sentence.text[self.char_start : self.char_end + 1]
         else:
@@ -117,7 +121,9 @@ class TemporarySpan(TemporaryContext):
     def __getitem__(self, key):
         """
         Slice operation returns a new candidate sliced according to **char index**
-        Note that the slicing is w.r.t. the candidate range (not the abs. sentence char indexing)
+
+        Note that the slicing is w.r.t. the candidate range (not the abs.
+        sentence char indexing).
         """
         if isinstance(key, slice):
             char_start = (
@@ -152,7 +158,7 @@ class TemporarySpan(TemporaryContext):
 
 class Span(Context, TemporarySpan):
     """
-    A span of characters, identified by Context id and character-index start, end (inclusive).
+    A span of chars, identified by Context ID and char-index start, end (inclusive).
 
     char_offsets are **relative to the Context start**
     """
@@ -180,7 +186,8 @@ class Span(Context, TemporarySpan):
     def _get_instance(self, **kwargs):
         return Span(**kwargs)
 
-    # We redefine these to use default semantics, overriding the operators inherited from TemporarySpan
+    # We redefine these to use default semantics, overriding the operators
+    # inherited from TemporarySpan
     def __eq__(self, other):
         return self is other
 

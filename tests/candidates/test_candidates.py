@@ -3,9 +3,6 @@ import logging
 import os
 
 import pytest
-from hardware_matchers import part_matcher, temp_matcher, volt_matcher
-from hardware_spaces import MentionNgramsPart, MentionNgramsTemp, MentionNgramsVolt
-from hardware_throttlers import temp_throttler, volt_throttler
 
 from fonduer import (
     CandidateExtractor,
@@ -19,6 +16,13 @@ from fonduer import (
     mention_subclass,
 )
 from fonduer.candidates.models import Candidate
+from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
+from tests.shared.hardware_spaces import (
+    MentionNgramsPart,
+    MentionNgramsTemp,
+    MentionNgramsVolt,
+)
+from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -26,7 +30,7 @@ DB = "cand_test"
 
 
 def test_cand_gen(caplog):
-    """Test extracting candidates from mentions from documents of the hardware domain."""
+    """Test extracting candidates from mentions from documents."""
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
     if os.name == "posix":
@@ -37,8 +41,8 @@ def test_cand_gen(caplog):
     max_docs = 10
     session = Meta.init("postgres://localhost:5432/" + DB).Session()
 
-    docs_path = "tests/candidates/data/html/"
-    pdf_path = "tests/candidates/data/pdf/"
+    docs_path = "tests/data/html/"
+    pdf_path = "tests/data/pdf/"
 
     # Parsing
     num_docs = session.query(Document).count()
@@ -109,3 +113,16 @@ def test_cand_gen(caplog):
     assert len(docs[0].parts) == 70
     assert len(docs[0].volts) == 33
     assert len(docs[0].temps) == 18
+
+    # Test that deletion of a Candidate does not delete the Mention
+    session.query(PartTemp).delete()
+    assert session.query(PartTemp).count() == 0
+    assert session.query(Temp).count() == 118
+    assert session.query(Part).count() == 234
+
+    # Test deletion of Candidate if Mention is deleted
+    assert session.query(PartVolt).count() == 3364
+    assert session.query(Volt).count() == 108
+    session.query(Volt).delete()
+    assert session.query(Volt).count() == 0
+    assert session.query(PartVolt).count() == 0

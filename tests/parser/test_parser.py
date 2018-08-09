@@ -176,9 +176,9 @@ def test_parse_md_paragraphs(caplog):
     sent2 = sentences[2]
     sent3 = sentences[3]
     assert sent1.text == "This is some basic, sample markdown."
-    assert (
-        sent2.text
-        == "Unlike the other markdown document, however, this document actually contains paragraphs of text."
+    assert sent2.text == (
+        "Unlike the other markdown document, however, "
+        "this document actually contains paragraphs of text."
     )
     assert sent1.paragraph.position == 1
     assert sent1.section.position == 0

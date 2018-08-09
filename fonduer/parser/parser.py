@@ -81,11 +81,13 @@ class ParserUDF(UDF):
     ):
         """
         :param visual: boolean, if True visual features are used in the model
-        :param pdf_path: directory where pdf are saved, if a pdf file is not found,
-        it will be created from the html document and saved in that directory
-        :param replacements: a list of (_pattern_, _replace_) tuples where _pattern_ isinstance
-        a regex and _replace_ is a character string. All occurents of _pattern_ in the
-        text will be replaced by _replace_.
+        :param pdf_path: directory where pdf are saved, if a pdf file is not
+            found, it will be created from the html document and saved in that
+            directory
+        :param replacements: a list of (_pattern_, _replace_) tuples where
+            _pattern_ isinstance a regex and _replace_ is a character string.
+            All occurents of _pattern_ in the text will be replaced by
+            _replace_.
         """
         super(ParserUDF, self).__init__(**kwargs)
 
@@ -462,9 +464,9 @@ class ParserUDF(UDF):
                 parts["section"] = parent.section
             else:
                 raise NotImplementedError(
-                    'Paragraph "{}" parent must be Section, Caption, or Cell, not {}'.format(
-                        text, parent
-                    )
+                    (
+                        'Para "{}" parent must be Section, Caption, or Cell, not {}'
+                    ).format(text, parent)
                 )
 
             # Create the Figure entry in the DB
@@ -589,7 +591,7 @@ class ParserUDF(UDF):
         state = {
             "visited": set(),
             "parent": {},  # map of parent[child] = node used to discover child
-            "context": {},  # track the Context created by each node (context['td'] = Cell)
+            "context": {},  # track the Context of each node (context['td'] = Cell)
             "root": root,
             "document": document,
             "section": {"idx": 0},

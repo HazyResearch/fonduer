@@ -22,7 +22,8 @@ def expand_part_range(text):
     # Regex Patterns compile only once per function call.
     # This range pattern will find text that "looks like" a range.
     range_pattern = re.compile(
-        r"^(?P<start>[\w\/]+)(?:\s*(\.{3,}|\~|\-+|to|thru|through|\u2011+|\u2012+|\u2013+|\u2014+|\u2012+|\u2212+)\s*)(?P<end>[\w\/]+)$",
+        r"^(?P<start>[\w\/]+)(?:\s*(\.{3,}|\~|\-+|to|thru|through"
+        r"|\u2011+|\u2012+|\u2013+|\u2014+|\u2012+|\u2212+)\s*)(?P<end>[\w\/]+)$",
         re.IGNORECASE | re.UNICODE,
     )
     suffix_pattern = re.compile(r"(?P<spacer>(?:,|\/)\s*)(?P<suffix>[\w\-]+)")
@@ -167,7 +168,11 @@ def char_range(a, b):
 
 class MentionNgramsPart(MentionNgrams):
     def __init__(self, parts_by_doc=None, n_max=3, expand=True, split_tokens=None):
-        """:param parts_by_doc: a dictionary d where d[document_name.upper()] = [partA, partB, ...]"""
+        """MentionNgrams specifically for transistor parts.
+
+        :param parts_by_doc: a dictionary d where d[document_name.upper()] =
+            [partA, partB, ...]
+        """
         MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
         self.parts_by_doc = parts_by_doc
         self.expander = expand_part_range if expand else (lambda x: [x])
@@ -238,10 +243,13 @@ class MentionNgramsTemp(MentionNgrams):
                     temp = ""
                 elif m.group(1) == "+":
                     if m.group(2) != "":
-                        continue  # If bigram '+ 150' is seen, accept the unigram '150', not both
+                        # If bigram '+ 150' is seen, accept the unigram '150',
+                        # not both
+                        continue
                     temp = ""
                 else:  # m.group(1) is a type of negative sign
-                    # A bigram '- 150' is different from unigram '150', so we keep the implicit '-150'
+                    # A bigram '- 150' is different from unigram '150', so we
+                    # keep the implicit '-150'
                     temp = "-"
                 temp += m.group(3)
                 yield TemporaryImplicitSpan(

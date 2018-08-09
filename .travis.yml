@@ -72,12 +72,9 @@ before_script:
 - psql -c 'create database e2e_test;' -U postgres
 - psql -c 'create database cand_test;' -U postgres
 - psql -c 'create database meta_test;' -U postgres
-- cd tests/e2e/
+- cd tests/
 - "./download_data.sh"
-- cd ../..
-- cd tests/candidates/
-- "./download_data.sh"
-- cd ../..
+- cd ..
 
 script:
 - travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx

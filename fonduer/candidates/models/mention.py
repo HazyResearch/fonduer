@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # This global dictionary contains all classes that have been declared in this
 # Python environment, so that mention_subclass() can return a class if it
-# already exists and is identical in specification to the requested class
+# already exists and is identical in specification to the requested class.
 mention_subclasses = {}
 
 

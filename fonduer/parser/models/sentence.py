@@ -100,7 +100,10 @@ class TabularMixin(object):
             if self.col_start != self.col_end
             else self.col_start
         )
-        return "TabularSentence (Doc: {}, Table: {}, Row: {}, Col: {}, Index: {}, Text: {})".format(
+        return (
+            "TabularSentence (Doc: {}, "
+            + "Table: {}, Row: {}, Col: {}, Index: {}, Text: {})"
+        ).format(
             self.document.name,
             (lambda: self.table).position,
             rows,
@@ -123,7 +126,9 @@ class VisualMixin(object):
         return self.page is not None and self.page[0] is not None
 
     def __repr__(self):
-        return "VisualSentence (Doc: {}, Page: {}, (T,B,L,R): ({},{},{},{}), Text: {})".format(
+        return (
+            "VisualSentence (Doc: {}, Page: {}, (T,B,L,R): ({},{},{},{}), Text: {})"
+        ).format(
             self.document.name,
             self.page,
             self.top,
@@ -201,7 +206,10 @@ class Sentence(
                 if self.col_start != self.col_end
                 else self.col_start
             )
-            return "Sentence (Doc: '{}', Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')".format(
+            return (
+                "Sentence (Doc: '{}', "
+                + "Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')"
+            ).format(
                 self.document.name,
                 self.table.position,
                 rows,
@@ -209,8 +217,11 @@ class Sentence(
                 self.position,
                 self.text,
             )
+
         else:
-            return "Sentence (Doc: '{}', Sec: {}, Par: {}, Index: {}, Text: '{}')".format(
+            return (
+                "Sentence (Doc: '{}', Sec: {}, Par: {}, Idx: {}, Text: '{}')"
+            ).format(
                 self.document.name,
                 self.section.position,
                 self.paragraph.position,

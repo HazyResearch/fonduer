@@ -20,7 +20,8 @@ def new_sessionmaker():
         engine = create_engine(Meta.conn_string, isolation_level="AUTOCOMMIT")
     else:
         raise ValueError(
-            "Meta variables have not been initialized with a postgres connection string."
+            "Meta variables have not been initialized with "
+            "a postgres connection string."
         )
     # New sessionmaker
     session = sessionmaker(bind=engine)

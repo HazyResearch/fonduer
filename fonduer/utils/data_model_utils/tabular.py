@@ -110,10 +110,11 @@ def same_sentence(c):
 def get_max_col_num(mention):
     """Return the largest column number that a Mention occupies.
 
-    :param mention: The Mention to evaluate. If a candidate is given, default to its last Mention.
+    :param mention: The Mention to evaluate. If a candidate is given, default
+        to its last Mention.
     :rtype: integer or None
     """
-    span = _to_span(mention)
+    span = _to_span(mention, idx=-1)
     if span.sentence.is_tabular():
         return span.sentence.cell.col_end
     else:
@@ -123,7 +124,8 @@ def get_max_col_num(mention):
 def get_min_col_num(mention):
     """Return the lowest column number that a Mention occupies.
 
-    :param mention: The Mention to evaluate. If a candidate is given, default to its first Mention.
+    :param mention: The Mention to evaluate. If a candidate is given, default
+        to its first Mention.
     :rtype: integer or None
     """
     span = _to_span(mention)
@@ -136,7 +138,8 @@ def get_min_col_num(mention):
 def get_sentence_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
     """Get the ngrams that are in the Sentence of the given Mention, not including itself.
 
-    Note that if a candidate is passed in, all of its Mentions will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be
+    searched.
 
     :param mention: The Mention whose Sentence is being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
@@ -349,9 +352,10 @@ def get_col_ngrams(
 def get_aligned_ngrams(
     mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
 ):
-    """Get the ngrams from all Cells that are in the same row or column as the given Mention.
+    """Get the ngrams from all Cells in the same row or column as the given Mention.
 
-    Note that if a candidate is passed in, all of its Mentions will be searched.
+    Note that if a candidate is passed in, all of its Mentions will be
+    searched.
 
     :param mention: The Mention whose row and column Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)

@@ -1,7 +1,5 @@
 import re
 
-from hardware_spaces import expand_part_range
-
 from fonduer.utils.data_model_utils import (
     get_horz_ngrams,
     get_vert_ngrams,
@@ -9,6 +7,7 @@ from fonduer.utils.data_model_utils import (
     is_vert_aligned,
     same_table,
 )
+from tests.shared.hardware_spaces import expand_part_range
 
 
 def temp_throttler(c):

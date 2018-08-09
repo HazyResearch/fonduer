@@ -99,7 +99,7 @@ def entity_level_f1(
     Example Usage:
         from hardware_utils import entity_level_total_recall
         candidates = # CandidateSet of all candidates you want to consider
-        gold_file = os.environ['FONDUERHOME'] + '/tutorials/tables/data/hardware/hardware_gold.csv'
+        gold_file = 'tutorials/tables/data/hardware/hardware_gold.csv'
         entity_level_total_recall(candidates, gold_file, 'stg_temp_min')
     """
     docs = [(doc.name).upper() for doc in corpus] if corpus else None
