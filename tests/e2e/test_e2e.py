@@ -167,8 +167,7 @@ def test_e2e(caplog):
         [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
 
-    for i, docs in enumerate([train_docs, dev_docs, test_docs]):
-        mention_extractor.apply(docs, split=i, parallelism=PARALLEL)
+    mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).filter(Part.split == 0).count() == 201
     assert session.query(Part).filter(Part.split == 1).count() == 20

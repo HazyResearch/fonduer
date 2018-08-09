@@ -26,7 +26,6 @@ class Mention(_meta.Base):
     __tablename__ = "mention"
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)
-    split = Column(Integer, nullable=False, default=0, index=True)
 
     __mapper_args__ = {"polymorphic_identity": "mention", "polymorphic_on": type}
 

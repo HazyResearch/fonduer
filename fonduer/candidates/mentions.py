@@ -180,22 +180,18 @@ class MentionExtractor(UDFRunner):
         """Call the MentionExtractorUDF."""
         super(MentionExtractor, self).apply(xs, split=split, **kwargs)
 
-    def clear(self, session, split, **kwargs):
+    def clear(self, session, **kwargs):
         """Delete Mentions of each class in the extractor from the given split."""
         for mention_class in self.mention_classes:
-            logger.info(
-                "Clearing table: {} (split {})".format(
-                    mention_class.__tablename__, split
-                )
-            )
+            logger.info("Clearing table: {}".format(mention_class.__tablename__))
             session.query(Mention).filter(
                 Mention.type == mention_class.__tablename__
-            ).filter(Mention.split == split).delete()
+            ).delete()
 
-    def clear_all(self, session, split, **kwargs):
+    def clear_all(self, session, **kwargs):
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
-        session.query(Mention).filter(Mention.split == split).delete()
+        session.query(Mention).delete()
 
 
 class MentionExtractorUDF(UDF):
@@ -223,12 +219,11 @@ class MentionExtractorUDF(UDF):
 
         super(MentionExtractorUDF, self).__init__(**kwargs)
 
-    def apply(self, context, clear, split, **kwargs):
+    def apply(self, context, clear, **kwargs):
         """Extract mentions from the given Context.
 
         :param context: A document to process.
         :param clear: Whether or not to clear the existing database entries.
-        :param split: Which split to use.
         """
 
         # Iterate over each mention class
@@ -243,8 +238,7 @@ class MentionExtractorUDF(UDF):
                 self.child_context_set.add(tc)
 
             # Generates and persists mentions
-            mention_args = {"split": split}
-            mention_args["document_id"] = context.id
+            mention_args = {"document_id": context.id}
             for child_context in self.child_context_set:
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
