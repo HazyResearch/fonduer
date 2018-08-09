@@ -26,6 +26,7 @@ docs:
 
 clean:
 	pip uninstall fonduer
-	rm -r fonduer.egg-info
+	rm -rf fonduer.egg-info
+	rm -rf _build/
 
 .PHONY: dev test clean check docs
