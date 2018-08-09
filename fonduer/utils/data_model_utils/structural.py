@@ -1,6 +1,6 @@
-#############################
-# Structural modality helpers
-#############################
+###############################
+# Structural modality utilities
+###############################
 
 from builtins import str
 

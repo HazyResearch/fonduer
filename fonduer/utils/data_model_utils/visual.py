@@ -1,6 +1,6 @@
-############################
-# Visual modality helpers
-############################
+###########################
+# Visual modality utilities
+###########################
 
 from builtins import range
 from collections import defaultdict

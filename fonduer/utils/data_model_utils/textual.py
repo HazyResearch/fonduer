@@ -1,6 +1,6 @@
-#########################
-# Visual modality helpers
-#########################
+############################
+# Textual modality utilities
+############################
 
 from fonduer.utils import tokens_to_ngrams
 from fonduer.utils.data_model_utils.utils import _to_span

@@ -1,6 +1,6 @@
-##########################
-# Tabular modality helpers
-##########################
+############################
+# Tabular modality utilities
+############################
 
 from builtins import range
 from itertools import chain
