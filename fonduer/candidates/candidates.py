@@ -129,7 +129,7 @@ class CandidateExtractorUDF(UDF):
                     for mention in candidate_class.mentions
                 ]
             )
-            for k, cand in enumerate(cands):
+            for cand in cands:
 
                 # Apply throttler if one was given.
                 # Accepts a tuple of Context objects (e.g., (Span, Span))
@@ -149,13 +149,13 @@ class CandidateExtractorUDF(UDF):
                     # Check for self-joins, "nested" joins (joins from span to
                     # its subspan), and flipped duplicate "symmetric" relations
                     if not self.self_relations and a == b:
-                        logger.info("Skipping self-joined candidate {}".format(cand))
+                        logger.debug("Skipping self-joined candidate {}".format(cand))
                         continue
                     if not self.nested_relations and (a in b or b in a):
-                        logger.info("Skipping nested candidate {}".format(cand))
+                        logger.debug("Skipping nested candidate {}".format(cand))
                         continue
                     if not self.symmetric_relations and ai > bi:
-                        logger.info("Skipping symmetric candidate {}".format(cand))
+                        logger.debug("Skipping symmetric candidate {}".format(cand))
                         continue
 
                 # Assemble candidate arguments
