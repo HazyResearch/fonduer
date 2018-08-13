@@ -30,25 +30,22 @@ from fonduer.parser import Parser
 from fonduer.parser.models import Document, Figure, Sentence, Table
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision.annotations import load_gold_labels
-from fonduer.supervision.async_annotations import (
-    BatchFeatureAnnotator,
-    BatchLabelAnnotator,
-)
+from fonduer.supervision.async_annotations import FeatureAnnotator, LabelAnnotator
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __all__ = [
-    "BatchFeatureAnnotator",
-    "BatchLabelAnnotator",
     "CandidateExtractor",
     "DateMatcher",
     "DictionaryMatch",
     "Document",
+    "FeatureAnnotator",
     "Figure",
     "GenerativeModel",
     "HTMLDocPreprocessor",
     "Intersect",
     "Inverse",
+    "LabelAnnotator",
     "LambdaFunctionFigureMatcher",
     "LambdaFunctionMatcher",
     "LocationMatcher",

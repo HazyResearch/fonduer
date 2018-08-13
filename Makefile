@@ -16,8 +16,8 @@ check:
 	# This is our code-style check. We currently allow the following exceptions:
 	#   - E731: do not assign a lambda expression, use a def
 	#   - W503: line break before binary operator
-	#   - E741: do not use variables named ‘l’, ‘O’, or ‘I’
-	#   - E203: whitespace before ‘:’
+	#   - E741: do not use variables named 'l', 'O', or 'I'
+	#   - E203: whitespace before ':'
 	flake8 fonduer/ --count --max-line-length=88 --statistics --ignore=E731,W503,E741,E203
 	flake8 tests/ --count --max-line-length=88 --statistics --ignore=E731,W503,E741,E203
 

@@ -195,12 +195,12 @@ def _segment_filename(db_name, table_name, job_id, start=None, end=None):
     return "%s_%s_%s_%s.tsv" % (db_name, table_name, job_id, suffix)
 
 
-class BatchAnnotatorUDF(UDF):
+class AnnotatorUDF(UDF):
     def __init__(self, f, **kwargs):
         self.anno_generator = (
             _to_annotation_generator(f) if hasattr(f, "__iter__") else f
         )
-        super(BatchAnnotatorUDF, self).__init__(**kwargs)
+        super(AnnotatorUDF, self).__init__(**kwargs)
 
     def apply(self, batch_range, table_name, split, cache, **kwargs):
         """
@@ -261,7 +261,7 @@ class BatchAnnotatorUDF(UDF):
         yield
 
 
-class BatchAnnotator(UDFRunner):
+class Annotator(UDFRunner):
     """Abstract class for annotating candidates and persisting these
     annotations to DB.
     """
@@ -274,7 +274,7 @@ class BatchAnnotator(UDFRunner):
         self.key_table_name = self.table_name + "_keys"
         self.annotation_type = annotation_type
         self.batch_size = batch_size
-        super(BatchAnnotator, self).__init__(BatchAnnotatorUDF, f=f, **kwargs)
+        super(Annotator, self).__init__(AnnotatorUDF, f=f, **kwargs)
 
     def apply(
         self,
@@ -332,7 +332,7 @@ class BatchAnnotator(UDFRunner):
             )
             remove_files(segment_file_blob)
             cache = True if self.annotation_type == "feature" else False
-            super(BatchAnnotator, self).apply(
+            super(Annotator, self).apply(
                 batch_range,
                 table_name=self.table_name,
                 split=split,
@@ -445,14 +445,14 @@ class BatchAnnotator(UDFRunner):
             )
 
 
-class BatchFeatureAnnotator(BatchAnnotator):
+class FeatureAnnotator(Annotator):
     def __init__(self, candidate_type, **kwargs):
-        super(BatchFeatureAnnotator, self).__init__(
+        super(FeatureAnnotator, self).__init__(
             candidate_type, annotation_type="feature", f=get_all_feats, **kwargs
         )
 
 
-class BatchLabelAnnotator(BatchAnnotator):
+class LabelAnnotator(Annotator):
     def __init__(self, candidate_type, lfs, label_generator=None, **kwargs):
         if lfs is not None:
             labels = lambda c: [(lf.__name__, lf(c)) for lf in lfs]
@@ -489,7 +489,7 @@ class BatchLabelAnnotator(BatchAnnotator):
                         % (label, c.values)
                     )
 
-        super(BatchLabelAnnotator, self).__init__(
+        super(LabelAnnotator, self).__init__(
             candidate_type, annotation_type="label", f=f_gen, **kwargs
         )
 
@@ -603,7 +603,7 @@ def load_annotation_matrix(
     )
 
 
-# TODO(senwu): Check to see if we can inherit from BatchFeatureAnnotator
-#  class COOFeatureAnnotator(BatchFeatureAnnotator):
+# TODO(senwu): Check to see if we can inherit from FeatureAnnotator
+#  class COOFeatureAnnotator(FeatureAnnotator):
 #      def __init__(self, f=get_all_feats, **kwargs):
 #          super(COOFeatureAnnotator, f, **kwargs)
