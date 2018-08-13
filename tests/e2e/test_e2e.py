@@ -71,10 +71,14 @@ def test_e2e(caplog):
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    num_docs = session.query(Document).count()
+    if num_docs != max_docs:
+        logger.info("Parsing...")
+        corpus_parser = Parser(
+            structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        )
+        corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
     logger.info("Docs: {}".format(num_docs))

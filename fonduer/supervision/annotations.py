@@ -57,8 +57,6 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
     """
 
     def __init__(self, arg1, **kwargs):
-        # Note: Currently these need to return None if unset, otherwise matrix
-        # copy operations break...
         # Map candidate id to row id
         self.candidate_index = kwargs.pop("candidate_index", {})
         # Map row id to candidate id
@@ -611,7 +609,7 @@ def load_annotation_matrix(
 #          super(COOFeatureAnnotator, f, **kwargs)
 
 
-def load_matrix(
+def _load_matrix(
     matrix_class,
     annotation_key_class,
     annotation_class,
@@ -694,12 +692,7 @@ def load_matrix(
 
     # Return as an AnnotationMatrix
     Xr = matrix_class(
-        X,
-        candidate_index=cid_to_row,
-        row_index=row_to_cid,
-        annotation_key_cls=annotation_key_class,
-        key_index=kid_to_col,
-        col_index=col_to_kid,
+        X, candidate_index=cid_to_row, row_index=row_to_cid, key_index=kid_to_col
     )
     return np.squeeze(Xr.toarray()) if load_as_array else Xr
 
@@ -739,7 +732,7 @@ class csr_LabelMatrix(csr_AnnotationMatrix):
 
 
 def load_gold_labels(session, annotator_name, **kwargs):
-    return load_matrix(
+    return _load_matrix(
         csr_LabelMatrix,
         GoldLabelKey,
         GoldLabel,
