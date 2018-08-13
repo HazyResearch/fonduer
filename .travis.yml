@@ -7,9 +7,15 @@ matrix:
   - os: linux
     env:
       - PYTHON=3.6
+  - os: linux
+    env:
+      - PYTHON=3.7
   - os: osx
     env:
       - PYTHON=3.6
+  - os: osx
+    env:
+      - PYTHON=3.7
   fast_finish: true
 
 services:
@@ -44,10 +50,21 @@ before_install:
 - python --version
 - pip --version
 
+# Upgrade Cython version for Python 3.7
+- |
+  if [ "${PYTHON}" = "3.7" ]; then
+    pip install Cython --install-option="--no-cython-compile"
+  fi
+
 # Install PyTorch for Linux with Python 3.6 and no CUDA
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-    pip install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+    if [ "${PYTHON}" = "3.6" ]; then
+      pip install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+    fi
+    if [ "${PYTHON}" = "3.7" ]; then
+      pip install http://download.pytorch.org/whl/cpu/torch-0.4.1.post2-cp37-cp37m-linux_x86_64.whl
+    fi
   fi
 
 install:
