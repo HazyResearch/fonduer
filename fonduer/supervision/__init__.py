@@ -1,4 +1,7 @@
-from fonduer.supervision.annotations import load_gold_labels
-from fonduer.supervision.async_annotations import FeatureAnnotator, LabelAnnotator
+from fonduer.supervision.annotations import (
+    FeatureAnnotator,
+    LabelAnnotator,
+    load_gold_labels,
+)
 
 __all__ = ["load_gold_labels", "FeatureAnnotator", "LabelAnnotator"]
