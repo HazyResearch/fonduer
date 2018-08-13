@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 
 from fonduer import (
-    BatchFeatureAnnotator,
-    BatchLabelAnnotator,
     CandidateExtractor,
     Document,
+    FeatureAnnotator,
     GenerativeModel,
     HTMLDocPreprocessor,
+    LabelAnnotator,
     MentionExtractor,
     Meta,
     Parser,
@@ -71,10 +71,14 @@ def test_e2e(caplog):
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    num_docs = session.query(Document).count()
+    if num_docs != max_docs:
+        logger.info("Parsing...")
+        corpus_parser = Parser(
+            structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        )
+        corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
     logger.info("Docs: {}".format(num_docs))
@@ -184,7 +188,7 @@ def test_e2e(caplog):
     assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
     assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
 
-    featurizer = BatchFeatureAnnotator(PartTemp)
+    featurizer = FeatureAnnotator(PartTemp)
     F_train = featurizer.apply(split=0, replace_key_set=True, parallelism=PARALLEL)
     logger.info(F_train.shape)
     F_dev = featurizer.apply(split=1, replace_key_set=False, parallelism=PARALLEL)
@@ -204,7 +208,7 @@ def test_e2e(caplog):
         LF_negative_number_left,
     ]
 
-    labeler = BatchLabelAnnotator(PartTemp, lfs=stg_temp_lfs)
+    labeler = LabelAnnotator(PartTemp, lfs=stg_temp_lfs)
     L_train = labeler.apply(split=0, clear=True, parallelism=PARALLEL)
     logger.info(L_train.shape)
 
@@ -264,7 +268,7 @@ def test_e2e(caplog):
         LF_not_temp_relevant,
     ]
 
-    labeler = BatchLabelAnnotator(PartTemp, lfs=stg_temp_lfs_2)
+    labeler = LabelAnnotator(PartTemp, lfs=stg_temp_lfs_2)
     L_train = labeler.apply(
         split=0, clear=False, update_keys=True, update_values=True, parallelism=PARALLEL
     )

@@ -47,7 +47,7 @@ def test_cand_gen(caplog):
     # Parsing
     num_docs = session.query(Document).count()
     if num_docs != max_docs:
-        logger.info("Skipping parsing...")
+        logger.info("Parsing...")
         doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
         corpus_parser = Parser(
             structural=True, lingual=True, visual=True, pdf_path=pdf_path
