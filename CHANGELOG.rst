@@ -3,27 +3,27 @@
 
 Added
 ^^^^^
-* `@lukehsiao`_: Enforce flake8 checks on tests directory.
-* `@lukehsiao`_: Improved connection-string validation for the Meta class. 
-* `@lukehsiao`_: Add unit test for Meta class. 
 * `@lukehsiao`_: Add a new Mention object, and have Candidate objects be
   composed of Mention objects, rather than directly of Spans. This allows a
   single Mention to be reused in multiple relations.
+* `@lukehsiao`_: Improved connection-string validation for the Meta class. 
+* `@lukehsiao`_: Add unit test for Meta class. 
+* `@lukehsiao`_: Enforce flake8 checks on tests directory.
 
 Changed
 ^^^^^^^
-* `@lukehsiao`_: Refactor annotations (features and labels) so that they are
-  directly associated with a candidate.
-* `@lukehsiao`_: Organize documentation for lf_helpers by modality.
+* `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
+  ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
+* `@lukehsiao`_: Change featurization settings to load from JSON, rather than
+  YAML, allowing us to remove the ``pyyaml`` dependency.
+* `@lukehsiao`_: Organize documentation for ``data_model_utils`` by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
-* `@lukehsiao`_: Update the CHANGELOG to start following `KeepAChangelog
-  <https://keepachangelog.com/en/1.0.0/>`_ conventions.
 * `@lukehsiao`_: Change ``lf_helpers`` to ``data_model_utils``, since they can
   be applied more generally to throttlers or used for error analysis, and are
   not limited to just being used in labeling functions.
-* `@lukehsiao`_: Change featurization settings to load from JSON, rather than
-  YAML, allowing us to remove the ``pyyaml`` dependency.
-* `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Update the CHANGELOG to start following `KeepAChangelog
+  <https://keepachangelog.com/en/1.0.0/>`_ conventions.
 
 Removed
 ^^^^^^^
