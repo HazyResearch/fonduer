@@ -21,7 +21,7 @@ def new_sessionmaker():
     else:
         raise ValueError(
             "Meta variables have not been initialized with "
-            "a postgres connection string."
+            "a valid postgres connection string."
         )
     # New sessionmaker
     session = sessionmaker(bind=engine)
