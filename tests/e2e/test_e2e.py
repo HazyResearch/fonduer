@@ -14,8 +14,8 @@ from fonduer import (
     GenerativeModel,
     HTMLDocPreprocessor,
     LabelAnnotator,
-    MentionExtractor,
     LogisticRegression,
+    MentionExtractor,
     Meta,
     Parser,
     Sentence,
@@ -188,6 +188,8 @@ def test_e2e(caplog):
     assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
     assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
 
+    train_cands = session.query(PartTemp).filter(PartTemp.split == 0).all()
+
     featurizer = FeatureAnnotator(PartTemp)
     F_train = featurizer.apply(split=0, replace_key_set=True, parallelism=PARALLEL)
     logger.info(F_train.shape)
@@ -225,9 +227,7 @@ def test_e2e(caplog):
     train_marginals = gen_model.marginals(L_train)
 
     disc_model = LogisticRegression()
-    disc_model.train(
-        (train_candidates, F_train), train_marginals, n_epochs=200, lr=0.001
-    )
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=200, lr=0.001)
 
     load_gold_labels(session, annotator_name="gold", split=2)
 
@@ -281,9 +281,7 @@ def test_e2e(caplog):
     train_marginals = gen_model.marginals(L_train)
 
     disc_model = LogisticRegression()
-    disc_model.train(
-        (train_candidates, F_train), train_marginals, n_epochs=200, lr=0.001
-    )
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=200, lr=0.001)
 
     test_score = disc_model.predictions((test_candidates, F_test))
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
