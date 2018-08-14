@@ -13,6 +13,7 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
   ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
 * `@lukehsiao`_: Change featurization settings to load from JSON, rather than
