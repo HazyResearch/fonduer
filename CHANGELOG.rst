@@ -28,6 +28,7 @@ Changed
 
 Removed
 ^^^^^^^
+* `@lukehsiao`_: Remove reduce option for UDFs, which were never used. 
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 * `@lukehsiao`_: Remove dependency on ``pdftotree``, which is currently unused.

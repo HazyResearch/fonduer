@@ -23,11 +23,6 @@ class UDFRunner(object):
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
 
-        if hasattr(self.udf_class, "reduce"):
-            self.reducer = self.udf_class(**self.udf_init_kwargs)
-        else:
-            self.reducer = None
-
     def apply(
         self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs
     ):
@@ -69,15 +64,7 @@ class UDFRunner(object):
             if pb:
                 pb.bar(i)
 
-            # Apply UDF and add results to the session
-            for y in udf.apply(x, **kwargs):
-
-                # If UDF has a reduce step, this will take care of the insert;
-                # else add to session
-                if hasattr(self.udf_class, "reduce"):
-                    udf.reduce(y, **kwargs)
-                else:
-                    udf.session.add(y)
+            udf.session.add_all(y for y in udf.apply(x, **kwargs))
 
         # Commit session and close progress bar if applicable
         udf.session.commit()
@@ -94,19 +81,9 @@ class UDFRunner(object):
         for x in xs:
             in_queue.put(x)
 
-        # If the UDF has a reduce step, we collect the output of apply in a Queue
-        out_queue = None
-        if hasattr(self.udf_class, "reduce"):
-            out_queue = JoinableQueue()
-
         # Start UDF Processes
         for i in range(parallelism):
-            udf = self.udf_class(
-                in_queue=in_queue,
-                out_queue=out_queue,
-                worker_id=i,
-                **self.udf_init_kwargs
-            )
+            udf = self.udf_class(in_queue=in_queue, worker_id=i, **self.udf_init_kwargs)
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
@@ -114,23 +91,8 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.start()
 
-        # If there is a reduce step, do now on this thread
-        if hasattr(self.udf_class, "reduce"):
-            while any([udf.is_alive() for udf in self.udfs]):
-                while True:
-                    try:
-                        y = out_queue.get(True, QUEUE_TIMEOUT)
-                        self.reducer.reduce(y, **kwargs)
-                        out_queue.task_done()
-                    except Empty:
-                        break
-                self.reducer.session.commit()
-            self.reducer.session.close()
-
-        # Otherwise just join on the UDF.apply actions
-        else:
-            for i, udf in enumerate(self.udfs):
-                udf.join()
+        for i, udf in enumerate(self.udfs):
+            udf.join()
 
         # Terminate and flush the processes
         for udf in self.udfs:
@@ -139,14 +101,13 @@ class UDFRunner(object):
 
 
 class UDF(Process):
-    def __init__(self, in_queue=None, out_queue=None, worker_id=0):
+    def __init__(self, in_queue=None, worker_id=0):
         """
         in_queue: A Queue of input objects to process; primarily for running in parallel
         """
         Process.__init__(self)
         self.daemon = True
         self.in_queue = in_queue
-        self.out_queue = out_queue
         self.worker_id = worker_id
 
         # Each UDF starts its own Engine
@@ -166,13 +127,7 @@ class UDF(Process):
         while True:
             try:
                 x = self.in_queue.get(True, QUEUE_TIMEOUT)
-                for y in self.apply(x, **self.apply_kwargs):
-
-                    # If an out_queue is provided, add to that, else add to session
-                    if self.out_queue is not None:
-                        self.out_queue.put(y, True, QUEUE_TIMEOUT)
-                    else:
-                        self.session.add(y)
+                self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
                 self.in_queue.task_done()
             except Empty:
                 break
