@@ -50,12 +50,6 @@ before_install:
 - python --version
 - pip --version
 
-# Upgrade Cython version for Python 3.7
-- |
-  if [ "${PYTHON}" = "3.7" ]; then
-    pip install Cython --install-option="--no-cython-compile"
-  fi
-
 # Install PyTorch for Linux with Python 3.6 and no CUDA
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
