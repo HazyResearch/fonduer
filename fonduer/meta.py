@@ -17,7 +17,12 @@ def new_sessionmaker():
     # Otherwise any e.g. query starts a transaction, locking tables... very
     # bad for e.g. multiple notebooks open, multiple processes, etc.
     if Meta.postgres and Meta.ready:
-        engine = create_engine(Meta.conn_string, isolation_level="AUTOCOMMIT")
+        engine = create_engine(
+            Meta.conn_string,
+            client_encoding="utf8",
+            use_batch_mode=True,
+            isolation_level="AUTOCOMMIT",
+        )
     else:
         raise ValueError(
             "Meta variables have not been initialized with "

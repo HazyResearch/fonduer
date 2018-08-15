@@ -6,6 +6,9 @@ your virtualenv by running::
 
     $ make dev
 
+This will also install our pre-commit hooks and local packages needed for style
+checks.
+
 .. tip::
     If you need to install a locally edited version of fonduer in a separate location,
     such as an application, you can directly install your locally modified version::

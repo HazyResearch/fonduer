@@ -8,6 +8,10 @@ files. You can setup our pre-commit hooks by running::
     $ pip install -r requirements-dev.txt
     $ pre-commit install
 
+Or, just run::
+
+    $ make dev
+
 Now, each time you commit, checks will be run using the packages explained
 below.
 

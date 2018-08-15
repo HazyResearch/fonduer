@@ -13,6 +13,7 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
   ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
 * `@lukehsiao`_: Change featurization settings to load from JSON, rather than
@@ -27,6 +28,7 @@ Changed
 
 Removed
 ^^^^^^^
+* `@lukehsiao`_: Remove reduce option for UDFs, which were never used. 
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 * `@lukehsiao`_: Remove dependency on ``pdftotree``, which is currently unused.
