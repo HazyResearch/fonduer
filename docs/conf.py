@@ -30,6 +30,7 @@ autodoc_mock_imports = [
     "scipy",
     "spacy",
     "tensorflow",
+    "tqdm",
     "treedlib",
     "wand",
 ]

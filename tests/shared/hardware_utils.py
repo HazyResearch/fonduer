@@ -4,7 +4,17 @@ import logging
 from builtins import range
 
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
-from fonduer.utils import ProgressBar
+
+try:
+    from IPython import get_ipython
+
+    if "IPKernelApp" not in get_ipython().config:
+        raise ImportError("console")
+except ImportError:
+    from tqdm import tqdm
+else:
+    from tqdm import tqdm_notebook as tqdm
+
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +57,8 @@ def load_hardware_labels(
     gold_dict = get_gold_dict(filename, attribute=attrib)
     cand_total = len(candidates)
     logger.info("Loading {} candidate labels".format(cand_total))
-    pb = ProgressBar(cand_total)
     labels = []
-    for i, c in enumerate(candidates):
-        pb.bar(i)
+    for i, c in enumerate(tqdm(candidates)):
         doc = (c[0].span.sentence.document.name).upper()
         part = (c[0].span.get_span()).upper()
         val = ("".join(c[1].span.get_span().split())).upper()
@@ -68,7 +76,6 @@ def load_hardware_labels(
             session.add(label)
             labels.append(label)
     session.commit()
-    pb.close()
 
     session.commit()
     logger.info("AnnotatorLabels created: %s" % (len(labels),))
@@ -116,10 +123,8 @@ def entity_level_f1(
         return
     # Turn CandidateSet into set of tuples
     logger.info("Preparing candidates...")
-    pb = ProgressBar(len(candidates))
     entities = set()
-    for i, c in enumerate(candidates):
-        pb.bar(i)
+    for i, c in enumerate(tqdm(candidates)):
         part = c[0].span.get_span()
         doc = c[0].span.sentence.document.name.upper()
         if attribute:
@@ -129,7 +134,6 @@ def entity_level_f1(
                 entities.add((doc, p, val))
             else:
                 entities.add((doc, p))
-    pb.close()
 
     (TP_set, FP_set, FN_set) = entity_confusion_matrix(entities, gold_set)
     TP = len(TP_set)

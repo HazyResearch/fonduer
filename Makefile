@@ -6,7 +6,7 @@ dev:
 	pre-commit install
 
 test: dev check
-	pytest tests -v -rsXx	
+	pytest tests
 
 check:
 	isort -rc -c fonduer/

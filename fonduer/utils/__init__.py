@@ -1,5 +1,4 @@
 from fonduer.utils.utils import (
-    ProgressBar,
     camel_to_under,
     get_as_dict,
     matrix_conflicts,
@@ -14,7 +13,6 @@ from fonduer.utils.utils import (
 )
 
 __all__ = [
-    "ProgressBar",
     "camel_to_under",
     "get_as_dict",
     "matrix_conflicts",
