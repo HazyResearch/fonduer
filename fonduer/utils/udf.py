@@ -2,9 +2,18 @@ import logging
 from multiprocessing import JoinableQueue, Process
 from queue import Empty
 
-from tqdm import tqdm
-
 from fonduer.meta import Meta, new_sessionmaker
+
+try:
+    from IPython import get_ipython
+
+    if "IPKernelApp" not in get_ipython().config:
+        raise ImportError("console")
+except ImportError:
+    from tqdm import tqdm
+else:
+    from tqdm import tqdm_notebook as tqdm
+
 
 QUEUE_TIMEOUT = 3
 

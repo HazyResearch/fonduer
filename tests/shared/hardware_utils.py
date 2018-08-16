@@ -3,9 +3,18 @@ import csv
 import logging
 from builtins import range
 
-from tqdm import tqdm
-
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
+
+try:
+    from IPython import get_ipython
+
+    if "IPKernelApp" not in get_ipython().config:
+        raise ImportError("console")
+except ImportError:
+    from tqdm import tqdm
+else:
+    from tqdm import tqdm_notebook as tqdm
+
 
 logger = logging.getLogger(__name__)
 
