@@ -13,6 +13,7 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing). 
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
   ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.

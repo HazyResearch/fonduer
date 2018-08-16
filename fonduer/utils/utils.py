@@ -1,38 +1,10 @@
 import logging
 import re
 import subprocess
-import sys
-from builtins import object, range, zip
+from builtins import range, zip
 
 import numpy as np
 import scipy.sparse as sparse
-
-
-class ProgressBar(object):
-    def __init__(self, N, length=40):
-        self.N = max(1, N)
-        self.nf = float(self.N)
-        self.length = length
-        self.update_interval = self.nf / 100
-        self.current_tick = 0
-        self.bar(0)
-
-    def bar(self, i):
-        """Assumes i ranges through [0, N-1]"""
-        new_tick = i / self.update_interval
-        if int(new_tick) != int(self.current_tick):
-            b = int(np.ceil((i / self.nf) * self.length))
-            sys.stdout.write(
-                "\r[%s%s] %d%%"
-                % ("=" * b, " " * (self.length - b), int(100 * (i / self.nf)))
-            )
-            sys.stdout.flush()
-        self.current_tick = new_tick
-
-    def close(self):
-        b = self.length
-        sys.stdout.write("\r[%s%s] %d%%\n" % ("=" * b, " " * (self.length - b), 100))
-        sys.stdout.flush()
 
 
 def get_ORM_instance(ORM_class, session, instance):
