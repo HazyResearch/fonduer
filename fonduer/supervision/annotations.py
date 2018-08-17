@@ -34,7 +34,9 @@ _TempKey = namedtuple("TempKey", ["id", "name"])
 
 # Grab a pointer to the global vars
 _meta = Meta.init()
+
 logger = logging.getLogger(__name__)
+segment_dir = tempfile.gettempdir()
 
 
 def _to_annotation_generator(fns):
@@ -122,9 +124,6 @@ class csr_AnnotationMatrix(sparse.csr_matrix):
         return DataFrame(data=d, index=lf_names)[col_names]
 
 
-segment_dir = tempfile.gettempdir()
-
-
 def get_sql_name(text):
     """
     Create valid SQL identifier as part of a feature storage table name
@@ -182,6 +181,7 @@ def copy_postgres(segment_file_blob, table_name, tsv_columns):
         table_name,
         tsv_columns,
     )
+    logger.debug(cmd)
     _out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     logger.info(_out)
 
