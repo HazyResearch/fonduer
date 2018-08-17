@@ -37,6 +37,8 @@ Removed
 
 Fixed
 ^^^^^
+* `@lukehsiao`_: Fixed PDF path validation when using ``visual=True`` during
+  parsing.
 * `@lukehsiao`_: Fix Meta bug which would not switch databases when init() was
   called with a new connection string.
 

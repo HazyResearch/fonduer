@@ -52,7 +52,6 @@ class VisualLinker(object):
             "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file),
             shell=True,
         )
-
         pdf_word_list = []
         coordinate_map = {}
         for i in range(1, int(num_pages) + 1):
