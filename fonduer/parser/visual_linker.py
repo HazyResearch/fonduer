@@ -45,6 +45,9 @@ class VisualLinker(object):
             yield sentence
 
     def extract_pdf_words(self):
+        self.logger.debug(
+            "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file)
+        )
         num_pages = subprocess.check_output(
             "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file),
             shell=True,
@@ -52,6 +55,11 @@ class VisualLinker(object):
         pdf_word_list = []
         coordinate_map = {}
         for i in range(1, int(num_pages) + 1):
+            self.logger.debug(
+                "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
+                    str(i), str(i), self.pdf_file
+                )
+            )
             html_content = subprocess.check_output(
                 "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
                     str(i), str(i), self.pdf_file

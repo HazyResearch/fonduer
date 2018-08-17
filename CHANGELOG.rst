@@ -13,6 +13,7 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Provide debug logging of poppler-util calls. 
 * `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing). 
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
@@ -36,6 +37,8 @@ Removed
 
 Fixed
 ^^^^^
+* `@lukehsiao`_: Fixed PDF path validation when using ``visual=True`` during
+  parsing.
 * `@lukehsiao`_: Fix Meta bug which would not switch databases when init() was
   called with a new connection string.
 

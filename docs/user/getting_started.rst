@@ -47,7 +47,7 @@ Then, install Fonduer by running::
   Python environment. Once you have virtualenv installed, you can create a
   Python 3 virtual environment as follows.::
 
-      $ virtualenv -p python3 .venv
+      $ virtualenv -p python3.6 .venv
 
   Once the virtual environment is created, activate it by running::
 
