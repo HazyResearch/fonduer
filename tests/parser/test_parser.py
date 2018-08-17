@@ -8,6 +8,8 @@ If you are testing locally, you will need to create this db.
 import logging
 import os
 
+import pytest
+
 from fonduer import Meta
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
@@ -101,6 +103,51 @@ def test_parse_md_details(caplog):
     # Test lingual attributes
     assert header.ner_tags == ["O", "O"]
     assert header.dep_labels == ["compound", "ROOT"]
+
+
+def test_warning_on_missing_pdf(caplog):
+    """Test that a warning is issued on invalid pdf."""
+    caplog.set_level(logging.INFO)
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
+
+    PARALLEL = 1
+    max_docs = 1
+    docs_path = "tests/data/html_simple/md_para.html"
+    pdf_path = "tests/data/pdf_simple/md_para_nonexistant.pdf"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+
+    # Create an Parser and parse the md document
+    parser = Parser(
+        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    with pytest.warns(RuntimeWarning):
+        parser.apply(preprocessor, parallelism=PARALLEL)
+
+    assert session.query(Document).count() == 1
+
+
+def test_warning_on_incorrect_filename(caplog):
+    """Test that a warning is issued on invalid pdf."""
+    caplog.set_level(logging.INFO)
+    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
+
+    PARALLEL = 1
+    docs_path = "tests/data/html_simple/md_para.html"
+    pdf_path = "tests/data/html_simple/md_para.html"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+
+    # Create an Parser and parse the md document
+    parser = Parser(
+        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    with pytest.warns(RuntimeWarning):
+        parser.apply(preprocessor, parallelism=PARALLEL)
+
+    assert session.query(Document).count() == 1
 
 
 def test_parse_md_paragraphs(caplog):
