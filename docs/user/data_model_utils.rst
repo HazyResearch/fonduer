@@ -8,7 +8,7 @@ of information that they leverage.
 
 ----
 
-General Data Model Utilities 
+General Data Model Utilities
 ----------------------------
 
 .. automodule:: fonduer.utils.data_model_utils.utils

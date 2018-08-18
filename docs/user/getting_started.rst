@@ -19,12 +19,12 @@ For OS X using homebrew_::
 On Debian-based distros::
 
     $ sudo apt update
-    $ sudo apt install libxml2-dev libxslt-dev python3-dev 
+    $ sudo apt install libxml2-dev libxslt-dev python3-dev
     $ sudo apt install poppler-utils
     $ sudo apt install postgresql
 
 .. note::
-    Fonduer requires PostgreSQL version 9.6 or above.     
+    Fonduer requires PostgreSQL version 9.6 or above.
 
 .. note::
     Fonduer requires ``poppler-utils`` to be version 0.36.0 or above.
@@ -55,7 +55,7 @@ Then, install Fonduer by running::
 
   Any Python libraries installed will now be contained within this virtual
   environment. To deactivate the environment, simply run::
-    
+
       $ deactivate
 
 
@@ -63,17 +63,17 @@ The Fonduer Pipeline
 --------------------
 
 The Fonduer pipeline can be broken into three main phases. Each of these phases
-requires input from you as you build your Fonduer application. 
+requires input from you as you build your Fonduer application.
 
-  #. Knowledge Base Initialization 
+  #. Knowledge Base Initialization
       We initialize the target knowledge base. Fonduer requires users to
       specify a schema, as well as preprocessors_ to be used while parsing your
       corpus.
-  #. Candidate Extraction 
+  #. Candidate Extraction
       Next, users provide matchers_ to define which each type in the schema
       looks like. Throttlers can also (optionally) be added to filter out
       invalid candidates to achieve better class balance.
-  #. Multimodal Featurization, Supervision, and Classification 
+  #. Multimodal Featurization, Supervision, and Classification
       Finally, users provide labeling functions (which can leverage our
       `data model utilities`_) to provide weak supervision.
 
