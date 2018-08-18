@@ -24,16 +24,13 @@ from fonduer.candidates.matchers import (
     Union,
 )
 from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.features.feature_annotator import FeatureAnnotator
 from fonduer.learning import GenerativeModel, SparseLogisticRegression
 from fonduer.meta import Meta
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Figure, Sentence, Table
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.supervision.annotations import (
-    FeatureAnnotator,
-    LabelAnnotator,
-    load_gold_labels,
-)
+from fonduer.supervision.label_annotator import LabelAnnotator, load_gold_labels
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
