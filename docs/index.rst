@@ -19,7 +19,7 @@ submit your contributions as a pull request.
 .. toctree::
     :maxdepth: 2
     :caption: User Documentation
-  
+
     user/getting_started
     user/preprocessors
     user/data_model
@@ -30,7 +30,7 @@ submit your contributions as a pull request.
 .. toctree::
     :maxdepth: 2
     :caption: Developer Documentation
-    
+
     dev/changelog
     dev/install
     dev/tests
