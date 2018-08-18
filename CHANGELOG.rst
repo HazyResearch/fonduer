@@ -6,15 +6,15 @@ Added
 * `@lukehsiao`_: Add a new Mention object, and have Candidate objects be
   composed of Mention objects, rather than directly of Spans. This allows a
   single Mention to be reused in multiple relations.
-* `@lukehsiao`_: Improved connection-string validation for the Meta class. 
-* `@lukehsiao`_: Add unit test for Meta class. 
+* `@lukehsiao`_: Improved connection-string validation for the Meta class.
+* `@lukehsiao`_: Add unit test for Meta class.
 * `@lukehsiao`_: Enforce flake8 checks on tests directory.
 
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
-* `@lukehsiao`_: Provide debug logging of poppler-util calls. 
-* `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing). 
+* `@lukehsiao`_: Provide debug logging of external subprocess calls.
+* `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing).
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
   ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
@@ -30,8 +30,8 @@ Changed
 
 Removed
 ^^^^^^^
-* `@lukehsiao`_: Remove reduce option for UDFs, which were never used. 
-* `@lukehsiao`_: Remove get parent/children/sentence generator from Context. 
+* `@lukehsiao`_: Remove reduce option for UDFs, which were never used.
+* `@lukehsiao`_: Remove get parent/children/sentence generator from Context.
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 * `@lukehsiao`_: Remove dependency on ``pdftotree``, which is currently unused.
 
@@ -48,9 +48,9 @@ Fixed
 
     .. code:: python
 
-        candidate_extractor = CandidateExtractor(PartAttr, 
-                                [part_ngrams, attr_ngrams], 
-                                [part_matcher, attr_matcher], 
+        candidate_extractor = CandidateExtractor(PartAttr,
+                                [part_ngrams, attr_ngrams],
+                                [part_matcher, attr_matcher],
                                 candidate_filter=candidate_filter)
 
         candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
@@ -108,7 +108,7 @@ Fixed
     This release is NOT backwards compatable with v0.1.8. The code has now been
     refactored into submodules, where each submodule corresponds with a phase
     of the Fonduer pipeline. Consequently, you may need to adjust the paths
-    of your imports from Fonduer. 
+    of your imports from Fonduer.
 
 * `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
   only. Also reorganize the codebase into submodules for each pipeline phase.
@@ -133,15 +133,15 @@ Fixed
 [0.1.8] - 2018-06-01
 --------------------
 
-* `@senwu`_: Remove the Viewer, which is unused in Fonduer 
+* `@senwu`_: Remove the Viewer, which is unused in Fonduer
   (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
-* `@senwu`_: Fix SimpleTokenizer for lingual features are disabled 
+* `@senwu`_: Fix SimpleTokenizer for lingual features are disabled
   (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
-* `@prabh06`_: Extend styles parsing and add regex search 
+* `@prabh06`_: Extend styles parsing and add regex search
   (`#52 <https://github.com/HazyResearch/fonduer/pull/52>`_)
 * `@lukehsiao`_: Remove unnecessary encoding in __repr__
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
-* `@lukehsiao`_: Fix LocationMatch NER tags for spaCy 
+* `@lukehsiao`_: Fix LocationMatch NER tags for spaCy
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 
 [0.1.7] - 2018-04-04
@@ -159,7 +159,7 @@ Fixed
     Should drop the ``snorkel`` submodule:
 
     .. code:: python
-        
+
         from fonduer._ import _
 
 .. tip::
@@ -178,18 +178,18 @@ Fixed
 * `@lukehsiao`_: Remove SQLite code, switch to logging, and absorb snorkel
   codebase directly into the fonduer package for simplicity
   (`#44 <https://github.com/HazyResearch/fonduer/pull/44>`_)
-* `@lukehsiao`_: Add lf_helpers to ReadTheDocs 
+* `@lukehsiao`_: Add lf_helpers to ReadTheDocs
   (`#42 <https://github.com/HazyResearch/fonduer/pull/42>`_)
-* `@lukehsiao`_: Remove unused package dependencies 
+* `@lukehsiao`_: Remove unused package dependencies
   (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
 
 [0.1.6] - 2018-03-31
 --------------------
 
 * `@senwu`_: Fix support for providing a PostgreSQL username and password as
-  part of the connection string provided to Meta.init() 
+  part of the connection string provided to Meta.init()
   (`#40 <https://github.com/HazyResearch/fonduer/pull/40>`_)
-* `@lukehsiao`_: Switch README from Markdown to reStructuredText 
+* `@lukehsiao`_: Switch README from Markdown to reStructuredText
 
 [0.1.5] - 2018-03-31
 --------------------
@@ -198,9 +198,9 @@ Fixed
     to initialize a session with postgresql, you no longer do
 
     .. code:: python
-        
+
         os.environ['SNORKELDB'] = 'postgres://localhost:5432/' + DBNAME
-        from fonduer import SnorkelSession       
+        from fonduer import SnorkelSession
         session = SnorkelSession()
 
     which had the side-effects of manipulating your database tables on import
@@ -209,9 +209,9 @@ Fixed
 
     .. code:: python
 
-        from fonduer import Meta       
+        from fonduer import Meta
         session = Meta.init("postgres://localhost:5432/" + DBNAME).Session()
-      
+
     No side-effects occur until ``Meta`` is initialized.
 
 * `@lukehsiao`_: Remove reliance on environment vars and remove side-effects of
@@ -233,10 +233,10 @@ Minor hotfix to the README formatting for PyPi.
 [0.1.2] - 2018-03-29
 --------------------
 
-* `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI 
+* `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
 
-.. 
+..
   For convenience, all username links for contributors can be listed here
 
 .. _@lukehsiao: https://github.com/lukehsiao
