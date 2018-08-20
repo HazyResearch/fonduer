@@ -75,7 +75,7 @@ class Ngrams(MentionSpace):
                         )
                         if ts1 not in seen:
                             seen.add(ts1)
-                            yield ts
+                            yield ts1
                         ts2 = TemporarySpan(
                             char_start=start + m.end(1), char_end=end, sentence=context
                         )
