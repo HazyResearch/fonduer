@@ -89,11 +89,11 @@ class CandidateExtractorUDF(UDF):
         """Initialize the CandidateExtractorUDF."""
         self.candidate_classes = (
             candidate_classes
-            if type(candidate_classes) in [list, tuple]
+            if isinstance(candidate_classes, (list, tuple))
             else [candidate_classes]
         )
         self.throttlers = (
-            throttlers if type(throttlers) in [list, tuple] else [throttlers]
+            throttlers if isinstance(throttlers, (list, tuple)) else [throttlers]
         )
         self.nested_relations = nested_relations
         self.self_relations = self_relations

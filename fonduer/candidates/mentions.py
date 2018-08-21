@@ -201,15 +201,15 @@ class MentionExtractorUDF(UDF):
         """Initialize the MentionExtractorUDF."""
         self.mention_classes = (
             mention_classes
-            if type(mention_classes) in [list, tuple]
+            if isinstance(mention_classes, (list, tuple))
             else [mention_classes]
         )
         self.mention_spaces = (
             mention_spaces
-            if type(mention_spaces) in [list, tuple]
+            if isinstance(mention_spaces, (list, tuple))
             else [mention_spaces]
         )
-        self.matchers = matchers if type(matchers) in [list, tuple] else [matchers]
+        self.matchers = matchers if isinstance(matchers, (list, tuple)) else [matchers]
 
         # Make sure the mention spaces are different so generators aren't expended!
         self.mention_spaces = list(map(deepcopy, self.mention_spaces))
