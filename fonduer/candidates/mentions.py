@@ -148,7 +148,7 @@ class MentionExtractor(UDFRunner):
     """An operator to extract Mention objects from a Context.
 
     :param mention_classes: The type of relation to extract, defined using
-        :func:`fonduer.mentions.mention_subclass.
+        :func: fonduer.mentions.mention_subclass.
     :param mention_spaces: one or list of :class:`MentionSpace` objects, one for
         each relation argument. Defines space of Contexts to consider
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
@@ -201,15 +201,15 @@ class MentionExtractorUDF(UDF):
         """Initialize the MentionExtractorUDF."""
         self.mention_classes = (
             mention_classes
-            if type(mention_classes) in [list, tuple]
+            if isinstance(mention_classes, (list, tuple))
             else [mention_classes]
         )
         self.mention_spaces = (
             mention_spaces
-            if type(mention_spaces) in [list, tuple]
+            if isinstance(mention_spaces, (list, tuple))
             else [mention_spaces]
         )
-        self.matchers = matchers if type(matchers) in [list, tuple] else [matchers]
+        self.matchers = matchers if isinstance(matchers, (list, tuple)) else [matchers]
 
         # Make sure the mention spaces are different so generators aren't expended!
         self.mention_spaces = list(map(deepcopy, self.mention_spaces))

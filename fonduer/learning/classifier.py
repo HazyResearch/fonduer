@@ -1,7 +1,6 @@
 import numpy as np
 
-from fonduer.learning.utils import MentionScorer
-from fonduer.utils import annotations
+from fonduer.learning.utils import MentionScorer, save_marginals
 
 
 class Classifier(object):
@@ -21,7 +20,7 @@ class Classifier(object):
 
     def save_marginals(self, session, X, training=False):
         """Save the predicted marginal probabilities for the Candidates X."""
-        annotations.save_marginals(session, X, self.marginals(X), training=training)
+        save_marginals(session, X, self.marginals(X), training=training)
 
     def predictions(self, X, b=0.5, batch_size=None):
         """Return numpy array of elements in {-1,0,1}

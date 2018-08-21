@@ -3,6 +3,8 @@
 
 Added
 ^^^^^
+* `@lukehsiao`_: Allow user to change featurization settings by providing
+  ``.fonduer-config.yaml`` in their project.
 * `@lukehsiao`_: Add a new Mention object, and have Candidate objects be
   composed of Mention objects, rather than directly of Spans. This allows a
   single Mention to be reused in multiple relations.
@@ -13,13 +15,17 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Reorganize ReadTheDocs structure to mirror the repository
+  structure. Now, each pipeline phase's user-facing API is clearly shown.
+* `@lukehsiao`_: Rather than importing ambiguously from ``fonduer`` directly,
+  disperse imports into their respective pipeline phases. This eliminates
+  circular dependencies, and makes imports more explicit and clearer to the
+  user where each import is originating from.
 * `@lukehsiao`_: Provide debug logging of external subprocess calls.
 * `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing).
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
   ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
-* `@lukehsiao`_: Change featurization settings to load from JSON, rather than
-  YAML, allowing us to remove the ``pyyaml`` dependency.
 * `@lukehsiao`_: Organize documentation for ``data_model_utils`` by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
 * `@lukehsiao`_: Change ``lf_helpers`` to ``data_model_utils``, since they can
@@ -37,8 +43,9 @@ Removed
 
 Fixed
 ^^^^^
-* `@HiromuHota`_: Fixed bug in Ngram splitting.
-  (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_)
+* `@HiromuHota`_: Fixed bug with Ngram splitting and empty TemporarySpans.
+  (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_,
+  `#112 <https://github.com/HazyResearch/fonduer/pull/112>`_)
 * `@lukehsiao`_: Fixed PDF path validation when using ``visual=True`` during
   parsing.
 * `@lukehsiao`_: Fix Meta bug which would not switch databases when init() was
@@ -90,6 +97,58 @@ Fixed
     Furthermore, because Candidates are now composed of Mentions rather than
     directly of Spans, to get the Span object from a mention, use the ``.span``
     attribute of a Mention.
+
+.. note::
+    Fonduer has been reorganized to require more explicit import syntax. In
+    Fonduer v0.2.3, nearly everything was imported directly from fonduer:
+
+    .. code:: python
+
+        from fonduer import (
+            CandidateExtractor,
+            DictionaryMatch,
+            Document,
+            FeatureAnnotator,
+            GenerativeModel,
+            HTMLDocPreprocessor,
+            Intersect,
+            LabelAnnotator,
+            LambdaFunctionMatcher,
+            MentionExtractor,
+            Meta,
+            Parser,
+            RegexMatchSpan,
+            Sentence,
+            SparseLogisticRegression,
+            Union,
+            candidate_subclass,
+            load_gold_labels,
+            mention_subclass,
+        )
+
+    With this release, you will now import from each pipeline phase. This makes
+    imports more explicit and allows you to more clearly see which pipeline
+    phase each import is associated with:
+
+    .. code:: python
+
+        from fonduer import Meta
+        from fonduer.candidates import CandidateExtractor, MentionExtractor
+        from fonduer.candidates.matchers import (
+            DictionaryMatch,
+            Intersect,
+            LambdaFunctionMatcher,
+            RegexMatchSpan,
+            Union,
+        )
+        from fonduer.candidates.models import candidate_subclass, mention_subclass
+        from fonduer.features import FeatureAnnotator
+        from fonduer.learning import GenerativeModel, SparseLogisticRegression
+        from fonduer.parser import Parser
+        from fonduer.parser.models import Document, Sentence
+        from fonduer.parser.preprocessors import HTMLDocPreprocessor
+        from fonduer.supervision import LabelAnnotator, load_gold_labels
+
 
 [0.2.3] - 2018-07-23
 --------------------

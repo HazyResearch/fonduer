@@ -7,22 +7,15 @@ from builtins import range
 import numpy as np
 import pytest
 
-from fonduer import (
-    CandidateExtractor,
-    Document,
-    FeatureAnnotator,
-    GenerativeModel,
-    HTMLDocPreprocessor,
-    LabelAnnotator,
-    MentionExtractor,
-    Meta,
-    Parser,
-    Sentence,
-    SparseLogisticRegression,
-    candidate_subclass,
-    load_gold_labels,
-    mention_subclass,
-)
+from fonduer import Meta
+from fonduer.candidates import CandidateExtractor, MentionExtractor
+from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.features import FeatureAnnotator
+from fonduer.learning import GenerativeModel, SparseLogisticRegression
+from fonduer.parser import Parser
+from fonduer.parser.models import Document, Sentence
+from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.supervision import LabelAnnotator, load_gold_labels
 from tests.shared.hardware_lfs import (
     LF_collector_aligned,
     LF_complement_left_row,

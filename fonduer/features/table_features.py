@@ -1,7 +1,7 @@
 from builtins import range, str
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.features.config import settings
+from fonduer.features.config import get_config
 from fonduer.utils.data_model_utils import (
     get_cell_ngrams,
     get_col_ngrams,
@@ -15,6 +15,8 @@ DEF_VALUE = 1
 
 unary_tablelib_feats = {}
 binary_tablelib_feats = {}
+
+settings = get_config()
 
 
 def get_table_feats(candidates):
@@ -70,10 +72,12 @@ def tablelib_unary_features(span):
     if not span.sentence.is_tabular():
         return
     sentence = span.sentence
-    for attrib in settings.featurization.table.unary_features.attrib:
+    for attrib in settings["featurization"]["table"]["unary_features"]["attrib"]:
         for ngram in get_cell_ngrams(
             span,
-            n_max=settings.featurization.table.unary_features.get_cell_ngrams.max,
+            n_max=settings["featurization"]["table"]["unary_features"][
+                "get_cell_ngrams"
+            ]["max"],
             attrib=attrib,
         ):
             yield "CELL_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
@@ -89,19 +93,25 @@ def tablelib_unary_features(span):
             for ngram in get_head_ngrams(
                 span,
                 axis,
-                n_max=settings.featurization.table.unary_features.get_head_ngrams.max,
+                n_max=settings["featurization"]["table"]["unary_features"][
+                    "get_head_ngrams"
+                ]["max"],
                 attrib=attrib,
             ):
                 yield "%s_HEAD_%s_[%s]" % (axis.upper(), attrib.upper(), ngram), 1
         for ngram in get_row_ngrams(
             span,
-            n_max=settings.featurization.table.unary_features.get_row_ngrams.max,
+            n_max=settings["featurization"]["table"]["unary_features"][
+                "get_row_ngrams"
+            ]["max"],
             attrib=attrib,
         ):
             yield "ROW_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
         for ngram in get_col_ngrams(
             span,
-            n_max=settings.featurization.table.unary_features.get_col_ngrams.max,
+            n_max=settings["featurization"]["table"]["unary_features"][
+                "get_col_ngrams"
+            ]["max"],
             attrib=attrib,
         ):
             yield "COL_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
@@ -120,7 +130,7 @@ def tablelib_binary_features(span1, span2):
     """
     Table-/structure-related features for a pair of spans
     """
-    binary_features = settings.featurization.table.binary_features
+    binary_features = settings["featurization"]["table"]["binary_features"]
     if span1.sentence.is_tabular() and span2.sentence.is_tabular():
         if span1.sentence.table == span2.sentence.table:
             yield u"SAME_TABLE", DEF_VALUE
@@ -128,12 +138,12 @@ def tablelib_binary_features(span1, span2):
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=binary_features.min_row_diff.absolute,
+                    absolute=binary_features["min_row_diff"]["absolute"],
                 )
                 col_diff = min_col_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=binary_features.min_col_diff.absolute,
+                    absolute=binary_features["min_col_diff"]["absolute"],
                 )
                 yield u"SAME_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
                 yield u"SAME_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE
@@ -156,12 +166,12 @@ def tablelib_binary_features(span1, span2):
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=binary_features.min_row_diff.absolute,
+                    absolute=binary_features["min_row_diff"]["absolute"],
                 )
                 col_diff = min_col_diff(
                     span1.sentence,
                     span2.sentence,
-                    absolute=binary_features.min_col_diff.absolute,
+                    absolute=binary_features["min_col_diff"]["absolute"],
                 )
                 yield u"DIFF_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
                 yield u"DIFF_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE
