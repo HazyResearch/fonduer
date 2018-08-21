@@ -148,7 +148,7 @@ class MentionExtractor(UDFRunner):
     """An operator to extract Mention objects from a Context.
 
     :param mention_classes: The type of relation to extract, defined using
-        :func:`fonduer.mentions.mention_subclass.
+        :func: fonduer.mentions.mention_subclass.
     :param mention_spaces: one or list of :class:`MentionSpace` objects, one for
         each relation argument. Defines space of Contexts to consider
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,

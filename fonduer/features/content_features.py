@@ -15,7 +15,7 @@ from treedlib import (
 )
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.features.config import settings
+from fonduer.features.config import get_config
 from fonduer.features.tree_structs import corenlp_to_xmltree
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
 from fonduer.utils.utils import get_as_dict, tokens_to_ngrams
@@ -26,6 +26,7 @@ unary_ddlib_feats = {}
 unary_word_feats = {}
 unary_tdl_feats = {}
 binary_tdl_feats = {}
+settings = get_config()
 
 
 def get_content_feats(candidates):
@@ -154,9 +155,9 @@ def _get_seq_features(context, idxs):
 def _get_window_features(
     context,
     idxs,
-    window=settings.featurization.content.window_feature.size,
-    combinations=settings.featurization.content.window_feature.combinations,
-    isolated=settings.featurization.content.window_feature.isolated,
+    window=settings["featurization"]["content"]["window_feature"]["size"],
+    combinations=settings["featurization"]["content"]["window_feature"]["combinations"],
+    isolated=settings["featurization"]["content"]["window_feature"]["isolated"],
 ):
     left_lemmas = []
     left_pos_tags = []
@@ -244,7 +245,7 @@ def get_word_feats(span):
 
         for ngram in get_left_ngrams(
             span,
-            window=settings.featurization.content.word_feature.window,
+            window=settings["featurization"]["content"]["word_feature"]["window"],
             n_max=2,
             attrib=attrib,
         ):
@@ -253,7 +254,7 @@ def get_word_feats(span):
 
         for ngram in get_right_ngrams(
             span,
-            window=settings.featurization.content.word_feature.window,
+            window=settings["featurization"]["content"]["word_feature"]["window"],
             n_max=2,
             attrib=attrib,
         ):

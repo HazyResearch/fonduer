@@ -1,23 +1,52 @@
-import json
+import logging
 import os
 
+import yaml
 
-def dict2obj(d):
-    if isinstance(d, dict):
-        n = {}
-        for item in d:
-            if isinstance(d[item], dict):
-                n[item] = dict2obj(d[item])
-            elif isinstance(d[item], (list, tuple)):
-                n[item] = [dict2obj(i) for i in d[item]]
-            else:
-                n[item] = d[item]
-        return type("obj_from_dict", (object,), n)
-    else:
-        return d
+MAX_CONFIG_SEARCH_DEPTH = 25  # Max num of parent directories to look for config
+logger = logging.getLogger(__name__)
+
+default = {
+    "featurization": {
+        "content": {
+            "window_feature": {"size": 3, "combinations": True, "isolated": True},
+            "word_feature": {"window": 7},
+        },
+        "table": {
+            "unary_features": {
+                "attrib": ["words"],
+                "get_cell_ngrams": {"max": 2},
+                "get_head_ngrams": {"max": 2},
+                "get_row_ngrams": {"max": 2},
+                "get_col_ngrams": {"max": 2},
+            },
+            "binary_features": {
+                "min_row_diff": {"absolute": False},
+                "min_col_diff": {"absolute": False},
+            },
+        },
+    }
+}
 
 
-# Load the settings relative to this config file.
-directory = os.path.dirname(__file__)
-with open(directory + "/" + "settings.json", "r") as f:
-    settings = dict2obj(json.load(f))
+def get_config(path=os.getcwd()):
+    """Search for settings file in root of project and its parents."""
+    config = default
+    tries = 0
+    current_dir = path
+    while current_dir and tries < MAX_CONFIG_SEARCH_DEPTH:
+        potential_path = os.path.join(current_dir, ".fonduer-config.yaml")
+        if os.path.exists(potential_path):
+            with open(potential_path, "r") as f:
+                config = yaml.safe_load(f)
+            logger.info("Loading Fonduer config from {}.".format(potential_path))
+            break
+
+        new_dir = os.path.split(current_dir)[0]
+        if current_dir == new_dir:
+            logger.debug("Unable to find config file. Using defaults.")
+            break
+        current_dir = new_dir
+        tries += 1
+
+    return config

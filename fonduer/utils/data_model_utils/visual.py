@@ -5,7 +5,7 @@
 from builtins import range
 from collections import defaultdict
 
-from fonduer.candidates import Ngrams
+from fonduer.candidates.mentions import Ngrams
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
 from fonduer.utils.utils_visual import (

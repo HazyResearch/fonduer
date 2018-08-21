@@ -3,6 +3,8 @@
 
 Added
 ^^^^^
+* `@lukehsiao`_: Allow user to change featurization settings by providing
+  ``.fonduer-config.yaml`` in their project.
 * `@lukehsiao`_: Add a new Mention object, and have Candidate objects be
   composed of Mention objects, rather than directly of Spans. This allows a
   single Mention to be reused in multiple relations.
@@ -24,8 +26,6 @@ Changed
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
   ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
-* `@lukehsiao`_: Change featurization settings to load from JSON, rather than
-  YAML, allowing us to remove the ``pyyaml`` dependency.
 * `@lukehsiao`_: Organize documentation for ``data_model_utils`` by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
 * `@lukehsiao`_: Change ``lf_helpers`` to ``data_model_utils``, since they can
@@ -43,8 +43,9 @@ Removed
 
 Fixed
 ^^^^^
-* `@HiromuHota`_: Fixed bug in Ngram splitting.
-  (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_)
+* `@HiromuHota`_: Fixed bug with Ngram splitting and empty TemporarySpans.
+  (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_,
+  `#112 <https://github.com/HazyResearch/fonduer/pull/112>`_)
 * `@lukehsiao`_: Fixed PDF path validation when using ``visual=True`` during
   parsing.
 * `@lukehsiao`_: Fix Meta bug which would not switch databases when init() was

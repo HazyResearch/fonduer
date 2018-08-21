@@ -14,7 +14,7 @@ class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
     :param candidate_classes: The types of relation to extract, defined using
-        :func:`fonduer.candidates.candidate_subclass.
+        :func: fonduer.candidates.candidate_subclass.
     :param throttlers: optional functions for filtering out candidates
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.

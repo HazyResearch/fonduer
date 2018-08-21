@@ -18,6 +18,7 @@ setup(
         "numpy>=1.11",
         "pandas",
         "psycopg2-binary",
+        "pyyaml",
         "scipy>=0.18",
         "spacy>=2.0.7",
         "sqlalchemy>=1.0.14",

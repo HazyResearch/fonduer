@@ -33,6 +33,7 @@ autodoc_mock_imports = [
     "tqdm",
     "treedlib",
     "wand",
+    "yaml",
 ]
 
 # -- Project information -----------------------------------------------------
