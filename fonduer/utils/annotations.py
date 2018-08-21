@@ -252,7 +252,7 @@ class AnnotatorUDF(UDF):
                         array_tsv_escape(values),
                     ]
                     writer.write("\t".join(row) + "\n")
-        # This return + yeild combination results in a purely empty generator
+        # This return + yield combination results in a purely empty generator
         # function. Specifically, the yield turns the function into a generator,
         # and the return terminates the generator before yielding anything.
         return

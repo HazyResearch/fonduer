@@ -37,6 +37,8 @@ Removed
 
 Fixed
 ^^^^^
+* `@HiromuHota`_: Fixed bug in Ngram splitting.
+  (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_)
 * `@lukehsiao`_: Fixed PDF path validation when using ``visual=True`` during
   parsing.
 * `@lukehsiao`_: Fix Meta bug which would not switch databases when init() was
@@ -242,3 +244,4 @@ Minor hotfix to the README formatting for PyPi.
 .. _@lukehsiao: https://github.com/lukehsiao
 .. _@senwu: https://github.com/senwu
 .. _@prabh06: https://github.com/Prabh06
+.. _@HiromuHota: https://github.com/HiromuHota

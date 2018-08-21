@@ -15,6 +15,7 @@ from fonduer import (
     candidate_subclass,
     mention_subclass,
 )
+from fonduer.candidates.mentions import Ngrams
 from fonduer.candidates.models import Candidate
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
@@ -27,6 +28,42 @@ from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "cand_test"
+
+
+def test_ngram_split(caplog):
+    """Test extracting candidates from mentions from documents."""
+    caplog.set_level(logging.INFO)
+    PARALLEL = 1
+    max_docs = 1
+    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/112823.pdf"
+
+    # Parsing
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    assert session.query(Document).count() == max_docs
+    assert session.query(Sentence).count() == 828
+    sents = session.query(Sentence).all()
+    # Doesn't matter which sentence we grab, since we are overwriting the
+    # relevant attribs
+    sent = sents[0]
+    sent.text = "New-Text"
+    sent.words = ["New-Text"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    ngrams = Ngrams()
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 3
+    assert result[0].get_span() == "New-Text"
+    assert result[1].get_span() == "New"
+    assert result[2].get_span() == "Text"
 
 
 def test_span_char_start_and_char_end(caplog):
