@@ -31,33 +31,16 @@ DB = "cand_test"
 
 
 def test_ngram_split(caplog):
-    """Test extracting candidates from mentions from documents."""
+    """Test ngram split."""
     caplog.set_level(logging.INFO)
-    PARALLEL = 1
-    max_docs = 1
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    ngrams = Ngrams()
+    sent = Sentence()
 
-    docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
-
-    # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 828
-    sents = session.query(Sentence).all()
-    # Doesn't matter which sentence we grab, since we are overwriting the
-    # relevant attribs
-    sent = sents[0]
+    # When a split_token appears in the middle of the text.
     sent.text = "New-Text"
     sent.words = ["New-Text"]
     sent.char_offsets = [0]
     sent.abs_char_offsets = [0]
-    ngrams = Ngrams()
     result = list(ngrams.apply(sent))
 
     assert len(result) == 3
@@ -65,46 +48,50 @@ def test_ngram_split(caplog):
     assert result[1].get_span() == "New"
     assert result[2].get_span() == "Text"
 
+    # When a text ends with a split_token.
+    sent.text = "New-"
+    sent.words = ["New-"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 2
+    assert result[0].get_span() == "New-"
+    assert result[1].get_span() == "New"
+
+    # When a text starts with a split_token.
+    sent.text = "-Text"
+    sent.words = ["-Text"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 2
+    assert result[0].get_span() == "-Text"
+    assert result[1].get_span() == "Text"
+
+    # When more than one split_token appears.
+    sent.text = "New/Text-Word"
+    sent.words = ["New/Text-Word"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 3
+    assert result[0].get_span() == "New/Text-Word"
+    assert result[1].get_span() == "New"
+    assert result[2].get_span() == "Text-Word"
+
 
 def test_span_char_start_and_char_end(caplog):
-    """Test extracting candidates from mentions from documents."""
+    """Test chart_start and char_end of TemporarySpan that comes from Ngrams.apply."""
     caplog.set_level(logging.INFO)
-    PARALLEL = 1
-    max_docs = 1
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    ngrams = Ngrams()
+    sent = Sentence()
+    sent.text = "BC548BG"
+    sent.words = ["BC548BG"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    result = list(ngrams.apply(sent))
 
-    docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
-
-    # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 828
-    docs = session.query(Document).order_by(Document.name).all()
-
-    # Mention Extraction
-    part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
-
-    Part = mention_subclass("Part")
-
-    mention_extractor = MentionExtractor([Part], [part_ngrams], [part_matcher])
-    mention_extractor.apply(docs, parallelism=PARALLEL)
-
-    assert session.query(Part).count() == 70
-    parts = [x for x in session.query(Part).all() if x.span.get_span() == "BC548BG"]
-    assert len(parts) == 1
-    part = parts[0]
-
-    logger.info("Part: {}".format(part.span))
-
-    assert part.span.get_span() == "BC548BG"
-    assert part.span.char_start == 0
-    assert part.span.char_end == 6
+    assert len(result) == 1
+    assert result[0].get_span() == "BC548BG"
+    assert result[0].char_start == 0
+    assert result[0].char_end == 6
 
 
 def test_cand_gen(caplog):
