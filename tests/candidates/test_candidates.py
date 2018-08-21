@@ -4,19 +4,13 @@ import os
 
 import pytest
 
-from fonduer import (
-    CandidateExtractor,
-    Document,
-    HTMLDocPreprocessor,
-    MentionExtractor,
-    Meta,
-    Parser,
-    Sentence,
-    candidate_subclass,
-    mention_subclass,
-)
+from fonduer import Meta
+from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.mentions import Ngrams
-from fonduer.candidates.models import Candidate
+from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
+from fonduer.parser import Parser
+from fonduer.parser.models import Document, Sentence
+from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,

@@ -1,4 +1,20 @@
 from fonduer.candidates.candidates import CandidateExtractor
+from fonduer.candidates.matchers import (
+    DateMatcher,
+    DictionaryMatch,
+    Intersect,
+    Inverse,
+    LambdaFunctionFigureMatcher,
+    LambdaFunctionMatcher,
+    LocationMatcher,
+    MiscMatcher,
+    NumberMatcher,
+    OrganizationMatcher,
+    PersonMatcher,
+    RegexMatchEach,
+    RegexMatchSpan,
+    Union,
+)
 from fonduer.candidates.mentions import (
     MentionExtractor,
     MentionFigures,
@@ -8,8 +24,22 @@ from fonduer.candidates.mentions import (
 
 __all__ = [
     "CandidateExtractor",
+    "DateMatcher",
+    "DictionaryMatch",
+    "Intersect",
+    "Inverse",
+    "LambdaFunctionFigureMatcher",
+    "LambdaFunctionMatcher",
+    "LocationMatcher",
     "MentionExtractor",
     "MentionFigures",
     "MentionNgrams",
+    "MiscMatcher",
     "Ngrams",
+    "NumberMatcher",
+    "OrganizationMatcher",
+    "PersonMatcher",
+    "RegexMatchEach",
+    "RegexMatchSpan",
+    "Union",
 ]

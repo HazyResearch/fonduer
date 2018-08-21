@@ -2,8 +2,8 @@
 # Textual modality utilities
 ############################
 
-from fonduer.utils import tokens_to_ngrams
 from fonduer.utils.data_model_utils.utils import _to_span
+from fonduer.utils.utils import tokens_to_ngrams
 
 
 def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):

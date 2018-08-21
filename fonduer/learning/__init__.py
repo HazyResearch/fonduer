@@ -1,6 +1,3 @@
-"""
-Subpackage for Snorkel machine learning modules.
-"""
 from fonduer.learning.disc_models.logistic_regression import (
     LogisticRegression,
     SparseLogisticRegression,

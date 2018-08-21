@@ -6,9 +6,9 @@ from builtins import range
 from itertools import chain
 
 from fonduer.parser.models import Sentence
-from fonduer.utils import tokens_to_ngrams
 from fonduer.utils.data_model_utils.textual import get_left_ngrams, get_right_ngrams
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
+from fonduer.utils.utils import tokens_to_ngrams
 from fonduer.utils.utils_table import (
     is_axis_aligned,
     is_col_aligned,

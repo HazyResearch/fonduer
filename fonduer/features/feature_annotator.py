@@ -1,5 +1,5 @@
 from fonduer.features.features import get_all_feats
-from fonduer.utils.annotations import Annotator
+from fonduer.utils.annotator import Annotator
 
 
 class FeatureAnnotator(Annotator):

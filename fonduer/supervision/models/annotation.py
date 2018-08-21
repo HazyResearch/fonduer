@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.meta import Meta
-from fonduer.utils import camel_to_under
+from fonduer.utils.utils import camel_to_under
 
 # Grab pointer to global metadata
 _meta = Meta.init()

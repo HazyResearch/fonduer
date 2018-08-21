@@ -6,7 +6,8 @@ from pandas import DataFrame, Series
 
 from fonduer.candidates.models import Candidate
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
-from fonduer.utils import (
+from fonduer.utils.annotator import Annotator
+from fonduer.utils.utils import (
     matrix_conflicts,
     matrix_coverage,
     matrix_fn,
@@ -15,13 +16,14 @@ from fonduer.utils import (
     matrix_tn,
     matrix_tp,
 )
-from fonduer.utils.annotations import Annotator, csr_AnnotationMatrix
+from fonduer.utils.utils_annotations import csr_AnnotationMatrix
 
 logger = logging.getLogger(__name__)
 
 
 class LabelAnnotator(Annotator):
     def __init__(self, candidate_type, lfs, label_generator=None, **kwargs):
+
         if lfs is not None:
             labels = lambda c: [(lf.__name__, lf(c)) for lf in lfs]
         elif label_generator is not None:
@@ -51,10 +53,9 @@ class LabelAnnotator(Annotator):
                         yield lf_key, val
                 else:
                     raise ValueError(
-                        """
-                        Unable to parse label with value %s
-                        for candidate with values %s"""
-                        % (label, c.values)
+                        "Can't parse label value {} for candidate values {}".format(
+                            label, c.values
+                        )
                     )
 
         super(LabelAnnotator, self).__init__(
