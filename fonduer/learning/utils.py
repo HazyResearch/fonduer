@@ -354,9 +354,10 @@ class MentionScorer(Scorer):
 
 
 def binary_scores_from_counts(ntp, nfp, ntn, nfn):
-    """
-    Precision, recall, and F1 scores from counts of TP, FP, TN, FN.
-    Example usage:
+    """Precision, recall, and F1 scores from counts of TP, FP, TN, FN.
+
+    Example usage::
+
         p, r, f1 = binary_scores_from_counts(*map(len, error_sets))
     """
     prec = ntp / float(ntp + nfp) if ntp + nfp > 0 else 0.0

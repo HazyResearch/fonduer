@@ -1,6 +1,6 @@
 import csv
 
-from fonduer.candidates import (
+from fonduer.candidates.matchers import (
     DictionaryMatch,
     Intersect,
     LambdaFunctionMatcher,

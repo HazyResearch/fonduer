@@ -21,10 +21,12 @@ submit your contributions as a pull request.
     :caption: User Documentation
 
     user/getting_started
-    user/preprocessors
-    user/data_model
+    user/parser
     user/data_model_utils
-    user/matchers
+    user/candidates
+    user/features
+    user/supervision
+    user/learning
     user/faqs
 
 .. toctree::

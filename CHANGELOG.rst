@@ -13,6 +13,8 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+* `@lukehsiao`_: Reorganize ReadTheDocs structure to mirror the repository
+  structure. Now, each pipeline phase's user-facing API is clearly shown.
 * `@lukehsiao`_: Rather than importing ambiguously from ``fonduer`` directly,
   disperse imports into their respective pipeline phases. This eliminates
   circular dependencies, and makes imports more explicit and clearer to the
@@ -130,12 +132,11 @@ Fixed
     .. code:: python
 
         from fonduer import Meta
-        from fonduer.candidates import (
-            CandidateExtractor,
+        from fonduer.candidates import CandidateExtractor, MentionExtractor
+        from fonduer.candidates.matchers import (
             DictionaryMatch,
             Intersect,
             LambdaFunctionMatcher,
-            MentionExtractor,
             RegexMatchSpan,
             Union,
         )
