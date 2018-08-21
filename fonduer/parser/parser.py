@@ -6,7 +6,8 @@ import warnings
 from builtins import range
 from collections import defaultdict
 
-import lxml
+import lxml.etree
+import lxml.html
 
 from fonduer.parser.models import (
     Caption,
