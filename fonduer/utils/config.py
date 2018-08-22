@@ -52,7 +52,7 @@ def get_config(path=os.getcwd()):
         if os.path.exists(potential_path):
             with open(potential_path, "r") as f:
                 config = _merge(config, yaml.safe_load(f))
-            logger.info("Loading Fonduer config from {}.".format(potential_path))
+            logger.debug("Loading Fonduer config from {}.".format(potential_path))
             break
 
         new_dir = os.path.split(current_dir)[0]
