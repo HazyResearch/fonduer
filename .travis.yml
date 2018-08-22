@@ -50,7 +50,7 @@ before_install:
 - python --version
 - pip --version
 
-# Install PyTorch for Linux with Python 3.6 and no CUDA
+# Install PyTorch for Linux with no CUDA support
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     if [ "${PYTHON}" = "3.6" ]; then
