@@ -30,12 +30,21 @@ class SymbolTable(object):
 
 
 def mention_to_tokens(mention, token_type="words", lowercase=False):
+    """
+    Extract tokens from the mention
+
+    :param mention: mention object
+    :param token_type: token type that wants to extract
+    :param lowercase: use lowercase or not
+    """
+
     tokens = mention.span.sentence.__dict__[token_type]
     return [w.lower() if lowercase else w for w in tokens]
 
 
 def mark(l, h, idx):
-    """Produce markers based on argument positions
+    """
+    Produce markers based on argument positions
 
     :param l: sentence position of first word in argument
     :param h: sentence position of last word in argument

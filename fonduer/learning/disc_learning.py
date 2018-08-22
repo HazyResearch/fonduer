@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import logging
 import os
 from time import time
@@ -10,11 +8,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from .classifier import Classifier
-from .utils import LabelBalancer, reshape_marginals
+from fonduer.learning.classifier import Classifier
+from fonduer.learning.utils import LabelBalancer, reshape_marginals
 
 
 def SoftCrossEntropyLoss(input, target):
+    """
+    Calculate the CrossEntropyLoss with soft targets
+
+    :param input: prediction logicts
+    :param target: target probabilities
+    """
     total_loss = torch.tensor(0.0)
     for i in range(input.size(1)):
         cls_idx = torch.full((input.size(0),), i, dtype=torch.long)
@@ -170,12 +174,12 @@ class NoiseAwareModel(Classifier, nn.Module):
         if "host_device" not in self.model_kwargs:
             self.model_kwargs["host_device"] = "CPU"
             self.logger.info("Using CPU...")
-        if (
-            self.model_kwargs["host_device"] in self.gpu
-            and not torch.cuda.is_available()
-        ):
-            self.model_kwargs["host_device"] = "CPU"
-            self.logger.info("GPU is not available, switching to CPU...")
+        if self.model_kwargs["host_device"] in self.gpu:
+            if not torch.cuda.is_available():
+                self.model_kwargs["host_device"] = "CPU"
+                self.logger.info("GPU is not available, switching to CPU...")
+            else:
+                self.logger.info("Using GPU...")
 
         self.logger.info("Settings: {}".format(self.model_kwargs))
 
