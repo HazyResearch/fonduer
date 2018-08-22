@@ -1,4 +1,6 @@
 import logging
+import random
+import string
 from collections import defaultdict
 from pathlib import Path
 
@@ -49,7 +51,7 @@ class Spacy(object):
 
     def __init__(
         self,
-        annotators=["tagger", "parser", "entity"],
+        # annotators=["tagger", "parser", "entity"],
         lang="en",
         num_threads=1,
         verbose=False,
@@ -59,7 +61,7 @@ class Spacy(object):
         self.model = Spacy.load_lang_model(lang)
         self.num_threads = num_threads
 
-        self.pipeline = [proc for _, proc in self.model.__dict__["pipeline"]]
+        # self.pipeline = [proc for _, proc in self.model.__dict__["pipeline"]]
 
     @staticmethod
     def is_package(name):
@@ -118,21 +120,103 @@ class Spacy(object):
             download(lang)
         return spacy.load(lang)
 
-    def parse(self, document, text):
+    def custom_boundary_funct(self, separator_str):
+        def set_custom_boundary(doc):
+            for token in doc[:-1]:
+                if token.text == separator_str:
+                    doc[token.i + 1].is_sent_start = True
+                    doc[token.i].is_sent_start = True
+                else:
+                    doc[token.i + 1].is_sent_start = False
+            return doc
+
+        return set_custom_boundary
+
+    def parse(self, all_sentences):
         """
         Transform spaCy output to match CoreNLP's default format
         :param document:
         :param text:
         :return:
         """
-        doc = self.model.tokenizer(text)
-        for proc in self.pipeline:
-            proc(doc)
+
+        # doc = self.model.tokenizer(merged_sentences)
+
+        if self.model.has_pipe("sbd"):
+            self.model.remove_pipe("sbd")
+            self.logger.debug(
+                "removed 'sbd' from model. Now in pipeline: {}".format(
+                    self.model.pipe_names
+                )
+            )
+
+        # Create random, (most likely) unique string to separate sentences
+        separator_str = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=10)
+        )
+        spaced_separator_str = " " + separator_str + " "
+
+        all_sentence_strings = [x.text for x in all_sentences]
+        merged_sentences = spaced_separator_str.join(all_sentence_strings)
+        self.model.Defaults.stop_words.add(spaced_separator_str)
+        self.model.Defaults.stop_words.add(separator_str)
+        custom_boundary_fct = self.custom_boundary_funct(separator_str)
+
+        self.model.add_pipe(custom_boundary_fct, before="parser")
+        doc = self.model(merged_sentences)
+
         try:
             assert doc.is_parsed
         except Exception:
             self.logger.exception("{} was not parsed".format(doc))
 
+        self.logger.debug(
+            "number of input sentences: {} vs number from pipeline:\
+             {}\n with subtracted: {}".format(
+                len(all_sentences),
+                len(list(doc.sents)),
+                len(list(doc.sents)) - (len(all_sentences) - 1),
+            )
+        )
+
+        # skipped_sentences = 0
+        sentence_nr = -1
+        for sent in doc.sents:
+            if separator_str in sent.text:
+                continue
+            sentence_nr += 1
+            parts = defaultdict(list)
+
+            for i, token in enumerate(sent):
+                if str(token) == separator_str:
+                    self.logger.warning("Found separator string in a sentence token.")
+                    continue
+
+                parts["lemmas"].append(token.lemma_)
+                parts["pos_tags"].append(token.tag_)
+                parts["ner_tags"].append(token.ent_type_ if token.ent_type_ else "O")
+                head_idx = 0 if token.head is token else token.head.i - sent[0].i + 1
+                parts["dep_parents"].append(head_idx)
+                parts["dep_labels"].append(token.dep_)
+            current_sentence_obj = all_sentences[sentence_nr]
+            current_sentence_obj.pos_tags = parts["pos_tags"]
+            current_sentence_obj.lemmas = parts["lemmas"]
+            current_sentence_obj.ner_tags = parts["ner_tags"]
+            current_sentence_obj.dep_parents = parts["dep_parents"]
+            current_sentence_obj.dep_labels = parts["dep_labels"]
+
+    def split_sentences(self, document, text):
+        """
+        Split input text into sentences that match CoreNLP's
+         default format, but are not yet processed
+        :param document:
+        :param text:
+        :return:
+        """
+        if not self.model.has_pipe("sbd"):
+            sbd = self.model.create_pipe("sbd")  # add sentencizer
+            self.model.add_pipe(sbd)
+        doc = self.model(text, disable=["parser", "tagger", "ner"])
         position = 0
         for sent in doc.sents:
             parts = defaultdict(list)
@@ -140,14 +224,13 @@ class Spacy(object):
 
             for i, token in enumerate(sent):
                 parts["words"].append(str(token))
-                parts["lemmas"].append(token.lemma_)
-                parts["pos_tags"].append(token.tag_)
-                parts["ner_tags"].append(token.ent_type_ if token.ent_type_ else "O")
+                parts["lemmas"].append("")  # placeholder for later NLP parsing
+                parts["pos_tags"].append("")  # placeholder for later NLP parsing
+                parts["ner_tags"].append("")  # placeholder for later NLP parsing
                 parts["char_offsets"].append(token.idx)
                 parts["abs_char_offsets"].append(token.idx)
-                head_idx = 0 if token.head is token else token.head.i - sent[0].i + 1
-                parts["dep_parents"].append(head_idx)
-                parts["dep_labels"].append(token.dep_)
+                parts["dep_parents"].append(0)  # placeholder for later NLP parsing
+                parts["dep_labels"].append("")  # placeholder for later NLP parsing
 
             # Add null entity array (matching null for CoreNLP)
             parts["entity_cids"] = ["O" for _ in parts["words"]]
