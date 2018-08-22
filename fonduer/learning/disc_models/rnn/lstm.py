@@ -4,7 +4,6 @@ import torch.nn as nn
 from scipy.sparse import issparse
 
 from fonduer.learning.disc_learning import NoiseAwareModel
-from fonduer.learning.disc_models.rnn.config import get_config
 from fonduer.learning.disc_models.rnn.layers import RNN
 from fonduer.learning.disc_models.rnn.utils import (
     SymbolTable,
@@ -12,6 +11,7 @@ from fonduer.learning.disc_models.rnn.utils import (
     mention_to_tokens,
     pad_batch,
 )
+from fonduer.utils.config import get_config
 
 
 class LSTM(NoiseAwareModel):

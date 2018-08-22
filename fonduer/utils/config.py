@@ -25,7 +25,18 @@ default = {
                 "min_col_diff": {"absolute": False},
             },
         },
-    }
+    },
+    "learning": {
+        "LSTM": {
+            "emb_dim": 100,
+            "hidden_dim": 100,
+            "attention": True,
+            "dropout": 0.1,
+            "bidirectional": True,
+            "host_device": "CPU",
+            "max_sentence_length": 100,
+        }
+    },
 }
 
 

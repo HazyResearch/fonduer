@@ -91,7 +91,6 @@ class Classifier(object):
                 f_beta = 0.0
             return p, r, f_beta
 
-    # TODO: need update, this only works for debugging labeling functions now
     def error_analysis(
         self,
         session,
@@ -118,6 +117,9 @@ class Classifier(object):
         :param set_unlabeled_as_neg: Whether to map 0 labels -> -1, *binary setting*
         :param display: Print score report
         :param scorer: The Scorer sub-class to use
+
+        Todo:
+            * need update, this only works for debugging labeling functions now
         """
         # Compute the marginals
         test_marginals = self.marginals(X_test, **kwargs)

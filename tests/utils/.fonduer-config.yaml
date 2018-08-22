@@ -21,3 +21,6 @@ featurization:
         absolute: False
       min_col_diff:
         absolute: False
+learning:
+  LSTM:
+    host_device: GPU
