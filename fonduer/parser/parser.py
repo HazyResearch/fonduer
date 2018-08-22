@@ -4,7 +4,6 @@ import os
 import re
 from builtins import range
 from collections import defaultdict
-from timeit import default_timer as timer
 
 import lxml
 
@@ -90,23 +89,6 @@ class ParserUDF(UDF):
             _replace_.
         """
         super(ParserUDF, self).__init__(**kwargs)
-        self.times = {
-            "parse": 0,
-            "caption": 0,
-            "tabular": 0,
-            "figure": 0,
-            "section": 0,
-            "paragraph": 0,
-            "sentence": 0,
-            "sentence_part1": 0,
-            "sentence_struct": 0,
-            "sentence_tab": 0,
-            "sentence_create": 0,
-            "sentence_lingualparse": [0, 0],
-            "lingual_tokenize": 0,
-            "lingual_sents": 0,
-            "lingual_proc": 0,
-        }
 
         # structural (html) setup
         self.structural = structural
@@ -347,13 +329,9 @@ class ParserUDF(UDF):
         # Lingual Parse
         document = state["document"]
         sentence_list = []
-        start = timer()
         parts_list = [x for x in self.lingual_parse(document, text)]
-        self.times["sentence_lingualparse"][0] += timer() - start
-        self.times["sentence_lingualparse"][1] += 1
         # for parts in self.lingual_parse(document, text):
         for parts in parts_list:
-            start = timer()
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
@@ -369,9 +347,7 @@ class ParserUDF(UDF):
                 abs_sentence_offset_end,
             )
             state["sentence"]["abs_offset"] = abs_sentence_offset_end
-            self.times["sentence_part1"] += timer() - start
             if self.structural:
-                start = timer()
                 context_node = node.getparent() if field == "tail" else node
                 tree = lxml.etree.ElementTree(state["root"])
                 parts["xpath"] = tree.getpath(context_node)
@@ -419,9 +395,7 @@ class ParserUDF(UDF):
                                         ]
                                     )
                             break
-                self.times["sentence_struct"] += timer() - start
             if self.tabular:
-                start = timer()
                 parts["position"] = state["sentence"]["idx"]
 
                 # If tabular, consider own Context first in case a Cell
@@ -437,13 +411,10 @@ class ParserUDF(UDF):
                         parts["row_end"] = parent.cell.row_end
                         parts["col_start"] = parent.cell.col_start
                         parts["col_end"] = parent.cell.col_end
-                    self.times["sentence_tab"] += timer() - start
                 else:
                     raise NotImplementedError("Sentence parent must be Paragraph.")
-            start = timer()
             new_sentence = Sentence(**parts)
             sentence_list.append(new_sentence)
-            self.times["sentence_create"] += timer() - start
             # yield Sentence(**parts)
 
             state["sentence"]["idx"] += 1
@@ -514,9 +485,7 @@ class ParserUDF(UDF):
             state["paragraph"]["text"] = text
             state["paragraph"]["field"] = field
 
-            start = timer()
             all_sentences = [y for y in self._parse_sentence(paragraph, node, state)]
-            self.times["sentence"] += timer() - start
             for sen in all_sentences:
                 yield sen
             # yield from self._parse_sentence(paragraph, node, state)
@@ -593,27 +562,16 @@ class ParserUDF(UDF):
         :rtype: a *generator* of Sentences
         """
         # Processing on entry of node
-        start = timer()
         state = self._parse_section(node, state)
-        self.times["section"] += timer() - start
 
-        start = timer()
         state = self._parse_figure(node, state)
-        self.times["figure"] += timer() - start
 
-        start = timer()
         if self.tabular:
             state = self._parse_table(node, state)
-        self.times["tabular"] += timer() - start
 
-        start = timer()
         state = self._parse_caption(node, state)
-        self.times["caption"] += timer() - start
-
-        start = timer()
 
         all_paragraphs = [y for y in self._parse_paragraph(node, state)]
-        self.times["paragraph"] += timer() - start
         for par in all_paragraphs:
             yield par
         # yield from self._parse_paragraph(node, state)

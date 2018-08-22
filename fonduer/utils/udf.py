@@ -7,7 +7,7 @@ from fonduer.meta import Meta, new_sessionmaker
 try:
     from IPython import get_ipython
 
-    if "IPKernelApp" not in get_ipython().config:
+    if get_ipython() is None or "IPKernelApp" not in get_ipython().config:
         raise ImportError("console")
 except ImportError:
     from tqdm import tqdm
@@ -80,8 +80,8 @@ class UDFRunner(object):
         for x in xs:
             if self.pb is not None:
                 self.pb.update(1)
-
-            udf.session.add_all(y for y in udf.apply(x, **kwargs))
+            all_sentences = [y for y in udf.apply(x, **kwargs)]
+            udf.session.add_all(all_sentences)
 
         # Commit session and close progress bar if applicable
         udf.session.commit()
