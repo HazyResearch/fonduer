@@ -5,13 +5,14 @@ from fonduer.supervision.annotations import save_marginals
 
 
 class Classifier(object):
-    """Simple abstract base class for a probabilistic classifier."""
+    """An abstract class for a probabilistic classifier."""
 
     def __init__(self, cardinality=2, name=None):
         self.name = name or self.__class__.__name__
         self.cardinality = cardinality
 
     def marginals(self, X, batch_size=None, **kwargs):
+        """Calculate the predicted marginal probabilities for the Candidates X."""
         raise NotImplementedError()
 
     def save_marginals(self, session, X, training=False):

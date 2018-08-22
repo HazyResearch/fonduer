@@ -24,7 +24,7 @@ from fonduer.candidates.matchers import (
     Union,
 )
 from fonduer.candidates.models import candidate_subclass, mention_subclass
-from fonduer.learning import GenerativeModel, LogisticRegression
+from fonduer.learning import GenerativeModel, LogisticRegression, LSTM
 from fonduer.meta import Meta
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Figure, Sentence, Table
@@ -52,6 +52,8 @@ __all__ = [
     "LambdaFunctionFigureMatcher",
     "LambdaFunctionMatcher",
     "LocationMatcher",
+    "LogisticRegression",
+    "LSTM",
     "MentionExtractor",
     "MentionFigures",
     "MentionNgrams",
@@ -65,7 +67,6 @@ __all__ = [
     "RegexMatchEach",
     "RegexMatchSpan",
     "Sentence",
-    "LogisticRegression",
     "Table",
     "Union",
     "__version__",

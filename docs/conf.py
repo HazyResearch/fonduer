@@ -27,6 +27,7 @@ autodoc_mock_imports = [
     "numpy",
     "pandas",
     "psycopg2",
+    "pyyaml",
     "scipy",
     "spacy",
     "torch",

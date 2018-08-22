@@ -30,6 +30,8 @@ class NoiseAwareModel(Classifier, nn.Module):
     :param seed: Random seed which is passed into both numpy and PyTorch.
     """
 
+    gpu = ["gpu", "GPU"]
+
     def __init__(self, seed=123, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.seed = seed
@@ -52,7 +54,7 @@ class NoiseAwareModel(Classifier, nn.Module):
     def _update_kwargs(self, X, **model_kwargs):
         return model_kwargs
 
-    def _preprocess_data(self, X, Y, idxs=None):
+    def _preprocess_data(self, X, Y, idxs=None, train=False):
         return X, Y
 
     def _setup_model_loss(self, lr):
@@ -157,15 +159,33 @@ class NoiseAwareModel(Classifier, nn.Module):
             diffs = Y_train.max(axis=1) - Y_train.min(axis=1)
             train_idxs = np.where(diffs > 1e-6)[0]
 
-        _X_train, _Y_train = self._preprocess_data(X_train, Y_train, idxs=train_idxs)
+        _X_train, _Y_train = self._preprocess_data(
+            X_train, Y_train, idxs=train_idxs, train=True
+        )
         if X_dev is not None:
             _X_dev, _Y_dev = self._preprocess_data(X_dev, Y_dev)
 
         self.model_kwargs = self._update_kwargs(_X_train, **kwargs)
 
+        if "host_device" not in self.model_kwargs:
+            self.model_kwargs["host_device"] = "CPU"
+            self.logger.info("Using CPU...")
+        if (
+            self.model_kwargs["host_device"] in self.gpu
+            and not torch.cuda.is_available()
+        ):
+            self.model_kwargs["host_device"] = "CPU"
+            self.logger.info("GPU is not available, switching to CPU...")
+
+        self.logger.info("Settings: {}".format(self.model_kwargs))
+
         # Build network
         self._build_model(self.model_kwargs)
         self._setup_model_loss(lr)
+
+        # Set up GPU if necessary
+        if self.model_kwargs["host_device"] in self.gpu:
+            nn.Module.cuda(self)
 
         # Run mini-batch SGD
         n = len(_X_train)
@@ -188,7 +208,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             # Shuffle the training data
             idxs = self.rand_state.permutation(n)
 
-            nn.Module.train(self)
+            nn.Module.train(self, True)
             for batch_st in range(0, n, batch_size):
                 # zero gradients for each batch
                 self.optimizer.zero_grad()
@@ -200,9 +220,10 @@ class NoiseAwareModel(Classifier, nn.Module):
                 )
 
                 # Calculate loss for current batch
-                loss = self.loss(
-                    output, torch.Tensor(_Y_train[idxs[batch_st:batch_ed]])
-                )
+                y = torch.Tensor(_Y_train[idxs[batch_st:batch_ed]])
+                if self.model_kwargs["host_device"] in self.gpu:
+                    y = y.cuda()
+                loss = self.loss(output, y)
 
                 # Compute gradient
                 loss.backward()
@@ -210,7 +231,10 @@ class NoiseAwareModel(Classifier, nn.Module):
                 # Update the parameters
                 self.optimizer.step()
 
-                iteration_losses.append(loss)
+                if self.model_kwargs["host_device"] in self.gpu:
+                    iteration_losses.append(loss.cpu())
+                else:
+                    iteration_losses.append(loss)
 
             # Print training stats and optionally checkpoint model
             if verbose and (
@@ -257,12 +281,17 @@ class NoiseAwareModel(Classifier, nn.Module):
         Split into batches to avoid OOM errors, then call _marginals_batch;
         defaults to no batching.
         """
+        nn.Module.train(self, False)
         marginal = self._calc_logits(X, batch_size)
+
+        if self.model_kwargs["host_device"] in self.gpu:
+            marginal = marginal.cpu()
+
         # marginals = self.forward(X, batch_size)
         if self.cardinality == 2:
-            return F.sigmoid(marginal).detach().numpy()
+            return torch.sigmoid(marginal).detach().numpy()
         else:
-            return F.softmax(marginal).detach().numpy()
+            return torch.softmax(marginal).detach().numpy()
 
     def save(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
@@ -300,7 +329,7 @@ class NoiseAwareModel(Classifier, nn.Module):
     def load(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
     ):
-        """Load model from file and rebuild in new graph / session."""
+        """Load model from file and rebuild the model."""
         model_name = model_name or self.name
 
         model_dir = os.path.join(save_dir, model_name)

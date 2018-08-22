@@ -25,7 +25,7 @@ class LogisticRegression(NoiseAwareModel):
         """
         return isinstance(X, tuple)
 
-    def _preprocess_data(self, X, Y=None, idxs=None):
+    def _preprocess_data(self, X, Y=None, idxs=None, train=False):
         """
         Preprocess the data:
         1. Convert sparse matrix to dense matrix.
@@ -87,19 +87,32 @@ class LogisticRegression(NoiseAwareModel):
         :param X: The input data of the model
         :param batch_size: The batch size
         """
-        nn.Module.train(self, False)
+        # Generate multi-modal feature input
         F = np.array(list(zip(*X))[1])
-        F = torch.Tensor(F)
+        F = torch.Tensor(F).squeeze(1)
 
-        outputs = torch.Tensor([])
+        outputs = (
+            torch.Tensor([]).cuda()
+            if self.model_kwargs["host_device"] in self.gpu
+            else torch.Tensor([])
+        )
+
         n = len(F)
         if batch_size is None:
             batch_size = n
         for batch_st in range(0, n, batch_size):
             batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
-            output = self.forward(F[batch_st:batch_ed])
+
+            features = (
+                F[batch_st:batch_ed].cuda()
+                if self.model_kwargs["host_device"] in self.gpu
+                else F[batch_st:batch_ed]
+            )
+
+            output = self.forward(features)
             if self.cardinality == 2:
                 outputs = torch.cat((outputs, output.view(-1)), 0)
             else:
                 outputs = torch.cat((outputs, output), 0)
+
         return outputs

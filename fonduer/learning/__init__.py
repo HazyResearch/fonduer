@@ -1,7 +1,8 @@
 """
-Subpackage for Snorkel machine learning modules.
+Fonduer machine learning modules.
 """
 from fonduer.learning.disc_models.logistic_regression import LogisticRegression
+from fonduer.learning.disc_models.rnn.lstm import LSTM
 
 from fonduer.learning.gen_learning import GenerativeModel, GenerativeModelWeights
 from fonduer.learning.utils import (
@@ -33,6 +34,7 @@ __all__ = [
     "LF_conflicts",
     "LF_coverage",
     "LF_overlaps",
+    "LSTM",
     "LabelBalancer",
     "LogisticRegression",
     "MentionScorer",
