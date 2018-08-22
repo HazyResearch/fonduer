@@ -22,16 +22,12 @@ These are Fonduer_'s core objects used for featurization.
 Configuration Settings
 ----------------------
 
-By default, Fonduer looks for ``.fonduer-config.yaml`` starting from the
-current working directory, allowing you to have multiple configuration files
-for different directories or projects. If it's not there, it looks in parent
-directories. If no file is found, a default configuration will be used.
+Visit the `Configuring Fonduer`_ page to see how to provide configuration
+parameters to Fonduer_ via ``.fonduer-config.yaml``.
 
-Fonduer will only ever use one ``.fonduer-config.yaml`` file. It does not look
-for multiple files and will not compose configuration settings from different
-files. Thus, all configuration options MUST be specified in the config file.
+The different featurization parameters are explained in this section.
 
-The default configuration for featurization is shown below::
+[TODO] give descriptions for the following::
 
     featurization:
       content:
@@ -60,3 +56,4 @@ The default configuration for featurization is shown below::
             absolute: False
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer
+.. _Configuring Fonduer: config.html
