@@ -17,6 +17,7 @@ Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
   (`#115 <https://github.com/HazyResearch/fonduer/pull/115>`_)
+* `@lukehsiao`_: Blacklist <script> nodes by default when parsing HTML docs.
 * `@lukehsiao`_: Reorganize ReadTheDocs structure to mirror the repository
   structure. Now, each pipeline phase's user-facing API is clearly shown.
 * `@lukehsiao`_: Rather than importing ambiguously from ``fonduer`` directly,
