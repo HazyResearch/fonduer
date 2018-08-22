@@ -9,7 +9,7 @@ import numpy as np
 import scipy.sparse as sparse
 from pandas import DataFrame
 
-from fonduer.learning.models import Marginal
+from fonduer.learning.models.marginal import Marginal
 from fonduer.utils.utils_annotations import csr_AnnotationMatrix
 
 logger = logging.getLogger(__name__)
