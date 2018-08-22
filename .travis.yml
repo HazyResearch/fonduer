@@ -93,7 +93,7 @@ before_script:
 - cd ..
 
 script:
-- travis_wait coverage run --source=fonduer -m pytest tests -v -rsXx
+- travis_wait 40 coverage run --source=fonduer -m pytest tests -v -rsXx
 
 after_success:
 - coveralls
