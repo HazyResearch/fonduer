@@ -4,18 +4,13 @@ import os
 
 import pytest
 
-from fonduer import (
-    CandidateExtractor,
-    Document,
-    HTMLDocPreprocessor,
-    MentionExtractor,
-    Meta,
-    Parser,
-    Sentence,
-    candidate_subclass,
-    mention_subclass,
-)
-from fonduer.candidates.models import Candidate
+from fonduer import Meta
+from fonduer.candidates import CandidateExtractor, MentionExtractor
+from fonduer.candidates.mentions import Ngrams
+from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
+from fonduer.parser import Parser
+from fonduer.parser.models import Document, Sentence
+from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,
@@ -27,6 +22,70 @@ from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "cand_test"
+
+
+def test_ngram_split(caplog):
+    """Test ngram split."""
+    caplog.set_level(logging.INFO)
+    ngrams = Ngrams()
+    sent = Sentence()
+
+    # When a split_token appears in the middle of the text.
+    sent.text = "New-Text"
+    sent.words = ["New-Text"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 3
+    assert result[0].get_span() == "New-Text"
+    assert result[1].get_span() == "New"
+    assert result[2].get_span() == "Text"
+
+    # When a text ends with a split_token.
+    sent.text = "New-"
+    sent.words = ["New-"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 2
+    assert result[0].get_span() == "New-"
+    assert result[1].get_span() == "New"
+
+    # When a text starts with a split_token.
+    sent.text = "-Text"
+    sent.words = ["-Text"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 2
+    assert result[0].get_span() == "-Text"
+    assert result[1].get_span() == "Text"
+
+    # When more than one split_token appears.
+    sent.text = "New/Text-Word"
+    sent.words = ["New/Text-Word"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 3
+    assert result[0].get_span() == "New/Text-Word"
+    assert result[1].get_span() == "New"
+    assert result[2].get_span() == "Text-Word"
+
+
+def test_span_char_start_and_char_end(caplog):
+    """Test chart_start and char_end of TemporarySpan that comes from Ngrams.apply."""
+    caplog.set_level(logging.INFO)
+    ngrams = Ngrams()
+    sent = Sentence()
+    sent.text = "BC548BG"
+    sent.words = ["BC548BG"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 1
+    assert result[0].get_span() == "BC548BG"
+    assert result[0].char_start == 0
+    assert result[0].char_end == 6
 
 
 def test_cand_gen(caplog):

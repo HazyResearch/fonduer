@@ -3,7 +3,17 @@ from multiprocessing import JoinableQueue, Process
 from queue import Empty
 
 from fonduer.meta import Meta, new_sessionmaker
-from fonduer.utils import ProgressBar
+
+try:
+    from IPython import get_ipython
+
+    if "IPKernelApp" not in get_ipython().config:
+        raise ImportError("console")
+except (AttributeError, ImportError):
+    from tqdm import tqdm
+else:
+    from tqdm import tqdm_notebook as tqdm
+
 
 QUEUE_TIMEOUT = 3
 
@@ -22,6 +32,7 @@ class UDFRunner(object):
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
+        self.pb = None
 
     def apply(
         self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs
@@ -41,35 +52,39 @@ class UDFRunner(object):
 
         # Execute the UDF
         self.logger.info("Running UDF...")
+
+        # Setup progress bar
+        if progress_bar and hasattr(xs, "__len__") or count is not None:
+            self.logger.debug("Setting up progress bar...")
+            n = count if count is not None else len(xs)
+            self.pb = tqdm(total=n)
+
         if parallelism is None or parallelism < 2:
-            self.apply_st(xs, progress_bar, clear=clear, count=count, **kwargs)
+            self.apply_st(xs, clear=clear, count=count, **kwargs)
         else:
             self.apply_mt(xs, parallelism, clear=clear, **kwargs)
+
+        # Close progress bar
+        if self.pb is not None:
+            self.logger.debug("Closing progress bar...")
+            self.pb.close()
 
     def clear(self, session, **kwargs):
         raise NotImplementedError()
 
-    def apply_st(self, xs, progress_bar, count, **kwargs):
+    def apply_st(self, xs, count, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
-        # Set up ProgressBar if possible
-        pb = None
-        if progress_bar and hasattr(xs, "__len__") or count is not None:
-            n = count if count is not None else len(xs)
-            pb = ProgressBar(n)
-
         # Run single-thread
-        for i, x in enumerate(xs):
-            if pb:
-                pb.bar(i)
+        for x in xs:
+            if self.pb is not None:
+                self.pb.update(1)
 
             udf.session.add_all(y for y in udf.apply(x, **kwargs))
 
         # Commit session and close progress bar if applicable
         udf.session.commit()
-        if pb:
-            pb.close()
 
     def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
@@ -81,9 +96,21 @@ class UDFRunner(object):
         for x in xs:
             in_queue.put(x)
 
+        # Use an output queue to track multiprocess progress
+        out_queue = JoinableQueue()
+
+        # Track progress counts
+        total_count = in_queue.qsize()
+        count = 0
+
         # Start UDF Processes
         for i in range(parallelism):
-            udf = self.udf_class(in_queue=in_queue, worker_id=i, **self.udf_init_kwargs)
+            udf = self.udf_class(
+                in_queue=in_queue,
+                out_queue=out_queue,
+                worker_id=i,
+                **self.udf_init_kwargs
+            )
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
@@ -91,7 +118,18 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.start()
 
-        for i, udf in enumerate(self.udfs):
+        while any([udf.is_alive() for udf in self.udfs]) and count < total_count:
+            y = out_queue.get()
+
+            # Update progress bar whenever an item is processed
+            if y == UDF.TASK_DONE:
+                count += 1
+                if self.pb is not None:
+                    self.pb.update(1)
+            else:
+                raise ValueError("Got non-sentinal output.")
+
+        for udf in self.udfs:
             udf.join()
 
         # Terminate and flush the processes
@@ -101,13 +139,16 @@ class UDFRunner(object):
 
 
 class UDF(Process):
-    def __init__(self, in_queue=None, worker_id=0):
+    TASK_DONE = "done"
+
+    def __init__(self, in_queue=None, out_queue=None, worker_id=0):
         """
         in_queue: A Queue of input objects to process; primarily for running in parallel
         """
         Process.__init__(self)
         self.daemon = True
         self.in_queue = in_queue
+        self.out_queue = out_queue
         self.worker_id = worker_id
 
         # Each UDF starts its own Engine
@@ -129,6 +170,7 @@ class UDF(Process):
                 x = self.in_queue.get(True, QUEUE_TIMEOUT)
                 self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
                 self.in_queue.task_done()
+                self.out_queue.put(UDF.TASK_DONE)
             except Empty:
                 break
         self.session.commit()

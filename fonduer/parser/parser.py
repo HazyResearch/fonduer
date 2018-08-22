@@ -2,10 +2,12 @@ import itertools
 import logging
 import os
 import re
+import warnings
 from builtins import range
 from collections import defaultdict
 
-import lxml
+import lxml.etree
+import lxml.html
 
 from fonduer.parser.models import (
     Caption,
@@ -31,7 +33,7 @@ class Parser(UDFRunner):
     def __init__(
         self,
         structural=True,  # structural information
-        blacklist=["style"],  # ignore tag types, default: style
+        blacklist=["style", "script"],  # ignore tag types, default: style, script
         flatten=["span", "br"],  # flatten tag types, default: span, br
         flatten_delim="",
         lingual=True,  # lingual information
@@ -124,24 +126,49 @@ class ParserUDF(UDF):
         document, text = x
         if self.visual:
             if not self.pdf_path:
-                logger.error("Visual parsing failed: pdf_path is required")
-            for _ in self.parse(document, text):
-                pass
-            # Add visual attributes
-            filename = self.pdf_path + document.name
-            missing_pdf = (
-                not os.path.isfile(self.pdf_path)
-                and not os.path.isfile(filename + ".pdf")
-                and not os.path.isfile(filename + ".PDF")
-                and not os.path.isfile(filename)
-            )
-            if missing_pdf:
-                logger.error("Visual parsing failed: pdf files are required")
-            yield from self.vizlink.parse_visual(
-                document.name, document.sentences, self.pdf_path
-            )
+                warnings.warn(
+                    "Visual parsing failed: pdf_path is required. "
+                    + "Proceeding without visual parsing.",
+                    RuntimeWarning,
+                )
+                self.visual = False
+                yield from self.parse(document, text)
+
+            elif not self._valid_pdf(self.pdf_path, document.name):
+                warnings.warn(
+                    "Visual parse failed. {} not a PDF. {}".format(
+                        self.pdf_path + document.name,
+                        "Proceeding without visual parsing.",
+                    ),
+                    RuntimeWarning,
+                )
+                self.visual = False
+                yield from self.parse(document, text)
+            else:
+                for _ in self.parse(document, text):
+                    pass
+                # Add visual attributes
+                yield from self.vizlink.parse_visual(
+                    document.name, document.sentences, self.pdf_path
+                )
         else:
             yield from self.parse(document, text)
+
+    def _valid_pdf(self, path, filename):
+        """Verify that the file exists and has a PDF extension."""
+        # If path is file, but not PDF.
+        if os.path.isfile(path) and path.lower().endswith(".pdf"):
+            return True
+        else:
+            full_path = os.path.join(path, filename)
+            if os.path.isfile(full_path) and full_path.lower().endswith(".pdf"):
+                return True
+            elif os.path.isfile(os.path.join(path, filename + ".pdf")):
+                return True
+            elif os.path.isfile(os.path.join(path, filename + ".PDF")):
+                return True
+
+        return False
 
     def _parse_table(self, node, state):
         """Parse a table node.

@@ -27,13 +27,14 @@ autodoc_mock_imports = [
     "numpy",
     "pandas",
     "psycopg2",
-    "pyyaml",
     "scipy",
     "spacy",
     "torch",
     "torchvision",
+    "tqdm",
     "treedlib",
     "wand",
+    "yaml",
 ]
 
 # -- Project information -----------------------------------------------------

@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, unicode_literals
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -7,9 +5,13 @@ from scipy.sparse import issparse
 
 from fonduer.learning.disc_learning import NoiseAwareModel
 from fonduer.learning.disc_models.rnn.config import get_config
-
-from .layers import RNN
-from .utils import SymbolTable, mark_sentence, mention_to_tokens, pad_batch
+from fonduer.learning.disc_models.rnn.layers import RNN
+from fonduer.learning.disc_models.rnn.utils import (
+    SymbolTable,
+    mark_sentence,
+    mention_to_tokens,
+    pad_batch,
+)
 
 
 class LSTM(NoiseAwareModel):

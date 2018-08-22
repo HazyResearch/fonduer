@@ -1,7 +1,6 @@
 import numpy as np
 
-from fonduer.learning.utils import MentionScorer
-from fonduer.supervision.annotations import save_marginals
+from fonduer.learning.utils import MentionScorer, save_marginals
 
 
 class Classifier(object):

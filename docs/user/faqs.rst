@@ -27,8 +27,8 @@ your PostgreSQL database:
 2. Using a `.pgpass file to store the password`_.
 3. Setting the users to `trust authentication`_ in the pg\_hba.conf file. This
    makes local development easy, but probably isn't suitable for multiuser
-   environments. You can find your hba file location by running:: 
-  
+   environments. You can find your hba file location by running::
+
     $ sudo -u postgres psql -c "SHOW hba_file;"
 
 4. Put the username and password in the connection URI:

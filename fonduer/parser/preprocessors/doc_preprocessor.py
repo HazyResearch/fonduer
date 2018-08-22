@@ -33,6 +33,14 @@ class DocPreprocessor(object):
                     if doc_count >= self.max_docs:
                         return
 
+    def __len__(self):
+        """Provide a len attribute based on max_docs."""
+        if self.max_docs < float("inf"):
+            return self.max_docs
+        else:
+            # Return the number of files in the directory.
+            return len(self._get_files(self.path))
+
     def __iter__(self):
         return self.generate()
 
