@@ -21,4 +21,25 @@ insights.
 .. automodule:: fonduer.learning.utils
     :members:
 
+Configuration Settings
+----------------------
+
+Visit the `Configuring Fonduer`_ page to see how to provide configuration
+parameters to Fonduer_ via ``.fonduer-config.yaml``.
+
+The different learning parameters are explained in this section.
+
+[TODO] give descriptions for the following::
+
+    learning:
+      LSTM:
+        emb_dim: 100
+        hidden_dim: 100
+        attention: True
+        dropout: 0.1
+        bidirectional: True
+        host_device: "CPU"
+        max_sentence_length: 100
+
+.. _Configuring Fonduer: config.html
 .. _Fonduer: https://github.com/HazyResearch/fonduer

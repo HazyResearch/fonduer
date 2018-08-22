@@ -27,6 +27,7 @@ submit your contributions as a pull request.
     user/features
     user/supervision
     user/learning
+    user/config
     user/faqs
 
 .. toctree::
