@@ -12,8 +12,6 @@ featurization:
         - words
       get_cell_ngrams:
         max: 2
-      get_head_ngrams:
-        max: 2
       get_row_ngrams:
         max: 2
       get_col_ngrams:
