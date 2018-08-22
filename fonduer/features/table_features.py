@@ -1,7 +1,7 @@
 from builtins import range, str
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.features.config import get_config
+from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import (
     get_cell_ngrams,
     get_col_ngrams,

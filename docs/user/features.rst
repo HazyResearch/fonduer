@@ -29,9 +29,9 @@ directories. If no file is found, a default configuration will be used.
 
 Fonduer will only ever use one ``.fonduer-config.yaml`` file. It does not look
 for multiple files and will not compose configuration settings from different
-files.
+files. Thus, all configuration options MUST be specified in the config file.
 
-The default configuration is shown below::
+The default configuration for featurization is shown below::
 
     featurization:
       content:

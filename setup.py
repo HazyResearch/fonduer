@@ -11,7 +11,7 @@ setup(
     install_requires=[
         "bs4",
         "editdistance",
-        "lxml==3.6.4",
+        "lxml",
         "nltk",
         "numba",
         "numbskull",

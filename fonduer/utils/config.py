@@ -29,6 +29,19 @@ default = {
 }
 
 
+def _merge(x, y):
+    """Merge two nested dictionaries. Overwrite values in x with values in y."""
+    merged = {**x, **y}
+
+    xkeys = x.keys()
+
+    for key in xkeys:
+        if isinstance(x[key], dict) and key in y:
+            merged[key] = _merge(x[key], y[key])
+
+    return merged
+
+
 def get_config(path=os.getcwd()):
     """Search for settings file in root of project and its parents."""
     config = default
@@ -38,7 +51,7 @@ def get_config(path=os.getcwd()):
         potential_path = os.path.join(current_dir, ".fonduer-config.yaml")
         if os.path.exists(potential_path):
             with open(potential_path, "r") as f:
-                config = yaml.safe_load(f)
+                config = _merge(config, yaml.safe_load(f))
             logger.info("Loading Fonduer config from {}.".format(potential_path))
             break
 

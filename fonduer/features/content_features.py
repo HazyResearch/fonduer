@@ -15,8 +15,8 @@ from treedlib import (
 )
 
 from fonduer.candidates.models import TemporarySpan
-from fonduer.features.config import get_config
 from fonduer.features.tree_structs import corenlp_to_xmltree
+from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
 from fonduer.utils.utils import get_as_dict, tokens_to_ngrams
 
