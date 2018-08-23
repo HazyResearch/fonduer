@@ -3,6 +3,7 @@
 
 Added
 ^^^^^
+* `@senwu`_: Support Python 3.7.
 * `@lukehsiao`_: Allow user to change featurization settings by providing
   ``.fonduer-config.yaml`` in their project.
 * `@lukehsiao`_: Add a new Mention object, and have Candidate objects be
@@ -15,6 +16,7 @@ Added
 Changed
 ^^^^^^^
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
+  (`#115 <https://github.com/HazyResearch/fonduer/pull/115>`_)
 * `@lukehsiao`_: Reorganize ReadTheDocs structure to mirror the repository
   structure. Now, each pipeline phase's user-facing API is clearly shown.
 * `@lukehsiao`_: Rather than importing ambiguously from ``fonduer`` directly,
