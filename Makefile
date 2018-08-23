@@ -20,7 +20,7 @@ docs:
 	sphinx-build -W -b html docs/ _build/html
 
 clean:
-	pip uninstall fonduer
+	pip uninstall -y fonduer
 	rm -rf fonduer.egg-info
 	rm -rf _build/
 

@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.abspath(".."))
 autodoc_mock_imports = [
     "bs4",
     "editdistance",
+    "fonduer.learning.classifier",
     "lxml",
     "nltk",
     "numba",
