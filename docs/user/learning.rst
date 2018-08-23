@@ -27,7 +27,7 @@ Configuration Settings
 Visit the `Configuring Fonduer`_ page to see how to provide configuration
 parameters to Fonduer_ via ``.fonduer-config.yaml``.
 
-The different learning parameters are explained in this section.
+The different learning parameters are described below::
 
     learning:
       LSTM:
