@@ -5,7 +5,7 @@ dev:
 	pip install -e .
 	pre-commit install
 
-test: dev check
+test: dev check docs
 	pytest tests
 
 check:
@@ -15,8 +15,9 @@ check:
 	black tests/ --check
 	flake8 fonduer/
 	flake8 tests/
+
 docs:
-	sphinx-build -b html docs/ _build/html
+	sphinx-build -W -b html docs/ _build/html
 
 clean:
 	pip uninstall fonduer

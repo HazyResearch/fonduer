@@ -65,6 +65,7 @@ install:
 # Install fonduer dev deps and check code style
 - make -s dev
 - make check
+- make docs
 - pip install -q coveralls
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
