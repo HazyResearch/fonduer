@@ -4,18 +4,14 @@ from fonduer.learning.utils import MentionScorer, save_marginals
 
 
 class Classifier(object):
-    """Simple abstract base class for a probabilistic classifier."""
-
-    # Set this class variable to True if train, marginals, predict, and score,
-    # take a list of @Candidates as the first argument X;
-    # otherwise assume X is an AnnotationMatrix
-    representation = False
+    """An abstract class for a probabilistic classifier."""
 
     def __init__(self, cardinality=2, name=None):
         self.name = name or self.__class__.__name__
         self.cardinality = cardinality
 
     def marginals(self, X, batch_size=None, **kwargs):
+        """Calculate the predicted marginal probabilities for the Candidates X."""
         raise NotImplementedError()
 
     def save_marginals(self, session, X, training=False):
@@ -26,6 +22,9 @@ class Classifier(object):
         """Return numpy array of elements in {-1,0,1}
         based on predicted marginal probabilities.
         """
+        if self._check_input(X):
+            X = self._preprocess_data(X)
+
         if self.cardinality > 2:
             return self.marginals(X, batch_size=batch_size).argmax(axis=1) + 1
         else:
@@ -54,12 +53,15 @@ class Classifier(object):
         Note: Unlike in self.error_analysis, this method assumes X_test and
         Y_test are properly collated!
         """
+        if self._check_input(X_test):
+            X_test, Y_test = self._preprocess_data(X_test, Y_test)
+
         predictions = self.predictions(X_test, b=b, batch_size=batch_size)
 
         # Convert Y_test to dense numpy array
         try:
             Y_test = np.array(Y_test.todense()).reshape(-1)
-        except Exception as e:
+        except Exception:
             Y_test = np.array(Y_test)
 
         # Compute accuracy for categorical, or P/R/F1 for binary settings
@@ -115,16 +117,15 @@ class Classifier(object):
         :param set_unlabeled_as_neg: Whether to map 0 labels -> -1, *binary setting*
         :param display: Print score report
         :param scorer: The Scorer sub-class to use
+
+        Todo:
+            * need update, this only works for debugging labeling functions now
         """
         # Compute the marginals
         test_marginals = self.marginals(X_test, **kwargs)
 
         # Get the test candidates
-        test_candidates = (
-            [X_test.get_candidate(session, i) for i in range(X_test.shape[0])]
-            if not self.representation
-            else X_test
-        )
+        test_candidates = X_test
 
         # Initialize and return scorer
         s = scorer(test_candidates, Y_test, gold_candidate_set)
@@ -136,12 +137,20 @@ class Classifier(object):
             set_unlabeled_as_neg=set_unlabeled_as_neg,
         )
 
-    def _preprocess_data(self, X):
-        """Generic preprocessing subclass; may be called by external methods."""
-        return X
+    def _check_input(self, X):
+        """Generic data checking function"""
+        return True
+
+    def _preprocess_data(self, X, Y=None):
+        """Generic preprocessing function"""
+        if Y is None:
+            return X
+        return X, Y
 
     def save(self):
+        """Generic model saving function"""
         raise NotImplementedError()
 
     def load(self):
+        """Generic model loading function"""
         raise NotImplementedError()

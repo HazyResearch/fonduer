@@ -22,7 +22,8 @@ setup(
         "scipy>=0.18",
         "spacy>=2.0.7",
         "sqlalchemy>=1.0.14",
-        "tensorflow>=1.0",
+        "torch>=0.4.0",
+        "torchvision",
         "tqdm",
         "treedlib",
         "wand",
@@ -38,6 +39,7 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3 :: Only",
     ],
     project_urls={

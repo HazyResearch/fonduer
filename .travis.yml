@@ -7,9 +7,15 @@ matrix:
   - os: linux
     env:
       - PYTHON=3.6
+  - os: linux
+    env:
+      - PYTHON=3.7
   - os: osx
     env:
       - PYTHON=3.6
+  - os: osx
+    env:
+      - PYTHON=3.7
   fast_finish: true
 
 services:
@@ -33,7 +39,7 @@ before_install:
 - conda install -q conda-build
 - if [ -n "$PYTHON" ]; then conda create -q -n test-environment python=${PYTHON}; fi
 - source activate test-environment
-- conda install pip
+- conda install -q pip
 # Start postgresql for osx
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm -rf /usr/local/var/postgres; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then initdb /usr/local/var/postgres; fi
@@ -44,12 +50,23 @@ before_install:
 - python --version
 - pip --version
 
+# Install PyTorch for Linux with no CUDA support
+- |
+  if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    if [ "${PYTHON}" = "3.6" ]; then
+      pip install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+    fi
+    if [ "${PYTHON}" = "3.7" ]; then
+      pip install http://download.pytorch.org/whl/cpu/torch-0.4.1.post2-cp37-cp37m-linux_x86_64.whl
+    fi
+  fi
 
 install:
 # Install fonduer dev deps and check code style
-- make dev 
+- make -s dev
 - make check
-- pip install coveralls
+- make docs
+- pip install -q coveralls
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
@@ -57,7 +74,7 @@ install:
     cd poppler-0.53.0
     "./configure"
     make
-    sudo make install
+    sudo make install > /dev/null 2>&1
     cd ..
     rm -rf poppler-0.53.0
     export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
@@ -77,7 +94,7 @@ before_script:
 - cd ..
 
 script:
-- travis_wait coverage run --source=fonduer -m pytest tests
+- travis_wait 40 coverage run --source=fonduer -m pytest tests
 
 after_success:
 - coveralls

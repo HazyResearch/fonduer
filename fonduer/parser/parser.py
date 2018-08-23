@@ -33,7 +33,7 @@ class Parser(UDFRunner):
     def __init__(
         self,
         structural=True,  # structural information
-        blacklist=["style"],  # ignore tag types, default: style
+        blacklist=["style", "script"],  # ignore tag types, default: style, script
         flatten=["span", "br"],  # flatten tag types, default: span, br
         flatten_delim="",
         lingual=True,  # lingual information

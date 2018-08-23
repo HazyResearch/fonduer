@@ -3,7 +3,7 @@ from collections import namedtuple
 from fonduer.candidates.models import TemporarySpan
 from fonduer.parser.models import Sentence
 
-Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"], verbose=False)
+Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"])
 
 
 def bbox_from_span(span):
