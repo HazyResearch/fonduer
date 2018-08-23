@@ -1,6 +1,4 @@
 import logging
-import random
-import string
 from collections import defaultdict
 from pathlib import Path
 
@@ -54,7 +52,7 @@ class Spacy(object):
         # annotators=["tagger", "parser", "entity"],
         lang="en",
         num_threads=1,
-        verbose=False,
+        # verbose=False,
     ):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
@@ -135,12 +133,12 @@ class Spacy(object):
     def parse(self, all_sentences):
         """
         Transform spaCy output to match CoreNLP's default format
-        :param document:
-        :param text:
+        :param all_sentences
         :return:
         """
 
-        # doc = self.model.tokenizer(merged_sentences)
+        if len(all_sentences) == 0:
+            return  # Nothing to parse
 
         if self.model.has_pipe("sbd"):
             self.model.remove_pipe("sbd")
@@ -151,18 +149,19 @@ class Spacy(object):
             )
 
         # Create random, (most likely) unique string to separate sentences
-        separator_str = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=10)
-        )
+        separator_str = "BkxMZX4jwm"
         spaced_separator_str = " " + separator_str + " "
 
         all_sentence_strings = [x.text for x in all_sentences]
         merged_sentences = spaced_separator_str.join(all_sentence_strings)
         self.model.Defaults.stop_words.add(spaced_separator_str)
         self.model.Defaults.stop_words.add(separator_str)
-        custom_boundary_fct = self.custom_boundary_funct(separator_str)
 
-        self.model.add_pipe(custom_boundary_fct, before="parser")
+        if not self.model.has_pipe("sentence_boundary_detector"):
+            custom_boundary_fct = self.custom_boundary_funct(separator_str)
+            self.model.add_pipe(
+                custom_boundary_fct, before="parser", name="sentence_boundary_detector"
+            )
         doc = self.model(merged_sentences)
 
         try:
@@ -170,18 +169,29 @@ class Spacy(object):
         except Exception:
             self.logger.exception("{} was not parsed".format(doc))
 
-        self.logger.debug(
-            "number of input sentences: {} vs number from pipeline:\
-             {}\n with subtracted: {}".format(
-                len(all_sentences),
-                len(list(doc.sents)),
-                len(list(doc.sents)) - (len(all_sentences) - 1),
-            )
+        number_of_separators = len(all_sentences) - 1
+        parsed_sentences = list(doc.sents)
+        all_doc_sentences_without_separators = (
+            len(parsed_sentences) - number_of_separators
         )
+        diff_parsed_to_input_sentences = (
+            len(all_sentences) - all_doc_sentences_without_separators
+        )
+        try:
+            assert diff_parsed_to_input_sentences == 0
+        except AssertionError:
+            self.logger.error(
+                "Number of parsed spacy sentences doesnt match input sentences:\
+             input {}, output: {}, corrected output: {}".format(
+                    len(all_sentences),
+                    len(parsed_sentences),
+                    all_doc_sentences_without_separators,
+                )
+            )
+            raise
 
-        # skipped_sentences = 0
         sentence_nr = -1
-        for sent in doc.sents:
+        for sent in parsed_sentences:
             if separator_str in sent.text:
                 continue
             sentence_nr += 1
@@ -213,10 +223,15 @@ class Spacy(object):
         :param text:
         :return:
         """
+
+        if self.model.has_pipe("sentence_boundary_detector"):
+            self.model.remove_pipe(name="sentence_boundary_detector")
+
         if not self.model.has_pipe("sbd"):
             sbd = self.model.create_pipe("sbd")  # add sentencizer
             self.model.add_pipe(sbd)
         doc = self.model(text, disable=["parser", "tagger", "ner"])
+
         position = 0
         for sent in doc.sents:
             parts = defaultdict(list)
