@@ -35,7 +35,7 @@ def new_sessionmaker():
 
 def _validate_conn_string(conn_string):
     """Check that the PostgreSQL connection string is valid."""
-    logger.info("Validating {} as a connection string...".format(conn_string))
+    logger.debug("Validating {} as a connection string...".format(conn_string))
     url = urlparse(conn_string)
     Meta.conn_string = conn_string
     Meta.DBNAME = url.path[1:]
