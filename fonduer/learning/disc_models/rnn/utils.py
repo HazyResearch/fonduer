@@ -1,4 +1,5 @@
-import tensorflow as tf
+import numpy as np
+import torch
 
 
 class SymbolTable(object):
@@ -25,30 +26,60 @@ class SymbolTable(object):
         return self.s
 
     def reverse(self):
-        return {v: k for k, v in list(self.d.items())}
+        return {v: k for k, v in self.d.iteritems()}
 
 
-def scrub(s):
-    return "".join(c for c in s if ord(c) < 128)
+def mention_to_tokens(mention, token_type="words", lowercase=False):
+    """
+    Extract tokens from the mention
+
+    :param mention: mention object
+    :param token_type: token type that wants to extract
+    :param lowercase: use lowercase or not
+    """
+
+    tokens = mention.span.sentence.__dict__[token_type]
+    return [w.lower() if lowercase else w for w in tokens]
 
 
-def candidate_to_tokens(candidate, token_type="words"):
-    tokens = candidate.get_parent().__dict__[token_type]
-    return [scrub(w).lower() for w in tokens]
+def mark(l, h, idx):
+    """
+    Produce markers based on argument positions
+
+    :param l: sentence position of first word in argument
+    :param h: sentence position of last word in argument
+    :param idx: argument index (1 or 2)
+    """
+    return [(l, "{}{}".format("~~[[", idx)), (h + 1, "{}{}".format(idx, "]]~~"))]
 
 
-def get_rnn_output(output, dim, lengths):
-    batch_size = tf.shape(output)[0]
-    max_length = tf.shape(output)[1]
-    index = tf.range(0, batch_size) * max_length + (lengths - 1)
-    flat = tf.reshape(output, [-1, dim])
-    return tf.gather(flat, index)
+def mark_sentence(s, args):
+    """Insert markers around relation arguments in word sequence
+
+    :param s: list of tokens in sentence
+    :param args: list of triples (l, h, idx) as per @_mark(...) corresponding
+               to relation arguments
+
+    Example: Then Barack married Michelle.
+         ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
+    """
+    marks = sorted([y for m in args for y in mark(*m)], reverse=True)
+    x = list(s)
+    for k, v in marks:
+        x.insert(k, v)
+    return x
 
 
-def get_bi_rnn_output(output, dim, lengths):
-    c_output = tf.concat(output, 2)
-    batch_size = tf.shape(c_output)[0]
-    max_length = tf.shape(c_output)[1]
-    index = tf.range(0, batch_size) * max_length + (lengths - 1)
-    flat = tf.reshape(c_output, [-1, 2 * dim])
-    return tf.gather(flat, index)
+def pad_batch(batch, max_len):
+    """Pad the batch into matrix"""
+    batch_size = len(batch)
+    max_sent_len = min(int(np.max([len(x) for x in batch])), max_len)
+    idx_matrix = np.zeros((batch_size, max_sent_len), dtype=np.int)
+    for idx1, i in enumerate(batch):
+        for idx2, j in enumerate(i):
+            if idx2 >= max_sent_len:
+                break
+            idx_matrix[idx1, idx2] = j
+    idx_matrix = torch.tensor(idx_matrix)
+    mask_matrix = torch.tensor(torch.eq(idx_matrix.data, 0))
+    return idx_matrix, mask_matrix

@@ -4,8 +4,8 @@ Welcome to Fonduer
 ==================
 
 Fonduer is a framework for building knowledge base construction (KBC)
-applications from richy formatted data and is implemented as a library on top
-of a modified version of Snorkel_.
+applications from richy formatted data and is a Python package which leverages
+a modified version of Snorkel_.
 
 Note that Fonduer is still actively under development, so feedback and
 contributions are welcome. Let us know in the Issues_ section or feel free to
@@ -19,18 +19,21 @@ submit your contributions as a pull request.
 .. toctree::
     :maxdepth: 2
     :caption: User Documentation
-  
+
     user/getting_started
-    user/preprocessors
-    user/data_model
+    user/parser
     user/data_model_utils
-    user/matchers
+    user/candidates
+    user/features
+    user/supervision
+    user/learning
+    user/config
     user/faqs
 
 .. toctree::
     :maxdepth: 2
     :caption: Developer Documentation
-    
+
     dev/changelog
     dev/install
     dev/tests

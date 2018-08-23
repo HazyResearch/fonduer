@@ -35,7 +35,7 @@ def new_sessionmaker():
 
 def _validate_conn_string(conn_string):
     """Check that the PostgreSQL connection string is valid."""
-    logger.info("Validating {} as a connection string...".format(conn_string))
+    logger.debug("Validating {} as a connection string...".format(conn_string))
     url = urlparse(conn_string)
     Meta.conn_string = conn_string
     Meta.DBNAME = url.path[1:]
@@ -107,5 +107,15 @@ class Meta(object):
         This call must be performed after all classes that extend
         Base are declared to ensure the storage schema is initialized.
         """
+        # This list of import defines which SQLAlchemy classes will be
+        # initialized when Meta.init() is called. If a sqlalchemy class is not
+        # imported before the call to create_all(), it will not be created.
+        import fonduer.candidates.models  # noqa
+        import fonduer.features.models  # noqa
+        import fonduer.learning.models  # noqa
+        import fonduer.parser.models  # noqa
+        import fonduer.supervision.models  # noqa
+        import fonduer.utils.models  # noqa
+
         logger.info("Initializing the storage schema")
         Meta.Base.metadata.create_all(Meta.engine)

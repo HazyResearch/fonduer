@@ -9,7 +9,7 @@ try:
 
     if get_ipython() is None or "IPKernelApp" not in get_ipython().config:
         raise ImportError("console")
-except ImportError:
+except (AttributeError, ImportError):
     from tqdm import tqdm
 else:
     from tqdm import tqdm_notebook as tqdm

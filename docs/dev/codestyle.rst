@@ -18,7 +18,7 @@ below.
 We use `black`_ as our Python code formatter with its default settings. Black
 helps minimize the line diffs and allows you to not worry about formatting
 during your own development. Just run black on each of your files before
-committing them. 
+committing them.
 
 .. tip::
     Whatever editor you use, we recommend checking out `black editor
@@ -29,9 +29,9 @@ For sorting imports, we reply on `isort`_. Our repository already includes a
 `.isort.cfg` that is compatible with black. You can run a code style check on
 your local machine by running our checks::
 
-    $ make check 
+    $ make check
 
 .. _pre-commit: https://pre-commit.com/
 .. _isort: https://github.com/timothycrosley/isort
 .. _black editor integrations: https://github.com/ambv/black#editor-integration
-.. _black: https://github.com/ambv/black 
+.. _black: https://github.com/ambv/black

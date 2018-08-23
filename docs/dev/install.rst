@@ -12,10 +12,10 @@ checks.
 .. tip::
     If you need to install a locally edited version of fonduer in a separate location,
     such as an application, you can directly install your locally modified version::
-        
+
         $ pip install -e path/to/fonduer/
 
     in the virtualenv of your application.
 
 .. _fonduer/\_version.py: https://github.com/HazyResearch/fonduer/blob/master/fonduer/_version.py
-.. _editable mode: https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode 
+.. _editable mode: https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode
