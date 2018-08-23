@@ -29,16 +29,21 @@ parameters to Fonduer_ via ``.fonduer-config.yaml``.
 
 The different learning parameters are explained in this section.
 
-[TODO] give descriptions for the following::
-
     learning:
       LSTM:
+        # Word embedding dimension size
         emb_dim: 100
+        # The number of features in the LSTM hidden state
         hidden_dim: 100
+        # Use attention or not (Options: True or False)
         attention: True
+        # Dropout parameter
         dropout: 0.1
+        # Use bidirectional LSTM or not (Options: True or False)
         bidirectional: True
+        # Prefered host device (Options: CPU or GPU)
         host_device: "CPU"
+        # Maximum sentence length of LSTM input
         max_sentence_length: 100
 
 .. _Configuring Fonduer: config.html
