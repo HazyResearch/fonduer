@@ -12,6 +12,8 @@ setup(
         "bs4",
         "editdistance",
         "lxml",
+        "matplotlib",
+        "networkx",
         "nltk",
         "numpy>=1.11",
         "pandas",
