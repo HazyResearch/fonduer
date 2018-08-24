@@ -320,7 +320,7 @@ def test_e2e_LSTM(caplog):
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     num_docs = session.query(Document).count()
-    if num_docs != max_docs:
+    if True:
         logger.info("Parsing...")
         corpus_parser = Parser(
             structural=True, lingual=True, visual=True, pdf_path=pdf_path
@@ -338,18 +338,18 @@ def test_e2e_LSTM(caplog):
     # Divide into test and train
     docs = session.query(Document).order_by(Document.name).all()
     ld = len(docs)
-    assert len(docs[0].sentences) == 828
-    assert len(docs[1].sentences) == 706
-    assert len(docs[2].sentences) == 819
-    assert len(docs[3].sentences) == 684
-    assert len(docs[4].sentences) == 552
-    assert len(docs[5].sentences) == 758
-    assert len(docs[6].sentences) == 597
-    assert len(docs[7].sentences) == 165
-    assert len(docs[8].sentences) == 250
-    assert len(docs[9].sentences) == 533
-    assert len(docs[10].sentences) == 354
-    assert len(docs[11].sentences) == 547
+    assert len(docs[0].sentences) == 799
+    assert len(docs[1].sentences) == 663
+    assert len(docs[2].sentences) == 784
+    assert len(docs[3].sentences) == 661
+    assert len(docs[4].sentences) == 513
+    assert len(docs[5].sentences) == 700
+    assert len(docs[6].sentences) == 528
+    assert len(docs[7].sentences) == 161
+    assert len(docs[8].sentences) == 228
+    assert len(docs[9].sentences) == 511
+    assert len(docs[10].sentences) == 331
+    assert len(docs[11].sentences) == 528
 
     # Check table numbers
     assert len(docs[0].tables) == 9
@@ -422,7 +422,7 @@ def test_e2e_LSTM(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 299
-    assert session.query(Temp).count() == 127
+    assert session.query(Temp).count() == 134
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
@@ -432,7 +432,7 @@ def test_e2e_LSTM(caplog):
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3201
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3346
     assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
     assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
 
