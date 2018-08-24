@@ -107,14 +107,18 @@ class Spacy(object):
             download(lang)
         return spacy.load(lang)
 
-    def custom_boundary_funct(self, separator_str):
+    def custom_boundary_funct(self, all_sentence_objs):
+        start_token_marker = []
+        for sentence in all_sentence_objs:
+            if len(sentence.words) > 0:
+                start_token_marker += [True] + [False] * (len(sentence.words) - 1)
+
         def set_custom_boundary(doc):
-            for token in doc[:-1]:
-                if token.text == separator_str:
-                    doc[token.i + 1].is_sent_start = True
+            for token_nr, token in enumerate(doc):
+                if start_token_marker[token_nr] is True:
                     doc[token.i].is_sent_start = True
                 else:
-                    doc[token.i + 1].is_sent_start = False
+                    doc[token.i].is_sent_start = False
             return doc
 
         return set_custom_boundary
@@ -138,35 +142,37 @@ class Spacy(object):
                 )
             )
 
-        # Create random, (most likely) unique string to separate sentences
-        separator_str = "BkxMZX4jwm"
-        spaced_separator_str = " " + separator_str + " "
-        len_separator = len(spaced_separator_str)
-
-        self.model.Defaults.stop_words.add(spaced_separator_str)
-        self.model.Defaults.stop_words.add(separator_str)
-
-        if not self.model.has_pipe("sentence_boundary_detector"):
-            custom_boundary_fct = self.custom_boundary_funct(separator_str)
-            self.model.add_pipe(
-                custom_boundary_fct, before="parser", name="sentence_boundary_detector"
-            )
-
         batch_char_limit = 250000
         sentence_batches = [[]]
         num_chars = 0
         for sentence in all_sentences:
-            if num_chars + len(sentence.text) + len_separator >= batch_char_limit:
+            if num_chars + len(sentence.text) >= batch_char_limit:
                 sentence_batches.append([sentence])
                 num_chars = len(sentence.text)
             else:
                 sentence_batches[-1].append(sentence)
-                num_chars += len(sentence.text) + len_separator
+                num_chars += len(sentence.text)
 
         # TODO: We could do this in parallel. Test speedup in the future
         for sentence_batch in sentence_batches:
             all_sentence_strings = [x.text for x in sentence_batch]
-            merged_sentences = spaced_separator_str.join(all_sentence_strings)
+            merged_sentences = " ".join(all_sentence_strings)
+
+            if not self.model.has_pipe("sentence_boundary_detector"):
+                custom_boundary_fct = self.custom_boundary_funct(sentence_batch)
+                self.model.add_pipe(
+                    custom_boundary_fct,
+                    before="parser",
+                    name="sentence_boundary_detector",
+                )
+            else:
+                self.model.remove_pipe(name="sentence_boundary_detector")
+                custom_boundary_fct = self.custom_boundary_funct(sentence_batch)
+                self.model.add_pipe(
+                    custom_boundary_fct,
+                    before="parser",
+                    name="sentence_boundary_detector",
+                )
 
             doc = self.model(merged_sentences)
 
@@ -175,41 +181,24 @@ class Spacy(object):
             except Exception:
                 self.logger.exception("{} was not parsed".format(doc))
 
-            number_of_separators = len(all_sentence_strings) - 1
             parsed_sentences = list(doc.sents)
-            all_doc_sentences_without_separators = (
-                len(parsed_sentences) - number_of_separators
-            )
-            diff_parsed_to_input_sentences = (
-                len(all_sentence_strings) - all_doc_sentences_without_separators
-            )
             try:
-                assert diff_parsed_to_input_sentences == 0
+                assert len(all_sentence_strings) == len(parsed_sentences)
             except AssertionError:
                 self.logger.error(
                     "Number of parsed spacy sentences doesnt match input sentences:\
-                 input {}, output: {}, corrected output: {}".format(
-                        len(all_sentence_strings),
-                        len(parsed_sentences),
-                        all_doc_sentences_without_separators,
+                 input {}, output: {}".format(
+                        len(all_sentence_strings), len(parsed_sentences)
                     )
                 )
                 raise
 
             sentence_nr = -1
             for sent in parsed_sentences:
-                if separator_str in sent.text:
-                    continue
                 sentence_nr += 1
                 parts = defaultdict(list)
 
                 for i, token in enumerate(sent):
-                    if str(token) == separator_str:
-                        self.logger.warning(
-                            "Found separator string in a sentence token."
-                        )
-                        continue
-
                     parts["lemmas"].append(token.lemma_)
                     parts["pos_tags"].append(token.tag_)
                     parts["ner_tags"].append(

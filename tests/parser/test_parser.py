@@ -101,7 +101,7 @@ def test_parse_md_details(caplog):
     assert header.left == [35, 117]
 
     # Test lingual attributes
-    assert header.ner_tags == ["O", "O"]
+    assert header.ner_tags == ["ORG", "ORG"]
     assert header.dep_labels == ["compound", "ROOT"]
 
 
