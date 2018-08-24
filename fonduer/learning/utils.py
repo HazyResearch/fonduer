@@ -7,6 +7,8 @@ from queue import Empty
 
 import numpy as np
 import scipy.sparse as sparse
+import torch
+import torch.nn.functional as F
 from pandas import DataFrame
 
 from fonduer.learning.models.marginal import Marginal
@@ -906,3 +908,24 @@ def training_set_summary_stats(L, return_vals=True, verbose=False):
         logger.info("=" * 60)
     if return_vals:
         return coverage, overlap, conflict
+
+
+# ##########################################################
+# # Loss functions
+# ##########################################################
+
+
+def SoftCrossEntropyLoss(input, target):
+    """
+    Calculate the CrossEntropyLoss with soft targets
+
+    :param input: prediction logicts
+    :param target: target probabilities
+    """
+    print(input.size())
+    total_loss = torch.tensor(0.0)
+    for i in range(input.size(1)):
+        cls_idx = torch.full((input.size(0),), i, dtype=torch.long)
+        loss = F.cross_entropy(input, cls_idx, reduce=False)
+        total_loss += target[:, i].dot(loss)
+    return total_loss / input.shape[0]

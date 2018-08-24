@@ -1,3 +1,4 @@
+from metal import analysis
 from metal.label_model import LabelModel
 from metal.multitask import MTLabelModel, TaskHierarchy
 
@@ -15,3 +16,10 @@ def GenerativeModel(cardinalities=2, dependencies=[], **kwargs):
         label_model = MTLabelModel(task_graph=task_graph, **kwargs)
 
     return label_model
+
+
+def GenerativeModelAnalyzer():
+    """
+    A analysis factory function for MeTaL.
+    """
+    return analysis

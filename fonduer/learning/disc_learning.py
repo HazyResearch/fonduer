@@ -5,26 +5,14 @@ from time import time
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 
 from fonduer.learning.classifier import Classifier
-from fonduer.learning.utils import LabelBalancer, reshape_marginals
-
-
-def SoftCrossEntropyLoss(input, target):
-    """
-    Calculate the CrossEntropyLoss with soft targets
-
-    :param input: prediction logicts
-    :param target: target probabilities
-    """
-    total_loss = torch.tensor(0.0)
-    for i in range(input.size(1)):
-        cls_idx = torch.full((input.size(0),), i, dtype=torch.long)
-        loss = F.cross_entropy(input, cls_idx, reduce=False)
-        total_loss += target[:, i].dot(loss)
-    return total_loss / input.shape[0]
+from fonduer.learning.utils import (
+    LabelBalancer,
+    SoftCrossEntropyLoss,
+    reshape_marginals,
+)
 
 
 class NoiseAwareModel(Classifier, nn.Module):
