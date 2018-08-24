@@ -402,9 +402,8 @@ def test_spacy_integration(caplog):
 
 
 def test_spacy_massive_doc(caplog):
-    """Run a simple e2e parse using spaCy as our parser.
-
-    Run a test to see whether we can handle documents with > 1M chars.
+    """Run a simple parse using spaCy as our parser and check
+       whether it can handle documents with > 1M chars.
     """
     #  caplog.set_level(logging.INFO)
 
