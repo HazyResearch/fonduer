@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import shutil
 import subprocess
 from builtins import object, range, str, zip
 from collections import OrderedDict, defaultdict
@@ -26,6 +27,19 @@ class VisualLinker(object):
             u"([\(\)\,\?\u2212\u201C\u201D\u2018\u2019\u00B0\*']|(?<!http):|\.$|\.\.\.)"
         )
         self.separators = re.compile(delimiters)
+
+        # Check if poppler-utils is installed AND the version is 0.36.0 or above
+        if shutil.which("pdfinfo") is None or shutil.which("pdftotext") is None:
+            raise RuntimeError("poppler-utils is not installed or they are not in PATH")
+        version = subprocess.check_output(
+            "pdfinfo -v", shell=True, stderr=subprocess.STDOUT, universal_newlines=True
+        )
+        m = re.search(r"\d\.\d{2}\.\d", version)
+        if int(m.group(0).replace(".", "")) < 360:
+            raise RuntimeError(
+                "Installed poppler-utils's version is %s, but should be 0.36.0 or above"
+                % m.group(0)
+            )
 
     def parse_visual(self, document_name, sentences, pdf_path):
         self.sentences = sentences
