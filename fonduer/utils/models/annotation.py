@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.meta import Meta
-from fonduer.utils import camel_to_under
+from fonduer.utils.utils import camel_to_under
 
 # Grab pointer to global metadata
 _meta = Meta.init()
@@ -39,22 +39,6 @@ class AnnotationKeyMixin(object):
 
     def __repr__(self):
         return str(self.__class__.__name__) + " (" + str(self.name) + ")"
-
-
-class GoldLabelKey(AnnotationKeyMixin, _meta.Base):
-    pass
-
-
-class LabelKey(AnnotationKeyMixin, _meta.Base):
-    pass
-
-
-class FeatureKey(AnnotationKeyMixin, _meta.Base):
-    pass
-
-
-class PredictionKey(AnnotationKeyMixin, _meta.Base):
-    pass
 
 
 class AnnotationMixin(object):
@@ -135,68 +119,4 @@ class AnnotationMixin(object):
             + " = "
             + str(self.value)
             + ")"
-        )
-
-
-class GoldLabel(AnnotationMixin, _meta.Base):
-    """A separate class for labels from human annotators or other gold standards."""
-
-    value = Column(Integer, nullable=False)
-
-
-class Label(AnnotationMixin, _meta.Base):
-    """
-    A discrete label associated with a Candidate, indicating a target prediction value.
-
-    Labels are used to represent the output of labeling functions. A Label's
-    annotation key identifies the labeling function that provided the Label.
-    """
-
-    value = Column(Integer, nullable=False)
-
-
-class Feature(AnnotationMixin, _meta.Base):
-    """
-    An element of a representation of a Candidate in a feature space.
-
-    A Feature's annotation key identifies the definition of the Feature, e.g.,
-    a function that implements it or the library name and feature name in an
-    automatic featurization library.
-    """
-
-    value = Column(Float, nullable=False)
-
-
-class Prediction(AnnotationMixin, _meta.Base):
-    """
-    A probability associated with a Candidate, indicating the degree of belief
-    that the Candidate is true.
-
-    A Prediction's annotation key indicates which process or method produced
-    the Prediction, e.g., which model with which ParameterSet.
-    """
-
-    value = Column(Float, nullable=False)
-
-
-class StableLabel(_meta.Base):
-    """
-    A special secondary table for preserving labels created by *human
-    annotators* in a stable format that does not cascade,
-    and is independent of the Candidate ids.
-    """
-
-    __tablename__ = "stable_label"
-    context_stable_ids = Column(
-        String, primary_key=True
-    )  # ~~ delimited list of the context stable ids
-    annotator_name = Column(String, primary_key=True)
-    split = Column(Integer, default=0)
-    value = Column(Integer, nullable=False)
-
-    def __repr__(self):
-        return "%s (%s : %s)" % (
-            self.__class__.__name__,
-            self.annotator_name,
-            self.value,
         )

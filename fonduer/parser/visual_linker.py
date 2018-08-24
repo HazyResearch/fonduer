@@ -45,6 +45,9 @@ class VisualLinker(object):
             yield sentence
 
     def extract_pdf_words(self):
+        self.logger.debug(
+            "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file)
+        )
         num_pages = subprocess.check_output(
             "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file),
             shell=True,
@@ -52,6 +55,11 @@ class VisualLinker(object):
         pdf_word_list = []
         coordinate_map = {}
         for i in range(1, int(num_pages) + 1):
+            self.logger.debug(
+                "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
+                    str(i), str(i), self.pdf_file
+                )
+            )
             html_content = subprocess.check_output(
                 "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
                     str(i), str(i), self.pdf_file
@@ -259,71 +267,6 @@ class VisualLinker(object):
             (self.html_word_list[i][0], self.pdf_word_list[html_to_pdf[i]][0])
             for i in range(len(self.html_word_list))
         )
-
-    def link_lists_old(
-        self, search_max=200, editCost=20, offsetCost=1, offsetInertia=5
-    ):
-        DEBUG = False
-        if DEBUG:
-            offsetHist = []
-            jHist = []
-            editDistHist = 0
-        offset = self._calculate_offset(
-            self.html_word_list,
-            self.pdf_word_list,
-            max((search_max // 10), 5),
-            search_max,
-        )
-        offsets = [offset] * offsetInertia
-        searchOrder = np.array(
-            [(-1) ** (i % 2) * (i // 2) for i in range(1, search_max + 1)]
-        )
-        links = OrderedDict()
-        for i, a in enumerate(self.html_word_list):
-            j = 0
-            searchIndices = np.clip(
-                offset + searchOrder, 0, len(self.pdf_word_list) - 1
-            )
-            jMax = len(searchIndices)
-            matched = False
-            # Search first for exact matches
-            while not matched and j < jMax:
-                b = self.pdf_word_list[searchIndices[j]]
-                if a[1] == b[1]:
-                    links[a[0]] = b[0]
-                    matched = True
-                    offsets[i % offsetInertia] = searchIndices[j] + 1
-                    offset = int(np.median(offsets))
-                    if DEBUG:
-                        jHist.append(j)
-                        offsetHist.append(offset)
-                j += 1
-            # If necessary, search for min edit distance
-            if not matched:
-                cost = [0] * search_max
-                for k, m in enumerate(searchIndices):
-                    cost[k] = (
-                        editdist(a[1], self.pdf_word_list[m][1]) * editCost
-                        + k * offsetCost
-                    )
-                nearest = np.argmin(cost)
-                links[a[0]] = self.pdf_word_list[searchIndices[nearest]][0]
-                if DEBUG:
-                    jHist.append(nearest)
-                    offsetHist.append(searchIndices[nearest])
-                    editDistHist += 1
-        if DEBUG:
-            self.logger.debug(offsetHist)
-            self.logger.debug(jHist)
-            self.logger.debug(editDistHist)
-            self.offsetHist = offsetHist
-        self.links = links
-        if self.verbose:
-            self.logger.debug(
-                "Linked {:d} words to {:d} bounding boxes".format(
-                    len(self.html_word_list), len(self.pdf_word_list)
-                )
-            )
 
     def _calculate_offset(self, listA, listB, seedSize, maxOffset):
         wordsA = zip(*listA[:seedSize])[1]

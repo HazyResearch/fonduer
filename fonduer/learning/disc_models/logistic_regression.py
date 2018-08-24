@@ -1,194 +1,116 @@
 import numpy as np
-import tensorflow as tf
+import torch
+import torch.nn as nn
 from scipy.sparse import issparse
 
-from fonduer.learning.disc_learning import TFNoiseAwareModel
-
-SD = 0.1
+from fonduer.learning.disc_learning import NoiseAwareModel
 
 
-class LogisticRegression(TFNoiseAwareModel):
-    representation = False
-
-    def _build_model(self, d=None, **kwargs):
+class LogisticRegression(NoiseAwareModel):
+    def forward(self, x):
         """
-        Build model, setting logits and marginals ops.
+        Run forward pass.
 
-        :param d: Number of features
+        :param x: The input (batch) of the model
         """
-        s1, s2 = self.seed, (self.seed + 1 if self.seed is not None else None)
-
-        # Define inputs
-        self.X = tf.placeholder(tf.float32, (None, d))
-        self.Y = (
-            tf.placeholder(tf.float32, (None, self.cardinality))
-            if self.cardinality > 2
-            else tf.placeholder(tf.float32, (None,))
-        )
-
-        # Define parameters and logits
-        k = self.cardinality if self.cardinality > 2 else 1
-        self.w = tf.Variable(tf.random_normal((d, k), stddev=SD, seed=s1))
-        self.b = tf.Variable(tf.random_normal((k,), stddev=SD, seed=s2))
-
-        if self.deterministic:
-            # TODO: Implement for categorical as well...
-            if self.cardinality > 2:
-                raise NotImplementedError(
-                    "Deterministic mode not implemented for categoricals."
-                )
-
-            # Make deterministic
-            f_w = tf.matmul(self.X, self.w)
-            f_w_temp = tf.concat([f_w, tf.ones_like(f_w)], axis=1)
-            b_temp = tf.stack([tf.ones_like(self.b), self.b], axis=0)
-            self.logits = tf.matmul(f_w_temp, b_temp)
-        else:
-            self.logits = tf.nn.bias_add(tf.matmul(self.X, self.w), self.b)
-
-        if self.cardinality == 2:
-            self.logits = tf.squeeze(self.logits)
-
-        # Define marginals op
-        marginals_fn = tf.nn.softmax if self.cardinality > 2 else tf.nn.sigmoid
-        self.marginals_op = marginals_fn(self.logits)
-
-    def _build_training_ops(self, l1_penalty=0.0, l2_penalty=0.0, **kwargs):
-        """
-        Build training ops, setting loss and train ops
-
-        :param l1_penalty: L1 reg. coefficient
-        :param l2_penalty: L2 reg. coefficient
-        """
-        super(LogisticRegression, self)._build_training_ops()
-
-        # Add L1 and L2 penalties
-        if l1_penalty > 0:
-            self.loss += l1_penalty * tf.reduce_sum(tf.abs(self.w))
-        if l2_penalty > 0:
-            self.loss += l2_penalty * tf.nn.l2_loss(self.w)
-
-    def _construct_feed_dict(self, X_b, Y_b, lr=0.01, **kwargs):
-        return {self.X: X_b, self.Y: Y_b, self.lr: lr}
+        return self.linear(x)
 
     def _check_input(self, X):
-        if issparse(X):
-            raise Exception("Sparse input matrix. Use SparseLogisticRegression")
-        return X
+        """
+        Check input format.
 
-    def _marginals_batch(self, X_test):
-        X_test = self._check_input(X_test)
-        return self.session.run(self.marginals_op, {self.X: X_test})
+        :param X: The input data of the model
+        """
+        return isinstance(X, tuple)
 
-    def get_weights(self):
-        """Get model weights and bias"""
-        w, b = self.session.run([self.w, self.b])
-        return np.ravel(w), np.ravel(b)
+    def _preprocess_data(self, X, Y=None, idxs=None, train=False):
+        """
+        Preprocess the data:
+        1. Convert sparse matrix to dense matrix.
+        2. Update the order of candidates based on feature index.
+        3. Select subset of the input if idxs exists.
 
+        :param X: The input data of the model
+        :param X: The labels of input data
+        """
+        C, F = X
+        if issparse(F):
+            id2id = dict()
+            for i in range(F.shape[0]):
+                id2id[F.row_index[i]] = i
 
-class SparseLogisticRegression(LogisticRegression):
-    representation = False
+            C_ = [None] * len(C)
+            for c in C:
+                C_[id2id[c.id]] = c
 
-    def _build_model(self, d=None, **kwargs):
-        # Define sparse input placeholders + sparse tensors
-        self.indices = tf.placeholder(tf.int64)
-        self.shape = tf.placeholder(tf.int64, (2,))
-        self.ids = tf.placeholder(tf.int64)
-        self.weights = tf.placeholder(tf.float32)
-        sparse_ids = tf.SparseTensor(self.indices, self.ids, self.shape)
-        sparse_vals = tf.SparseTensor(self.indices, self.weights, self.shape)
-        self.Y = (
-            tf.placeholder(tf.float32, (None, self.cardinality))
-            if self.cardinality > 2
-            else tf.placeholder(tf.float32, (None,))
-        )
+            F = F.todense()
 
-        # Define parameters and logits
-        s1, s2 = self.seed, (self.seed + 1 if self.seed is not None else None)
-        k = self.cardinality if self.cardinality > 2 else 1
-        self.w = tf.Variable(tf.random_normal((d, k), stddev=SD, seed=s1))
-        self.b = tf.Variable(tf.random_normal((k,), stddev=SD, seed=s2))
-
-        if self.deterministic:
-            # TODO: Implement for categorical as well...
-            if self.cardinality > 2:
-                raise NotImplementedError(
-                    "Deterministic mode not implemented for categoricals."
-                )
-
-            # Try to make deterministic...
-            f_w = tf.nn.embedding_lookup_sparse(
-                params=self.w, sp_ids=sparse_ids, sp_weights=sparse_vals, combiner=None
-            )
-            f_w_temp = tf.concat([f_w, tf.ones_like(f_w)], axis=1)
-            b_temp = tf.stack([tf.ones_like(self.b), self.b], axis=0)
-            self.logits = tf.matmul(f_w_temp, b_temp)
+        if idxs is None:
+            if Y is not None:
+                return [(C_[i], F[i]) for i in range(len(C_))], Y
+            else:
+                return [(C_[i], F[i]) for i in range(len(C_))]
+        if Y is not None:
+            return [(C_[i], F[i]) for i in idxs], Y[idxs]
         else:
-            z = tf.nn.embedding_lookup_sparse(
-                params=self.w, sp_ids=sparse_ids, sp_weights=sparse_vals, combiner="sum"
-            )
-            self.logits = tf.nn.bias_add(z, self.b)
+            return [(C_[i], F[i]) for i in idxs]
 
-        if self.cardinality == 2:
-            self.logits = tf.squeeze(self.logits)
-
-        # Define marginals op
-        marginals_fn = tf.nn.softmax if self.cardinality > 2 else tf.nn.sigmoid
-        self.marginals_op = marginals_fn(self.logits)
-
-    def _check_input(self, X):
-        if not issparse(X):
-            msg = "Dense input matrix. Cast to sparse or use LogisticRegression"
-            raise Exception(msg)
-        return X.tocsr()
-
-    def _batch_sparse_data(self, X):
+    def _update_kwargs(self, X, **model_kwargs):
         """
-        Convert sparse batch matrix to sparse inputs for embedding lookup
-        Notes: https://github.com/tensorflow/tensorflow/issues/342
+        Update the model argument.
+
+        :param X: The input data of the model
+        :param model_kwargs: The arguments of the model
         """
-        if not issparse(X):
-            raise Exception("Matrix X must be scipy.sparse type")
-        X_lil = X.tolil()
-        indices, ids, weights = [], [], []
-        max_len = 0
-        for i, (row, data) in enumerate(zip(X_lil.rows, X_lil.data)):
-            # Dummy weight for all-zero row
-            if len(row) == 0:
-                indices.append((i, 0))
-                ids.append(0)
-                weights.append(0.0)
-                continue
-            # Update indices by position
-            max_len = max(max_len, len(row))
-            indices.extend((i, t) for t in range(len(row)))
-            ids.extend(row)
-            weights.extend(data)
-        shape = (len(X_lil.rows), max_len)
-        return indices, shape, ids, weights
+        model_kwargs["input_dim"] = X[0][1].shape[1]
+        return model_kwargs
 
-    def _construct_feed_dict(self, X_b, Y_b, lr=0.01, **kwargs):
-        indices, shape, ids, weights = self._batch_sparse_data(X_b)
-        return {
-            self.indices: indices,
-            self.shape: shape,
-            self.ids: ids,
-            self.weights: weights,
-            self.Y: Y_b,
-            self.lr: lr,
-        }
+    def _build_model(self, model_kwargs):
+        """
+        Build the model.
 
-    def _marginals_batch(self, X_test):
-        X_test = self._check_input(X_test)
-        if X_test.shape[0] == 0:
-            return np.array([])
-        indices, shape, ids, weights = self._batch_sparse_data(X_test)
-        return self.session.run(
-            self.marginals_op,
-            {
-                self.indices: indices,
-                self.shape: shape,
-                self.ids: ids,
-                self.weights: weights,
-            },
+        :param model_kwargs: The arguments of the model
+        """
+        if "input_dim" not in model_kwargs:
+            raise ValueError("Kwarg input_dim cannot be None.")
+
+        self.linear = nn.Linear(
+            model_kwargs["input_dim"], self.cardinality if self.cardinality > 2 else 1
         )
+
+    def _calc_logits(self, X, batch_size=None):
+        """
+        Calculate the logits.
+
+        :param X: The input data of the model
+        :param batch_size: The batch size
+        """
+        # Generate multi-modal feature input
+        F = np.array(list(zip(*X))[1])
+        F = torch.Tensor(F).squeeze(1)
+
+        outputs = (
+            torch.Tensor([]).cuda()
+            if self.model_kwargs["host_device"] in self.gpu
+            else torch.Tensor([])
+        )
+
+        n = len(F)
+        if batch_size is None:
+            batch_size = n
+        for batch_st in range(0, n, batch_size):
+            batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
+
+            features = (
+                F[batch_st:batch_ed].cuda()
+                if self.model_kwargs["host_device"] in self.gpu
+                else F[batch_st:batch_ed]
+            )
+
+            output = self.forward(features)
+            if self.cardinality == 2:
+                outputs = torch.cat((outputs, output.view(-1)), 0)
+            else:
+                outputs = torch.cat((outputs, output), 0)
+
+        return outputs

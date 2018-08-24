@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.meta import Meta
-from fonduer.utils import camel_to_under
+from fonduer.utils.utils import camel_to_under
 
 _meta = Meta.init()
 logger = logging.getLogger(__name__)
