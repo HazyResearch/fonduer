@@ -668,6 +668,6 @@ class ParserUDF(UDF):
 
         # TODO: Consider batching sentences to stay below spacy's max. character limit
         if self.lingual:
-            self.lingual_nlp(all_sentences)
-
-        yield from all_sentences
+            yield from self.lingual_nlp(all_sentences)
+        else:
+            yield from all_sentences

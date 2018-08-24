@@ -141,9 +141,8 @@ class Spacy(object):
         # Create random, (most likely) unique string to separate sentences
         separator_str = "BkxMZX4jwm"
         spaced_separator_str = " " + separator_str + " "
+        len_separator = len(spaced_separator_str)
 
-        all_sentence_strings = [x.text for x in all_sentences]
-        merged_sentences = spaced_separator_str.join(all_sentence_strings)
         self.model.Defaults.stop_words.add(spaced_separator_str)
         self.model.Defaults.stop_words.add(separator_str)
 
@@ -152,58 +151,82 @@ class Spacy(object):
             self.model.add_pipe(
                 custom_boundary_fct, before="parser", name="sentence_boundary_detector"
             )
-        doc = self.model(merged_sentences)
 
-        try:
-            assert doc.is_parsed
-        except Exception:
-            self.logger.exception("{} was not parsed".format(doc))
+        batch_char_limit = 250000
+        sentence_batches = [[]]
+        num_chars = 0
+        for sentence in all_sentences:
+            if num_chars + len(sentence.text) + len_separator >= batch_char_limit:
+                sentence_batches.append([sentence])
+                num_chars = len(sentence.text)
+            else:
+                sentence_batches[-1].append(sentence)
+                num_chars += len(sentence.text) + len_separator
 
-        number_of_separators = len(all_sentences) - 1
-        parsed_sentences = list(doc.sents)
-        all_doc_sentences_without_separators = (
-            len(parsed_sentences) - number_of_separators
-        )
-        diff_parsed_to_input_sentences = (
-            len(all_sentences) - all_doc_sentences_without_separators
-        )
-        try:
-            assert diff_parsed_to_input_sentences == 0
-        except AssertionError:
-            self.logger.error(
-                "Number of parsed spacy sentences doesnt match input sentences:\
-             input {}, output: {}, corrected output: {}".format(
-                    len(all_sentences),
-                    len(parsed_sentences),
-                    all_doc_sentences_without_separators,
-                )
+        # TODO: We could do this in parallel. Test speedup in the future
+        for sentence_batch in sentence_batches:
+            all_sentence_strings = [x.text for x in sentence_batch]
+            merged_sentences = spaced_separator_str.join(all_sentence_strings)
+
+            doc = self.model(merged_sentences)
+
+            try:
+                assert doc.is_parsed
+            except Exception:
+                self.logger.exception("{} was not parsed".format(doc))
+
+            number_of_separators = len(all_sentence_strings) - 1
+            parsed_sentences = list(doc.sents)
+            all_doc_sentences_without_separators = (
+                len(parsed_sentences) - number_of_separators
             )
-            raise
+            diff_parsed_to_input_sentences = (
+                len(all_sentence_strings) - all_doc_sentences_without_separators
+            )
+            try:
+                assert diff_parsed_to_input_sentences == 0
+            except AssertionError:
+                self.logger.error(
+                    "Number of parsed spacy sentences doesnt match input sentences:\
+                 input {}, output: {}, corrected output: {}".format(
+                        len(all_sentence_strings),
+                        len(parsed_sentences),
+                        all_doc_sentences_without_separators,
+                    )
+                )
+                raise
 
-        sentence_nr = -1
-        for sent in parsed_sentences:
-            if separator_str in sent.text:
-                continue
-            sentence_nr += 1
-            parts = defaultdict(list)
-
-            for i, token in enumerate(sent):
-                if str(token) == separator_str:
-                    self.logger.warning("Found separator string in a sentence token.")
+            sentence_nr = -1
+            for sent in parsed_sentences:
+                if separator_str in sent.text:
                     continue
+                sentence_nr += 1
+                parts = defaultdict(list)
 
-                parts["lemmas"].append(token.lemma_)
-                parts["pos_tags"].append(token.tag_)
-                parts["ner_tags"].append(token.ent_type_ if token.ent_type_ else "O")
-                head_idx = 0 if token.head is token else token.head.i - sent[0].i + 1
-                parts["dep_parents"].append(head_idx)
-                parts["dep_labels"].append(token.dep_)
-            current_sentence_obj = all_sentences[sentence_nr]
-            current_sentence_obj.pos_tags = parts["pos_tags"]
-            current_sentence_obj.lemmas = parts["lemmas"]
-            current_sentence_obj.ner_tags = parts["ner_tags"]
-            current_sentence_obj.dep_parents = parts["dep_parents"]
-            current_sentence_obj.dep_labels = parts["dep_labels"]
+                for i, token in enumerate(sent):
+                    if str(token) == separator_str:
+                        self.logger.warning(
+                            "Found separator string in a sentence token."
+                        )
+                        continue
+
+                    parts["lemmas"].append(token.lemma_)
+                    parts["pos_tags"].append(token.tag_)
+                    parts["ner_tags"].append(
+                        token.ent_type_ if token.ent_type_ else "O"
+                    )
+                    head_idx = (
+                        0 if token.head is token else token.head.i - sent[0].i + 1
+                    )
+                    parts["dep_parents"].append(head_idx)
+                    parts["dep_labels"].append(token.dep_)
+                current_sentence_obj = all_sentences[sentence_nr]
+                current_sentence_obj.pos_tags = parts["pos_tags"]
+                current_sentence_obj.lemmas = parts["lemmas"]
+                current_sentence_obj.ner_tags = parts["ner_tags"]
+                current_sentence_obj.dep_parents = parts["dep_parents"]
+                current_sentence_obj.dep_labels = parts["dep_labels"]
+                yield current_sentence_obj
 
     def split_sentences(self, document, text):
         """
@@ -220,7 +243,14 @@ class Spacy(object):
         if not self.model.has_pipe("sbd"):
             sbd = self.model.create_pipe("sbd")  # add sentencizer
             self.model.add_pipe(sbd)
-        doc = self.model(text, disable=["parser", "tagger", "ner"])
+        try:
+            doc = self.model(text, disable=["parser", "tagger", "ner"])
+        except ValueError:
+            # temporary increase character limit of spacy
+            # 'Probably save' according to spacy, as no parser or NER is used
+            self.model.max_length = 100000000
+            doc = self.model(text, disable=["parser", "tagger", "ner"])
+            self.model.max_length = 1000000
 
         position = 0
         for sent in doc.sents:
