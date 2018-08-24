@@ -4,8 +4,6 @@ from pathlib import Path
 
 import pkg_resources
 
-from fonduer.parser.models import construct_stable_id
-
 try:
     import spacy
     from spacy.cli import download
@@ -47,19 +45,10 @@ class Spacy(object):
 
     """
 
-    def __init__(
-        self,
-        # annotators=["tagger", "parser", "entity"],
-        lang="en",
-        num_threads=1,
-        # verbose=False,
-    ):
+    def __init__(self, lang="en"):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
         self.model = Spacy.load_lang_model(lang)
-        self.num_threads = num_threads
-
-        # self.pipeline = [proc for _, proc in self.model.__dict__["pipeline"]]
 
     @staticmethod
     def is_package(name):
@@ -132,8 +121,9 @@ class Spacy(object):
 
     def parse(self, all_sentences):
         """
-        Transform spaCy output to match CoreNLP's default format
-        :param all_sentences
+        Enrich a list of fonduer Sentence objects with NLP features.
+        We merge and process the text of all Sentences for higher efficiency
+        :param all_sentences: List of fonduer Sentence objects for one document
         :return:
         """
 
@@ -143,7 +133,7 @@ class Spacy(object):
         if self.model.has_pipe("sbd"):
             self.model.remove_pipe("sbd")
             self.logger.debug(
-                "removed 'sbd' from model. Now in pipeline: {}".format(
+                "Removed sentencizer ('sbd') from model. Now in pipeline: {}".format(
                     self.model.pipe_names
                 )
             )
@@ -219,8 +209,8 @@ class Spacy(object):
         """
         Split input text into sentences that match CoreNLP's
          default format, but are not yet processed
-        :param document:
-        :param text:
+        :param document: The Document context
+        :param text: The text of the parent paragraph of the sentences
         :return:
         """
 
@@ -264,17 +254,6 @@ class Spacy(object):
             # Add null entity array (matching null for CoreNLP)
             parts["entity_cids"] = ["O" for _ in parts["words"]]
             parts["entity_types"] = ["O" for _ in parts["words"]]
-
-            # Assign the stable id as document's stable id plus absolute
-            # character offset
-            abs_sent_offset = parts["abs_char_offsets"][0]
-            abs_sent_offset_end = (
-                abs_sent_offset + parts["char_offsets"][-1] + len(parts["words"][-1])
-            )
-            if document:
-                parts["stable_id"] = construct_stable_id(
-                    document, "sentence", abs_sent_offset, abs_sent_offset_end
-                )
 
             position += 1
 

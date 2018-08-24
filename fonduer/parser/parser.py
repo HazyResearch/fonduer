@@ -328,10 +328,7 @@ class ParserUDF(UDF):
         field = state["paragraph"]["field"]
         # Lingual Parse
         document = state["document"]
-        sentence_list = []
-        parts_list = [x for x in self.lingual_parse(document, text)]
-        # for parts in self.lingual_parse(document, text):
-        for parts in parts_list:
+        for parts in self.lingual_parse(document, text):
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
@@ -413,12 +410,8 @@ class ParserUDF(UDF):
                         parts["col_end"] = parent.cell.col_end
                 else:
                     raise NotImplementedError("Sentence parent must be Paragraph.")
-            new_sentence = Sentence(**parts)
-            sentence_list.append(new_sentence)
-            # yield Sentence(**parts)
-
+            yield Sentence(**parts)
             state["sentence"]["idx"] += 1
-        return sentence_list
 
     def _parse_paragraph(self, node, state):
         """Parse a Paragraph of the node.
@@ -485,10 +478,7 @@ class ParserUDF(UDF):
             state["paragraph"]["text"] = text
             state["paragraph"]["field"] = field
 
-            all_sentences = [y for y in self._parse_sentence(paragraph, node, state)]
-            for sen in all_sentences:
-                yield sen
-            # yield from self._parse_sentence(paragraph, node, state)
+            yield from self._parse_sentence(paragraph, node, state)
 
     def _parse_section(self, node, state):
         """Parse a Section of the node.
@@ -571,10 +561,7 @@ class ParserUDF(UDF):
 
         state = self._parse_caption(node, state)
 
-        all_paragraphs = [y for y in self._parse_paragraph(node, state)]
-        for par in all_paragraphs:
-            yield par
-        # yield from self._parse_paragraph(node, state)
+        yield from self._parse_paragraph(node, state)
 
     def parse(self, document, text):
         """Depth-first search over the provided tree.
@@ -627,8 +614,7 @@ class ParserUDF(UDF):
                 state["visited"].add(node)  # mark as visited
 
                 # Process
-                parse_results = [y for y in self._parse_node(node, state)]
-                all_sentences += parse_results
+                all_sentences += [y for y in self._parse_node(node, state)]
 
                 # NOTE: This reversed() order is to ensure that the iterative
                 # DFS matches the order that would be produced by a recursive
@@ -656,4 +642,4 @@ class ParserUDF(UDF):
         if self.lingual:
             self.lingual_nlp(all_sentences)
 
-        return all_sentences
+        yield from all_sentences
