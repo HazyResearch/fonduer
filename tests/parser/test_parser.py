@@ -401,43 +401,6 @@ def test_spacy_integration(caplog):
     assert session.query(Sentence).count() == 82
 
 
-def test_spacy_massive_doc(caplog):
-    """Run a simple parse using spaCy as our parser and check
-       whether it can handle documents with > 1M chars.
-    """
-    #  caplog.set_level(logging.INFO)
-
-    # SpaCy on mac has issue on parallel parseing
-    if os.name == "posix":
-        PARALLEL = 1
-    else:
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
-
-    big_html_dir = "tests/data/big_html"
-    if not os.path.exists(big_html_dir):
-        os.makedirs(big_html_dir)
-    big_html_file = os.path.join(big_html_dir, "big_document.html")
-    if not os.path.isfile(big_html_file):
-        massive_doc = (
-            "<html><head><\head><body><p>"
-            + ("This sentence over and over. " * 50000)
-            + "</p></body></html>"
-        )
-        with open(big_html_file, "w") as out_file:
-            out_file.write(massive_doc)
-
-    max_docs = 1
-    doc_preprocessor = HTMLDocPreprocessor(big_html_dir, max_docs=max_docs)
-
-    corpus_parser = Parser(structural=True, lingual=True, visual=False)
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-
-    assert session.query(Document).count() == 1
-    assert session.query(Sentence).count() == 50000
-
-
 def test_parse_style(caplog):
     """Test style tag parsing."""
     caplog.set_level(logging.INFO)

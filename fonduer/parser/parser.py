@@ -646,9 +646,7 @@ class ParserUDF(UDF):
                 # NOTE: This reversed() order is to ensure that the iterative
                 # DFS matches the order that would be produced by a recursive
                 # DFS implementation.
-                child_list = list(reversed(node))
-                # for child in reversed(node):
-                for child in child_list:
+                for child in reversed(node):
                     # Skip nodes that are comments or blacklisted
                     if child.tag is lxml.etree.Comment or (
                         self.blacklist and child.tag in self.blacklist
@@ -666,7 +664,6 @@ class ParserUDF(UDF):
                         else state["parent"][node]
                     )
 
-        # TODO: Consider batching sentences to stay below spacy's max. character limit
         if self.lingual:
             yield from self.lingual_nlp(all_sentences)
         else:
