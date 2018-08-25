@@ -199,8 +199,8 @@ class Annotator(UDFRunner):
             # Insert and update keys
             if not table_already_exists or old_table_name:
                 con.execute(
-                    "CREATE TABLE %s(candidate_id integer PRIMARY KEY, "
-                    "keys text[] NOT NULL, values real[] NOT NULL)" % table_name
+                    "CREATE TABLE {}(candidate_id integer PRIMARY KEY, "
+                    "keys text[] NOT NULL, values real[] NOT NULL)".format(table_name)
                 )
             copy_postgres(segment_file_blob, table_name, "candidate_id, keys, values")
             remove_files(segment_file_blob)

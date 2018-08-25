@@ -53,9 +53,8 @@ class LSTM(NoiseAwareModel):
         """
         Preprocess the data:
         1. Convert sparse feature matrix to dense matrix for pytorch operation.
-        2. Update the order of candidates based on feature index.
-        3. Make sentence with mention into sequence data for LSTM.
-        4. Select subset of the input if idxs exists.
+        2. Make sentence with mention into sequence data for LSTM.
+        3. Select subset of the input if idxs exists.
 
         :param X: The input data of the model
         :param Y: The labels of input data (optional)
@@ -68,14 +67,6 @@ class LSTM(NoiseAwareModel):
         # TODO: the pytorch implementation is taking dense vector as input,
         # should optimize later
         if issparse(F):
-            id2id = dict()
-            for i in range(F.shape[0]):
-                id2id[F.row_index[i]] = i
-
-            C_ = [None] * len(C)
-            for c in C:
-                C_[id2id[c.id]] = c
-
             F = F.todense()
 
         # Create word dictionary for LSTM
@@ -89,7 +80,7 @@ class LSTM(NoiseAwareModel):
 
         # Make sequence input for LSTM from candidates
         seq_data = []
-        for candidate in C_:
+        for candidate in C:
             cand_idx = []
             for i in range(len(candidate)):
                 # Add mark for each mention in the original sentence

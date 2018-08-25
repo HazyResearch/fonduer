@@ -32,8 +32,6 @@ setup(
         "wand",
     ],
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest>=3.4.0", "flake8"],
     include_package_data=True,
     url="https://github.com/HazyResearch/fonduer",
     classifiers=[  # https://pypi.python.org/pypi?:action=list_classifiers

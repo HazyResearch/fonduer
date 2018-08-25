@@ -204,7 +204,7 @@ Fixed
   (`#76 <https://github.com/HazyResearch/fonduer/pull/76>`_,
   `#77 <https://github.com/HazyResearch/fonduer/pull/77>`_,
   `#78 <https://github.com/HazyResearch/fonduer/pull/78>`_)
-* `@senwu`_: Split up lf_helpers into separate files for each modaility.
+* `@senwu`_: Split up lf_helpers into separate files for each modality.
   (`#81 <https://github.com/HazyResearch/fonduer/pull/81>`_)
 * A variety of small bugfixes and code cleanup.
   (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)

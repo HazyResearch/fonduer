@@ -1,4 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
@@ -10,44 +11,43 @@ _meta = Meta.init()
 
 
 class AnnotationKeyMixin(object):
-    """
-    Mixin class for defining annotation key tables. An AnnotationKey is the
-    unique name associated with a set of Annotations, corresponding e.g. to a
-    single labeling or feature function.  An AnnotationKey may have an
-    associated weight (Parameter) associated with it.
+    """Mixin class for defining annotation key tables.
+
+    An AnnotationKey is the unique name associated with a set of Annotations,
+    corresponding e.g. to a single labeling or feature function.  An
+    AnnotationKey may have an associated weight (Parameter) associated with it.
     """
 
     @declared_attr
     def __tablename__(cls):
         return camel_to_under(cls.__name__)
 
-    @declared_attr
-    def id(cls):
-        return Column(Integer, primary_key=True)
+    #  @declared_attr
+    #  def id(cls):
+    #      return Column(Integer, primary_key=True)
 
     @declared_attr
     def name(cls):
-        return Column(String, nullable=False)
+        return Column(String, primary_key=True)
 
-    @declared_attr
-    def group(cls):
-        return Column(Integer, nullable=False, default=0)
+    #  @declared_attr
+    #  def group(cls):
+    #      return Column(Integer, nullable=False, default=0)
 
     @declared_attr
     def __table_args__(cls):
-        return (UniqueConstraint("name", "group"),)
+        return (UniqueConstraint("name"),)
 
     def __repr__(self):
         return str(self.__class__.__name__) + " (" + str(self.name) + ")"
 
 
 class AnnotationMixin(object):
-    """
-    Mixin class for defining annotation tables. An annotation is a value
-    associated with a Candidate. Examples include labels, features, and
-    predictions. New types of annotations can be defined by creating an
-    annotation class and corresponding annotation,
-    for example:
+    """Mixin class for defining annotation tables.
+
+    An annotation is a value associated with a Candidate. Examples include
+    labels, features, and predictions. New types of annotations can be defined
+    by creating an annotation class and corresponding annotation, for example:
 
     .. code-block:: python
 
@@ -70,24 +70,10 @@ class AnnotationMixin(object):
         return camel_to_under(cls.__name__)
 
     # The key is the "name" or "type" of the Annotation- e.g. the name of a
-    # feature, or of a human annotator
+    # feature, lf, or of a human annotator
     @declared_attr
-    def key_id(cls):
-        return Column(
-            "key_id",
-            Integer,
-            ForeignKey("%s_key.id" % cls.__tablename__, ondelete="CASCADE"),
-            primary_key=True,
-        )
-
-    @declared_attr
-    def key(cls):
-        return relationship(
-            "%sKey" % cls.__name__,
-            backref=backref(
-                camel_to_under(cls.__name__) + "s", cascade="all, delete-orphan"
-            ),
-        )
+    def keys(cls):
+        return Column(postgresql.ARRAY(String), nullable=False)
 
     # Every annotation is with respect to a candidate
     @declared_attr
@@ -115,8 +101,8 @@ class AnnotationMixin(object):
         return (
             self.__class__.__name__
             + " ("
-            + str(self.key.name)
+            + str(self.keys)
             + " = "
-            + str(self.value)
+            + str(self.values)
             + ")"
         )
