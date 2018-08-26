@@ -641,7 +641,10 @@ class ParserUDF(UDF):
                 state["visited"].add(node)  # mark as visited
 
                 # Process
-                all_sentences += [y for y in self._parse_node(node, state)]
+                if self.lingual:
+                    all_sentences += [y for y in self._parse_node(node, state)]
+                else:
+                    yield from self._parse_node(node, state)
 
                 # NOTE: This reversed() order is to ensure that the iterative
                 # DFS matches the order that would be produced by a recursive
@@ -666,5 +669,3 @@ class ParserUDF(UDF):
 
         if self.lingual:
             yield from self.lingual_nlp(all_sentences)
-        else:
-            yield from all_sentences
