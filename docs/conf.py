@@ -23,7 +23,6 @@ autodoc_mock_imports = [
     "fonduer.learning.classifier",
     "lxml",
     "matplotlib",
-    "networkx",
     "nltk",
     "numpy",
     "pandas",
