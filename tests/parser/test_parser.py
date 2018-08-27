@@ -13,44 +13,55 @@ import pytest
 from fonduer import Meta
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
+from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.spacy_parser import Spacy
+from fonduer.utils.udf import UDF
 
 ATTRIBUTE = "parser_test"
 ATTRIBUTE = "parser_test"
 
 
-def test_parse_md_details(caplog):
-    """Unit test of the final results stored in the database of the md document.
-
-    This test only looks at the final results such that the implementation of
-    the ParserUDF's apply() can be modified.
-    """
+def test_parse_md_details(caplog, mocker):
+    """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
-    max_docs = 1
     docs_path = "tests/data/html_simple/md.html"
     pdf_path = "tests/data/pdf_simple/md.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+
+    # Check that doc has a name
+    assert doc.name == "md"
+
+    # Check that doc does not have any of these
+    assert len(doc.figures) == 0
+    assert len(doc.tables) == 0
+    assert len(doc.cells) == 0
+    assert len(doc.sentences) == 0
+
+    # Mock UDF.__init__ not to invoke new_sessionmaker()
+    mocker.patch.object(UDF, "__init__")
 
     # Create an Parser and parse the md document
-    parser = Parser(
-        structural=True,
-        tabular=True,
-        lingual=True,
-        visual=True,
+    parser_udf = ParserUDF(
+        structural=True,  # structural information
+        blacklist=["style", "script"],  # ignore tag types, default: style, script
+        flatten=["span", "br"],  # flatten tag types, default: span, br
+        flatten_delim="",
+        lingual=True,  # lingual information
+        strip=True,
+        replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
+        tabular=True,  # tabular information
+        visual=True,  # visual information
         pdf_path=pdf_path,
-        language="en",
+        lingual_parser=Spacy("en"),
     )
-    parser.apply(preprocessor, parallelism=PARALLEL)
-
-    # Grab the md document
-    doc = session.query(Document).order_by(Document.name).all()[0]
-    assert doc.name == "md"
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     # Check that doc has a figure
     assert len(doc.figures) == 1

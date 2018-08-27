@@ -3,5 +3,6 @@ flake8
 isort
 pre-commit
 pytest
+pytest-mock
 sphinx
 sphinx_rtd_theme
