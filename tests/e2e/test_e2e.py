@@ -218,7 +218,7 @@ def test_e2e(caplog):
     train_marginals = gen_model.predict_proba(L_train)[:, 1]
 
     disc_model = LogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=200, lr=0.001)
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
 
     load_gold_labels(session, annotator_name="gold", split=2)
 
@@ -272,7 +272,7 @@ def test_e2e(caplog):
     train_marginals = gen_model.predict_proba(L_train)[:, 1]
 
     disc_model = LogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=200, lr=0.001)
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
 
     test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
@@ -296,7 +296,7 @@ def test_e2e(caplog):
 
     # Testing LSTM
     disc_model = LSTM()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=30, lr=0.001)
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
 
     test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
