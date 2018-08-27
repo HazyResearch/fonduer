@@ -183,6 +183,7 @@ def test_e2e(caplog):
 
     train_cands = session.query(PartTemp).filter(PartTemp.split == 0).all()
 
+    # Featurization
     featurizer = FeatureAnnotator(PartTemp)
     F_train = featurizer.apply(split=0, replace_key_set=True, parallelism=PARALLEL)
     logger.info(F_train.shape)
@@ -209,23 +210,20 @@ def test_e2e(caplog):
 
     load_gold_labels(session, annotator_name="gold", split=0)
 
-    gen_model = GenerativeModel()
-    gen_model.train(
-        L_train, epochs=500, decay=0.9, step_size=0.001 / L_train.shape[0], reg_param=0
-    )
-    logger.info("LF Accuracy: {}".format(gen_model.weights.lf_accuracy))
+    gen_model = GenerativeModel(cardinalities=2)
+    gen_model.train(L_train, n_epochs=500, print_every=100)
 
     load_gold_labels(session, annotator_name="gold", split=1)
 
-    train_marginals = gen_model.marginals(L_train)
+    train_marginals = gen_model.predict_proba(L_train)[:, 1]
 
     disc_model = LogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=200, lr=0.001)
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
 
     load_gold_labels(session, annotator_name="gold", split=2)
 
     test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
-    test_score = disc_model.predictions((test_candidates, F_test))
+    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
@@ -267,16 +265,16 @@ def test_e2e(caplog):
     L_train = labeler.apply(
         split=0, clear=False, update_keys=True, update_values=True, parallelism=PARALLEL
     )
-    gen_model = GenerativeModel()
-    gen_model.train(
-        L_train, epochs=500, decay=0.9, step_size=0.001 / L_train.shape[0], reg_param=0
-    )
-    train_marginals = gen_model.marginals(L_train)
+
+    gen_model = GenerativeModel(cardinalities=2)
+    gen_model.train(L_train, n_epochs=500, print_every=100)
+
+    train_marginals = gen_model.predict_proba(L_train)[:, 1]
 
     disc_model = LogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=200, lr=0.001)
+    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
 
-    test_score = disc_model.predictions((test_candidates, F_test))
+    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
@@ -296,11 +294,11 @@ def test_e2e(caplog):
 
     assert f1 > 0.7
 
-    # repeat for LSTM
+    # Testing LSTM
     disc_model = LSTM()
     disc_model.train((train_cands, F_train), train_marginals, n_epochs=5, lr=0.001)
 
-    test_score = disc_model.predictions((test_candidates, F_test))
+    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
     true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
