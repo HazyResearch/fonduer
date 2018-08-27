@@ -8,85 +8,99 @@ from fonduer.utils.data_model_utils import (
     overlap,
 )
 
+ABSTAIN = 0
+FALSE = 1
+TRUE = 2
+
 
 def LF_storage_row(c):
-    return 1 if "storage" in get_row_ngrams(c.temp) else 0
+    return TRUE if "storage" in get_row_ngrams(c.temp) else ABSTAIN
 
 
 def LF_temperature_row(c):
-    return 1 if "temperature" in get_row_ngrams(c.temp) else 0
+    return TRUE if "temperature" in get_row_ngrams(c.temp) else ABSTAIN
 
 
 def LF_operating_row(c):
-    return 1 if "operating" in get_row_ngrams(c.temp) else 0
+    return TRUE if "operating" in get_row_ngrams(c.temp) else ABSTAIN
 
 
 def LF_tstg_row(c):
-    return 1 if overlap(["tstg", "stg", "ts"], list(get_row_ngrams(c.temp))) else 0
+    return (
+        TRUE
+        if overlap(["tstg", "stg", "ts"], list(get_row_ngrams(c.temp)))
+        else ABSTAIN
+    )
 
 
 def LF_to_left(c):
-    return 1 if "to" in get_left_ngrams(c.temp, window=2) else 0
+    return TRUE if "to" in get_left_ngrams(c.temp, window=2) else ABSTAIN
 
 
 def LF_negative_number_left(c):
     return (
-        1
+        TRUE
         if any(
             [re.match(r"-\s*\d+", ngram) for ngram in get_left_ngrams(c.temp, window=4)]
         )
-        else 0
+        else ABSTAIN
     )
 
 
 def LF_test_condition_aligned(c):
-    return -1 if overlap(["test", "condition"], list(get_aligned_ngrams(c.temp))) else 0
+    return (
+        FALSE
+        if overlap(["test", "condition"], list(get_aligned_ngrams(c.temp)))
+        else ABSTAIN
+    )
 
 
 def LF_collector_aligned(c):
     return (
-        -1
+        FALSE
         if overlap(
             ["collector", "collector-current", "collector-base", "collector-emitter"],
             list(get_aligned_ngrams(c.temp)),
         )
-        else 0
+        else ABSTAIN
     )
 
 
 def LF_current_aligned(c):
     return (
-        -1 if overlap(["current", "dc", "ic"], list(get_aligned_ngrams(c.temp))) else 0
+        FALSE
+        if overlap(["current", "dc", "ic"], list(get_aligned_ngrams(c.temp)))
+        else ABSTAIN
     )
 
 
 def LF_voltage_row_temp(c):
     return (
-        -1
+        FALSE
         if overlap(
             ["voltage", "cbo", "ceo", "ebo", "v"], list(get_aligned_ngrams(c.temp))
         )
-        else 0
+        else ABSTAIN
     )
 
 
 def LF_voltage_row_part(c):
     return (
-        -1
+        FALSE
         if overlap(
             ["voltage", "cbo", "ceo", "ebo", "v"], list(get_aligned_ngrams(c.temp))
         )
-        else 0
+        else ABSTAIN
     )
 
 
 def LF_typ_row(c):
-    return -1 if overlap(["typ", "typ."], list(get_row_ngrams(c.temp))) else 0
+    return FALSE if overlap(["typ", "typ."], list(get_row_ngrams(c.temp))) else ABSTAIN
 
 
 def LF_complement_left_row(c):
     return (
-        -1
+        FALSE
         if (
             overlap(
                 ["complement", "complementary"],
@@ -95,29 +109,29 @@ def LF_complement_left_row(c):
                 ),
             )
         )
-        else 0
+        else ABSTAIN
     )
 
 
 def LF_too_many_numbers_row(c):
     num_numbers = list(get_row_ngrams(c.temp, attrib="ner_tags")).count("number")
-    return -1 if num_numbers >= 3 else 0
+    return FALSE if num_numbers >= 3 else ABSTAIN
 
 
 def LF_temp_on_high_page_num(c):
-    return -1 if c.temp.span.get_attrib_tokens("page")[0] > 2 else 0
+    return FALSE if c.temp.span.get_attrib_tokens("page")[0] > 2 else ABSTAIN
 
 
 def LF_temp_outside_table(c):
-    return -1 if not c.temp.span.sentence.is_tabular() is None else 0
+    return FALSE if not c.temp.span.sentence.is_tabular() is None else ABSTAIN
 
 
 def LF_not_temp_relevant(c):
     return (
-        -1
+        FALSE
         if not overlap(
             ["storage", "temperature", "tstg", "stg", "ts"],
             list(get_aligned_ngrams(c.temp)),
         )
-        else 0
+        else ABSTAIN
     )
