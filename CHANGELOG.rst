@@ -15,6 +15,8 @@ Added
 
 Changed
 ^^^^^^^
+* `@senwu`_: Change weak supervision learning framework from numbskull to MeTaL.
+  (`#119 <https://github.com/HazyResearch/fonduer/pull/119>`_)
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
   (`#115 <https://github.com/HazyResearch/fonduer/pull/115>`_)
 * `@lukehsiao`_: Blacklist <script> nodes by default when parsing HTML docs.
