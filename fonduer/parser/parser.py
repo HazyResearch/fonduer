@@ -146,6 +146,7 @@ class ParserUDF(UDF):
                 self.visual = False
                 yield from self.parse(document, text)
             else:
+                # Populate document.sentences
                 for _ in self.parse(document, text):
                     pass
                 # Add visual attributes
