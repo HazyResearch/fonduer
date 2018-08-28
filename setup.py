@@ -1,13 +1,18 @@
 """For pip."""
+from glob import glob
+from os.path import basename, splitext
+
 from setuptools import find_packages, setup
 
-exec(open("fonduer/_version.py").read())
+exec(open("src/fonduer/_version.py").read())
 setup(
     name="fonduer",
     version=__version__,
     description="Knowledge base construction system for richly formatted data.",
     long_description=open("README.rst").read(),
-    packages=find_packages(),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     install_requires=[
         "bs4",
         "editdistance",

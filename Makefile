@@ -9,11 +9,11 @@ test: dev check docs
 	pytest tests
 
 check:
-	isort -rc -c fonduer/
+	isort -rc -c src/
 	isort -rc -c tests/
-	black fonduer/ --check
+	black src/ --check
 	black tests/ --check
-	flake8 fonduer/
+	flake8 src/
 	flake8 tests/
 
 docs:
@@ -21,7 +21,7 @@ docs:
 
 clean:
 	pip uninstall -y fonduer
-	rm -rf fonduer.egg-info
+	rm -rf src/fonduer.egg-info
 	rm -rf _build/
 
 .PHONY: dev test clean check docs
