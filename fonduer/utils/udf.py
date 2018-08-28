@@ -80,7 +80,6 @@ class UDFRunner(object):
         for x in xs:
             if self.pb is not None:
                 self.pb.update(1)
-
             udf.session.add_all(y for y in udf.apply(x, **kwargs))
 
         # Commit session and close progress bar if applicable

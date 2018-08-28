@@ -19,7 +19,6 @@ from fonduer.parser.models import (
     Sentence,
     Table,
     construct_stable_id,
-    split_stable_id,
 )
 from fonduer.parser.simple_tokenizer import SimpleTokenizer
 from fonduer.parser.spacy_parser import Spacy
@@ -36,6 +35,7 @@ class Parser(UDFRunner):
         blacklist=["style", "script"],  # ignore tag types, default: style, script
         flatten=["span", "br"],  # flatten tag types, default: span, br
         flatten_delim="",
+        language="en",
         lingual=True,  # lingual information
         strip=True,
         replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
@@ -44,7 +44,7 @@ class Parser(UDFRunner):
         pdf_path=None,
     ):
         # Use spaCy as our lingual parser
-        self.lingual_parser = Spacy()
+        self.lingual_parser = Spacy(language)
 
         super(Parser, self).__init__(
             ParserUDF,
@@ -107,7 +107,8 @@ class ParserUDF(UDF):
             self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
         if self.lingual:
             self.lingual_parser = lingual_parser
-            self.lingual_parse = self.lingual_parser.parse
+            self.lingual_parse = self.lingual_parser.split_sentences
+            self.lingual_nlp = self.lingual_parser.parse
 
         else:
             self.lingual_parse = SimpleTokenizer().parse
@@ -357,8 +358,8 @@ class ParserUDF(UDF):
         # Lingual Parse
         document = state["document"]
         for parts in self.lingual_parse(document, text):
-            (_, _, _, char_end) = split_stable_id(parts["stable_id"])
             parts["document"] = document
+            # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
             abs_sentence_offset_end = (
                 state["sentence"]["abs_offset"]
@@ -439,7 +440,6 @@ class ParserUDF(UDF):
                 else:
                     raise NotImplementedError("Sentence parent must be Paragraph.")
             yield Sentence(**parts)
-
             state["sentence"]["idx"] += 1
 
     def _parse_paragraph(self, node, state):
@@ -451,12 +451,14 @@ class ParserUDF(UDF):
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
+
         # Both Paragraphs will share the same parent
         parent = (
             state["context"][node]
             if node in state["context"]
             else state["parent"][node]
         )
+
         for field in ["text", "tail"]:
             text = getattr(node, field)
             text = text.strip() if text and self.strip else text
@@ -505,10 +507,7 @@ class ParserUDF(UDF):
             state["paragraph"]["text"] = text
             state["paragraph"]["field"] = field
 
-            # Parse the Sentences in the Paragraph
             yield from self._parse_sentence(paragraph, node, state)
-
-        return state
 
     def _parse_section(self, node, state):
         """Parse a Section of the node.
@@ -636,13 +635,18 @@ class ParserUDF(UDF):
         stack.append(root)
         state["parent"][root] = document
         state["context"][root] = document
+
+        all_sentences = []
         while stack:
             node = stack.pop()
             if node not in state["visited"]:
                 state["visited"].add(node)  # mark as visited
 
                 # Process
-                yield from self._parse_node(node, state)
+                if self.lingual:
+                    all_sentences += [y for y in self._parse_node(node, state)]
+                else:
+                    yield from self._parse_node(node, state)
 
                 # NOTE: This reversed() order is to ensure that the iterative
                 # DFS matches the order that would be produced by a recursive
@@ -664,3 +668,6 @@ class ParserUDF(UDF):
                         if node in state["context"]
                         else state["parent"][node]
                     )
+
+        if self.lingual:
+            yield from self.lingual_nlp(all_sentences)

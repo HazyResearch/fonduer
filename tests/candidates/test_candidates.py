@@ -104,16 +104,14 @@ def test_cand_gen(caplog):
     pdf_path = "tests/data/pdf/"
 
     # Parsing
-    num_docs = session.query(Document).count()
-    if num_docs != max_docs:
-        logger.info("Parsing...")
-        doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-        corpus_parser = Parser(
-            structural=True, lingual=True, visual=True, pdf_path=pdf_path
-        )
-        corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 5892
+    assert session.query(Sentence).count() == 5548
     docs = session.query(Document).order_by(Document.name).all()
 
     # Mention Extraction
@@ -146,8 +144,8 @@ def test_cand_gen(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 234
-    assert session.query(Volt).count() == 108
-    assert session.query(Temp).count() == 118
+    assert session.query(Volt).count() == 107
+    assert session.query(Temp).count() == 125
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]
@@ -165,9 +163,9 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3385
-    assert session.query(PartVolt).count() == 3364
-    assert session.query(Candidate).count() == 6749
+    assert session.query(PartTemp).count() == 3530
+    assert session.query(PartVolt).count() == 3313
+    assert session.query(Candidate).count() == 6843
     assert docs[0].name == "112823"
     assert len(docs[0].parts) == 70
     assert len(docs[0].volts) == 33
@@ -176,12 +174,12 @@ def test_cand_gen(caplog):
     # Test that deletion of a Candidate does not delete the Mention
     session.query(PartTemp).delete()
     assert session.query(PartTemp).count() == 0
-    assert session.query(Temp).count() == 118
+    assert session.query(Temp).count() == 125
     assert session.query(Part).count() == 234
 
     # Test deletion of Candidate if Mention is deleted
-    assert session.query(PartVolt).count() == 3364
-    assert session.query(Volt).count() == 108
+    assert session.query(PartVolt).count() == 3313
+    assert session.query(Volt).count() == 107
     session.query(Volt).delete()
     assert session.query(Volt).count() == 0
     assert session.query(PartVolt).count() == 0
