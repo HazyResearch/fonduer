@@ -3,6 +3,7 @@
 
 Added
 ^^^^^
+* `@j-rausch`_: Added unit tests for changed lingual parsing pipeline
 * `@senwu`_: Support Python 3.7.
 * `@lukehsiao`_: Allow user to change featurization settings by providing
   ``.fonduer-config.yaml`` in their project.
@@ -15,6 +16,18 @@ Added
 
 Changed
 ^^^^^^^
+* `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing
+   pipeline into two stages. First, we parse structure and gather all 
+   sentences for a document. Then, we merge and feed all sentences per
+   document into the spacy NLP pipeline for more efficient processing.  
+* `@j-rausch`_: Sentence splitting in lingual mode is now performed by 
+   spacy's sentencizer instead of the depdency parser. This can lead to 
+   variations in sentence segmentation and tokenization.
+* `@j-rausch`_: Added ``language`` argument to ``Parser`` for specification
+   of language used by ``spacy_parser``. E.g. 		
+   .. code:: python
+		from fonduer.parser import Parser
+        parser = Parser(structural=True, tabular=True, lingual=True, language='en')
 * `@senwu`_: Change weak supervision learning framework from numbskull to MeTaL.
   (`#119 <https://github.com/HazyResearch/fonduer/pull/119>`_)
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.

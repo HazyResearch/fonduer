@@ -16,6 +16,7 @@ from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 
 ATTRIBUTE = "parser_test"
+ATTRIBUTE = "parser_test"
 
 
 def test_parse_md_details(caplog):
@@ -38,7 +39,12 @@ def test_parse_md_details(caplog):
 
     # Create an Parser and parse the md document
     parser = Parser(
-        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
+        language="en",
     )
     parser.apply(preprocessor, parallelism=PARALLEL)
 
@@ -103,6 +109,14 @@ def test_parse_md_details(caplog):
     # Test lingual attributes
     assert header.ner_tags == ["ORG", "ORG"]
     assert header.dep_labels == ["compound", "ROOT"]
+
+    # Test whether nlp information corresponds to sentence words
+    for sent in doc.sentences:
+        assert len(sent.words) == len(sent.lemmas)
+        assert len(sent.words) == len(sent.pos_tags)
+        assert len(sent.words) == len(sent.ner_tags)
+        assert len(sent.words) == len(sent.dep_parents)
+        assert len(sent.words) == len(sent.dep_labels)
 
 
 def test_warning_on_missing_pdf(caplog):

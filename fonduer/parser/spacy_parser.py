@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 from pathlib import Path
+from string import whitespace
 
 import pkg_resources
 
@@ -20,21 +21,41 @@ class TokenPreservingTokenizer(object):
     It will output a list of space separated tokens, whereas each token
     is a single word from the list of sentences.
     :param vocab: The vocab attribute of the respective spacy language object
-    :param tokenized sentences: A list of sentences that
+    :param tokenized_sentences: A list of sentences that
     was previously tokenized/split by spacy
     :return:
     """
 
     def __init__(self, vocab, tokenized_sentences):
+        self.logger = logging.getLogger(__name__)
         self.all_input_tokens = []
         self.vocab = vocab
+        self.all_spaces = []
         for sentence in tokenized_sentences:
-            if len(sentence.words) > 0:
+            words_in_sentence = sentence.words
+            if len(words_in_sentence) > 0:
                 self.all_input_tokens += sentence.words
+                current_sentence_pos = 0
+                spaces_list = [True] * len(words_in_sentence)
+                # Last word in sentence always assumed to be followed by space
+                for i, word in enumerate(words_in_sentence[:-1]):
+                    current_sentence_pos = sentence.text.find(
+                        word, current_sentence_pos
+                    )
+                    if current_sentence_pos == -1:
+                        raise AttributeError(
+                            "Could not find token in its parent sentence"
+                        )
+                    current_sentence_pos += len(word)
+                    if not any(
+                        sentence.text[current_sentence_pos:].startswith(s)
+                        for s in whitespace
+                    ):
+                        spaces_list[i] = False
+                self.all_spaces += spaces_list
 
-    # NOTE: By default, we assume all words are whitespace delimited
     def __call__(self):
-        return Doc(self.vocab, words=self.all_input_tokens)
+        return Doc(self.vocab, words=self.all_input_tokens, spaces=self.all_spaces)
 
 
 class Spacy(object):
@@ -70,7 +91,7 @@ class Spacy(object):
 
     """
 
-    def __init__(self, lang="en"):
+    def __init__(self, lang):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
         self.model = Spacy.load_lang_model(lang)

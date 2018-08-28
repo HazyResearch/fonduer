@@ -35,6 +35,7 @@ class Parser(UDFRunner):
         blacklist=["style", "script"],  # ignore tag types, default: style, script
         flatten=["span", "br"],  # flatten tag types, default: span, br
         flatten_delim="",
+        language="en",
         lingual=True,  # lingual information
         strip=True,
         replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
@@ -43,7 +44,7 @@ class Parser(UDFRunner):
         pdf_path=None,
     ):
         # Use spaCy as our lingual parser
-        self.lingual_parser = Spacy()
+        self.lingual_parser = Spacy(language)
 
         super(Parser, self).__init__(
             ParserUDF,
