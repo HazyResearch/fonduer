@@ -7,7 +7,6 @@ elif type wget &>/dev/null; then
     wget -N $url
 fi
 
-mkdir -p data
 echo "Unpacking fonduer test data..."
 tar -zxvf $data_tar.tar.gz -C data
 
