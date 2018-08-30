@@ -1,44 +1,74 @@
 #! /usr/bin/env python
-"""
-These tests expect that postgres is installed and that a database named
-parser_test has been created for the purpose of testing.
-
-If you are testing locally, you will need to create this db.
-"""
 import logging
-import os
+from unittest.mock import patch
 
 import pytest
 
-from fonduer import Meta
-from fonduer.parser import Parser
-from fonduer.parser.models import Document, Sentence
+from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.spacy_parser import Spacy
 
-ATTRIBUTE = "parser_test"
-ATTRIBUTE = "parser_test"
+
+def get_parser_udf(
+    structural=True,  # structural information
+    blacklist=["style", "script"],  # ignore tag types, default: style, script
+    flatten=["span", "br"],  # flatten tag types, default: span, br
+    flatten_delim="",
+    language="en",
+    lingual=True,  # lingual information
+    strip=True,
+    replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
+    tabular=True,  # tabular information
+    visual=False,  # visual information
+    pdf_path=None,
+):
+    """Return an instance of ParserUDF."""
+    # Use spaCy as our lingual parser
+    lingual_parser = Spacy(language)
+
+    # Patch new_sessionmaker() under the namespace of fonduer.utils.udf
+    # See more details in
+    # https://docs.python.org/3/library/unittest.mock.html#where-to-patch
+    with patch("fonduer.utils.udf.new_sessionmaker", autospec=True):
+        parser_udf = ParserUDF(
+            structural=structural,
+            blacklist=blacklist,
+            flatten=flatten,
+            flatten_delim=flatten_delim,
+            lingual=lingual,
+            strip=strip,
+            replacements=replacements,
+            tabular=tabular,
+            visual=visual,
+            pdf_path=pdf_path,
+            lingual_parser=lingual_parser,
+        )
+    return parser_udf
 
 
 def test_parse_md_details(caplog):
-    """Unit test of the final results stored in the database of the md document.
-
-    This test only looks at the final results such that the implementation of
-    the ParserUDF's apply() can be modified.
-    """
+    """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
-    max_docs = 1
     docs_path = "tests/data/html_simple/md.html"
     pdf_path = "tests/data/pdf_simple/md.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+
+    # Check that doc has a name
+    assert doc.name == "md"
+
+    # Check that doc does not have any of these
+    assert len(doc.figures) == 0
+    assert len(doc.tables) == 0
+    assert len(doc.cells) == 0
+    assert len(doc.sentences) == 0
 
     # Create an Parser and parse the md document
-    parser = Parser(
+    parser_udf = get_parser_udf(
         structural=True,
         tabular=True,
         lingual=True,
@@ -46,11 +76,8 @@ def test_parse_md_details(caplog):
         pdf_path=pdf_path,
         language="en",
     )
-    parser.apply(preprocessor, parallelism=PARALLEL)
-
-    # Grab the md document
-    doc = session.query(Document).order_by(Document.name).all()[0]
-    assert doc.name == "md"
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     # Check that doc has a figure
     assert len(doc.figures) == 1
@@ -122,70 +149,67 @@ def test_parse_md_details(caplog):
 def test_warning_on_missing_pdf(caplog):
     """Test that a warning is issued on invalid pdf."""
     caplog.set_level(logging.INFO)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
-    max_docs = 1
     docs_path = "tests/data/html_simple/md_para.html"
     pdf_path = "tests/data/pdf_simple/md_para_nonexistant.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md_para"))
 
     # Create an Parser and parse the md document
-    parser = Parser(
+    parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    with pytest.warns(RuntimeWarning):
-        parser.apply(preprocessor, parallelism=PARALLEL)
-
-    assert session.query(Document).count() == 1
+    with pytest.warns(RuntimeWarning) as record:
+        for _ in parser_udf.apply((doc, text)):
+            pass
+    assert len(record) == 1
+    assert "Visual parse failed" in record[0].message.args[0]
 
 
 def test_warning_on_incorrect_filename(caplog):
     """Test that a warning is issued on invalid pdf."""
     caplog.set_level(logging.INFO)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
     docs_path = "tests/data/html_simple/md_para.html"
     pdf_path = "tests/data/html_simple/md_para.html"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md_para"))
 
     # Create an Parser and parse the md document
-    parser = Parser(
+    parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    with pytest.warns(RuntimeWarning):
-        parser.apply(preprocessor, parallelism=PARALLEL)
-
-    assert session.query(Document).count() == 1
+    with pytest.warns(RuntimeWarning) as record:
+        for _ in parser_udf.apply((doc, text)):
+            pass
+    assert len(record) == 1
+    assert "Visual parse failed" in record[0].message.args[0]
 
 
 def test_parse_md_paragraphs(caplog):
     """Unit test of Paragraph parsing."""
     caplog.set_level(logging.INFO)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
-    max_docs = 1
     docs_path = "tests/data/html_simple/md_para.html"
     pdf_path = "tests/data/pdf_simple/md_para.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md_para"))
+
+    # Check that doc has a name
+    assert doc.name == "md_para"
 
     # Create an Parser and parse the md document
-    parser = Parser(
+    parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    parser.apply(preprocessor, parallelism=PARALLEL)
-
-    # Grab the document
-    doc = session.query(Document).order_by(Document.name).all()[0]
-    assert doc.name == "md_para"
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     # Check that doc has a figure
     assert len(doc.figures) == 6
@@ -257,25 +281,23 @@ def test_simple_tokenizer(caplog):
     """Unit test of Parser on a single document with lingual features off."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    # SpaCy on mac has issue on parallel parseing
-    if os.name == "posix":
-        PARALLEL = 1
-    else:
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    max_docs = 2
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple/"
+    docs_path = "tests/data/html_simple/md.html"
+    pdf_path = "tests/data/pdf_simple/md.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
 
-    parser = Parser(structural=True, lingual=False, visual=True, pdf_path=pdf_path)
-    parser.apply(preprocessor, parallelism=PARALLEL)
+    # Check that doc has a name
+    assert doc.name == "md"
 
-    doc = session.query(Document).order_by(Document.name).all()[1]
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True, lingual=False, visual=True, pdf_path=pdf_path
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     logger.info("Doc: {}".format(doc))
     for i, sentence in enumerate(doc.sentences):
@@ -304,28 +326,23 @@ def test_parse_document_diseases(caplog):
     """
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    # SpaCy on mac has issue on parallel parseing
-    if os.name == "posix":
-        PARALLEL = 1
-    else:
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    max_docs = 2
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple/"
+    docs_path = "tests/data/html_simple/diseases.html"
+    pdf_path = "tests/data/pdf_simple/diseases.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "diseases"))
+
+    # Check that doc has a name
+    assert doc.name == "diseases"
 
     # Create an Parser and parse the diseases document
-    parser = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    parser.apply(preprocessor, parallelism=PARALLEL)
-
-    # Grab the diseases document
-    doc = session.query(Document).order_by(Document.name).all()[0]
-    assert doc.name == "diseases"
+    parser_udf = get_parser_udf(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     logger.info("Doc: {}".format(doc))
     for sentence in doc.sentences:
@@ -376,73 +393,27 @@ def test_parse_document_diseases(caplog):
     assert len(doc.sentences) == 37
 
 
-def test_spacy_integration(caplog):
-    """Run a simple e2e parse using spaCy as our parser.
-
-    The point of this test is to actually use the DB just as would be
-    done in a notebook by a user.
-    """
-    #  caplog.set_level(logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    # SpaCy on mac has issue on parallel parseing
-    if os.name == "posix":
-        PARALLEL = 1
-    else:
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
-
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple/"
-
-    max_docs = 2
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-
-    corpus_parser = Parser(
-        structural=True, lingual=True, visual=False, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-
-    docs = session.query(Document).order_by(Document.name).all()
-
-    for doc in docs:
-        logger.info("Doc: {}".format(doc.name))
-        for sentence in doc.sentences:
-            logger.info("  Sentence: {}".format(sentence.text))
-
-    assert session.query(Document).count() == 2
-    assert session.query(Sentence).count() == 82
-
-
 def test_parse_style(caplog):
     """Test style tag parsing."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    # SpaCy on mac has issue on parallel parseing
-    if os.name == "posix":
-        PARALLEL = 1
-    else:
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    max_docs = 1
     docs_path = "tests/data/html_extended/ext_diseases.html"
     pdf_path = "tests/data/pdf_extended/ext_diseases.pdf"
 
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "ext_diseases"))
 
-    # Create an Parser and parse the md document
-    parser = Parser(structural=True, lingual=True, visual=True, pdf_path=pdf_path)
-    parser.apply(preprocessor, parallelism=PARALLEL)
-
-    # Grab the document
-    doc = session.query(Document).order_by(Document.name).all()[0]
+    # Create an Parser and parse the diseases document
+    parser_udf = get_parser_udf(
+        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     # Grab the sentences parsed by the Parser
-    sentences = list(session.query(Sentence).order_by(Sentence.position).all())
+    sentences = doc.sentences
 
     logger.warning("Doc: {}".format(doc))
     for i, sentence in enumerate(sentences):
