@@ -1,3 +1,4 @@
+import importlib
 import logging
 from collections import defaultdict
 from pathlib import Path
@@ -12,50 +13,6 @@ try:
     from spacy.tokens import Doc
 except Exception as e:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
-
-
-class TokenPreservingTokenizer(object):
-    """
-    This custom tokenizer simply preserves the
-    tokenization that was already performed during sentence splitting.
-    It will output a list of space separated tokens, whereas each token
-    is a single word from the list of sentences.
-    :param vocab: The vocab attribute of the respective spacy language object
-    :param tokenized_sentences: A list of sentences that
-    was previously tokenized/split by spacy
-    :return:
-    """
-
-    def __init__(self, vocab, tokenized_sentences):
-        self.logger = logging.getLogger(__name__)
-        self.all_input_tokens = []
-        self.vocab = vocab
-        self.all_spaces = []
-        for sentence in tokenized_sentences:
-            words_in_sentence = sentence.words
-            if len(words_in_sentence) > 0:
-                self.all_input_tokens += sentence.words
-                current_sentence_pos = 0
-                spaces_list = [True] * len(words_in_sentence)
-                # Last word in sentence always assumed to be followed by space
-                for i, word in enumerate(words_in_sentence[:-1]):
-                    current_sentence_pos = sentence.text.find(
-                        word, current_sentence_pos
-                    )
-                    if current_sentence_pos == -1:
-                        raise AttributeError(
-                            "Could not find token in its parent sentence"
-                        )
-                    current_sentence_pos += len(word)
-                    if not any(
-                        sentence.text[current_sentence_pos:].startswith(s)
-                        for s in whitespace
-                    ):
-                        spaces_list[i] = False
-                self.all_spaces += spaces_list
-
-    def __call__(self):
-        return Doc(self.vocab, words=self.all_input_tokens, spaces=self.all_spaces)
 
 
 class Spacy(object):
@@ -94,7 +51,26 @@ class Spacy(object):
     def __init__(self, lang):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
-        self.model = Spacy.load_lang_model(lang)
+        self.spacy_languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
+        self.alpha_languages = ["ja"]
+        self.alpha_languages_names = {"ja": "Japanese"}
+
+        self.lang = lang
+        self.model = None
+
+        # self.model = self.load_lang_model()
+
+    def has_tokenizer_support(self):
+        if self.has_NLP_support() or self.lang in self.alpha_languages:
+            return True
+        else:
+            return False
+
+    def has_NLP_support(self):
+        if self.lang in self.spacy_languages:
+            return True
+        else:
+            return False
 
     @staticmethod
     def is_package(name):
@@ -133,8 +109,7 @@ class Spacy(object):
             return True
         return False
 
-    @staticmethod
-    def load_lang_model(lang):
+    def load_lang_model(self):
         """
         Load spaCy language model or download if
         model is available and not installed
@@ -146,12 +121,19 @@ class Spacy(object):
         fr French (1.33GB)
         es Spanish (377MB)
 
-        :param lang:
         :return:
         """
-        if not Spacy.model_installed(lang):
-            download(lang)
-        return spacy.load(lang)
+        if self.lang in self.spacy_languages:
+            if not Spacy.model_installed(self.lang):
+                download(self.lang)
+            model = spacy.load(self.lang)
+        elif self.lang in self.alpha_languages:
+            language_module = importlib.import_module("spacy.lang.{}".format(self.lang))
+            language_method = getattr(
+                language_module, self.alpha_languages_names[self.lang]
+            )
+            model = language_method()
+        self.model = model
 
     def sentence_list_separator_function(self, all_sentence_objs):
         start_token_marker = []
@@ -182,13 +164,18 @@ class Spacy(object):
 
         return set_custom_boundary
 
-    def parse(self, all_sentences):
+    def enrich_sentences_with_NLP(self, all_sentences):
         """
         Enrich a list of fonduer Sentence objects with NLP features.
         We merge and process the text of all Sentences for higher efficiency
         :param all_sentences: List of fonduer Sentence objects for one document
         :return:
         """
+        if self.lang in self.alpha_languages:
+            raise NotImplementedError(
+                "Language {} not available in "
+                "spacy beyond tokenization".format(self.lang)
+            )
 
         if len(all_sentences) == 0:
             return  # Nothing to parse
@@ -357,3 +344,47 @@ class Spacy(object):
             position += 1
 
             yield parts
+
+
+class TokenPreservingTokenizer(object):
+    """
+    This custom tokenizer simply preserves the
+    tokenization that was already performed during sentence splitting.
+    It will output a list of space separated tokens, whereas each token
+    is a single word from the list of sentences.
+    :param vocab: The vocab attribute of the respective spacy language object
+    :param tokenized_sentences: A list of sentences that
+    was previously tokenized/split by spacy
+    :return:
+    """
+
+    def __init__(self, vocab, tokenized_sentences):
+        self.logger = logging.getLogger(__name__)
+        self.all_input_tokens = []
+        self.vocab = vocab
+        self.all_spaces = []
+        for sentence in tokenized_sentences:
+            words_in_sentence = sentence.words
+            if len(words_in_sentence) > 0:
+                self.all_input_tokens += sentence.words
+                current_sentence_pos = 0
+                spaces_list = [True] * len(words_in_sentence)
+                # Last word in sentence always assumed to be followed by space
+                for i, word in enumerate(words_in_sentence[:-1]):
+                    current_sentence_pos = sentence.text.find(
+                        word, current_sentence_pos
+                    )
+                    if current_sentence_pos == -1:
+                        raise AttributeError(
+                            "Could not find token in its parent sentence"
+                        )
+                    current_sentence_pos += len(word)
+                    if not any(
+                        sentence.text[current_sentence_pos:].startswith(s)
+                        for s in whitespace
+                    ):
+                        spaces_list[i] = False
+                self.all_spaces += spaces_list
+
+    def __call__(self):
+        return Doc(self.vocab, words=self.all_input_tokens, spaces=self.all_spaces)
