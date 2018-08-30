@@ -60,9 +60,6 @@ def save_marginals(session, X, marginals, training=True):
     # Prepare bulk INSERT query
     q = Marginal.__table__.insert()
 
-    # Ensure that X is a list
-    X = list(X)
-
     # Prepare values
     insert_vals = []
     for i, k, p in marginal_tuples:

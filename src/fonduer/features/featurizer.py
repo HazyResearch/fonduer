@@ -13,23 +13,23 @@ logger = logging.getLogger(__name__)
 _ALL_SPLITS = -1
 
 
-class FAnnotator(UDFRunner):
+class Featurizer(UDFRunner):
     """An operator to add Feature Annotations to Candidates."""
 
     def __init__(self, session, candidate_classes):
-        """Initialize the FAnnotator."""
-        super(FAnnotator, self).__init__(
-            FAnnotatorUDF, candidate_classes=candidate_classes
+        """Initialize the Featurizer."""
+        super(Featurizer, self).__init__(
+            FeaturizerUDF, candidate_classes=candidate_classes
         )
         self.candidate_classes = candidate_classes
         self.session = session
 
     def apply(self, docs=None, split=0, train=False, **kwargs):
-        """Call the FAnnotatorUDF."""
+        """Call the FeaturizerUDF."""
         if docs:
             # Call apply on the specified docs for all splits
             split = _ALL_SPLITS
-            super(FAnnotator, self).apply(
+            super(Featurizer, self).apply(
                 docs, split=split, train=train, bulk=True, **kwargs
             )
             # Needed to sync the bulk operations
@@ -49,7 +49,7 @@ class FAnnotator(UDFRunner):
                     .filter(candidate_class.id.in_(sub_query))
                     .all()
                 )
-            super(FAnnotator, self).apply(
+            super(Featurizer, self).apply(
                 split_docs, split=split, train=train, bulk=True, **kwargs
             )
             # Needed to sync the bulk operations
@@ -63,35 +63,6 @@ class FAnnotator(UDFRunner):
         # Remove the specified keys
         for key in keys:
             self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
-
-    def get_candidates(self, docs=None, split=0):
-        """Return a generator of lists of candidates for the FAnnotator."""
-        result = []
-        if docs:
-            # Get cands from all splits
-            for candidate_class in self.candidate_classes:
-                cands = (
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.document_id in [doc.id for doc in docs])
-                    .order_by(candidate_class.id)
-                    .all()
-                )
-                result.append(cands)
-        else:
-            for candidate_class in self.candidate_classes:
-                sub_query = (
-                    self.session.query(Candidate.id)
-                    .filter(Candidate.split == split)
-                    .subquery()
-                )
-                cands = (
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.id.in_(sub_query))
-                    .order_by(candidate_class.id)
-                    .all()
-                )
-                result.append(cands)
-        return result
 
     def clear(self, session, train=False, split=0, **kwargs):
         """Delete Features of each class from the database."""
@@ -159,17 +130,17 @@ class FAnnotator(UDFRunner):
         return result
 
 
-class FAnnotatorUDF(UDF):
+class FeaturizerUDF(UDF):
     """UDF for performing candidate extraction."""
 
     def __init__(self, candidate_classes, **kwargs):
-        """Initialize the FAnnotatorUDF."""
+        """Initialize the FeaturizerUDF."""
         self.candidate_classes = (
             candidate_classes
             if isinstance(candidate_classes, (list, tuple))
             else [candidate_classes]
         )
-        super(FAnnotatorUDF, self).__init__(**kwargs)
+        super(FeaturizerUDF, self).__init__(**kwargs)
 
     def _add_FeatureKeys(self, keys):
         """Construct a FeatureKey from the key."""

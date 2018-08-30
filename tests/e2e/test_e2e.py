@@ -4,6 +4,7 @@ import os
 import pickle
 
 import numpy as np
+import pytest
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
@@ -14,12 +15,12 @@ from fonduer.learning import (
     LogisticRegression,
     SparseLogisticRegression,
 )
-from fonduer.features import FAnnotator
+from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.supervision import LAnnotator
+from fonduer.supervision import Labeler
 from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
     LF_collector_aligned,
@@ -45,15 +46,12 @@ from tests.shared.hardware_spaces import MentionNgramsPart, MentionNgramsTemp
 from tests.shared.hardware_throttlers import temp_throttler
 from tests.shared.hardware_utils import entity_level_f1, load_hardware_labels
 
-#  import pytest
-
-
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-#  @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
@@ -169,18 +167,30 @@ def test_e2e(caplog):
     Temp = mention_subclass("Temp")
 
     mention_extractor = MentionExtractor(
-        [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
+        session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
 
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 299
     assert session.query(Temp).count() == 134
+    assert len(mention_extractor.get_mentions()) == 2
+    assert len(mention_extractor.get_mentions()[0]) == 299
+    assert (
+        len(
+            mention_extractor.get_mentions(
+                docs=[session.query(Document).filter(Document.name == "112823").first()]
+            )[0]
+        )
+        == 70
+    )
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    candidate_extractor = CandidateExtractor([PartTemp], throttlers=[temp_throttler])
+    candidate_extractor = CandidateExtractor(
+        session, [PartTemp], throttlers=[temp_throttler]
+    )
 
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
@@ -189,8 +199,23 @@ def test_e2e(caplog):
     assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
     assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
 
+    # Grab candidate lists
+    train_cands = candidate_extractor.get_candidates(split=0)
+    dev_cands = candidate_extractor.get_candidates(split=1)
+    test_cands = candidate_extractor.get_candidates(split=2)
+    assert len(train_cands) == 1
+    assert len(train_cands[0]) == 3346
+    assert (
+        len(
+            candidate_extractor.get_candidates(
+                docs=[session.query(Document).filter(Document.name == "112823").first()]
+            )[0]
+        )
+        == 1178
+    )
+
     # Featurization
-    featurizer = FAnnotator(session, [PartTemp])
+    featurizer = Featurizer(session, [PartTemp])
 
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
@@ -205,27 +230,19 @@ def test_e2e(caplog):
     featurizer.apply(split=0, train=True, parallelism=1)
     assert session.query(Feature).count() == 3346
     assert session.query(FeatureKey).count() == 3578
-    F_train_cands = featurizer.get_candidates(split=0)
-    F_train_cands_check = featurizer.get_candidates(train_docs)
-    # Check that the order of the candidates is the same either way
-    assert all(
-        c1.id == c2.id for (c1, c2) in zip(F_train_cands[0], F_train_cands_check[0])
-    )
-    F_train = featurizer.get_feature_matrices(F_train_cands)
+    F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (3346, 3578)
 
     featurizer.apply(split=1, parallelism=PARALLEL)
     assert session.query(Feature).count() == 3407
     assert session.query(FeatureKey).count() == 3578
-    F_dev_cands = featurizer.get_candidates(split=1)
-    F_dev = featurizer.get_feature_matrices(F_dev_cands)
+    F_dev = featurizer.get_feature_matrices(dev_cands)
     assert F_dev[0].shape == (61, 3578)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
     assert session.query(Feature).count() == 3827
     assert session.query(FeatureKey).count() == 3578
-    F_test_cands = featurizer.get_candidates(split=2)
-    F_test = featurizer.get_feature_matrices(F_test_cands)
+    F_test = featurizer.get_feature_matrices(test_cands)
     assert F_test[0].shape == (420, 3578)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
@@ -241,19 +258,18 @@ def test_e2e(caplog):
         LF_negative_number_left,
     ]
 
-    labeler = LAnnotator(session, [PartTemp])
+    labeler = Labeler(session, [PartTemp])
     labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
     assert len(labeler.get_lfs()) == 6
     assert session.query(Label).count() == 3346
     assert session.query(LabelKey).count() == 6
-    L_train_cands = labeler.get_candidates(split=0)
-    L_train = labeler.get_label_matrices(L_train_cands)
+    L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3346, 6)
 
-    L_train_gold = labeler.get_gold_labels(L_train_cands)
+    L_train_gold = labeler.get_gold_labels(train_cands)
     assert L_train_gold[0].shape == (3346, 1)
 
-    L_train_gold = labeler.get_gold_labels(L_train_cands, annotator="gold")
+    L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
     assert L_train_gold[0].shape == (3346, 1)
 
     gen_model = GenerativeModel(cardinalities=2)
@@ -263,11 +279,11 @@ def test_e2e(caplog):
 
     disc_model = LogisticRegression()
     disc_model.train(
-        (F_train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((F_test_cands[0], F_test[0]), b=0.6)
-    true_pred = [F_test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
@@ -307,8 +323,7 @@ def test_e2e(caplog):
     labeler.update(split=0, lfs=stg_temp_lfs_2, parallelism=PARALLEL)
     assert session.query(Label).count() == 3346
     assert session.query(LabelKey).count() == 13
-    L_train_cands = labeler.get_candidates(split=0)
-    L_train = labeler.get_label_matrices(L_train_cands)
+    L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3346, 13)
 
     gen_model = GenerativeModel(cardinalities=2)
@@ -318,11 +333,11 @@ def test_e2e(caplog):
 
     disc_model = LogisticRegression()
     disc_model.train(
-        (F_train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((F_test_cands[0], F_test[0]), b=0.6)
-    true_pred = [F_test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -344,11 +359,11 @@ def test_e2e(caplog):
     # Testing LSTM
     disc_model = LSTM()
     disc_model.train(
-        (F_train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
-    test_score = disc_model.predictions((F_test_cands[0], F_test[0]), b=0.6)
-    true_pred = [F_test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc

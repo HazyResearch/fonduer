@@ -13,19 +13,17 @@ logger = logging.getLogger(__name__)
 _ALL_SPLITS = -1
 
 
-class LAnnotator(UDFRunner):
+class Labeler(UDFRunner):
     """An operator to add Label Annotations to Candidates."""
 
     def __init__(self, session, candidate_classes):
-        """Initialize the LAnnotator."""
-        super(LAnnotator, self).__init__(
-            LAnnotatorUDF, candidate_classes=candidate_classes
-        )
+        """Initialize the Labeler."""
+        super(Labeler, self).__init__(LabelerUDF, candidate_classes=candidate_classes)
         self.candidate_classes = candidate_classes
         self.session = session
 
     def update(self, docs=None, split=0, lfs=None, **kwargs):
-        """Call the LAnnotatorUDF."""
+        """Call the LabelerUDF."""
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
 
@@ -40,7 +38,7 @@ class LAnnotator(UDFRunner):
         if docs:
             # Call apply on the specified docs for all splits
             split = _ALL_SPLITS
-            super(LAnnotator, self).apply(
+            super(Labeler, self).apply(
                 docs,
                 split=split,
                 clear=False,
@@ -67,7 +65,7 @@ class LAnnotator(UDFRunner):
                     .filter(candidate_class.id.in_(sub_query))
                     .all()
                 )
-            super(LAnnotator, self).apply(
+            super(Labeler, self).apply(
                 split_docs,
                 split=split,
                 clear=False,
@@ -81,7 +79,7 @@ class LAnnotator(UDFRunner):
             self.session.commit()
 
     def apply(self, docs=None, split=0, train=False, lfs=None, **kwargs):
-        """Call the LAnnotatorUDF."""
+        """Call the LabelerUDF."""
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
 
@@ -89,7 +87,7 @@ class LAnnotator(UDFRunner):
         if docs:
             # Call apply on the specified docs for all splits
             split = _ALL_SPLITS
-            super(LAnnotator, self).apply(
+            super(Labeler, self).apply(
                 docs,
                 split=split,
                 train=train,
@@ -115,7 +113,7 @@ class LAnnotator(UDFRunner):
                     .filter(candidate_class.id.in_(sub_query))
                     .all()
                 )
-            super(LAnnotator, self).apply(
+            super(Labeler, self).apply(
                 split_docs,
                 split=split,
                 train=train,
@@ -128,7 +126,7 @@ class LAnnotator(UDFRunner):
             self.session.commit()
 
     def get_lfs(self):
-        """Return a list of labeling functions for this LAnnotator."""
+        """Return a list of labeling functions for this Labeler."""
         return self.lfs
 
     def drop_keys(self, keys):
@@ -138,36 +136,12 @@ class LAnnotator(UDFRunner):
 
         # Remove the specified keys
         for key in keys:
-            self.session.query(LabelKey).filter(LabelKey.name == key).delete()
-
-    def get_candidates(self, docs=None, split=0):
-        """Return a generator of lists of candidates for the LAnnotator."""
-        result = []
-        if docs:
-            # Get cands from all splits
-            for candidate_class in self.candidate_classes:
-                cands = (
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.document_id in [doc.id for doc in docs])
-                    .order_by(candidate_class.id)
-                    .all()
-                )
-                result.append(cands)
-        else:
-            for candidate_class in self.candidate_classes:
-                sub_query = (
-                    self.session.query(Candidate.id)
-                    .filter(Candidate.split == split)
-                    .subquery()
-                )
-                cands = (
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.id.in_(sub_query))
-                    .order_by(candidate_class.id)
-                    .all()
-                )
-                result.append(cands)
-        return result
+            try:  # Assume key is an LF
+                self.session.query(LabelKey).filter(
+                    LabelKey.name == key.__name__
+                ).delete()
+            except AttributeError:
+                self.session.query(LabelKey).filter(LabelKey.name == key).delete()
 
     def clear(self, session, train=False, split=0, **kwargs):
         """Delete Labels of each class from the database."""
@@ -275,17 +249,17 @@ class LAnnotator(UDFRunner):
         return result
 
 
-class LAnnotatorUDF(UDF):
+class LabelerUDF(UDF):
     """UDF for performing candidate extraction."""
 
     def __init__(self, candidate_classes, **kwargs):
-        """Initialize the LAnnotatorUDF."""
+        """Initialize the LabelerUDF."""
         self.candidate_classes = (
             candidate_classes
             if isinstance(candidate_classes, (list, tuple))
             else [candidate_classes]
         )
-        super(LAnnotatorUDF, self).__init__(**kwargs)
+        super(LabelerUDF, self).__init__(**kwargs)
 
     def _add_LabelKeys(self, keys):
         """Bulk insert the specified LabelKeys."""

@@ -147,6 +147,7 @@ class MentionFigures(MentionSpace):
 class MentionExtractor(UDFRunner):
     """An operator to extract Mention objects from a Context.
 
+    :param session: An initialized database session.
     :param mention_classes: The type of relation to extract, defined using
         :func: fonduer.mentions.mention_subclass.
     :param mention_spaces: one or list of :class:`MentionSpace` objects, one for
@@ -157,7 +158,7 @@ class MentionExtractor(UDFRunner):
         Mentions
     """
 
-    def __init__(self, mention_classes, mention_spaces, matchers):
+    def __init__(self, session, mention_classes, mention_spaces, matchers):
         """Initialize the MentionExtractor."""
         super(MentionExtractor, self).__init__(
             MentionExtractorUDF,
@@ -175,6 +176,7 @@ class MentionExtractor(UDFRunner):
             )
 
         self.mention_classes = mention_classes
+        self.session = session
 
     def apply(self, xs, split=0, **kwargs):
         """Call the MentionExtractorUDF."""
@@ -188,10 +190,40 @@ class MentionExtractor(UDFRunner):
                 Mention.type == mention_class.__tablename__
             ).delete()
 
-    def clear_all(self, session, **kwargs):
+    def clear_all(self, **kwargs):
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
-        session.query(Mention).delete()
+        self.session.query(Mention).delete()
+
+    def get_mentions(self, docs=None):
+        """Return a list of lists of the mentions associated with this extractor.
+
+        Each list of the return will contain the Mentions for one of the
+        mention classes associated with the MentionExtractor.
+
+        :param docs: If provided, return Mentions from these documents. Else,
+            return all Mentions.
+        :return: List of lists of Mentions for each mention_class.
+        """
+        result = []
+        if docs:
+            docs = docs if isinstance(docs, (list, tuple)) else [docs]
+            # Get cands from all splits
+            for mention_class in self.mention_classes:
+                mentions = (
+                    self.session.query(mention_class)
+                    .filter(mention_class.document_id in [doc.id for doc in docs])
+                    .order_by(mention_class.id)
+                    .all()
+                )
+                result.append(mentions)
+        else:
+            for mention_class in self.mention_classes:
+                mentions = (
+                    self.session.query(mention_class).order_by(mention_class.id).all()
+                )
+                result.append(mentions)
+        return result
 
 
 class MentionExtractorUDF(UDF):

@@ -1,3 +1,3 @@
-from fonduer.supervision.l_annotator import LAnnotator
+from fonduer.supervision.labeler import Labeler
 
-__all__ = ["LAnnotator"]
+__all__ = ["Labeler"]

@@ -1,3 +1,3 @@
-from fonduer.features.f_annotator import FAnnotator
+from fonduer.features.featurizer import Featurizer
 
-__all__ = ["FAnnotator"]
+__all__ = ["Featurizer"]
