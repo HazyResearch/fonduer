@@ -70,9 +70,6 @@ class UDFRunner(object):
     def clear(self, session, **kwargs):
         raise NotImplementedError()
 
-    def get_table(self, **kwargs):
-        raise NotImplementedError()
-
     def apply_st(self, xs, bulk, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)

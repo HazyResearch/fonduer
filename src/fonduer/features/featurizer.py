@@ -1,16 +1,19 @@
 import logging
 
-from scipy.sparse import csr_matrix
-
 from fonduer.candidates.models import Candidate
 from fonduer.features.features import get_all_feats
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.utils.udf import UDF, UDFRunner
-from fonduer.utils.utils_udf import add_keys
+from fonduer.utils.utils_udf import (
+    ALL_SPLITS,
+    add_keys,
+    cands_from_split,
+    docs_from_split,
+    get_mapping,
+    get_sparse_matrix,
+)
 
 logger = logging.getLogger(__name__)
-
-_ALL_SPLITS = -1
 
 
 class Featurizer(UDFRunner):
@@ -28,7 +31,7 @@ class Featurizer(UDFRunner):
         """Call the FeaturizerUDF."""
         if docs:
             # Call apply on the specified docs for all splits
-            split = _ALL_SPLITS
+            split = ALL_SPLITS
             super(Featurizer, self).apply(
                 docs, split=split, train=train, bulk=True, **kwargs
             )
@@ -36,19 +39,7 @@ class Featurizer(UDFRunner):
             self.session.commit()
         else:
             # Only grab the docs containing candidates from the given split.
-            sub_query = (
-                self.session.query(Candidate.id)
-                .filter(Candidate.split == split)
-                .subquery()
-            )
-            split_docs = set()
-            for candidate_class in self.candidate_classes:
-                split_docs.update(
-                    cand.document
-                    for cand in self.session.query(candidate_class)
-                    .filter(candidate_class.id.in_(sub_query))
-                    .all()
-                )
+            split_docs = docs_from_split(self.session, self.candidate_classes, split)
             super(Featurizer, self).apply(
                 split_docs, split=split, train=train, bulk=True, **kwargs
             )
@@ -81,9 +72,6 @@ class Featurizer(UDFRunner):
             query = session.query(FeatureKey)
             query.delete(synchronize_session="fetch")
 
-    def get_table(self, **kwargs):
-        return Feature
-
     def clear_all(self, **kwargs):
         """Delete all Features."""
         logger.info("Clearing ALL Features and FeatureKeys.")
@@ -92,42 +80,7 @@ class Featurizer(UDFRunner):
 
     def get_feature_matrices(self, cand_lists):
         """Load sparse matrix of Features for each candidate_class."""
-        result = []
-        cand_lists = (
-            cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
-        )
-        for cand_list in cand_lists:
-            keys = [
-                key.name
-                for key in self.session.query(FeatureKey)
-                .order_by(FeatureKey.name)
-                .all()
-            ]
-
-            indptr = [0]
-            indices = []
-            data = []
-            for cand in cand_list:
-                if cand.features:
-                    cand_keys = cand.features[0].keys
-                    cand_values = cand.features[0].values
-                    indices.extend(
-                        [keys.index(key) for key in cand_keys if key in keys]
-                    )
-                    data.extend(
-                        [
-                            cand_values[i[0]]
-                            for i in enumerate(cand_keys)
-                            if i[1] in keys
-                        ]
-                    )
-
-                indptr.append(len(indices))
-            result.append(
-                csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys)))
-            )
-
-        return result
+        return get_sparse_matrix(self.session, FeatureKey, cand_lists)
 
 
 class FeaturizerUDF(UDF):
@@ -155,42 +108,10 @@ class FeaturizerUDF(UDF):
         logger.debug("Document: {}".format(doc))
 
         # Get all the candidates in this doc that will be featurized
-        cands = []
-        if split == _ALL_SPLITS:
-            # Get cands from all splits
-            for candidate_class in self.candidate_classes:
-                cands.extend(
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.document_id == doc.id)
-                    .all()
-                )
-        else:
-            # Get cands from the specified split
-            for candidate_class in self.candidate_classes:
-                cands.extend(
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.document_id == doc.id)
-                    .filter(candidate_class.split == split)
-                    .all()
-                )
+        cands = cands_from_split(self.session, self.candidate_classes, doc, split)
 
         feature_keys = set()
-        for cand in cands:
-            feature_args = {"candidate_id": cand.id}
-            keys = []
-            values = []
-            for cid, key_name, feature in get_all_feats(cand):
-                if feature == 0:
-                    continue
-                keys.append(key_name)
-                values.append(feature)
-
-            # Assemble feature arguments
-            feature_args["keys"] = keys
-            feature_args["values"] = values
-
-            feature_keys.update(keys)
-            yield feature_args
+        yield from get_mapping(cands, get_all_feats, feature_keys)
 
         # Insert all Feature Keys
         if train:

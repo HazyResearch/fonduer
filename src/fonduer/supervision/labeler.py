@@ -1,17 +1,21 @@
 import logging
 
-from scipy.sparse import csr_matrix
 from sqlalchemy.sql.expression import bindparam
 
 from fonduer.candidates.models import Candidate
 from fonduer.meta import Meta
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
-from fonduer.utils.utils_udf import add_keys
+from fonduer.utils.utils_udf import (
+    ALL_SPLITS,
+    add_keys,
+    cands_from_split,
+    docs_from_split,
+    get_mapping,
+    get_sparse_matrix,
+)
 
 logger = logging.getLogger(__name__)
-
-_ALL_SPLITS = -1
 
 
 class Labeler(UDFRunner):
@@ -22,64 +26,25 @@ class Labeler(UDFRunner):
         super(Labeler, self).__init__(LabelerUDF, candidate_classes=candidate_classes)
         self.candidate_classes = candidate_classes
         self.session = session
+        self.lfs = []
 
     def update(self, docs=None, split=0, lfs=None, **kwargs):
-        """Call the LabelerUDF."""
+        """Call apply with update=True."""
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
 
-        # Only take the non-updated LFs
+        # Grab only the new/update LFS
         self.lfs = [
             lf for lf in self.lfs if lf.__name__ not in [_.__name__ for _ in lfs]
         ]
-
         # Then add the updated/new LFs
         self.lfs.extend(lfs)
 
-        if docs:
-            # Call apply on the specified docs for all splits
-            split = _ALL_SPLITS
-            super(Labeler, self).apply(
-                docs,
-                split=split,
-                clear=False,
-                train=False,
-                update=True,
-                bulk=True,
-                lfs=self.lfs,
-                **kwargs
-            )
-            # Needed to sync the bulk update
-            self.session.commit()
-        else:
-            # Only grab the docs containing candidates from the given split.
-            sub_query = (
-                self.session.query(Candidate.id)
-                .filter(Candidate.split == split)
-                .subquery()
-            )
-            split_docs = set()
-            for candidate_class in self.candidate_classes:
-                split_docs.update(
-                    cand.document
-                    for cand in self.session.query(candidate_class)
-                    .filter(candidate_class.id.in_(sub_query))
-                    .all()
-                )
-            super(Labeler, self).apply(
-                split_docs,
-                split=split,
-                clear=False,
-                train=False,
-                update=True,
-                bulk=True,
-                lfs=self.lfs,
-                **kwargs
-            )
-            # Needed to sync the bulk update
-            self.session.commit()
+        self.apply(
+            docs=docs, split=split, lfs=self.lfs, train=False, update=True, **kwargs
+        )
 
-    def apply(self, docs=None, split=0, train=False, lfs=None, **kwargs):
+    def apply(self, docs=None, split=0, train=False, lfs=None, update=False, **kwargs):
         """Call the LabelerUDF."""
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
@@ -87,13 +52,13 @@ class Labeler(UDFRunner):
         self.lfs = lfs
         if docs:
             # Call apply on the specified docs for all splits
-            split = _ALL_SPLITS
+            split = ALL_SPLITS
             super(Labeler, self).apply(
                 docs,
                 split=split,
                 train=train,
                 bulk=True,
-                update=False,
+                update=update,
                 lfs=self.lfs,
                 **kwargs
             )
@@ -101,25 +66,13 @@ class Labeler(UDFRunner):
             self.session.commit()
         else:
             # Only grab the docs containing candidates from the given split.
-            sub_query = (
-                self.session.query(Candidate.id)
-                .filter(Candidate.split == split)
-                .subquery()
-            )
-            split_docs = set()
-            for candidate_class in self.candidate_classes:
-                split_docs.update(
-                    cand.document
-                    for cand in self.session.query(candidate_class)
-                    .filter(candidate_class.id.in_(sub_query))
-                    .all()
-                )
+            split_docs = docs_from_split(self.session, self.candidate_classes, split)
             super(Labeler, self).apply(
                 split_docs,
                 split=split,
                 train=train,
                 bulk=True,
-                update=False,
+                update=update,
                 lfs=self.lfs,
                 **kwargs
             )
@@ -161,9 +114,6 @@ class Labeler(UDFRunner):
             query = session.query(LabelKey)
             query.delete(synchronize_session="fetch")
 
-    def get_table(self, **kwargs):
-        return Label
-
     def clear_all(self, **kwargs):
         """Delete all Labels."""
         logger.info("Clearing ALL Labels and LabelKeys.")
@@ -172,82 +122,11 @@ class Labeler(UDFRunner):
 
     def get_gold_labels(self, cand_lists, annotator=None):
         """Load sparse matrix of GoldLabels for each candidate_class."""
-        result = []
-        cand_lists = (
-            cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
-        )
-        for cand_list in cand_lists:
-            if annotator:
-                keys = [annotator]
-            else:
-                keys = [
-                    key.name
-                    for key in self.session.query(GoldLabelKey)
-                    .order_by(GoldLabelKey.name)
-                    .all()
-                ]
-
-            indptr = [0]
-            indices = []
-            data = []
-            for cand in cand_list:
-                if cand.labels:
-                    cand_keys = cand.gold_labels[0].keys
-                    cand_values = cand.gold_labels[0].values
-                    indices.extend(
-                        [keys.index(key) for key in cand_keys if key in keys]
-                    )
-                    data.extend(
-                        [
-                            cand_values[i[0]]
-                            for i in enumerate(cand_keys)
-                            if i[1] in keys
-                        ]
-                    )
-
-                indptr.append(len(indices))
-
-            result.append(csr_matrix((data, indices, indptr)))
-
-        return result
+        return get_sparse_matrix(self.session, GoldLabelKey, cand_lists, key=annotator)
 
     def get_label_matrices(self, cand_lists):
         """Load sparse matrix of Labels for each candidate_class."""
-        result = []
-        cand_lists = (
-            cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
-        )
-        for cand_list in cand_lists:
-            keys = [
-                key.name
-                for key in self.session.query(LabelKey).order_by(LabelKey.name).all()
-            ]
-
-            indptr = [0]
-            indices = []
-            data = []
-            for cand in cand_list:
-                if cand.labels:
-                    cand_keys = cand.labels[0].keys
-                    cand_values = cand.labels[0].values
-                    indices.extend(
-                        [keys.index(key) for key in cand_keys if key in keys]
-                    )
-                    data.extend(
-                        [
-                            cand_values[i[0]]
-                            for i in enumerate(cand_keys)
-                            if i[1] in keys
-                        ]
-                    )
-
-                indptr.append(len(indices))
-
-            result.append(
-                csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys)))
-            )
-
-        return result
+        return get_sparse_matrix(self.session, LabelKey, cand_lists)
 
 
 class LabelerUDF(UDF):
@@ -278,90 +157,35 @@ class LabelerUDF(UDF):
     def get_table(self, **kwargs):
         return Label
 
-    # Convert lfs to a generator function
-    # In particular, catch verbose values and convert to integer ones
-    def _f_gen(self, labels, c):
-        for lf_key, label in labels(c):
+    def _f_gen(self, c):
+        """Convert lfs into a generator of id, name, and labels.
+
+        In particular, catch verbose values and convert to integer ones.
+        """
+        labels = lambda c: [(c.id, lf.__name__, lf(c)) for lf in self.lfs]
+        for cid, lf_key, label in labels(c):
             # Note: We assume if the LF output is an int, it is already
             # mapped correctly
             if isinstance(label, int):
-                yield lf_key, label
+                yield cid, lf_key, label
             # None is a protected LF output value corresponding to 0,
             # representing LF abstaining
             elif label is None:
-                yield lf_key, 0
+                yield cid, lf_key, 0
             elif label in c.values:
                 if c.cardinality > 2:
-                    yield lf_key, c.values.index(label) + 1
+                    yield cid, lf_key, c.values.index(label) + 1
                 # Note: Would be nice to not special-case here, but for
                 # consistency we leave binary LF range as {-1,0,1}
                 else:
                     val = 1 if c.values.index(label) == 0 else -1
-                    yield lf_key, val
+                    yield cid, lf_key, val
             else:
                 raise ValueError(
                     "Can't parse label value {} for candidate values {}".format(
                         label, c.values
                     )
                 )
-
-    def _update(self, doc, split, lfs):
-        """Perform an incremental add/update."""
-        labels = lambda c: [(lf.__name__, lf(c)) for lf in lfs]
-
-        # Get all the candidates in this doc that will be featurized
-        cands = []
-        if split == _ALL_SPLITS:
-            # Get cands from all splits
-            for candidate_class in self.candidate_classes:
-                cands.extend(
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.document_id == doc.id)
-                    .all()
-                )
-        else:
-            # Get cands from the specified split
-            for candidate_class in self.candidate_classes:
-                cands.extend(
-                    self.session.query(candidate_class)
-                    .filter(candidate_class.document_id == doc.id)
-                    .filter(candidate_class.split == split)
-                    .all()
-                )
-
-        label_keys = set()
-        updates = []
-        for cand in cands:
-            label_args = {"candidate_id": cand.id}
-            keys = []
-            values = []
-            for key_name, label in self._f_gen(labels, cand):
-                if label == 0:
-                    continue
-                keys.append(key_name)
-                values.append(label)
-
-            # Assemble label arguments
-            label_args["keys"] = keys
-            label_args["values"] = values
-
-            label_keys.update(keys)
-
-            # If candidate exists, update keys, values
-            if self.session.query(Label).filter(Label.candidate_id == cand.id).first():
-                # Used as a WHERE argument for update
-                label_args["_id"] = cand.id
-                updates.append(label_args)
-                continue
-
-            # else, just insert
-            yield label_args
-
-        # Execute all updates
-        self._update_labels(updates)
-
-        # Insert all Label Keys
-        add_keys(self.session, LabelKey, label_keys)
 
     def apply(self, doc, split, train, update, lfs, **kwargs):
         """Extract candidates from the given Context.
@@ -377,49 +201,32 @@ class LabelerUDF(UDF):
         if lfs is None:
             raise ValueError("Must provide lfs kwarg.")
 
-        if update:
-            yield from self._update(doc, split, lfs)
-        else:
-            labels = lambda c: [(lf.__name__, lf(c)) for lf in lfs]
+        self.lfs = lfs
 
-            # Get all the candidates in this doc that will be featurized
-            cands = []
-            if split == _ALL_SPLITS:
-                # Get cands from all splits
-                for candidate_class in self.candidate_classes:
-                    cands.extend(
-                        self.session.query(candidate_class)
-                        .filter(candidate_class.document_id == doc.id)
-                        .all()
-                    )
-            else:
-                # Get cands from the specified split
-                for candidate_class in self.candidate_classes:
-                    cands.extend(
-                        self.session.query(candidate_class)
-                        .filter(candidate_class.document_id == doc.id)
-                        .filter(candidate_class.split == split)
-                        .all()
-                    )
+        # Get all the candidates in this doc that will be featurized
+        cands = cands_from_split(self.session, self.candidate_classes, doc, split)
 
-            label_keys = set()
-            for cand in cands:
-                label_args = {"candidate_id": cand.id}
-                keys = []
-                values = []
-                for key_name, label in self._f_gen(labels, cand):
-                    if label == 0:
-                        continue
-                    keys.append(key_name)
-                    values.append(label)
+        label_keys = set()
+        updates = []
+        for label_args in get_mapping(cands, self._f_gen, label_keys):
 
-                # Assemble label arguments
-                label_args["keys"] = keys
-                label_args["values"] = values
+            # If candidate exists, update keys, values
+            if (
+                self.session.query(Label)
+                .filter(Label.candidate_id == label_args["candidate_id"])
+                .first()
+            ):
+                # Used as a WHERE argument for update
+                label_args["_id"] = label_args["candidate_id"]
+                updates.append(label_args)
+                continue
 
-                label_keys.update(keys)
-                yield label_args
+            # else, just insert
+            yield label_args
 
-            # Insert all Label Keys
-            if train:
-                add_keys(self.session, LabelKey, label_keys)
+        # Execute all updates
+        self._update_labels(updates)
+
+        # Insert all Label Keys
+        if train or update:
+            add_keys(self.session, LabelKey, label_keys)
