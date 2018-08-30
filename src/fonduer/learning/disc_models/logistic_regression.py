@@ -62,7 +62,7 @@ class LogisticRegression(NoiseAwareModel):
         :param X: The input data of the model
         :param model_kwargs: The arguments of the model
         """
-        model_kwargs["input_dim"] = X[0][1].shape[1]
+        model_kwargs["input_dim"] = X[1].shape[1]
         return model_kwargs
 
     def _build_model(self, model_kwargs):
