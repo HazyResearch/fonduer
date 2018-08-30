@@ -6,7 +6,6 @@ from multiprocessing import JoinableQueue, Process
 from queue import Empty
 
 import numpy as np
-import scipy.sparse as sparse
 import torch
 import torch.nn.functional as F
 from pandas import DataFrame
@@ -785,122 +784,6 @@ class RandomSearch(GridSearch):
                 ]
             )
         )
-
-
-# ##########################################################
-# # Utility functions for annotation matrices
-# ##########################################################
-
-
-def sparse_abs(X):
-    """Element-wise absolute value of sparse matrix- avoids casting to dense matrix!"""
-    X_abs = X.copy()
-    if not sparse.issparse(X):
-        return abs(X_abs)
-    if sparse.isspmatrix_csr(X) or sparse.isspmatrix_csc(X):
-        X_abs.data = np.abs(X_abs.data)
-    elif sparse.isspmatrix_lil(X):
-        X_abs.data = np.array([np.abs(L) for L in X_abs.data])
-    else:
-        raise ValueError("Only supports CSR/CSC and LIL matrices")
-    return X_abs
-
-
-def candidate_coverage(L):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return the **fraction of candidates which have > 0
-    (non-zero) labels.**
-    """
-    return np.where(sparse_abs(L).sum(axis=1) != 0, 1, 0).sum() / float(L.shape[0])
-
-
-def LF_coverage(L):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return the **fraction of candidates that each LF labels.**
-    """
-    return np.ravel(sparse_abs(L).sum(axis=0) / float(L.shape[0]))
-
-
-def candidate_overlap(L):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return the **fraction of candidates which have > 1
-    (non-zero) labels.**
-    """
-    return np.where(sparse_abs(L).sum(axis=1) > 1, 1, 0).sum() / float(L.shape[0])
-
-
-def LF_overlaps(L):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return the **fraction of candidates that each LF _overlaps
-    with other LFs on_.**
-    """
-    L_abs = sparse_abs(L)
-    return np.ravel(np.where(L_abs.sum(axis=1) > 1, 1, 0).T * L_abs / float(L.shape[0]))
-
-
-def candidate_conflict(L):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return the **fraction of candidates which have > 1
-    (non-zero) labels _which are not equal_.**
-    """
-    return np.where(
-        sparse_abs(L).sum(axis=1) != sparse_abs(L.sum(axis=1)), 1, 0
-    ).sum() / float(L.shape[0])
-
-
-def LF_conflicts(L):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return the **fraction of candidates that each LF _conflicts
-    with other LFs on_.**
-    """
-    L_abs = sparse_abs(L)
-    return np.ravel(
-        np.where(L_abs.sum(axis=1) != sparse_abs(L.sum(axis=1)), 1, 0).T
-        * L_abs
-        / float(L.shape[0])
-    )
-
-
-def LF_accuracies(L, labels):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate, and labels {-1,1} Return the accuracy of each LF w.r.t.
-    these labels
-    """
-    return np.ravel(0.5 * (L.T.dot(labels) / sparse_abs(L).sum(axis=0) + 1))
-
-
-def training_set_summary_stats(L, return_vals=True, verbose=False):
-    """
-    Given an N x M matrix where L_{i,j} is the label given by the jth LF to the
-    ith candidate: Return simple summary statistics
-    """
-    N, M = L.shape
-    coverage, overlap, conflict = (
-        candidate_coverage(L),
-        candidate_overlap(L),
-        candidate_conflict(L),
-    )
-    if verbose:
-        logger.info("=" * 60)
-        logger.info("LF Summary Statistics: %s LFs applied to %s candidates" % (M, N))
-        logger.info("-" * 60)
-        logger.info(
-            "Coverage (candidates w/ > 0 labels):\t\t%0.2f%%" % (coverage * 100,)
-        )
-        logger.info("Overlap (candidates w/ > 1 labels):\t\t%0.2f%%" % (overlap * 100,))
-        logger.info(
-            "Conflict (candidates w/ conflicting labels):\t%0.2f%%" % (conflict * 100,)
-        )
-        logger.info("=" * 60)
-    if return_vals:
-        return coverage, overlap, conflict
 
 
 # ##########################################################
