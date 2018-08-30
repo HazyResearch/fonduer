@@ -56,12 +56,14 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
 
             indptr.append(len(indices))
 
-        result.append(csr_matrix((data, indices, indptr)))
+        result.append(
+            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys)))
+        )
 
     return result
 
 
-def docs_from_split(session, candidate_classes, split):
+def get_docs_from_split(session, candidate_classes, split):
     """Return a list of documents that contain the candidates in the split."""
     # Only grab the docs containing candidates from the given split.
     sub_query = session.query(Candidate.id).filter(Candidate.split == split).subquery()
@@ -100,13 +102,13 @@ def get_mapping(candidates, generator, key_set):
         yield map_args
 
 
-def cands_from_split(session, candidate_classes, doc, split):
-    """Return the candidates from this document based on the split."""
+def get_cands_list_from_split(session, candidate_classes, doc, split):
+    """Return the list of list of candidates from this document based on the split."""
     cands = []
     if split == ALL_SPLITS:
         # Get cands from all splits
         for candidate_class in candidate_classes:
-            cands.extend(
+            cands.append(
                 session.query(candidate_class)
                 .filter(candidate_class.document_id == doc.id)
                 .all()
@@ -114,7 +116,7 @@ def cands_from_split(session, candidate_classes, doc, split):
     else:
         # Get cands from the specified split
         for candidate_class in candidate_classes:
-            cands.extend(
+            cands.append(
                 session.query(candidate_class)
                 .filter(candidate_class.document_id == doc.id)
                 .filter(candidate_class.split == split)

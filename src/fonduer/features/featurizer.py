@@ -7,8 +7,8 @@ from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
-    cands_from_split,
-    docs_from_split,
+    get_cands_list_from_split,
+    get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
 )
@@ -39,7 +39,9 @@ class Featurizer(UDFRunner):
             self.session.commit()
         else:
             # Only grab the docs containing candidates from the given split.
-            split_docs = docs_from_split(self.session, self.candidate_classes, split)
+            split_docs = get_docs_from_split(
+                self.session, self.candidate_classes, split
+            )
             super(Featurizer, self).apply(
                 split_docs, split=split, train=train, bulk=True, **kwargs
             )
@@ -108,10 +110,13 @@ class FeaturizerUDF(UDF):
         logger.debug("Document: {}".format(doc))
 
         # Get all the candidates in this doc that will be featurized
-        cands = cands_from_split(self.session, self.candidate_classes, doc, split)
+        cands_list = get_cands_list_from_split(
+            self.session, self.candidate_classes, doc, split
+        )
 
         feature_keys = set()
-        yield from get_mapping(cands, get_all_feats, feature_keys)
+        for cands in cands_list:
+            yield from get_mapping(cands, get_all_feats, feature_keys)
 
         # Insert all Feature Keys
         if train:

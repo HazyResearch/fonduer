@@ -9,8 +9,8 @@ from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
-    cands_from_split,
-    docs_from_split,
+    get_cands_list_from_split,
+    get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
 )
@@ -31,14 +31,20 @@ class Labeler(UDFRunner):
     def update(self, docs=None, split=0, lfs=None, **kwargs):
         """Call apply with update=True."""
         if lfs is None:
-            raise ValueError("Please provide a list of labeling functions.")
+            raise ValueError("Please provide a list of lists of labeling functions.")
 
-        # Grab only the new/update LFS
-        self.lfs = [
-            lf for lf in self.lfs if lf.__name__ not in [_.__name__ for _ in lfs]
-        ]
-        # Then add the updated/new LFs
-        self.lfs.extend(lfs)
+        if len(lfs) != len(self.candidate_classes):
+            raise ValueError("Please provide LFs for each candidate class.")
+
+        for i in range(len(self.lfs)):
+            # Filter out the new/updated LFs
+            self.lfs[i] = [
+                lf
+                for lf in self.lfs[i]
+                if lf.__name__ not in [_.__name__ for _ in lfs[i]]
+            ]
+            # Then add them
+            self.lfs[i].extend(lfs[i])
 
         self.apply(
             docs=docs, split=split, lfs=self.lfs, train=False, update=True, **kwargs
@@ -48,6 +54,9 @@ class Labeler(UDFRunner):
         """Call the LabelerUDF."""
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
+
+        if len(lfs) != len(self.candidate_classes):
+            raise ValueError("Please provide LFs for each candidate class.")
 
         self.lfs = lfs
         if docs:
@@ -66,7 +75,9 @@ class Labeler(UDFRunner):
             self.session.commit()
         else:
             # Only grab the docs containing candidates from the given split.
-            split_docs = docs_from_split(self.session, self.candidate_classes, split)
+            split_docs = get_docs_from_split(
+                self.session, self.candidate_classes, split
+            )
             super(Labeler, self).apply(
                 split_docs,
                 split=split,
@@ -80,7 +91,7 @@ class Labeler(UDFRunner):
             self.session.commit()
 
     def get_lfs(self):
-        """Return a list of labeling functions for this Labeler."""
+        """Return a list of lists of labeling functions for this Labeler."""
         return self.lfs
 
     def drop_keys(self, keys):
@@ -162,7 +173,8 @@ class LabelerUDF(UDF):
 
         In particular, catch verbose values and convert to integer ones.
         """
-        labels = lambda c: [(c.id, lf.__name__, lf(c)) for lf in self.lfs]
+        lf_idx = self.candidate_classes.index(c.__class__)
+        labels = lambda c: [(c.id, lf.__name__, lf(c)) for lf in self.lfs[lf_idx]]
         for cid, lf_key, label in labels(c):
             # Note: We assume if the LF output is an int, it is already
             # mapped correctly
@@ -204,25 +216,28 @@ class LabelerUDF(UDF):
         self.lfs = lfs
 
         # Get all the candidates in this doc that will be featurized
-        cands = cands_from_split(self.session, self.candidate_classes, doc, split)
+        cands_list = get_cands_list_from_split(
+            self.session, self.candidate_classes, doc, split
+        )
 
         label_keys = set()
         updates = []
-        for label_args in get_mapping(cands, self._f_gen, label_keys):
+        for cands in cands_list:
+            for label_args in get_mapping(cands, self._f_gen, label_keys):
 
-            # If candidate exists, update keys, values
-            if (
-                self.session.query(Label)
-                .filter(Label.candidate_id == label_args["candidate_id"])
-                .first()
-            ):
-                # Used as a WHERE argument for update
-                label_args["_id"] = label_args["candidate_id"]
-                updates.append(label_args)
-                continue
+                # If candidate exists, update keys, values
+                if (
+                    self.session.query(Label)
+                    .filter(Label.candidate_id == label_args["candidate_id"])
+                    .first()
+                ):
+                    # Used as a WHERE argument for update
+                    label_args["_id"] = label_args["candidate_id"]
+                    updates.append(label_args)
+                    continue
 
-            # else, just insert
-            yield label_args
+                # else, just insert
+                yield label_args
 
         # Execute all updates
         self._update_labels(updates)

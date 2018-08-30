@@ -71,10 +71,10 @@ class CandidateExtractor(UDFRunner):
                 Candidate.type == candidate_class.__tablename__
             ).filter(Candidate.split == split).delete()
 
-    def clear_all(self, session, split, **kwargs):
+    def clear_all(self, split, **kwargs):
         """Delete all Candidates from given split the database."""
         logger.info("Clearing ALL Candidates.")
-        session.query(Candidate).filter(Candidate.split == split).delete()
+        self.session.query(Candidate).filter(Candidate.split == split).delete()
 
     def get_candidates(self, docs=None, split=0):
         """Return a list of lists of the candidates associated with this extractor.

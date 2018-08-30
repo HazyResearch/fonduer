@@ -259,8 +259,12 @@ def test_e2e(caplog):
     ]
 
     labeler = Labeler(session, [PartTemp])
-    labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
-    assert len(labeler.get_lfs()) == 6
+
+    with pytest.raises(ValueError):
+        labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
+
+    labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
+    assert len(labeler.get_lfs()[0]) == 6
     assert session.query(Label).count() == 3346
     assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
@@ -320,7 +324,7 @@ def test_e2e(caplog):
         LF_temp_outside_table,
         LF_not_temp_relevant,
     ]
-    labeler.update(split=0, lfs=stg_temp_lfs_2, parallelism=PARALLEL)
+    labeler.update(split=0, lfs=[stg_temp_lfs_2], parallelism=PARALLEL)
     assert session.query(Label).count() == 3346
     assert session.query(LabelKey).count() == 13
     L_train = labeler.get_label_matrices(train_cands)
