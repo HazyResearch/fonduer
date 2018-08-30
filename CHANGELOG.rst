@@ -3,6 +3,7 @@
 
 Added
 ^^^^^
+* `@senwu`_: Add sparse logistic regression support.
 * `@j-rausch`_: Added unit tests for changed lingual parsing pipeline.
 * `@senwu`_: Support Python 3.7.
 * `@lukehsiao`_: Allow user to change featurization settings by providing
@@ -16,6 +17,8 @@ Added
 
 Changed
 ^^^^^^^
+* `@senwu`_: Reorganize the disc model structure.
+  (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
 * `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing 
   pipeline into two stages. First, we parse structure and gather all 
   sentences for a document. Then, we merge and feed all sentences per
