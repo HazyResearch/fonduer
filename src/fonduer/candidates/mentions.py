@@ -212,7 +212,7 @@ class MentionExtractor(UDFRunner):
             for mention_class in self.mention_classes:
                 mentions = (
                     self.session.query(mention_class)
-                    .filter(mention_class.document_id in [doc.id for doc in docs])
+                    .filter(mention_class.document_id.in_([doc.id for doc in docs]))
                     .order_by(mention_class.id)
                     .all()
                 )

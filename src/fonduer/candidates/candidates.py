@@ -95,7 +95,7 @@ class CandidateExtractor(UDFRunner):
             for candidate_class in self.candidate_classes:
                 cands = (
                     self.session.query(candidate_class)
-                    .filter(candidate_class.document_id in [doc.id for doc in docs])
+                    .filter(candidate_class.document_id.in_([doc.id for doc in docs]))
                     .order_by(candidate_class.id)
                     .all()
                 )

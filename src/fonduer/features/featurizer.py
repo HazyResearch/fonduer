@@ -5,8 +5,8 @@ from scipy.sparse import csr_matrix
 from fonduer.candidates.models import Candidate
 from fonduer.features.features import get_all_feats
 from fonduer.features.models import Feature, FeatureKey
-from fonduer.meta import Meta
 from fonduer.utils.udf import UDF, UDFRunner
+from fonduer.utils.utils_udf import add_keys
 
 logger = logging.getLogger(__name__)
 
@@ -142,24 +142,6 @@ class FeaturizerUDF(UDF):
         )
         super(FeaturizerUDF, self).__init__(**kwargs)
 
-    def _add_FeatureKeys(self, keys):
-        """Construct a FeatureKey from the key."""
-        # Do nothing if empty
-        if not keys:
-            return
-
-        # NOTE: If you pprint these values, it may look funny because of the
-        # newlines and tabs as whitespace characters in these names. Use normal
-        # print.
-        existing_keys = [k.name for k in self.session.query(FeatureKey).all()]
-        new_keys = [k for k in keys if k not in existing_keys]
-
-        # Bulk insert all new feature keys
-        if new_keys:
-            Meta.engine.execute(
-                FeatureKey.__table__.insert(), [{"name": key} for key in new_keys]
-            )
-
     def get_table(self, **kwargs):
         return Feature
 
@@ -212,4 +194,4 @@ class FeaturizerUDF(UDF):
 
         # Insert all Feature Keys
         if train:
-            self._add_FeatureKeys(feature_keys)
+            add_keys(self.session, FeatureKey, feature_keys)

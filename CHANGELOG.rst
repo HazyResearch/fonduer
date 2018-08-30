@@ -19,12 +19,12 @@ Changed
 ^^^^^^^
 * `@senwu`_: Reorganize the disc model structure.
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
-* `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing 
-  pipeline into two stages. First, we parse structure and gather all 
+* `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing
+  pipeline into two stages. First, we parse structure and gather all
   sentences for a document. Then, we merge and feed all sentences per
-  document into the spacy NLP pipeline for more efficient processing.  
-* `@j-rausch`_: Sentence splitting in lingual mode is now performed by 
-  spacy's sentencizer instead of the depdency parser. This can lead to 
+  document into the spacy NLP pipeline for more efficient processing.
+* `@j-rausch`_: Sentence splitting in lingual mode is now performed by
+  spacy's sentencizer instead of the depdency parser. This can lead to
   variations in sentence segmentation and tokenization.
 * `@j-rausch`_: Added ``language`` argument to ``Parser`` for specification
   of language used by ``spacy_parser``. E.g. ``language='en'```.
@@ -96,6 +96,7 @@ Fixed
         Temp = mention_subclass("Temp")
         Volt = mention_subclass("Volt")
         mention_extractor = MentionExtractor(
+            session,
             [Part, Temp, Volt],
             [part_ngrams, temp_ngrams, volt_ngrams],
             [part_matcher, temp_matcher, volt_matcher],
@@ -107,7 +108,9 @@ Fixed
         PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
         candidate_extractor = CandidateExtractor(
-            [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
+            session,
+            [PartTemp, PartVolt],
+            throttlers=[temp_throttler, volt_throttler]
         )
 
         candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
@@ -140,7 +143,6 @@ Fixed
             SparseLogisticRegression,
             Union,
             candidate_subclass,
-            load_gold_labels,
             mention_subclass,
         )
 
@@ -160,12 +162,12 @@ Fixed
             Union,
         )
         from fonduer.candidates.models import candidate_subclass, mention_subclass
-        from fonduer.features import FeatureAnnotator
+        from fonduer.features import Featurizer
         from fonduer.learning import GenerativeModel, SparseLogisticRegression
         from fonduer.parser import Parser
         from fonduer.parser.models import Document, Sentence
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
-        from fonduer.supervision import LabelAnnotator, load_gold_labels
+        from fonduer.supervision import Labeler
 
 
 [0.2.3] - 2018-07-23

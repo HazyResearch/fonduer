@@ -7,6 +7,7 @@ from fonduer.candidates.models import Candidate
 from fonduer.meta import Meta
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
+from fonduer.utils.utils_udf import add_keys
 
 logger = logging.getLogger(__name__)
 
@@ -261,21 +262,6 @@ class LabelerUDF(UDF):
         )
         super(LabelerUDF, self).__init__(**kwargs)
 
-    def _add_LabelKeys(self, keys):
-        """Bulk insert the specified LabelKeys."""
-        # Do nothing if empty
-        if not keys:
-            return
-
-        existing_keys = [k.name for k in self.session.query(LabelKey).all()]
-        new_keys = [k for k in keys if k not in existing_keys]
-
-        # Bulk insert all new label keys
-        if new_keys:
-            Meta.engine.execute(
-                LabelKey.__table__.insert(), [{"name": key} for key in new_keys]
-            )
-
     def _update_labels(self, labels):
         """Bulk update the specified labels."""
         # Do nothing if empty
@@ -375,7 +361,7 @@ class LabelerUDF(UDF):
         self._update_labels(updates)
 
         # Insert all Label Keys
-        self._add_LabelKeys(label_keys)
+        add_keys(self.session, LabelKey, label_keys)
 
     def apply(self, doc, split, train, update, lfs, **kwargs):
         """Extract candidates from the given Context.
@@ -436,4 +422,4 @@ class LabelerUDF(UDF):
 
             # Insert all Label Keys
             if train:
-                self._add_LabelKeys(label_keys)
+                add_keys(self.session, LabelKey, label_keys)
