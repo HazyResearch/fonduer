@@ -93,6 +93,7 @@ def test_cand_gen(caplog):
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
     if os.name == "posix":
+        logger.info("Using single core.")
         PARALLEL = 1
     else:
         PARALLEL = 2  # Travis only gives 2 cores
@@ -107,7 +108,7 @@ def test_cand_gen(caplog):
     logger.info("Parsing...")
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
     corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs

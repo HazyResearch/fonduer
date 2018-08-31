@@ -9,14 +9,14 @@ import pytest
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.features import Featurizer
+from fonduer.features.models import Feature, FeatureKey
 from fonduer.learning import (
     LSTM,
     GenerativeModel,
     LogisticRegression,
     SparseLogisticRegression,
 )
-from fonduer.features import Featurizer
-from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
@@ -57,6 +57,7 @@ def test_e2e(caplog):
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parsing
     if os.name == "posix":
+        logger.info("Using single core.")
         PARALLEL = 1
     else:
         PARALLEL = 2  # Travis only gives 2 cores
@@ -74,7 +75,7 @@ def test_e2e(caplog):
     if num_docs != max_docs:
         logger.info("Parsing...")
         corpus_parser = Parser(
-            structural=True, lingual=True, visual=True, pdf_path=pdf_path
+            session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
         )
         corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
@@ -390,8 +391,8 @@ def test_e2e(caplog):
     disc_model = SparseLogisticRegression()
     disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
 
-    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.9)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc

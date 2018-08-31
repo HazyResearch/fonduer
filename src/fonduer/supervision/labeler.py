@@ -3,7 +3,6 @@ import logging
 from sqlalchemy.sql.expression import bindparam
 
 from fonduer.candidates.models import Candidate
-from fonduer.meta import Meta
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
@@ -18,14 +17,20 @@ from fonduer.utils.utils_udf import (
 logger = logging.getLogger(__name__)
 
 
+def load_gold_labels(session, cand_lists, annotator_name="gold"):
+    """Load the sparse matrix for the specified annotator."""
+    return get_sparse_matrix(session, GoldLabelKey, cand_lists, key=annotator_name)
+
+
 class Labeler(UDFRunner):
     """An operator to add Label Annotations to Candidates."""
 
     def __init__(self, session, candidate_classes):
         """Initialize the Labeler."""
-        super(Labeler, self).__init__(LabelerUDF, candidate_classes=candidate_classes)
+        super(Labeler, self).__init__(
+            session, LabelerUDF, candidate_classes=candidate_classes
+        )
         self.candidate_classes = candidate_classes
-        self.session = session
         self.lfs = []
 
     def update(self, docs=None, split=0, lfs=None, **kwargs):
@@ -47,10 +52,25 @@ class Labeler(UDFRunner):
             self.lfs[i].extend(lfs[i])
 
         self.apply(
-            docs=docs, split=split, lfs=self.lfs, train=False, update=True, **kwargs
+            docs=docs,
+            split=split,
+            lfs=self.lfs,
+            train=False,
+            update=True,
+            clear=False,
+            **kwargs
         )
 
-    def apply(self, docs=None, split=0, train=False, lfs=None, update=False, **kwargs):
+    def apply(
+        self,
+        docs=None,
+        split=0,
+        train=False,
+        lfs=None,
+        update=False,
+        clear=True,
+        **kwargs
+    ):
         """Call the LabelerUDF."""
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
@@ -69,6 +89,7 @@ class Labeler(UDFRunner):
                 bulk=True,
                 update=update,
                 lfs=self.lfs,
+                clear=clear,
                 **kwargs
             )
             # Needed to sync the bulk operations
@@ -85,6 +106,7 @@ class Labeler(UDFRunner):
                 bulk=True,
                 update=update,
                 lfs=self.lfs,
+                clear=clear,
                 **kwargs
             )
             # Needed to sync the bulk operations
@@ -108,21 +130,21 @@ class Labeler(UDFRunner):
             except AttributeError:
                 self.session.query(LabelKey).filter(LabelKey.name == key).delete()
 
-    def clear(self, session, train=False, split=0, **kwargs):
+    def clear(self, train=False, split=0, **kwargs):
         """Delete Labels of each class from the database."""
         # Clear Labels for the candidates in the split passed in.
         logger.info("Clearing Labels (split {})".format(split))
 
         sub_query = (
-            session.query(Candidate.id).filter(Candidate.split == split).subquery()
+            self.session.query(Candidate.id).filter(Candidate.split == split).subquery()
         )
-        query = session.query(Label).filter(Label.candidate_id.in_(sub_query))
+        query = self.session.query(Label).filter(Label.candidate_id.in_(sub_query))
         query.delete(synchronize_session="fetch")
 
         # Delete all old annotation keys
         if train:
             logger.debug("Clearing all LabelKey...")
-            query = session.query(LabelKey)
+            query = self.session.query(LabelKey)
             query.delete(synchronize_session="fetch")
 
     def clear_all(self, **kwargs):
@@ -158,7 +180,7 @@ class LabelerUDF(UDF):
         if not labels:
             return
 
-        Meta.engine.execute(
+        self.session.execute(
             Label.__table__.update()
             .where(Label.candidate_id == bindparam("_id"))
             .values({"keys": bindparam("keys"), "values": bindparam("values")}),
@@ -240,7 +262,8 @@ class LabelerUDF(UDF):
                 yield label_args
 
         # Execute all updates
-        self._update_labels(updates)
+        if update:
+            self._update_labels(updates)
 
         # Insert all Label Keys
         if train or update:

@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 class Parser(UDFRunner):
     def __init__(
         self,
+        session,
         structural=True,  # structural information
         blacklist=["style", "script"],  # ignore tag types, default: style, script
         flatten=["span", "br"],  # flatten tag types, default: span, br
@@ -47,6 +48,7 @@ class Parser(UDFRunner):
         self.lingual_parser = Spacy(language)
 
         super(Parser, self).__init__(
+            session,
             ParserUDF,
             structural=structural,
             blacklist=blacklist,
@@ -61,8 +63,8 @@ class Parser(UDFRunner):
             lingual_parser=self.lingual_parser,
         )
 
-    def clear(self, session, **kwargs):
-        session.query(Context).delete()
+    def clear(self, **kwargs):
+        self.session.query(Context).delete()
 
 
 class ParserUDF(UDF):

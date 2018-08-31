@@ -27,12 +27,13 @@ class UDFRunner(object):
     setup.
     """
 
-    def __init__(self, udf_class, **udf_init_kwargs):
+    def __init__(self, session, udf_class, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
         self.pb = None
+        self.session = session
 
     def apply(
         self, xs, clear=True, parallelism=None, progress_bar=True, bulk=False, **kwargs
@@ -43,11 +44,7 @@ class UDFRunner(object):
         """
         # Clear everything downstream of this UDF if requested
         if clear:
-            Session = new_sessionmaker()
-            session = Session()
-            self.clear(session, **kwargs)
-            session.commit()
-            session.close()
+            self.clear(**kwargs)
 
         # Execute the UDF
         self.logger.info("Running UDF...")
@@ -67,7 +64,7 @@ class UDFRunner(object):
             self.logger.debug("Closing progress bar...")
             self.pb.close()
 
-    def clear(self, session, **kwargs):
+    def clear(self, **kwargs):
         raise NotImplementedError()
 
     def apply_st(self, xs, bulk, **kwargs):
@@ -83,7 +80,7 @@ class UDFRunner(object):
                 table = udf.get_table()
                 records = [record for record in udf.apply(x, **kwargs)]
                 if records:
-                    Meta.engine.execute(table.__table__.insert(), records)
+                    udf.session.execute(table.__table__.insert(), records)
             else:
                 udf.session.add_all(y for y in udf.apply(x, **kwargs))
 
@@ -178,7 +175,7 @@ class UDF(Process):
                     table = self.get_table()
                     records = [record for record in self.apply(x, **self.apply_kwargs)]
                     if records:
-                        Meta.engine.execute(table.__table__.insert(), records)
+                        self.session.execute(table.__table__.insert(), records)
                 else:
                     self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
                 self.in_queue.task_done()

@@ -1,3 +1,3 @@
-from fonduer.supervision.labeler import Labeler
+from fonduer.supervision.labeler import Labeler, load_gold_labels
 
-__all__ = ["Labeler"]
+__all__ = ["Labeler", "load_gold_labels"]

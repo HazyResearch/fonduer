@@ -2,7 +2,6 @@ import logging
 
 from scipy.sparse import csr_matrix
 
-from fonduer import Meta
 from fonduer.candidates.models import Candidate
 
 logger = logging.getLogger(__name__)
@@ -32,32 +31,34 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
     """Load sparse matrix of GoldLabels for each candidate_class."""
     result = []
     cand_lists = cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
-    for cand_list in cand_lists:
-        if key:
-            keys = [key]
-        else:
-            keys = [
-                key.name
-                for key in session.query(key_table).order_by(key_table.name).all()
-            ]
 
+    # Keys are used as a global index
+    if key:
+        keys_map = {key: 0}
+    else:
+        keys_map = {
+            key.name: idx
+            for (idx, key) in enumerate(
+                session.query(key_table).order_by(key_table.name).all()
+            )
+        }
+
+    for cand_list in cand_lists:
         indptr = [0]
         indices = []
         data = []
         for cand in cand_list:
             values = _get_cand_values(cand, key_table)
             if values:
-                cand_keys = values[0].keys
-                cand_values = values[0].values
-                indices.extend([keys.index(key) for key in cand_keys if key in keys])
-                data.extend(
-                    [cand_values[i[0]] for i in enumerate(cand_keys) if i[1] in keys]
-                )
+                for cand_key, cand_value in zip(values[0].keys, values[0].values):
+                    if cand_key in keys_map:
+                        indices.append(keys_map[cand_key])
+                        data.append(cand_value)
 
             indptr.append(len(indices))
 
         result.append(
-            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys)))
+            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys_map)))
         )
 
     return result
@@ -133,21 +134,27 @@ def add_keys(session, key_table, keys):
     """
     # Do nothing if empty
     if not keys:
-        logger.warning(
-            "Attempted to insert empty list of keys to {}.".format(
-                key_table.__tablename__
-            )
-        )
         return
 
-    # NOTE: If you pprint these values, it may look funny because of the
-    # newlines and tabs as whitespace characters in these names. Use normal
-    # print.
-    existing_keys = [k.name for k in session.query(key_table).all()]
-    new_keys = [k for k in keys if k not in existing_keys]
-
-    # Bulk insert all new feature keys
-    if new_keys:
-        Meta.engine.execute(
-            key_table.__table__.insert(), [{"name": key} for key in new_keys]
-        )
+    # NOTE: There is a concurrency condition where other processes may have
+    # inserted new keys between the time that existing_keys is queried and the
+    # insert is performed below. This will retry until sucessful.
+    #
+    # In the future, it would be nice if this could be refactored into a insert
+    # if not exists type of syntax.
+    while True:
+        existing_keys = set(k.name for k in session.query(key_table).all())
+        new_keys = set(keys).difference(existing_keys)
+        # Bulk insert all new feature keys
+        if new_keys:
+            try:
+                session.execute(
+                    key_table.__table__.insert(), [{"name": key} for key in new_keys]
+                )
+                session.commit()
+                return
+            except Exception:
+                continue
+        else:
+            # All keys have been inserted already
+            return

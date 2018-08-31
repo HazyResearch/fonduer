@@ -29,8 +29,7 @@ def new_sessionmaker():
             "a valid postgres connection string."
         )
     # New sessionmaker
-    session = sessionmaker(bind=engine)
-    return session
+    return sessionmaker(bind=engine)
 
 
 def _validate_conn_string(conn_string):

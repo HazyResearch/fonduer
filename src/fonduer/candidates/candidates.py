@@ -41,6 +41,7 @@ class CandidateExtractor(UDFRunner):
     ):
         """Initialize the CandidateExtractor."""
         super(CandidateExtractor, self).__init__(
+            session,
             CandidateExtractorUDF,
             candidate_classes=candidate_classes,
             throttlers=throttlers,
@@ -53,13 +54,12 @@ class CandidateExtractor(UDFRunner):
             raise ValueError("Provided more throttlers than candidate classes.")
 
         self.candidate_classes = candidate_classes
-        self.session = session
 
     def apply(self, xs, split=0, **kwargs):
         """Call the CandidateExtractorUDF."""
         super(CandidateExtractor, self).apply(xs, split=split, **kwargs)
 
-    def clear(self, session, split, **kwargs):
+    def clear(self, split, **kwargs):
         """Delete Candidates of each class from given split the database."""
         for candidate_class in self.candidate_classes:
             logger.info(
@@ -67,7 +67,7 @@ class CandidateExtractor(UDFRunner):
                     candidate_class.__tablename__, split
                 )
             )
-            session.query(Candidate).filter(
+            self.session.query(Candidate).filter(
                 Candidate.type == candidate_class.__tablename__
             ).filter(Candidate.split == split).delete()
 

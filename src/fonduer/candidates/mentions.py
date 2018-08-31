@@ -161,6 +161,7 @@ class MentionExtractor(UDFRunner):
     def __init__(self, session, mention_classes, mention_spaces, matchers):
         """Initialize the MentionExtractor."""
         super(MentionExtractor, self).__init__(
+            session,
             MentionExtractorUDF,
             mention_classes=mention_classes,
             mention_spaces=mention_spaces,
@@ -176,17 +177,16 @@ class MentionExtractor(UDFRunner):
             )
 
         self.mention_classes = mention_classes
-        self.session = session
 
     def apply(self, xs, split=0, **kwargs):
         """Call the MentionExtractorUDF."""
         super(MentionExtractor, self).apply(xs, split=split, **kwargs)
 
-    def clear(self, session, **kwargs):
+    def clear(self, **kwargs):
         """Delete Mentions of each class in the extractor from the given split."""
         for mention_class in self.mention_classes:
             logger.info("Clearing table: {}".format(mention_class.__tablename__))
-            session.query(Mention).filter(
+            self.session.query(Mention).filter(
                 Mention.type == mention_class.__tablename__
             ).delete()
 

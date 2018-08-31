@@ -22,10 +22,9 @@ class Featurizer(UDFRunner):
     def __init__(self, session, candidate_classes):
         """Initialize the Featurizer."""
         super(Featurizer, self).__init__(
-            FeaturizerUDF, candidate_classes=candidate_classes
+            session, FeaturizerUDF, candidate_classes=candidate_classes
         )
         self.candidate_classes = candidate_classes
-        self.session = session
 
     def apply(self, docs=None, split=0, train=False, **kwargs):
         """Call the FeaturizerUDF."""
@@ -57,21 +56,21 @@ class Featurizer(UDFRunner):
         for key in keys:
             self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
 
-    def clear(self, session, train=False, split=0, **kwargs):
+    def clear(self, train=False, split=0, **kwargs):
         """Delete Features of each class from the database."""
         # Clear Features for the candidates in the split passed in.
         logger.info("Clearing Features (split {})".format(split))
 
         sub_query = (
-            session.query(Candidate.id).filter(Candidate.split == split).subquery()
+            self.session.query(Candidate.id).filter(Candidate.split == split).subquery()
         )
-        query = session.query(Feature).filter(Feature.candidate_id.in_(sub_query))
+        query = self.session.query(Feature).filter(Feature.candidate_id.in_(sub_query))
         query.delete(synchronize_session="fetch")
 
         # Delete all old annotation keys
         if train:
             logger.debug("Clearing all FeatureKey...")
-            query = session.query(FeatureKey)
+            query = self.session.query(FeatureKey)
             query.delete(synchronize_session="fetch")
 
     def clear_all(self, **kwargs):
