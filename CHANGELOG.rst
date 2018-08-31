@@ -54,7 +54,6 @@ Changed
 
 Removed
 ^^^^^^^
-* `@senwu`_: Remove torchvision from the dependency list.
 * `@lukehsiao`_: Remove reduce option for UDFs, which were never used.
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context.
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
