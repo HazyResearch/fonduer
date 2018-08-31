@@ -2,7 +2,7 @@ TESTDATA=tests/input
 
 dev:
 	pip install -r requirements-dev.txt
-	pip install -e .
+	pip install -e .[spacy_ja]
 	pre-commit install
 
 test: dev check docs

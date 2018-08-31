@@ -52,8 +52,7 @@ class Spacy(object):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
         self.spacy_languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
-        self.alpha_languages = ["ja"]
-        self.alpha_languages_names = {"ja": "Japanese"}
+        self.alpha_languages = {"ja": "Japanese"}
 
         self.lang = lang
         self.model = None
@@ -61,13 +60,13 @@ class Spacy(object):
         # self.model = self.load_lang_model()
 
     def has_tokenizer_support(self):
-        if self.has_NLP_support() or self.lang in self.alpha_languages:
+        if self.lang and (self.has_NLP_support() or self.lang in self.alpha_languages):
             return True
         else:
             return False
 
     def has_NLP_support(self):
-        if self.lang in self.spacy_languages:
+        if self.lang and (self.lang in self.spacy_languages):
             return True
         else:
             return False
@@ -129,9 +128,7 @@ class Spacy(object):
             model = spacy.load(self.lang)
         elif self.lang in self.alpha_languages:
             language_module = importlib.import_module("spacy.lang.{}".format(self.lang))
-            language_method = getattr(
-                language_module, self.alpha_languages_names[self.lang]
-            )
+            language_method = getattr(language_module, self.alpha_languages[self.lang])
             model = language_method()
         self.model = model
 
