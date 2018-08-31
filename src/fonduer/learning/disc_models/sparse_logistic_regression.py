@@ -34,8 +34,7 @@ class SparseLogisticRegression(NoiseAwareModel):
         :param X: The labels of input data
         """
         C, F = X
-        print(F.shape)
-        print(max(F.indices))
+
         id2id = dict()
         for i in range(F.shape[0]):
             id2id[F.row_index[i]] = i
