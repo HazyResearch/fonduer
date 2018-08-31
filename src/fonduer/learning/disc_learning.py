@@ -151,13 +151,13 @@ class NoiseAwareModel(Classifier, nn.Module):
             diffs = Y_train.max(axis=1) - Y_train.min(axis=1)
             train_idxs = np.where(diffs > 1e-6)[0]
 
+        self.model_kwargs = self._update_kwargs(X_train, **kwargs)
+
         _X_train, _Y_train = self._preprocess_data(
             X_train, Y_train, idxs=train_idxs, train=True
         )
         if X_dev is not None:
             _X_dev, _Y_dev = self._preprocess_data(X_dev, Y_dev)
-
-        self.model_kwargs = self._update_kwargs(_X_train, **kwargs)
 
         if "host_device" not in self.model_kwargs:
             self.model_kwargs["host_device"] = "CPU"

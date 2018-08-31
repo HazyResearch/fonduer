@@ -4,8 +4,8 @@ import torch.nn as nn
 from scipy.sparse import issparse
 
 from fonduer.learning.disc_learning import NoiseAwareModel
-from fonduer.learning.disc_models.rnn.layers import RNN
-from fonduer.learning.disc_models.rnn.utils import (
+from fonduer.learning.disc_models.layers.rnn import RNN
+from fonduer.learning.disc_models.utils import (
     SymbolTable,
     mark_sentence,
     mention_to_tokens,
@@ -131,7 +131,7 @@ class LSTM(NoiseAwareModel):
                 model_kwargs[key] = settings[key]
 
         model_kwargs["relation_arity"] = len(X[0][0])
-        model_kwargs["input_dim"] = X[0][1].shape[1] + len(X[0][0]) * model_kwargs[
+        model_kwargs["input_dim"] = X[1].shape[1] + len(X[0][0]) * model_kwargs[
             "hidden_dim"
         ] * (2 if model_kwargs["bidirectional"] else 1)
 
