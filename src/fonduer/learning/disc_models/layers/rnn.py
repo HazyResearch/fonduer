@@ -1,5 +1,5 @@
 """
-A recurrent neural network model.
+A recurrent neural network module.
 """
 
 import torch
@@ -66,8 +66,6 @@ class RNN(nn.Module):
         x      : batch_size * length
         x_mask : batch_size * length
         """
-        # print("lstm forward...")
-        # print(x.size(), x_mask.size(), state_word.size())
         x_emb = self.drop(self.lookup(x))
         output_word, state_word = self.word_lstm(x_emb, state_word)
         output_word = self.drop(output_word)
