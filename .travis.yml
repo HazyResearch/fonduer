@@ -28,6 +28,7 @@ notifications:
   email: false
 
 before_install:
+- sudo apt-get install mecab mecab-ipadic-utf8
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
 - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
