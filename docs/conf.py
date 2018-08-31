@@ -31,7 +31,6 @@ autodoc_mock_imports = [
     "snorkel-metal",
     "spacy",
     "torch",
-    "torchvision",
     "tqdm",
     "treedlib",
     "wand",
