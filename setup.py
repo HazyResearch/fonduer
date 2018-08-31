@@ -27,7 +27,6 @@ setup(
         "spacy>=2.0.7",
         "sqlalchemy>=1.0.14",
         "torch>=0.4.0",
-        "torchvision",
         "tqdm",
         "treedlib",
         "wand",
