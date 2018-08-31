@@ -922,7 +922,6 @@ def SoftCrossEntropyLoss(input, target):
     :param input: prediction logicts
     :param target: target probabilities
     """
-    print(input.size())
     total_loss = torch.tensor(0.0)
     for i in range(input.size(1)):
         cls_idx = torch.full((input.size(0),), i, dtype=torch.long)
