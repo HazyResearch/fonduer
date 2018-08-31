@@ -6,7 +6,6 @@ import pytest
 
 from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.spacy_parser import Spacy
 
 
 def get_parser_udf(
@@ -23,8 +22,6 @@ def get_parser_udf(
     pdf_path=None,
 ):
     """Return an instance of ParserUDF."""
-    # Use spaCy as our lingual parser
-    lingual_parser = Spacy(language)
 
     # Patch new_sessionmaker() under the namespace of fonduer.utils.udf
     # See more details in
@@ -41,7 +38,7 @@ def get_parser_udf(
             tabular=tabular,
             visual=visual,
             pdf_path=pdf_path,
-            lingual_parser=lingual_parser,
+            language=language,
         )
     return parser_udf
 
@@ -147,43 +144,111 @@ def test_parse_md_details(caplog):
 
 
 # TODO: Get 'alpha' language example, e.g. Japanese
-def test_spacy_language_support(caplog):
-    """Test for support of spacy (alpha) tokenization of languages other than English
-
-    This test only looks at the final results such that the implementation of
-    the ParserUDF's apply() can be modified.
-    """
+def test_spacy_default_and_alpha_languages(caplog):
+    """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
-    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
 
-    PARALLEL = 1
-    max_docs = 1
     docs_path = "tests/data/parser_htmls/brot.html"
+
     # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
 
     # Create an Parser and parse the md document
-    parser = Parser(structural=True, tabular=True, lingual=True, language="de")
-    parser.apply(preprocessor, parallelism=PARALLEL)
-    # Grab the md doument
-    doc = session.query(Document).order_by(Document.name).all()[0]
-    assert doc.name == "brot"
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False, language="de"
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
+
+    # Check that doc has sentences
     assert len(doc.sentences) == 841
-    header = sorted(doc.sentences, key=lambda x: x.position)[0]
-    # Confirm that alpha parser does perform NLP for non-alpha language
-    # NOTE: These entities are technically incorrect, might be due bad spacy accuracy?
-    assert header.ner_tags == ["O", "O", "O"]
+    sent = sorted(doc.sentences, key=lambda x: x.position)[143]
+    assert sent.ner_tags == [
+        "O",
+        "O",
+        "LOC",
+        "O",
+        "O",
+        "LOC",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+    ]  # inaccurate
+    assert sent.dep_labels == [
+        "mo",
+        "ROOT",
+        "sb",
+        "mo",
+        "nk",
+        "nk",
+        "punct",
+        "mo",
+        "nk",
+        "nk",
+        "nk",
+        "sb",
+        "oc",
+        "rc",
+        "punct",
+    ]
+
+    # Test japanese alpha tokenization
+    docs_path = "tests/data/parser_htmls/brot.html"  # TODO: replace with japanese doc
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False, language="ja"
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
 
     # TODO: Add unit tests for tonkenized foreign alpha language sentences
-    docs_path = "tests/data/parser_htmls/brot.html"  # TODO: replace with japanese doc
-    # Preprocessor for the Docs
-    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    parser = Parser(structural=True, tabular=True, lingual=False, language="ja")
-    parser.apply(preprocessor, parallelism=PARALLEL)
-    # Grab the md doument
-    doc = session.query(Document).order_by(Document.name).all()[0]
-    assert doc.name == "brot"
     assert len(doc.sentences) == 894
+
+
+# def test_spacy_language_support(caplog):
+#    """Test for support of spacy (alpha) tokenization of languages other than English
+#
+#    This test only looks at the final results such that the implementation of
+#    the ParserUDF's apply() can be modified.
+#    """
+#    caplog.set_level(logging.INFO)
+#    session = Meta.init("postgres://localhost:5432/" + ATTRIBUTE).Session()
+#
+#    PARALLEL = 1
+#    max_docs = 1
+#    docs_path = "tests/data/parser_htmls/brot.html"
+#    # Preprocessor for the Docs
+#    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+#
+#    # Create an Parser and parse the md document
+#    parser = Parser(structural=True, tabular=True, lingual=True, language="de")
+#    parser.apply(preprocessor, parallelism=PARALLEL)
+#    # Grab the md doument
+#    doc = session.query(Document).order_by(Document.name).all()[0]
+#    assert doc.name == "brot"
+#    assert len(doc.sentences) == 841
+#    header = sorted(doc.sentences, key=lambda x: x.position)[0]
+#    # Confirm that alpha parser does perform NLP for non-alpha language
+#    # NOTE: These entities are technically incorrect, might be due bad spacy accuracy?
+#    assert header.ner_tags == ["O", "O", "O"]
+#
+#    # TODO: Add unit tests for tonkenized foreign alpha language sentences
+#    docs_path = "tests/data/parser_htmls/brot.html"  # TODO: replace with japanese doc
+#    # Preprocessor for the Docs
+#    preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+#    parser = Parser(structural=True, tabular=True, lingual=False, language="ja")
+#    parser.apply(preprocessor, parallelism=PARALLEL)
+#    # Grab the md doument
+#    doc = session.query(Document).order_by(Document.name).all()[0]
+#    assert doc.name == "brot"
+#    assert len(doc.sentences) == 894
 
 
 def test_warning_on_missing_pdf(caplog):
