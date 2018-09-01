@@ -17,6 +17,7 @@ class DocPreprocessor(object):
         self.path = path
         self.encoding = encoding
         self.max_docs = max_docs
+        self.all_files = self._get_files(self.path)
 
     def generate(self):
         """
@@ -24,7 +25,7 @@ class DocPreprocessor(object):
 
         """
         doc_count = 0
-        for fp in self._get_files(self.path):
+        for fp in self.all_files:
             file_name = os.path.basename(fp)
             if self._can_read(file_name):
                 for doc, text in self.parse_file(fp, file_name):
@@ -34,12 +35,9 @@ class DocPreprocessor(object):
                         return
 
     def __len__(self):
-        """Provide a len attribute based on max_docs."""
-        if self.max_docs < float("inf"):
-            return self.max_docs
-        else:
-            # Return the number of files in the directory.
-            return len(self._get_files(self.path))
+        """Provide a len attribute based on max_docs and number of files in folder."""
+        num_docs = min(len(self.all_files), self.max_docs)
+        return num_docs
 
     def __iter__(self):
         return self.generate()

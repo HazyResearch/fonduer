@@ -146,6 +146,32 @@ def test_parse_md_details(caplog):
         assert len(sent.words) == len(sent.dep_labels)
 
 
+def test_html_doc_preprocessor(caplog, tmpdir):
+    """Test that a warning is issued on invalid pdf."""
+    caplog.set_level(logging.INFO)
+
+    fake_html_folder = tmpdir.mkdir("htmls")
+    fake_pdf_folder = tmpdir.mkdir("pdf")
+    for i in range(5):
+        fake_html_folder.join("fake{}.html".format(i)).write("content")
+        fake_pdf_folder.join("fake{}.pdf".format(i)).write("content")
+
+    # No errors expected
+    preprocessor = HTMLDocPreprocessor(
+        fake_html_folder, matching_pdf_folder=fake_pdf_folder
+    )
+    # Quick fix so flake won't complain about unused variable
+    assert isinstance(preprocessor, HTMLDocPreprocessor)
+
+    # Add html without corresponding pdf
+    fake_html_folder.join("fake5.pdf").write("content")
+    with pytest.raises(FileNotFoundError):
+        preprocessor = HTMLDocPreprocessor(
+            fake_html_folder, matching_pdf_folder=fake_pdf_folder
+        )
+    assert isinstance(preprocessor, HTMLDocPreprocessor)
+
+
 def test_warning_on_missing_pdf(caplog):
     """Test that a warning is issued on invalid pdf."""
     caplog.set_level(logging.INFO)
