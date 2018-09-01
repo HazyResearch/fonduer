@@ -63,12 +63,12 @@ testing on 14.04 or older.
 .. _install manually: https://poppler.freedesktop.org
 
 How can I use use Fonduer for documents in Languages other than English?
---------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 If available, Fonduer uses languages supported by spaCy for tokenization and 
 its NLP pipeline (`see spacy language support`_).
 We also started adding languages with spaCy alpha support for tokenization
-(`see spacy alpha languages`_). 
+(`see spacy alpha languages`_). Currently, only Japanese is supported.
 
 If you would like to use Fonduer for Japanese documents,
 you will first have to install some additional packages (`see mecab on PyPI`_).
@@ -78,12 +78,12 @@ For Linux::
     $ sudo apt-get install libmecab-dev
     $ sudo apt-get install mecab mecab-ipadic-utf8
 
-For OSX::
+For OS X::
 
     $ brew install mecab
     $ brew install mecab-ipadic
 
-Afterwards, you can use the ``make dev_extra`` command to install Fonduer with
+Afterwards, you can use ``pip install fonduer[spacy_ja]`` to install Fonduer with
 Japanese language support. 
 If you would like to use other languages with spaCy alpha support, which are not yet integrated in Fonduer,
 feel free to open an Issue_.
