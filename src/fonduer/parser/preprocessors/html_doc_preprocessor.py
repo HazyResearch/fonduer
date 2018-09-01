@@ -13,7 +13,7 @@ class HTMLDocPreprocessor(DocPreprocessor):
     def __init__(self, *args, **kwargs):
         matching_pdf_folder = kwargs.pop("matching_pdf_folder", None)
         super(HTMLDocPreprocessor, self).__init__(*args, **kwargs)
-        if matching_pdf_folder is not None:
+        if matching_pdf_folder:
             pdf_files = [
                 x.lower()
                 for x in os.listdir(matching_pdf_folder)
