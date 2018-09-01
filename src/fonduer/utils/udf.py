@@ -35,9 +35,7 @@ class UDFRunner(object):
         self.pb = None
         self.session = session
 
-    def apply(
-        self, xs, clear=True, parallelism=None, progress_bar=True, bulk=False, **kwargs
-    ):
+    def apply(self, xs, clear=True, parallelism=None, progress_bar=True, **kwargs):
         """
         Apply the given UDF to the set of objects xs, either single or
         multi-threaded, and optionally calling clear() first.
@@ -55,9 +53,9 @@ class UDFRunner(object):
             self.pb = tqdm(total=len(xs))
 
         if parallelism is None or parallelism < 2:
-            self.apply_st(xs, clear=clear, bulk=bulk, **kwargs)
+            self.apply_st(xs, clear=clear, **kwargs)
         else:
-            self.apply_mt(xs, parallelism, clear=clear, bulk=bulk, **kwargs)
+            self.apply_mt(xs, parallelism, clear=clear, **kwargs)
 
         # Close progress bar
         if self.pb is not None:
@@ -67,7 +65,7 @@ class UDFRunner(object):
     def clear(self, **kwargs):
         raise NotImplementedError()
 
-    def apply_st(self, xs, bulk, **kwargs):
+    def apply_st(self, xs, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
@@ -76,18 +74,12 @@ class UDFRunner(object):
             if self.pb is not None:
                 self.pb.update(1)
 
-            if bulk:
-                table = udf.get_table()
-                records = [record for record in udf.apply(x, **kwargs)]
-                if records:
-                    udf.session.execute(table.__table__.insert(), records)
-            else:
-                udf.session.add_all(y for y in udf.apply(x, **kwargs))
+            udf.session.add_all(y for y in udf.apply(x, **kwargs))
 
         # Commit session and close progress bar if applicable
         udf.session.commit()
 
-    def apply_mt(self, xs, parallelism, bulk, **kwargs):
+    def apply_mt(self, xs, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if not _meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
@@ -109,7 +101,6 @@ class UDFRunner(object):
             udf = self.udf_class(
                 in_queue=in_queue,
                 out_queue=out_queue,
-                bulk=bulk,
                 worker_id=i,
                 **self.udf_init_kwargs
             )
@@ -143,7 +134,7 @@ class UDFRunner(object):
 class UDF(Process):
     TASK_DONE = "done"
 
-    def __init__(self, in_queue=None, out_queue=None, bulk=False, worker_id=0):
+    def __init__(self, in_queue=None, out_queue=None, worker_id=0):
         """
         in_queue: A Queue of input objects to process; primarily for running in parallel
         """
@@ -152,7 +143,6 @@ class UDF(Process):
         self.in_queue = in_queue
         self.out_queue = out_queue
         self.worker_id = worker_id
-        self.bulk = bulk
 
         # Each UDF starts its own Engine
         # See SQLalchemy, using connection pools with multiprocessing.
@@ -171,13 +161,7 @@ class UDF(Process):
         while True:
             try:
                 x = self.in_queue.get(True, QUEUE_TIMEOUT)
-                if self.bulk:
-                    table = self.get_table()
-                    records = [record for record in self.apply(x, **self.apply_kwargs)]
-                    if records:
-                        self.session.execute(table.__table__.insert(), records)
-                else:
-                    self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
+                self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
                 self.in_queue.task_done()
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
@@ -186,9 +170,5 @@ class UDF(Process):
         self.session.close()
 
     def apply(self, x, **kwargs):
-        """This function takes in an object, and returns a generator / set / list"""
-        raise NotImplementedError()
-
-    def get_table(self, **kwargs):
         """This function takes in an object, and returns a generator / set / list"""
         raise NotImplementedError()

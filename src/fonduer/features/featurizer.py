@@ -7,6 +7,7 @@ from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
+    batch_upsert_records,
     get_cands_list_from_split,
     get_docs_from_split,
     get_mapping,
@@ -31,9 +32,7 @@ class Featurizer(UDFRunner):
         if docs:
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
-            super(Featurizer, self).apply(
-                docs, split=split, train=train, bulk=True, **kwargs
-            )
+            super(Featurizer, self).apply(docs, split=split, train=train, **kwargs)
             # Needed to sync the bulk operations
             self.session.commit()
         else:
@@ -42,7 +41,7 @@ class Featurizer(UDFRunner):
                 self.session, self.candidate_classes, split
             )
             super(Featurizer, self).apply(
-                split_docs, split=split, train=train, bulk=True, **kwargs
+                split_docs, split=split, train=train, **kwargs
             )
             # Needed to sync the bulk operations
             self.session.commit()
@@ -96,9 +95,6 @@ class FeaturizerUDF(UDF):
         )
         super(FeaturizerUDF, self).__init__(**kwargs)
 
-    def get_table(self, **kwargs):
-        return Feature
-
     def apply(self, doc, split, train, **kwargs):
         """Extract candidates from the given Context.
 
@@ -115,8 +111,13 @@ class FeaturizerUDF(UDF):
 
         feature_keys = set()
         for cands in cands_list:
-            yield from get_mapping(cands, get_all_feats, feature_keys)
+            records = list(get_mapping(cands, get_all_feats, feature_keys))
+            batch_upsert_records(self.session, Feature, records)
 
         # Insert all Feature Keys
         if train:
             add_keys(self.session, FeatureKey, feature_keys)
+
+        # This return + yield makes a completely empty generator
+        return
+        yield

@@ -1,13 +1,12 @@
 import logging
 
-from sqlalchemy.sql.expression import bindparam
-
 from fonduer.candidates.models import Candidate
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
+    batch_upsert_records,
     get_cands_list_from_split,
     get_docs_from_split,
     get_mapping,
@@ -86,7 +85,6 @@ class Labeler(UDFRunner):
                 docs,
                 split=split,
                 train=train,
-                bulk=True,
                 update=update,
                 lfs=self.lfs,
                 clear=clear,
@@ -103,7 +101,6 @@ class Labeler(UDFRunner):
                 split_docs,
                 split=split,
                 train=train,
-                bulk=True,
                 update=update,
                 lfs=self.lfs,
                 clear=clear,
@@ -174,22 +171,6 @@ class LabelerUDF(UDF):
         )
         super(LabelerUDF, self).__init__(**kwargs)
 
-    def _update_labels(self, labels):
-        """Bulk update the specified labels."""
-        # Do nothing if empty
-        if not labels:
-            return
-
-        self.session.execute(
-            Label.__table__.update()
-            .where(Label.candidate_id == bindparam("_id"))
-            .values({"keys": bindparam("keys"), "values": bindparam("values")}),
-            [label for label in labels],
-        )
-
-    def get_table(self, **kwargs):
-        return Label
-
     def _f_gen(self, c):
         """Convert lfs into a generator of id, name, and labels.
 
@@ -243,28 +224,14 @@ class LabelerUDF(UDF):
         )
 
         label_keys = set()
-        updates = []
         for cands in cands_list:
-            for label_args in get_mapping(cands, self._f_gen, label_keys):
-
-                # If candidate exists, update keys, values
-                if (
-                    self.session.query(Label)
-                    .filter(Label.candidate_id == label_args["candidate_id"])
-                    .first()
-                ):
-                    # Used as a WHERE argument for update
-                    label_args["_id"] = label_args["candidate_id"]
-                    updates.append(label_args)
-                    continue
-
-                # else, just insert
-                yield label_args
-
-        # Execute all updates
-        if update:
-            self._update_labels(updates)
+            records = list(get_mapping(cands, self._f_gen, label_keys))
+            batch_upsert_records(self.session, Label, records)
 
         # Insert all Label Keys
         if train or update:
             add_keys(self.session, LabelKey, label_keys)
+
+        # This return + yield makes a completely empty generator
+        return
+        yield

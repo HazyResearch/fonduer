@@ -28,6 +28,20 @@ def _get_cand_values(candidate, key_table):
         raise ValueError("{} is not a valid key table.".format(key_table))
 
 
+def batch_upsert_records(session, table, records):
+    """Batch upsert records into postgresql database."""
+    if not records:
+        return
+
+    stmt = insert(table.__table__).values(records)
+    stmt = stmt.on_conflict_do_update(
+        constraint=table.__table__.primary_key,
+        set_={"keys": stmt.excluded.get("keys"), "values": stmt.excluded.get("values")},
+    )
+    session.execute(stmt)
+    session.commit()
+
+
 def get_sparse_matrix(session, key_table, cand_lists, key=None):
     """Load sparse matrix of GoldLabels for each candidate_class."""
     result = []
