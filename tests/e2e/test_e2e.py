@@ -71,13 +71,10 @@ def test_e2e(caplog):
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    num_docs = session.query(Document).count()
-    if num_docs != max_docs:
-        logger.info("Parsing...")
-        corpus_parser = Parser(
-            session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
-        )
-        corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    corpus_parser = Parser(
+        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
@@ -389,7 +386,9 @@ def test_e2e(caplog):
 
     # Testing Sparse Logistic Regression
     disc_model = SparseLogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+    )
 
     test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.9)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]

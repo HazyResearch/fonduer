@@ -1,6 +1,7 @@
 import logging
 
 from scipy.sparse import csr_matrix
+from sqlalchemy.dialects.postgresql import insert
 
 from fonduer.candidates.models import Candidate
 
@@ -136,25 +137,8 @@ def add_keys(session, key_table, keys):
     if not keys:
         return
 
-    # NOTE: There is a concurrency condition where other processes may have
-    # inserted new keys between the time that existing_keys is queried and the
-    # insert is performed below. This will retry until sucessful.
-    #
-    # In the future, it would be nice if this could be refactored into a insert
-    # if not exists type of syntax.
-    while True:
-        existing_keys = set(k.name for k in session.query(key_table).all())
-        new_keys = set(keys).difference(existing_keys)
-        # Bulk insert all new feature keys
-        if new_keys:
-            try:
-                session.execute(
-                    key_table.__table__.insert(), [{"name": key} for key in new_keys]
-                )
-                session.commit()
-                return
-            except Exception:
-                continue
-        else:
-            # All keys have been inserted already
-            return
+    # Rather than deal with concurrency of querying first then inserting only
+    # new keys, insert with on_conflict_do_nothing.
+    stmt = insert(key_table.__table__).values([{"name": key} for key in keys])
+    stmt = stmt.on_conflict_do_nothing(constraint=key_table.__table__.primary_key)
+    session.execute(stmt)

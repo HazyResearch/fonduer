@@ -14,25 +14,16 @@ class AnnotationKeyMixin(object):
     """Mixin class for defining annotation key tables.
 
     An AnnotationKey is the unique name associated with a set of Annotations,
-    corresponding e.g. to a single labeling or feature function.  An
-    AnnotationKey may have an associated weight (Parameter) associated with it.
+    corresponding e.g. to a single labeling or feature function.
     """
 
     @declared_attr
     def __tablename__(cls):
         return camel_to_under(cls.__name__)
 
-    #  @declared_attr
-    #  def id(cls):
-    #      return Column(Integer, primary_key=True)
-
     @declared_attr
     def name(cls):
         return Column(String, primary_key=True)
-
-    #  @declared_attr
-    #  def group(cls):
-    #      return Column(Integer, nullable=False, default=0)
 
     @declared_attr
     def __table_args__(cls):
@@ -51,18 +42,13 @@ class AnnotationMixin(object):
 
     .. code-block:: python
 
-        from fonduer.supervision.models import AnnotationMixin
+        from fonduer.utils.models import AnnotationMixin
         from fonduer.meta import Meta
 
         class NewAnnotation(AnnotationMixin, Meta.Base):
-            value = Column(Float, nullable=False)
+            values = Column(Float, nullable=False)
 
-
-        # The entire storage schema, including NewAnnotation, can now be
-        # initialized with the following import
-        import fonduer.models
-
-    The annotation class should include a Column attribute named value.
+    The annotation class should include a Column attribute named values.
     """
 
     @declared_attr
