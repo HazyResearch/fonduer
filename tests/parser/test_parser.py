@@ -200,7 +200,7 @@ def test_spacy_non_english_languages(caplog):
     ]
 
     # Test japanese alpha tokenization
-    docs_path = "tests/data/pure_html/brot.html"  # TODO: replace with japanese doc
+    docs_path = "tests/data/pure_html/japan.html"  # TODO: replace with japanese doc
     doc, text = next(preprocessor.parse_file(docs_path, "md"))
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="ja"
@@ -208,8 +208,8 @@ def test_spacy_non_english_languages(caplog):
     for _ in parser_udf.apply((doc, text)):
         pass
 
-    # TODO: Add unit tests for tonkenized foreign alpha language sentences
-    assert len(doc.sentences) == 894
+    # TODO: Add more unit tests for tonkenized foreign alpha language sentences
+    assert len(doc.sentences) == 289
 
 
 def test_warning_on_missing_pdf(caplog):

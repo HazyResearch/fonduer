@@ -2,10 +2,16 @@ TESTDATA=tests/input
 
 dev:
 	pip install -r requirements-dev.txt
+	pip install -e .
+	pre-commit install
+
+dev_extra:
+	pip install -r requirements-dev.txt
 	pip install -e .[spacy_ja]
 	pre-commit install
 
 test: dev check docs
+	pip install -e .[spacy_ja]
 	pytest tests
 
 check:
@@ -24,4 +30,4 @@ clean:
 	rm -rf src/fonduer.egg-info
 	rm -rf _build/
 
-.PHONY: dev test clean check docs
+.PHONY: dev dev_extra test clean check docs
