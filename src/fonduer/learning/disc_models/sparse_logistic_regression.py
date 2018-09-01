@@ -27,49 +27,40 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Preprocess the data:
         1. Convert sparse matrix to dense matrix.
-        2. Update the order of candidates based on feature index.
-        3. Select subset of the input if idxs exists.
+        2. Select subset of the input if idxs exists.
 
         :param X: The input data of the model
-        :param X: The labels of input data
+        :param Y: The labels of input data
         """
         C, F = X
-
-        id2id = dict()
-        for i in range(F.shape[0]):
-            id2id[F.row_index[i]] = i
-
-        C_ = [None] * len(C)
-        for c in C:
-            C_[id2id[c.id]] = c
 
         if idxs is None:
             if Y is not None:
                 return (
                     [
                         (
-                            C_[i],
+                            C[i],
                             F.indices[F.indptr[i] : F.indptr[i + 1]],
                             F.data[F.indptr[i] : F.indptr[i + 1]],
                         )
-                        for i in range(len(C_))
+                        for i in range(len(C))
                     ],
                     Y,
                 )
             else:
                 return [
                     (
-                        C_[i],
+                        C[i],
                         F.indices[F.indptr[i] : F.indptr[i + 1]],
                         F.data[F.indptr[i] : F.indptr[i + 1]],
                     )
-                    for i in range(len(C_))
+                    for i in range(len(C))
                 ]
         if Y is not None:
             return (
                 [
                     (
-                        C_[i],
+                        C[i],
                         F.indices[F.indptr[i] : F.indptr[i + 1]],
                         F.data[F.indptr[i] : F.indptr[i + 1]],
                     )
@@ -80,7 +71,7 @@ class SparseLogisticRegression(NoiseAwareModel):
         else:
             return [
                 (
-                    C_[i],
+                    C[i],
                     F.indices[F.indptr[i] : F.indptr[i + 1]],
                     F.data[F.indptr[i] : F.indptr[i + 1]],
                 )
