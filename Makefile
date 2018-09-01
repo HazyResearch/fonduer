@@ -11,7 +11,7 @@ dev_extra:
 	pre-commit install
 
 test: dev check docs
-	pip install -e .[spacy_ja]
+	pip install -e .
 	pytest tests
 
 check:

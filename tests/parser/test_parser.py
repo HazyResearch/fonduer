@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import logging
+import os
 from unittest.mock import patch
 
 import pytest
@@ -143,7 +144,7 @@ def test_parse_md_details(caplog):
         assert len(sent.words) == len(sent.dep_labels)
 
 
-# TODO: Get 'alpha' language example, e.g. Japanese
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_spacy_non_english_languages(caplog):
     """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
@@ -200,7 +201,7 @@ def test_spacy_non_english_languages(caplog):
     ]
 
     # Test japanese alpha tokenization
-    docs_path = "tests/data/pure_html/japan.html"  # TODO: replace with japanese doc
+    docs_path = "tests/data/pure_html/japan.html"
     doc, text = next(preprocessor.parse_file(docs_path, "md"))
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="ja"

@@ -42,11 +42,7 @@ class Parser(UDFRunner):
         tabular=True,  # tabular information
         visual=False,  # visual information
         pdf_path=None,
-        # enrich_sentences=True
     ):
-        # Use spaCy as our lingual parser
-        # self.lingual_parser = Spacy(language)
-
         super(Parser, self).__init__(
             ParserUDF,
             structural=structural,
@@ -60,8 +56,6 @@ class Parser(UDFRunner):
             visual=visual,
             pdf_path=pdf_path,
             language=language,
-            # lingual_parser=self.lingual_parser,
-            # enrich_sentences=enrich_sentences
         )
 
     def clear(self, session, **kwargs):
@@ -81,9 +75,7 @@ class ParserUDF(UDF):
         tabular,
         visual,
         pdf_path,
-        # lingual_parser,
         language,
-        # enrich_sentences,
         **kwargs
     ):
         """
@@ -95,7 +87,6 @@ class ParserUDF(UDF):
             _pattern_ isinstance a regex and _replace_ is a character string.
             All occurents of _pattern_ in the text will be replaced by
             _replace_.
-        :param enrich
         """
         super(ParserUDF, self).__init__(**kwargs)
 
@@ -663,7 +654,7 @@ class ParserUDF(UDF):
                 state["visited"].add(node)  # mark as visited
 
                 # Process
-                if self.lingual is True:
+                if self.lingual:
                     tokenized_sentences += [y for y in self._parse_node(node, state)]
                 else:
                     yield from self._parse_node(node, state)
