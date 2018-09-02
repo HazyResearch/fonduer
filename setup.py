@@ -23,7 +23,7 @@ setup(
         "psycopg2-binary",
         "pyyaml",
         "scipy>=0.18",
-        "snorkel-metal==0.1.1",
+        "snorkel-metal",
         "spacy>=2.0.7",
         "sqlalchemy>=1.0.14",
         "torch>=0.4.0",
