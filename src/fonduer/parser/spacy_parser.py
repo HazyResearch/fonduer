@@ -209,25 +209,18 @@ class Spacy(object):
         for sentence_batch in sentence_batches:
             batch_sentence_strings = [x.text for x in sentence_batch]
 
-            if not self.model.has_pipe("sentence_boundary_detector"):
-                sentence_separator_fct = self.sentence_list_separator_function(
-                    sentence_batch
-                )
-                self.model.add_pipe(
-                    sentence_separator_fct,
-                    before="parser",
-                    name="sentence_boundary_detector",
-                )
-            else:
+            if self.model.has_pipe("sentence_boundary_detector"):
                 self.model.remove_pipe(name="sentence_boundary_detector")
-                sentence_separator_fct = self.sentence_list_separator_function(
-                    sentence_batch
-                )
-                self.model.add_pipe(
-                    sentence_separator_fct,
-                    before="parser",
-                    name="sentence_boundary_detector",
-                )
+
+            sentence_separator_fct = self.sentence_list_separator_function(
+                sentence_batch
+            )
+            self.model.add_pipe(
+                sentence_separator_fct,
+                before="parser",
+                name="sentence_boundary_detector",
+            )
+
             custom_tokenizer = TokenPreservingTokenizer(
                 self.model.vocab, sentence_batch
             )
