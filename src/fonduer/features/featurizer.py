@@ -136,7 +136,9 @@ class FeaturizerUDF(UDF):
 
         feature_keys = set()
         for cands in cands_list:
-            records = list(get_mapping(cands, get_all_feats, feature_keys))
+            records = list(
+                get_mapping(self.session, Feature, cands, get_all_feats, feature_keys)
+            )
             batch_upsert_records(self.session, Feature, records)
 
         # Insert all Feature Keys

@@ -53,19 +53,7 @@ class Labeler(UDFRunner):
         if len(lfs) != len(self.candidate_classes):
             raise ValueError("Please provide LFs for each candidate class.")
 
-        for i in range(len(self.lfs)):
-            # Filter out the new/updated LFs
-            self.lfs[i] = [
-                lf
-                for lf in self.lfs[i]
-                if lf.__name__ not in [_.__name__ for _ in lfs[i]]
-            ]
-            # Then add them
-            self.lfs[i].extend(lfs[i])
-
-        self.apply(
-            docs=docs, split=split, lfs=self.lfs, train=True, clear=False, **kwargs
-        )
+        self.apply(docs=docs, split=split, lfs=lfs, train=True, clear=False, **kwargs)
 
     def apply(self, docs=None, split=0, train=False, lfs=None, clear=True, **kwargs):
         """Apply the labels of the specified candidates based on the provided LFs.
@@ -228,7 +216,9 @@ class LabelerUDF(UDF):
 
         label_keys = set()
         for cands in cands_list:
-            records = list(get_mapping(cands, self._f_gen, label_keys))
+            records = list(
+                get_mapping(self.session, Label, cands, self._f_gen, label_keys)
+            )
             batch_upsert_records(self.session, Label, records)
 
         # Insert all Label Keys

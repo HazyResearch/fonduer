@@ -2,6 +2,7 @@ import logging
 
 from scipy.sparse import csr_matrix
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm.exc import NoResultFound
 
 from fonduer.candidates.models import Candidate
 
@@ -97,27 +98,35 @@ def get_docs_from_split(session, candidate_classes, split):
     return split_docs
 
 
-def get_mapping(candidates, generator, key_set):
+def get_mapping(session, table, candidates, generator, key_set):
     """Generate map of keys and values for the candidate from the generator.
 
+    :param session: The database session.
+    :param table: The table we will be inserting into (i.e. Feature or Label).
+    :param candidates: The candidates to get mappings for.
+    :param generator: A generator yielding (candidate_id, key, value) tuples.
     :param key_set: A mutable set which keys will be added to.
     """
     for cand in candidates:
+        # Grab the old values currently in the DB
+        try:
+            temp = session.query(table).filter(table.candidate_id == cand.id).one()
+            cand_map = dict(zip(temp.keys, temp.values))
+        except NoResultFound:
+            cand_map = {}
+
         map_args = {"candidate_id": cand.id}
-        keys = []
-        values = []
         for cid, key, value in generator(cand):
             if value == 0:
                 continue
-            keys.append(key)
-            values.append(value)
+            cand_map[key] = value
 
         # Assemble label arguments
-        map_args["keys"] = keys
-        map_args["values"] = values
+        map_args["keys"] = [*cand_map.keys()]
+        map_args["values"] = [*cand_map.values()]
 
         # mutate the passed in key_set
-        key_set.update(keys)
+        key_set.update(map_args["keys"])
         yield map_args
 
 
