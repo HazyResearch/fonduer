@@ -209,8 +209,13 @@ def test_spacy_non_english_languages(caplog):
     for _ in parser_udf.apply((doc, text)):
         pass
 
-    # TODO: Add more unit tests for tonkenized foreign alpha language sentences
     assert len(doc.sentences) == 289
+    sent = doc.sentences[0]
+    assert sent.text == "ジャパン-Wikipedia"
+    assert sent.words == ["ジャパン", "-", "Wikipedia"]
+    # Japanese sentences are only tokenized.
+    assert sent.ner_tags == ["", "", ""]
+    assert sent.dep_labels == ["", "", ""]
 
 
 def test_warning_on_missing_pdf(caplog):
