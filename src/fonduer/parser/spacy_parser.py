@@ -130,11 +130,15 @@ class Spacy(object):
             language_module = importlib.import_module("spacy.lang.{}".format(self.lang))
             language_method = getattr(language_module, self.alpha_languages[self.lang])
             model = language_method()
-            """ TODO: an UnicodeDecodeError happens about once every two when lang='ja'.
+            """ TODO: Depending on OS (Linux/macOS) and on the sentence to be parsed,
+            UnicodeDecodeError or ValueError happens at the first use when lang='ja'.
             As a workaround, the model parses some sentence before actually being used.
             """
             if self.lang == "ja":
-                model("テスト")
+                try:
+                    model("初期化")
+                except (UnicodeDecodeError, ValueError):
+                    pass
         self.model = model
 
     def sentence_list_separator_function(self, all_sentence_objs):
