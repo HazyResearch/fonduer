@@ -24,10 +24,13 @@ def load_gold_labels(session, cand_lists, annotator_name="gold"):
 class Labeler(UDFRunner):
     """An operator to add Label Annotations to Candidates."""
 
-    def __init__(self, session, candidate_classes):
+    def __init__(self, session, candidate_classes, parallelism=None):
         """Initialize the Labeler."""
         super(Labeler, self).__init__(
-            session, LabelerUDF, candidate_classes=candidate_classes
+            session,
+            LabelerUDF,
+            parallelism=parallelism,
+            candidate_classes=candidate_classes,
         )
         self.candidate_classes = candidate_classes
         self.lfs = []

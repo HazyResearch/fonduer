@@ -28,6 +28,7 @@ class CandidateExtractor(UDFRunner):
     :param symmetric_relations: Boolean indicating whether to extract symmetric
         Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
         Only applies to binary relations. Default is True.
+    :param parallelism: The number of processes to use in parallel. Default 1.
     """
 
     def __init__(
@@ -38,11 +39,13 @@ class CandidateExtractor(UDFRunner):
         self_relations=False,
         nested_relations=False,
         symmetric_relations=True,
+        parallelism=None,
     ):
         """Initialize the CandidateExtractor."""
         super(CandidateExtractor, self).__init__(
             session,
             CandidateExtractorUDF,
+            parallelism=parallelism,
             candidate_classes=candidate_classes,
             throttlers=throttlers,
             self_relations=self_relations,

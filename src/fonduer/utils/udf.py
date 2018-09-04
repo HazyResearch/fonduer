@@ -27,13 +27,14 @@ class UDFRunner(object):
     setup.
     """
 
-    def __init__(self, session, udf_class, **udf_init_kwargs):
+    def __init__(self, session, udf_class, parallelism=None, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
         self.pb = None
         self.session = session
+        self.parallelism = parallelism
 
     def apply(self, xs, clear=True, parallelism=None, progress_bar=True, **kwargs):
         """
@@ -51,6 +52,9 @@ class UDFRunner(object):
         if progress_bar and hasattr(xs, "__len__"):
             self.logger.debug("Setting up progress bar...")
             self.pb = tqdm(total=len(xs))
+
+        # Use the parallelism of the class if none is provided to apply
+        parallelism = parallelism if parallelism else self.parallelism
 
         if parallelism is None or parallelism < 2:
             self.apply_st(xs, clear=clear, **kwargs)

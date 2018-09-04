@@ -32,10 +32,10 @@ class Parser(UDFRunner):
     def __init__(
         self,
         session,
+        parallelism=None,
         structural=True,  # structural information
         blacklist=["style", "script"],  # ignore tag types, default: style, script
         flatten=["span", "br"],  # flatten tag types, default: span, br
-        flatten_delim="",
         language="en",
         lingual=True,  # lingual information
         strip=True,
@@ -44,16 +44,35 @@ class Parser(UDFRunner):
         visual=False,  # visual information
         pdf_path=None,
     ):
+        """Initialize the Parser.
+
+        :param session: The database session to use.
+        :param parallelism: The number of processes to use in parallel. Default 1.
+        :param structural: Whether to parse structural information from a DOM.
+        :param blacklist: A list of tag types to ignore. Default ["style", "script"].
+        :param flatten: A list of tag types to flatten. Default ["span", "br"]
+        :param language: Which spaCy NLP language package. Default "en".
+        :param lingual: Whether or not to include NLP information. Default True.
+        :param strip: Whether or not to strip whitespace during parsing. Default True.
+        :param replacements: A list of tuples where the regex string in the
+            first position is replaced by the character in the second position.
+            Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")].
+        :param tabular: Whether to include tabular information in the parse.
+        :param visual: Whether to include visual information in the parse.
+            Requires PDFs for each input document.
+        :param pdf_path: The path to the corresponding PDFs use for visual info.
+        """
+
         # Use spaCy as our lingual parser
         self.lingual_parser = Spacy(language)
 
         super(Parser, self).__init__(
             session,
             ParserUDF,
+            parallelism=parallelism,
             structural=structural,
             blacklist=blacklist,
             flatten=flatten,
-            flatten_delim=flatten_delim,
             lingual=lingual,
             strip=strip,
             replacements=replacements,
@@ -73,7 +92,6 @@ class ParserUDF(UDF):
         structural,
         blacklist,
         flatten,
-        flatten_delim,
         lingual,
         strip,
         replacements,
@@ -99,7 +117,6 @@ class ParserUDF(UDF):
         self.structural = structural
         self.blacklist = blacklist if isinstance(blacklist, list) else [blacklist]
         self.flatten = flatten if isinstance(flatten, list) else [flatten]
-        self.flatten_delim = flatten_delim
 
         # lingual setup
         self.lingual = lingual

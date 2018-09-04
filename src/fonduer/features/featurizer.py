@@ -20,10 +20,18 @@ logger = logging.getLogger(__name__)
 class Featurizer(UDFRunner):
     """An operator to add Feature Annotations to Candidates."""
 
-    def __init__(self, session, candidate_classes):
-        """Initialize the Featurizer."""
+    def __init__(self, session, candidate_classes, parallelism=None):
+        """Initialize the Featurizer.
+
+        :param session: The database session to use.
+        :param candidate_classes: A list of candidate_subclasses to featurize.
+        :param parallelism: The number of processes to use in parallel. Default 1.
+        """
         super(Featurizer, self).__init__(
-            session, FeaturizerUDF, candidate_classes=candidate_classes
+            session,
+            FeaturizerUDF,
+            parallelism=parallelism,
+            candidate_classes=candidate_classes,
         )
         self.candidate_classes = candidate_classes
 
