@@ -24,4 +24,4 @@ class HTMLDocPreprocessor(DocPreprocessor):
                 ), str(text)
 
     def _can_read(self, fpath):
-        return fpath.endswith("html")  # includes both .html and .xhtml
+        return fpath.lower().endswith("html")  # includes both .html and .xhtml
