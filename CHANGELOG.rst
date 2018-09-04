@@ -22,8 +22,8 @@ Changed
   relations.
 * `@senwu`_: Reorganize the disc model structure.
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
-* `@lukehsiao`_: Add ``session`` and parallelism as a parameter to all UDF
-    classes.
+* `@lukehsiao`_: Add ``session`` and ``parallelism`` as a parameter to all UDF
+  classes.
 * `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing
   pipeline into two stages. First, we parse structure and gather all
   sentences for a document. Then, we merge and feed all sentences per
