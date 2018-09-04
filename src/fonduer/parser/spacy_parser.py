@@ -51,7 +51,7 @@ class Spacy(object):
     def __init__(self, lang):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
-        self.spacy_languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
+        self.languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
         self.alpha_languages = {"ja": "Japanese"}
 
         self.lang = lang
@@ -66,7 +66,7 @@ class Spacy(object):
             return False
 
     def has_NLP_support(self):
-        if self.lang and (self.lang in self.spacy_languages):
+        if self.lang and (self.lang in self.languages):
             return True
         else:
             return False
@@ -122,7 +122,7 @@ class Spacy(object):
 
         :return:
         """
-        if self.lang in self.spacy_languages:
+        if self.lang in self.languages:
             if not Spacy.model_installed(self.lang):
                 download(self.lang)
             model = spacy.load(self.lang)
