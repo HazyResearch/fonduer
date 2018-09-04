@@ -27,12 +27,24 @@ class Featurizer(UDFRunner):
         )
         self.candidate_classes = candidate_classes
 
-    def apply(self, docs=None, split=0, train=False, **kwargs):
-        """Call the FeaturizerUDF."""
+    def apply(self, docs=None, split=0, train=False, clear=True, **kwargs):
+        """Apply features to the specified candidates.
+
+        :param docs: If provided, apply features to all the candidates in these
+            documents.
+        :param split: If docs is None, apply features to the candidates in this
+            particular split.
+        :param train: Whether or not to update the global key set of features and
+            the features of candidates.
+        :param clear: Whether or not to clear the features table before applying
+            features.
+        """
         if docs:
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
-            super(Featurizer, self).apply(docs, split=split, train=train, **kwargs)
+            super(Featurizer, self).apply(
+                docs, split=split, train=train, clear=clear, **kwargs
+            )
             # Needed to sync the bulk operations
             self.session.commit()
         else:
@@ -41,7 +53,7 @@ class Featurizer(UDFRunner):
                 self.session, self.candidate_classes, split
             )
             super(Featurizer, self).apply(
-                split_docs, split=split, train=train, **kwargs
+                split_docs, split=split, train=train, clear=clear, **kwargs
             )
             # Needed to sync the bulk operations
             self.session.commit()

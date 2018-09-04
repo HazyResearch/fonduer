@@ -33,7 +33,16 @@ class Labeler(UDFRunner):
         self.lfs = []
 
     def update(self, docs=None, split=0, lfs=None, **kwargs):
-        """Call apply with update=True."""
+        """Update the labels of the specified candidates based on the provided LFs.
+
+        :param docs: If provided, apply the updated LFs to all the candidates
+            in these documents.
+        :param split: If docs is None, apply the updated LFs to the candidates
+            in this particular split.
+        :param lfs: A list of lists of labeling functions to update. Each list
+            should correspond with the candidate_classes used to initialize the
+            Labeler.
+        """
         if lfs is None:
             raise ValueError("Please provide a list of lists of labeling functions.")
 
@@ -51,26 +60,24 @@ class Labeler(UDFRunner):
             self.lfs[i].extend(lfs[i])
 
         self.apply(
-            docs=docs,
-            split=split,
-            lfs=self.lfs,
-            train=False,
-            update=True,
-            clear=False,
-            **kwargs
+            docs=docs, split=split, lfs=self.lfs, train=True, clear=False, **kwargs
         )
 
-    def apply(
-        self,
-        docs=None,
-        split=0,
-        train=False,
-        lfs=None,
-        update=False,
-        clear=True,
-        **kwargs
-    ):
-        """Call the LabelerUDF."""
+    def apply(self, docs=None, split=0, train=False, lfs=None, clear=True, **kwargs):
+        """Apply the labels of the specified candidates based on the provided LFs.
+
+        :param docs: If provided, apply the LFs to all the candidates in these
+            documents.
+        :param split: If docs is None, apply the LFs to the candidates in this
+            particular split.
+        :param train: Whether or not to update the global key set of labels and
+            the labels of candidates.
+        :param lfs: A list of lists of labeling functions to apply. Each list
+            should correspond with the candidate_classes used to initialize the
+            Labeler.
+        :param clear: Whether or not to clear the labels table before applying
+            these LFs.
+        """
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
 
@@ -82,13 +89,7 @@ class Labeler(UDFRunner):
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
             super(Labeler, self).apply(
-                docs,
-                split=split,
-                train=train,
-                update=update,
-                lfs=self.lfs,
-                clear=clear,
-                **kwargs
+                docs, split=split, train=train, lfs=self.lfs, clear=clear, **kwargs
             )
             # Needed to sync the bulk operations
             self.session.commit()
@@ -101,7 +102,6 @@ class Labeler(UDFRunner):
                 split_docs,
                 split=split,
                 train=train,
-                update=update,
                 lfs=self.lfs,
                 clear=clear,
                 **kwargs
@@ -202,13 +202,12 @@ class LabelerUDF(UDF):
                     )
                 )
 
-    def apply(self, doc, split, train, update, lfs, **kwargs):
+    def apply(self, doc, split, train, lfs, **kwargs):
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
         :param split: Which split to use.
         :param train: Whether or not to insert new LabelKeys.
-        :param update: Whether to incrementally add/update new values.
         :param lfs: The list of functions to use to generate labels.
         """
         logger.debug("Document: {}".format(doc))
@@ -229,7 +228,7 @@ class LabelerUDF(UDF):
             batch_upsert_records(self.session, Label, records)
 
         # Insert all Label Keys
-        if train or update:
+        if train:
             add_keys(self.session, LabelKey, label_keys)
 
         # This return + yield makes a completely empty generator

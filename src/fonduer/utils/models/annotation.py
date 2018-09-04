@@ -14,7 +14,7 @@ class AnnotationKeyMixin(object):
     """Mixin class for defining annotation key tables.
 
     An AnnotationKey is the unique name associated with a set of Annotations,
-    corresponding e.g. to a single labeling or feature function.
+    corresponding e.g. to a single labeling function or feature.
     """
 
     @declared_attr

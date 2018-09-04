@@ -102,6 +102,7 @@ class CandidateExtractor(UDFRunner):
                 result.append(cands)
         else:
             for candidate_class in self.candidate_classes:
+                # Filter by candidate_ids in a particular split
                 sub_query = (
                     self.session.query(Candidate.id)
                     .filter(Candidate.split == split)
