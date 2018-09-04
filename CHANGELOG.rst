@@ -34,7 +34,7 @@ Changed
 * `@j-rausch`_: Added ``language`` argument to ``Parser`` for specification
   of language used by ``spacy_parser``. E.g. ``language='en'```.
 * `@senwu`_: Change weak supervision learning framework from numbskull to
-    `MeTaL <https://github.com/HazyResearch/metal>_`.
+  `MeTaL <https://github.com/HazyResearch/metal>_`.
   (`#119 <https://github.com/HazyResearch/fonduer/pull/119>`_)
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
   (`#115 <https://github.com/HazyResearch/fonduer/pull/115>`_)
