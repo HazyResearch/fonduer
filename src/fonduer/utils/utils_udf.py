@@ -28,6 +28,11 @@ def _get_cand_values(candidate, key_table):
         raise ValueError("{} is not a valid key table.".format(key_table))
 
 
+def get_sparse_matrix_keys(session, key_table):
+    """Return a generator of keys for the sparse matrix."""
+    return session.query(key_table).order_by(key_table.name).all()
+
+
 def batch_upsert_records(session, table, records):
     """Batch upsert records into postgresql database."""
     if not records:
@@ -53,9 +58,7 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
     else:
         keys_map = {
             key.name: idx
-            for (idx, key) in enumerate(
-                session.query(key_table).order_by(key_table.name).all()
-            )
+            for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table))
         }
 
     for cand_list in cand_lists:

@@ -11,6 +11,7 @@ from fonduer.utils.utils_udf import (
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
+    get_sparse_matrix_keys,
 )
 
 logger = logging.getLogger(__name__)
@@ -112,9 +113,9 @@ class Labeler(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
-    def get_lfs(self):
-        """Return a list of lists of labeling functions for this Labeler."""
-        return self.lfs
+    def get_keys(self):
+        """Return a list of keys for the Features."""
+        return list(get_sparse_matrix_keys(self.session, LabelKey))
 
     def drop_keys(self, keys):
         """Drop the specified keys from LabelKeys."""

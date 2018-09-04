@@ -51,7 +51,7 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+#  @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
@@ -72,9 +72,14 @@ def test_e2e(caplog):
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        session,
+        parallelism=PARALLEL,
+        structural=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
     )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    corpus_parser.apply(doc_preprocessor)
     assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
@@ -157,6 +162,12 @@ def test_e2e(caplog):
             test_docs.add(doc)
     logger.info([x.name for x in train_docs])
 
+    # NOTE: With multi-relation support, return values of getting candidates,
+    # mentions, or sparse matrices are formatted as a list of lists. This means
+    # that with a single relation, we need to index into the list of lists to
+    # get the candidates/mentions/sparse matrix for a particular relation or
+    # mention.
+
     # Mention Extraction
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
     temp_ngrams = MentionNgramsTemp(n_max=2)
@@ -230,6 +241,7 @@ def test_e2e(caplog):
     assert session.query(FeatureKey).count() == 3578
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (3346, 3578)
+    assert len(featurizer.get_keys()) == 3578
 
     featurizer.apply(split=1, parallelism=PARALLEL)
     assert session.query(Feature).count() == 3407
@@ -262,11 +274,11 @@ def test_e2e(caplog):
         labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
 
     labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
-    assert len(labeler.get_lfs()[0]) == 6
     assert session.query(Label).count() == 3346
     assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3346, 6)
+    assert len(labeler.get_keys()) == 6
 
     L_train_gold = labeler.get_gold_labels(train_cands)
     assert L_train_gold[0].shape == (3346, 1)

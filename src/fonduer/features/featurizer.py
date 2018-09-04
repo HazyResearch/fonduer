@@ -12,6 +12,7 @@ from fonduer.utils.utils_udf import (
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
+    get_sparse_matrix_keys,
 )
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,10 @@ class Featurizer(UDFRunner):
         # Remove the specified keys
         for key in keys:
             self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
+
+    def get_keys(self):
+        """Return a list of keys for the Features."""
+        return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
     def clear(self, train=False, split=0, **kwargs):
         """Delete Features of each class from the database."""
