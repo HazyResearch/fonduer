@@ -90,17 +90,15 @@ class UDFRunner(object):
         if not _meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
-        # Fill a JoinableQueue with input objects
+        # Create a JoinableQueue for input objects
         in_queue = JoinableQueue()
-        for x in xs:
-            in_queue.put(x)
 
         # Use an output queue to track multiprocess progress
         out_queue = JoinableQueue()
 
         # Track progress counts
-        total_count = in_queue.qsize()
-        count = 0
+        total_count = len(xs)
+        count_parsed = 0
 
         # Start UDF Processes
         for i in range(parallelism):
@@ -117,12 +115,18 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.start()
 
-        while any([udf.is_alive() for udf in self.udfs]) and count < total_count:
+        # Fill queue with docs; progress bar will not be updated until this is done
+        for x in xs:
+            in_queue.put(x)
+        in_queue.put(UDF.QUEUE_CLOSED)
+
+        while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
+
             y = out_queue.get()
 
             # Update progress bar whenever an item is processed
             if y == UDF.TASK_DONE:
-                count += 1
+                count_parsed += 1
                 if self.pb is not None:
                     self.pb.update(1)
             else:
@@ -139,6 +143,7 @@ class UDFRunner(object):
 
 class UDF(Process):
     TASK_DONE = "done"
+    QUEUE_CLOSED = "QUEUECLOSED"
 
     def __init__(self, in_queue=None, out_queue=None, worker_id=0):
         """
@@ -167,11 +172,14 @@ class UDF(Process):
         while True:
             try:
                 x = self.in_queue.get(True, QUEUE_TIMEOUT)
+                if x == UDF.QUEUE_CLOSED:
+                    self.in_queue.put(UDF.QUEUE_CLOSED)
+                    break
                 self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
                 self.in_queue.task_done()
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
-                break
+                continue
         self.session.commit()
         self.session.close()
 
