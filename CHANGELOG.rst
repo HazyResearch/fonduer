@@ -17,19 +17,24 @@ Added
 
 Changed
 ^^^^^^^
+* `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``Labeler`` and
+  ``BatchFeatureAnnotator`` to ``Featurizer``. The classes now support multiple
+  relations.
 * `@senwu`_: Reorganize the disc model structure.
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
-* `@lukehsiao`_: Add ``session`` as a parameter to all UDF classes.
+* `@lukehsiao`_: Add ``session`` and parallelism as a parameter to all UDF
+    classes.
 * `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing
   pipeline into two stages. First, we parse structure and gather all
   sentences for a document. Then, we merge and feed all sentences per
   document into the spacy NLP pipeline for more efficient processing.
 * `@j-rausch`_: Sentence splitting in lingual mode is now performed by
-  spacy's sentencizer instead of the depdency parser. This can lead to
+  spacy's sentencizer instead of the dependency parser. This can lead to
   variations in sentence segmentation and tokenization.
 * `@j-rausch`_: Added ``language`` argument to ``Parser`` for specification
   of language used by ``spacy_parser``. E.g. ``language='en'```.
-* `@senwu`_: Change weak supervision learning framework from numbskull to MeTaL.
+* `@senwu`_: Change weak supervision learning framework from numbskull to
+    `MeTaL <https://github.com/HazyResearch/metal>_`.
   (`#119 <https://github.com/HazyResearch/fonduer/pull/119>`_)
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
   (`#115 <https://github.com/HazyResearch/fonduer/pull/115>`_)
@@ -43,8 +48,6 @@ Changed
 * `@lukehsiao`_: Provide debug logging of external subprocess calls.
 * `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing).
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
-* `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
-  ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
 * `@lukehsiao`_: Organize documentation for ``data_model_utils`` by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
 * `@lukehsiao`_: Change ``lf_helpers`` to ``data_model_utils``, since they can
