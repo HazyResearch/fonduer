@@ -114,11 +114,19 @@ class UDFRunner(object):
             udf.start()
 
         # Fill queue with docs; progress bar will not be updated until this is done
-        for x in xs:
-            in_queue.put(x)
-        in_queue.put(UDF.QUEUE_CLOSED)
+        docs_added = 0
+        xs_generator = xs.generate()
+        for _ in range(min(parallelism, total_count)):
+            in_queue.put(next(xs_generator))
+            docs_added += 1
 
         while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
+            if docs_added < total_count:
+                in_queue.put(next(xs_generator))
+                docs_added += 1
+            if docs_added == total_count:
+                in_queue.put(UDF.QUEUE_CLOSED)
+                docs_added += 1
 
             y = out_queue.get()
 
