@@ -20,22 +20,27 @@ Added
 
 Changed
 ^^^^^^^
-
+* `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``Labeler`` and
+  ``BatchFeatureAnnotator`` to ``Featurizer``. The classes now support multiple
+  relations.
 * `@j-rausch`_: Made spacy tokenizer to default tokenizer, as long as there
   is (alpha) support for the chosen language. ```lingual``` argument now
-  specifies whether additional spacy NLP processing shall be performed. 
+  specifies whether additional spacy NLP processing shall be performed.
 * `@senwu`_: Reorganize the disc model structure.
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
-* `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing 
-  pipeline into two stages. First, we parse structure and gather all 
+* `@lukehsiao`_: Add ``session`` and ``parallelism`` as a parameter to all UDF
+  classes.
+* `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing
+  pipeline into two stages. First, we parse structure and gather all
   sentences for a document. Then, we merge and feed all sentences per
-  document into the spacy NLP pipeline for more efficient processing.  
-* `@j-rausch`_: Sentence splitting in lingual mode is now performed by 
-  spacy's sentencizer instead of the depdency parser. This can lead to 
+  document into the spacy NLP pipeline for more efficient processing.
+* `@j-rausch`_: Sentence splitting in lingual mode is now performed by
+  spacy's sentencizer instead of the dependency parser. This can lead to
   variations in sentence segmentation and tokenization.
 * `@j-rausch`_: Added ``language`` argument to ``Parser`` for specification
   of language used by ``spacy_parser``. E.g. ``language='en'```.
-* `@senwu`_: Change weak supervision learning framework from numbskull to MeTaL.
+* `@senwu`_: Change weak supervision learning framework from numbskull to
+  `MeTaL <https://github.com/HazyResearch/metal>_`.
   (`#119 <https://github.com/HazyResearch/fonduer/pull/119>`_)
 * `@senwu`_: Change learning framework from Tensorflow to PyTorch.
   (`#115 <https://github.com/HazyResearch/fonduer/pull/115>`_)
@@ -49,8 +54,6 @@ Changed
 * `@lukehsiao`_: Provide debug logging of external subprocess calls.
 * `@lukehsiao`_: Use ``tdqm`` for progress bar (including multiprocessing).
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
-* `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``LabelAnnotator`` and
-  ``BatchFeatureAnnotator`` to ``FeatureAnnotator``.
 * `@lukehsiao`_: Organize documentation for ``data_model_utils`` by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
 * `@lukehsiao`_: Change ``lf_helpers`` to ``data_model_utils``, since they can
@@ -103,6 +106,7 @@ Fixed
         Temp = mention_subclass("Temp")
         Volt = mention_subclass("Volt")
         mention_extractor = MentionExtractor(
+            session,
             [Part, Temp, Volt],
             [part_ngrams, temp_ngrams, volt_ngrams],
             [part_matcher, temp_matcher, volt_matcher],
@@ -114,7 +118,9 @@ Fixed
         PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
         candidate_extractor = CandidateExtractor(
-            [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
+            session,
+            [PartTemp, PartVolt],
+            throttlers=[temp_throttler, volt_throttler]
         )
 
         candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
@@ -167,12 +173,12 @@ Fixed
             Union,
         )
         from fonduer.candidates.models import candidate_subclass, mention_subclass
-        from fonduer.features import FeatureAnnotator
+        from fonduer.features import Featurizer
         from fonduer.learning import GenerativeModel, SparseLogisticRegression
         from fonduer.parser import Parser
         from fonduer.parser.models import Document, Sentence
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
-        from fonduer.supervision import LabelAnnotator, load_gold_labels
+        from fonduer.supervision import Labeler, load_gold_labels
 
 
 [0.2.3] - 2018-07-23
@@ -211,7 +217,7 @@ Fixed
   (`#76 <https://github.com/HazyResearch/fonduer/pull/76>`_,
   `#77 <https://github.com/HazyResearch/fonduer/pull/77>`_,
   `#78 <https://github.com/HazyResearch/fonduer/pull/78>`_)
-* `@senwu`_: Split up lf_helpers into separate files for each modaility.
+* `@senwu`_: Split up lf_helpers into separate files for each modality.
   (`#81 <https://github.com/HazyResearch/fonduer/pull/81>`_)
 * A variety of small bugfixes and code cleanup.
   (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)

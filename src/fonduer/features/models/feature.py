@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Float
+from sqlalchemy.dialects import postgresql
 
 from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
@@ -19,4 +20,4 @@ class Feature(AnnotationMixin, _meta.Base):
     automatic featurization library.
     """
 
-    value = Column(Float, nullable=False)
+    values = Column(postgresql.ARRAY(Float), nullable=False)

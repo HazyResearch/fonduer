@@ -93,6 +93,7 @@ def test_cand_gen(caplog):
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parseing
     if os.name == "posix":
+        logger.info("Using single core.")
         PARALLEL = 1
     else:
         PARALLEL = 2  # Travis only gives 2 cores
@@ -107,7 +108,7 @@ def test_cand_gen(caplog):
     logger.info("Parsing...")
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
     corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
@@ -125,18 +126,21 @@ def test_cand_gen(caplog):
 
     with pytest.raises(ValueError):
         mention_extractor = MentionExtractor(
+            session,
             [Part, Temp, Volt],
             [part_ngrams, volt_ngrams],  # Fail, mismatched arity
             [part_matcher, temp_matcher, volt_matcher],
         )
     with pytest.raises(ValueError):
         mention_extractor = MentionExtractor(
+            session,
             [Part, Temp, Volt],
             [part_ngrams, temp_matcher, volt_ngrams],
             [part_matcher, temp_matcher],  # Fail, mismatched arity
         )
 
     mention_extractor = MentionExtractor(
+        session,
         [Part, Temp, Volt],
         [part_ngrams, temp_ngrams, volt_ngrams],
         [part_matcher, temp_matcher, volt_matcher],
@@ -158,7 +162,7 @@ def test_cand_gen(caplog):
     PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
     candidate_extractor = CandidateExtractor(
-        [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
+        session, [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
     )
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)

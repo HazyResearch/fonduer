@@ -27,40 +27,37 @@ class UDFRunner(object):
     setup.
     """
 
-    def __init__(self, udf_class, **udf_init_kwargs):
+    def __init__(self, session, udf_class, parallelism=1, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs = []
         self.pb = None
+        self.session = session
+        self.parallelism = parallelism
 
-    def apply(
-        self, xs, clear=True, parallelism=None, progress_bar=True, count=None, **kwargs
-    ):
+    def apply(self, xs, clear=True, parallelism=1, progress_bar=True, **kwargs):
         """
         Apply the given UDF to the set of objects xs, either single or
         multi-threaded, and optionally calling clear() first.
         """
         # Clear everything downstream of this UDF if requested
         if clear:
-            self.logger.info("Clearing existing...")
-            Session = new_sessionmaker()
-            session = Session()
-            self.clear(session, **kwargs)
-            session.commit()
-            session.close()
+            self.clear(**kwargs)
 
         # Execute the UDF
         self.logger.info("Running UDF...")
 
         # Setup progress bar
-        if progress_bar and hasattr(xs, "__len__") or count is not None:
+        if progress_bar and hasattr(xs, "__len__"):
             self.logger.debug("Setting up progress bar...")
-            n = count if count is not None else len(xs)
-            self.pb = tqdm(total=n)
+            self.pb = tqdm(total=len(xs))
 
-        if parallelism is None or parallelism < 2:
-            self.apply_st(xs, clear=clear, count=count, **kwargs)
+        # Use the parallelism of the class if none is provided to apply
+        parallelism = parallelism if parallelism else self.parallelism
+
+        if parallelism < 2:
+            self.apply_st(xs, clear=clear, **kwargs)
         else:
             self.apply_mt(xs, parallelism, clear=clear, **kwargs)
 
@@ -69,10 +66,10 @@ class UDFRunner(object):
             self.logger.debug("Closing progress bar...")
             self.pb.close()
 
-    def clear(self, session, **kwargs):
+    def clear(self, **kwargs):
         raise NotImplementedError()
 
-    def apply_st(self, xs, count, **kwargs):
+    def apply_st(self, xs, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
@@ -80,6 +77,7 @@ class UDFRunner(object):
         for x in xs:
             if self.pb is not None:
                 self.pb.update(1)
+
             udf.session.add_all(y for y in udf.apply(x, **kwargs))
 
         # Commit session and close progress bar if applicable

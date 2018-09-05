@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.dialects import postgresql
 
 from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
@@ -13,7 +14,7 @@ class GoldLabelKey(AnnotationKeyMixin, _meta.Base):
 class GoldLabel(AnnotationMixin, _meta.Base):
     """A separate class for labels from human annotators or other gold standards."""
 
-    value = Column(Integer, nullable=False)
+    values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
 class LabelKey(AnnotationKeyMixin, _meta.Base):
@@ -28,7 +29,7 @@ class Label(AnnotationMixin, _meta.Base):
     annotation key identifies the labeling function that provided the Label.
     """
 
-    value = Column(Integer, nullable=False)
+    values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
 class StableLabel(_meta.Base):

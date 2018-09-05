@@ -23,7 +23,7 @@ setup(
         "psycopg2-binary",
         "pyyaml",
         "scipy>=0.18",
-        "snorkel-metal==0.1.1",
+        "snorkel-metal",
         "spacy>=2.0.7",
         "sqlalchemy>=1.0.14",
         "torch>=0.4.0",
@@ -33,8 +33,6 @@ setup(
     ],
     extras_require={"spacy_ja": ["mecab-python3"]},
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest>=3.4.0", "flake8"],
     include_package_data=True,
     url="https://github.com/HazyResearch/fonduer",
     classifiers=[  # https://pypi.python.org/pypi?:action=list_classifiers

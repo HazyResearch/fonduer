@@ -2,7 +2,6 @@
 import logging
 import os
 import pickle
-from builtins import range
 
 import numpy as np
 import pytest
@@ -10,7 +9,8 @@ import pytest
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import candidate_subclass, mention_subclass
-from fonduer.features import FeatureAnnotator
+from fonduer.features import Featurizer
+from fonduer.features.models import Feature, FeatureKey
 from fonduer.learning import (
     LSTM,
     GenerativeModel,
@@ -20,7 +20,8 @@ from fonduer.learning import (
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.supervision import LabelAnnotator, load_gold_labels
+from fonduer.supervision import Labeler
+from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
     LF_collector_aligned,
     LF_complement_left_row,
@@ -56,6 +57,7 @@ def test_e2e(caplog):
     caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parsing
     if os.name == "posix":
+        logger.info("Using single core.")
         PARALLEL = 1
     else:
         PARALLEL = 2  # Travis only gives 2 cores
@@ -69,13 +71,15 @@ def test_e2e(caplog):
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    num_docs = session.query(Document).count()
-    if num_docs != max_docs:
-        logger.info("Parsing...")
-        corpus_parser = Parser(
-            structural=True, lingual=True, visual=True, pdf_path=pdf_path
-        )
-        corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    corpus_parser = Parser(
+        session,
+        parallelism=PARALLEL,
+        structural=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
+    )
+    corpus_parser.apply(doc_preprocessor)
     assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
@@ -158,6 +162,12 @@ def test_e2e(caplog):
             test_docs.add(doc)
     logger.info([x.name for x in train_docs])
 
+    # NOTE: With multi-relation support, return values of getting candidates,
+    # mentions, or sparse matrices are formatted as a list of lists. This means
+    # that with a single relation, we need to index into the list of lists to
+    # get the candidates/mentions/sparse matrix for a particular relation or
+    # mention.
+
     # Mention Extraction
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
     temp_ngrams = MentionNgramsTemp(n_max=2)
@@ -166,18 +176,30 @@ def test_e2e(caplog):
     Temp = mention_subclass("Temp")
 
     mention_extractor = MentionExtractor(
-        [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
+        session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
 
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 299
     assert session.query(Temp).count() == 134
+    assert len(mention_extractor.get_mentions()) == 2
+    assert len(mention_extractor.get_mentions()[0]) == 299
+    assert (
+        len(
+            mention_extractor.get_mentions(
+                docs=[session.query(Document).filter(Document.name == "112823").first()]
+            )[0]
+        )
+        == 70
+    )
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    candidate_extractor = CandidateExtractor([PartTemp], throttlers=[temp_throttler])
+    candidate_extractor = CandidateExtractor(
+        session, [PartTemp], throttlers=[temp_throttler]
+    )
 
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
@@ -186,19 +208,56 @@ def test_e2e(caplog):
     assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
     assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
 
-    train_cands = session.query(PartTemp).filter(PartTemp.split == 0).all()
+    # Grab candidate lists
+    train_cands = candidate_extractor.get_candidates(split=0)
+    dev_cands = candidate_extractor.get_candidates(split=1)
+    test_cands = candidate_extractor.get_candidates(split=2)
+    assert len(train_cands) == 1
+    assert len(train_cands[0]) == 3346
+    assert (
+        len(
+            candidate_extractor.get_candidates(
+                docs=[session.query(Document).filter(Document.name == "112823").first()]
+            )[0]
+        )
+        == 1178
+    )
 
     # Featurization
-    featurizer = FeatureAnnotator(PartTemp)
-    F_train = featurizer.apply(split=0, replace_key_set=True, parallelism=PARALLEL)
-    logger.info(F_train.shape)
-    F_dev = featurizer.apply(split=1, replace_key_set=False, parallelism=PARALLEL)
-    logger.info(F_dev.shape)
-    F_test = featurizer.apply(split=2, replace_key_set=False, parallelism=PARALLEL)
-    logger.info(F_test.shape)
+    featurizer = Featurizer(session, [PartTemp])
+
+    # Test that FeatureKey is properly reset
+    featurizer.apply(split=1, train=True, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 61
+    assert session.query(FeatureKey).count() == 676
+
+    # Test Dropping FeatureKey
+    featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NFP NN NFP]"])
+    assert session.query(FeatureKey).count() == 675
+    session.query(Feature).delete()
+
+    featurizer.apply(split=0, train=True, parallelism=1)
+    assert session.query(Feature).count() == 3346
+    assert session.query(FeatureKey).count() == 3578
+    F_train = featurizer.get_feature_matrices(train_cands)
+    assert F_train[0].shape == (3346, 3578)
+    assert len(featurizer.get_keys()) == 3578
+
+    featurizer.apply(split=1, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 3407
+    assert session.query(FeatureKey).count() == 3578
+    F_dev = featurizer.get_feature_matrices(dev_cands)
+    assert F_dev[0].shape == (61, 3578)
+
+    featurizer.apply(split=2, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 3827
+    assert session.query(FeatureKey).count() == 3578
+    F_test = featurizer.get_feature_matrices(test_cands)
+    assert F_test[0].shape == (420, 3578)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
+    assert session.query(GoldLabel).count() == 3827
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -209,27 +268,36 @@ def test_e2e(caplog):
         LF_negative_number_left,
     ]
 
-    labeler = LabelAnnotator(PartTemp, lfs=stg_temp_lfs)
-    L_train = labeler.apply(split=0, clear=True, parallelism=PARALLEL)
-    logger.info(L_train.shape)
+    labeler = Labeler(session, [PartTemp])
 
-    load_gold_labels(session, annotator_name="gold", split=0)
+    with pytest.raises(ValueError):
+        labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
+
+    labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
+    assert session.query(Label).count() == 3346
+    assert session.query(LabelKey).count() == 6
+    L_train = labeler.get_label_matrices(train_cands)
+    assert L_train[0].shape == (3346, 6)
+    assert len(labeler.get_keys()) == 6
+
+    L_train_gold = labeler.get_gold_labels(train_cands)
+    assert L_train_gold[0].shape == (3346, 1)
+
+    L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
+    assert L_train_gold[0].shape == (3346, 1)
 
     gen_model = GenerativeModel(cardinalities=2)
-    gen_model.train(L_train, n_epochs=500, print_every=100)
+    gen_model.train(L_train[0], n_epochs=500, print_every=100)
 
-    load_gold_labels(session, annotator_name="gold", split=1)
-
-    train_marginals = gen_model.predict_proba(L_train)[:, 1]
+    train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
 
     disc_model = LogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+    )
 
-    load_gold_labels(session, annotator_name="gold", split=2)
-
-    test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
-    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
@@ -253,6 +321,7 @@ def test_e2e(caplog):
     assert f1 < 0.7 and f1 > 0.3
 
     stg_temp_lfs_2 = [
+        LF_to_left,
         LF_test_condition_aligned,
         LF_collector_aligned,
         LF_current_aligned,
@@ -265,22 +334,24 @@ def test_e2e(caplog):
         LF_temp_outside_table,
         LF_not_temp_relevant,
     ]
-
-    labeler = LabelAnnotator(PartTemp, lfs=stg_temp_lfs_2)
-    L_train = labeler.apply(
-        split=0, clear=False, update_keys=True, update_values=True, parallelism=PARALLEL
-    )
+    labeler.update(split=0, lfs=[stg_temp_lfs_2], parallelism=PARALLEL)
+    assert session.query(Label).count() == 3346
+    assert session.query(LabelKey).count() == 13
+    L_train = labeler.get_label_matrices(train_cands)
+    assert L_train[0].shape == (3346, 13)
 
     gen_model = GenerativeModel(cardinalities=2)
-    gen_model.train(L_train, n_epochs=500, print_every=100)
+    gen_model.train(L_train[0], n_epochs=500, print_every=100)
 
-    train_marginals = gen_model.predict_proba(L_train)[:, 1]
+    train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
 
     disc_model = LogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+    )
 
-    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -301,10 +372,12 @@ def test_e2e(caplog):
 
     # Testing LSTM
     disc_model = LSTM()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=5, lr=0.001)
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
+    )
 
-    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -325,10 +398,12 @@ def test_e2e(caplog):
 
     # Testing Sparse Logistic Regression
     disc_model = SparseLogisticRegression()
-    disc_model.train((train_cands, F_train), train_marginals, n_epochs=20, lr=0.001)
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+    )
 
-    test_score = disc_model.predictions((test_candidates, F_test), b=0.9)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.9)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc

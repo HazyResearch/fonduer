@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
+    :param session: An initialized database session.
     :param candidate_classes: The types of relation to extract, defined using
         :func: fonduer.candidates.candidate_subclass.
     :param throttlers: optional functions for filtering out candidates
@@ -27,19 +28,24 @@ class CandidateExtractor(UDFRunner):
     :param symmetric_relations: Boolean indicating whether to extract symmetric
         Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
         Only applies to binary relations. Default is True.
+    :param parallelism: The number of processes to use in parallel. Default 1.
     """
 
     def __init__(
         self,
+        session,
         candidate_classes,
         throttlers=None,
         self_relations=False,
         nested_relations=False,
         symmetric_relations=True,
+        parallelism=1,
     ):
         """Initialize the CandidateExtractor."""
         super(CandidateExtractor, self).__init__(
+            session,
             CandidateExtractorUDF,
+            parallelism=parallelism,
             candidate_classes=candidate_classes,
             throttlers=throttlers,
             self_relations=self_relations,
@@ -56,7 +62,7 @@ class CandidateExtractor(UDFRunner):
         """Call the CandidateExtractorUDF."""
         super(CandidateExtractor, self).apply(xs, split=split, **kwargs)
 
-    def clear(self, session, split, **kwargs):
+    def clear(self, split, **kwargs):
         """Delete Candidates of each class from given split the database."""
         for candidate_class in self.candidate_classes:
             logger.info(
@@ -64,14 +70,55 @@ class CandidateExtractor(UDFRunner):
                     candidate_class.__tablename__, split
                 )
             )
-            session.query(Candidate).filter(
+            self.session.query(Candidate).filter(
                 Candidate.type == candidate_class.__tablename__
             ).filter(Candidate.split == split).delete()
 
-    def clear_all(self, session, split, **kwargs):
+    def clear_all(self, split, **kwargs):
         """Delete all Candidates from given split the database."""
         logger.info("Clearing ALL Candidates.")
-        session.query(Candidate).filter(Candidate.split == split).delete()
+        self.session.query(Candidate).filter(Candidate.split == split).delete()
+
+    def get_candidates(self, docs=None, split=0):
+        """Return a list of lists of the candidates associated with this extractor.
+
+        Each list of the return will contain the candidates for one of the
+        candidate classes associated with the CandidateExtractor.
+
+        :param docs: If provided, return candidates from these documents from
+            all splits.
+        :param split: If docs is None, then return all the candidates from this
+            split.
+        :return: List of lists of candidates for each candidate_class.
+        """
+        result = []
+        if docs:
+            docs = docs if isinstance(docs, (list, tuple)) else [docs]
+            # Get cands from all splits
+            for candidate_class in self.candidate_classes:
+                cands = (
+                    self.session.query(candidate_class)
+                    .filter(candidate_class.document_id.in_([doc.id for doc in docs]))
+                    .order_by(candidate_class.id)
+                    .all()
+                )
+                result.append(cands)
+        else:
+            for candidate_class in self.candidate_classes:
+                # Filter by candidate_ids in a particular split
+                sub_query = (
+                    self.session.query(Candidate.id)
+                    .filter(Candidate.split == split)
+                    .subquery()
+                )
+                cands = (
+                    self.session.query(candidate_class)
+                    .filter(candidate_class.id.in_(sub_query))
+                    .order_by(candidate_class.id)
+                    .all()
+                )
+                result.append(cands)
+        return result
 
 
 class CandidateExtractorUDF(UDF):

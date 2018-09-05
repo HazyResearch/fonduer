@@ -13,7 +13,6 @@ def get_parser_udf(
     structural=True,  # structural information
     blacklist=["style", "script"],  # ignore tag types, default: style, script
     flatten=["span", "br"],  # flatten tag types, default: span, br
-    flatten_delim="",
     language="en",
     lingual=True,  # lingual information
     strip=True,
@@ -32,7 +31,6 @@ def get_parser_udf(
             structural=structural,
             blacklist=blacklist,
             flatten=flatten,
-            flatten_delim=flatten_delim,
             lingual=lingual,
             strip=strip,
             replacements=replacements,
