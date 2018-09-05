@@ -1,7 +1,7 @@
 import logging
 
 from fonduer.candidates.models import Candidate
-from fonduer.features.features import get_all_feats
+from fonduer.features.feature_libs import get_all_feats
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
