@@ -1,8 +1,11 @@
+
 [Unreleased]
 ------------
 
 Added
 ^^^^^
+
+* `@j-rausch`_: Added alpha spacy support for Japanese tokenizer.
 * `@senwu`_: Add sparse logistic regression support.
 * `@j-rausch`_: Added unit tests for changed lingual parsing pipeline.
 * `@senwu`_: Support Python 3.7.
@@ -20,6 +23,9 @@ Changed
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``Labeler`` and
   ``BatchFeatureAnnotator`` to ``Featurizer``. The classes now support multiple
   relations.
+* `@j-rausch`_: Made spacy tokenizer to default tokenizer, as long as there
+  is (alpha) support for the chosen language. ```lingual``` argument now
+  specifies whether additional spacy NLP processing shall be performed.
 * `@senwu`_: Reorganize the disc model structure.
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
 * `@lukehsiao`_: Add ``session`` and ``parallelism`` as a parameter to all UDF

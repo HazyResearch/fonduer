@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 import logging
+import os
 from unittest.mock import patch
 
 import pytest
 
 from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.spacy_parser import Spacy
 
 
 def get_parser_udf(
@@ -22,8 +22,6 @@ def get_parser_udf(
     pdf_path=None,
 ):
     """Return an instance of ParserUDF."""
-    # Use spaCy as our lingual parser
-    lingual_parser = Spacy(language)
 
     # Patch new_sessionmaker() under the namespace of fonduer.utils.udf
     # See more details in
@@ -39,7 +37,7 @@ def get_parser_udf(
             tabular=tabular,
             visual=visual,
             pdf_path=pdf_path,
-            lingual_parser=lingual_parser,
+            language=language,
         )
     return parser_udf
 
@@ -142,6 +140,80 @@ def test_parse_md_details(caplog):
         assert len(sent.words) == len(sent.ner_tags)
         assert len(sent.words) == len(sent.dep_parents)
         assert len(sent.words) == len(sent.dep_labels)
+
+
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+def test_spacy_non_english_languages(caplog):
+    """Test the parser with the md document."""
+    caplog.set_level(logging.INFO)
+
+    docs_path = "tests/data/pure_html/brot.html"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False, language="de"
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
+
+    # Check that doc has sentences
+    assert len(doc.sentences) == 841
+    sent = sorted(doc.sentences, key=lambda x: x.position)[143]
+    assert sent.ner_tags == [
+        "O",
+        "O",
+        "LOC",
+        "O",
+        "O",
+        "LOC",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+    ]  # inaccurate
+    assert sent.dep_labels == [
+        "mo",
+        "ROOT",
+        "sb",
+        "mo",
+        "nk",
+        "nk",
+        "punct",
+        "mo",
+        "nk",
+        "nk",
+        "nk",
+        "sb",
+        "oc",
+        "rc",
+        "punct",
+    ]
+
+    # Test japanese alpha tokenization
+    docs_path = "tests/data/pure_html/japan.html"
+    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False, language="ja"
+    )
+    for _ in parser_udf.apply((doc, text)):
+        pass
+
+    assert len(doc.sentences) == 289
+    sent = doc.sentences[0]
+    assert sent.text == "ジャパン-Wikipedia"
+    assert sent.words == ["ジャパン", "-", "Wikipedia"]
+    # Japanese sentences are only tokenized.
+    assert sent.ner_tags == ["", "", ""]
+    assert sent.dep_labels == ["", "", ""]
 
 
 def test_warning_on_missing_pdf(caplog):
@@ -292,7 +364,7 @@ def test_simple_tokenizer(caplog):
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, lingual=False, visual=True, pdf_path=pdf_path
+        structural=True, lingual=False, visual=True, pdf_path=pdf_path, language=None
     )
     for _ in parser_udf.apply((doc, text)):
         pass

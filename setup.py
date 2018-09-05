@@ -31,6 +31,7 @@ setup(
         "treedlib",
         "wand",
     ],
+    extras_require={"spacy_ja": ["mecab-python3"]},
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
     include_package_data=True,
     url="https://github.com/HazyResearch/fonduer",
