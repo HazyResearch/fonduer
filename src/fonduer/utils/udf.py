@@ -27,7 +27,7 @@ class UDFRunner(object):
     setup.
     """
 
-    def __init__(self, session, udf_class, parallelism=None, **udf_init_kwargs):
+    def __init__(self, session, udf_class, parallelism=1, **udf_init_kwargs):
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
@@ -36,7 +36,7 @@ class UDFRunner(object):
         self.session = session
         self.parallelism = parallelism
 
-    def apply(self, xs, clear=True, parallelism=None, progress_bar=True, **kwargs):
+    def apply(self, xs, clear=True, parallelism=1, progress_bar=True, **kwargs):
         """
         Apply the given UDF to the set of objects xs, either single or
         multi-threaded, and optionally calling clear() first.
@@ -56,7 +56,7 @@ class UDFRunner(object):
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
 
-        if parallelism is None or parallelism < 2:
+        if parallelism < 2:
             self.apply_st(xs, clear=clear, **kwargs)
         else:
             self.apply_mt(xs, parallelism, clear=clear, **kwargs)

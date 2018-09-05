@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class Featurizer(UDFRunner):
     """An operator to add Feature Annotations to Candidates."""
 
-    def __init__(self, session, candidate_classes, parallelism=None):
+    def __init__(self, session, candidate_classes, parallelism=1):
         """Initialize the Featurizer.
 
         :param session: The database session to use.

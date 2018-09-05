@@ -159,7 +159,7 @@ class MentionExtractor(UDFRunner):
     """
 
     def __init__(
-        self, session, mention_classes, mention_spaces, matchers, parallelism=None
+        self, session, mention_classes, mention_spaces, matchers, parallelism=1
     ):
         """Initialize the MentionExtractor."""
         super(MentionExtractor, self).__init__(

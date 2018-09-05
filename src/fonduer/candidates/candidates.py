@@ -39,7 +39,7 @@ class CandidateExtractor(UDFRunner):
         self_relations=False,
         nested_relations=False,
         symmetric_relations=True,
-        parallelism=None,
+        parallelism=1,
     ):
         """Initialize the CandidateExtractor."""
         super(CandidateExtractor, self).__init__(
