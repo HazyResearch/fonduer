@@ -1,8 +1,11 @@
+
 [Unreleased]
 ------------
 
 Added
 ^^^^^
+
+* `@j-rausch`_: Added alpha spacy support for Japanese tokenizer.
 * `@senwu`_: Add sparse logistic regression support.
 * `@j-rausch`_: Added unit tests for changed lingual parsing pipeline.
 * `@senwu`_: Support Python 3.7.
@@ -17,6 +20,10 @@ Added
 
 Changed
 ^^^^^^^
+
+* `@j-rausch`_: Made spacy tokenizer to default tokenizer, as long as there
+  is (alpha) support for the chosen language. ```lingual``` argument now
+  specifies whether additional spacy NLP processing shall be performed. 
 * `@senwu`_: Reorganize the disc model structure.
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
 * `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing 

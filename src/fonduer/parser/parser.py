@@ -43,9 +43,6 @@ class Parser(UDFRunner):
         visual=False,  # visual information
         pdf_path=None,
     ):
-        # Use spaCy as our lingual parser
-        self.lingual_parser = Spacy(language)
-
         super(Parser, self).__init__(
             ParserUDF,
             structural=structural,
@@ -58,7 +55,7 @@ class Parser(UDFRunner):
             tabular=tabular,
             visual=visual,
             pdf_path=pdf_path,
-            lingual_parser=self.lingual_parser,
+            language=language,
         )
 
     def clear(self, session, **kwargs):
@@ -78,7 +75,7 @@ class ParserUDF(UDF):
         tabular,
         visual,
         pdf_path,
-        lingual_parser,
+        language,
         **kwargs
     ):
         """
@@ -100,18 +97,32 @@ class ParserUDF(UDF):
         self.flatten_delim = flatten_delim
 
         # lingual setup
-        self.lingual = lingual
+        self.language = language
         self.strip = strip
         self.replacements = []
         for (pattern, replace) in replacements:
             self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
-        if self.lingual:
-            self.lingual_parser = lingual_parser
-            self.lingual_parse = self.lingual_parser.split_sentences
-            self.lingual_nlp = self.lingual_parser.parse
 
+        self.lingual = lingual
+        self.lingual_parser = Spacy(self.language)
+        if self.lingual_parser.has_tokenizer_support():
+            self.tokenize_and_split_sentences = self.lingual_parser.split_sentences
+            self.lingual_parser.load_lang_model()
         else:
-            self.lingual_parse = SimpleTokenizer().parse
+            self.tokenize_and_split_sentences = SimpleTokenizer().parse
+
+        if self.lingual:
+            if self.lingual_parser.has_NLP_support():
+                self.enrich_tokenized_sentences_with_nlp = (
+                    self.lingual_parser.enrich_sentences_with_NLP
+                )
+            else:
+                logger.warning(
+                    "Lingual mode will be turned off, "
+                    "as spacy doesn't provide support for this "
+                    "language ({})".format(self.language)
+                )
+                self.lingual = False
 
         # tabular setup
         self.tabular = tabular
@@ -357,7 +368,7 @@ class ParserUDF(UDF):
         field = state["paragraph"]["field"]
         # Lingual Parse
         document = state["document"]
-        for parts in self.lingual_parse(document, text):
+        for parts in self.tokenize_and_split_sentences(document, text):
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
@@ -636,7 +647,7 @@ class ParserUDF(UDF):
         state["parent"][root] = document
         state["context"][root] = document
 
-        all_sentences = []
+        tokenized_sentences = []
         while stack:
             node = stack.pop()
             if node not in state["visited"]:
@@ -644,7 +655,7 @@ class ParserUDF(UDF):
 
                 # Process
                 if self.lingual:
-                    all_sentences += [y for y in self._parse_node(node, state)]
+                    tokenized_sentences += [y for y in self._parse_node(node, state)]
                 else:
                     yield from self._parse_node(node, state)
 
@@ -670,4 +681,4 @@ class ParserUDF(UDF):
                     )
 
         if self.lingual:
-            yield from self.lingual_nlp(all_sentences)
+            yield from self.enrich_tokenized_sentences_with_nlp(tokenized_sentences)

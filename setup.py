@@ -31,6 +31,7 @@ setup(
         "treedlib",
         "wand",
     ],
+    extras_require={"spacy_ja": ["mecab-python3"]},
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
     setup_requires=["pytest-runner"],
     tests_require=["pytest>=3.4.0", "flake8"],
