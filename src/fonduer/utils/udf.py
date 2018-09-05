@@ -36,7 +36,7 @@ class UDFRunner(object):
         self.session = session
         self.parallelism = parallelism
 
-    def apply(self, xs, clear=True, parallelism=1, progress_bar=True, **kwargs):
+    def apply(self, xs, clear=True, parallelism=None, progress_bar=True, **kwargs):
         """
         Apply the given UDF to the set of objects xs, either single or
         multi-threaded, and optionally calling clear() first.
