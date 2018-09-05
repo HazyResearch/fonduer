@@ -142,7 +142,9 @@ def test_parse_md_details(caplog):
         assert len(sent.words) == len(sent.dep_labels)
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif(
+    "CI" not in os.environ, reason="Only run spacy non English test on Travis"
+)
 def test_spacy_non_english_languages(caplog):
     """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
