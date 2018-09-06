@@ -184,7 +184,6 @@ class UDF(Process):
                     self.in_queue.put(UDF.QUEUE_CLOSED)
                     break
                 self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
-                # self.in_queue.task_done()
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
                 continue
