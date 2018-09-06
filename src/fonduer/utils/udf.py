@@ -1,5 +1,5 @@
 import logging
-from multiprocessing import JoinableQueue, Process
+from multiprocessing import JoinableQueue, Manager, Pool, Process
 from queue import Empty
 
 from fonduer.meta import Meta, new_sessionmaker
@@ -19,6 +19,14 @@ QUEUE_TIMEOUT = 3
 
 # Grab pointer to global metadata
 _meta = Meta.init()
+
+
+def async_fill_input_queue(arg_tuple):
+    input_queue = arg_tuple[0]
+    preprocessor = arg_tuple[1]
+    doc_index = arg_tuple[2]
+    for doc_tuple in preprocessor.parse_by_index(doc_index):
+        input_queue.put(doc_tuple)
 
 
 class UDFRunner(object):
@@ -88,15 +96,14 @@ class UDFRunner(object):
         if not _meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
-        # Create a JoinableQueue for input objects
-        in_queue = JoinableQueue()
+        # Create a Queue to feed documents to parsers
+        manager = Manager()
+        in_queue = manager.Queue()
 
         # Use an output queue to track multiprocess progress
         out_queue = JoinableQueue()
 
-        # Track progress counts
         total_count = len(xs)
-        count_parsed = 0
 
         # Start UDF Processes
         for i in range(parallelism):
@@ -113,15 +120,14 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.start()
 
-        # Fill queue with docs; progress bar will not be updated until this is done
-        for x in xs:
-            in_queue.put(x)
-        in_queue.put(UDF.QUEUE_CLOSED)
+        # Fill input queue with documents
+        pool = Pool(parallelism)
+        in_tuples = ((in_queue, xs, index) for index in range(total_count))
+        pool.map_async(func=async_fill_input_queue, iterable=in_tuples)
 
-        while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
-
+        count_parsed = 0
+        while count_parsed < total_count:
             y = out_queue.get()
-
             # Update progress bar whenever an item is processed
             if y == UDF.TASK_DONE:
                 count_parsed += 1
@@ -129,6 +135,10 @@ class UDFRunner(object):
                     self.pb.update(1)
             else:
                 raise ValueError("Got non-sentinal output.")
+
+        pool.close()
+        pool.join()
+        in_queue.put(UDF.QUEUE_CLOSED)
 
         for udf in self.udfs:
             udf.join()
@@ -174,7 +184,6 @@ class UDF(Process):
                     self.in_queue.put(UDF.QUEUE_CLOSED)
                     break
                 self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
-                self.in_queue.task_done()
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
                 continue
