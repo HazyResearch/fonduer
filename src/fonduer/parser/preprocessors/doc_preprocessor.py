@@ -34,6 +34,13 @@ class DocPreprocessor(object):
                     if doc_count >= self.max_docs:
                         return
 
+    def parse_by_index(self, index):
+        fp = self.all_files[index]
+        file_name = os.path.basename(fp)
+        if self._can_read(file_name):
+            for doc, text in self.parse_file(fp, file_name):
+                yield doc, text
+
     def __len__(self):
         """Provide a len attribute based on max_docs and number of files in folder."""
         num_docs = min(len(self.all_files), self.max_docs)

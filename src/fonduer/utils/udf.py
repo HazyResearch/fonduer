@@ -23,8 +23,10 @@ _meta = Meta.init()
 
 def async_fill_input_queue(arg_tuple):
     input_queue = arg_tuple[0]
-    doc_tuple = arg_tuple[1]
-    input_queue.put(doc_tuple)
+    preprocessor = arg_tuple[1]
+    doc_index = arg_tuple[2]
+    for doc_tuple in preprocessor.parse_by_index(doc_index):
+        input_queue.put(doc_tuple)
 
 
 class UDFRunner(object):
@@ -120,7 +122,7 @@ class UDFRunner(object):
 
         # Fill input queue with documents
         pool = Pool(parallelism)
-        in_tuples = ((in_queue, x) for x in xs)
+        in_tuples = ((in_queue, xs, index) for index in range(total_count))
         pool.map_async(func=async_fill_input_queue, iterable=in_tuples)
 
         count_parsed = 0
