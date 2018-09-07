@@ -41,6 +41,10 @@ class CandidateExtractor(UDFRunner):
         symmetric_relations=True,
         parallelism=1,
     ):
+        """ Set throttlers match candidate_classes if not provide. """
+        if throttlers is None:
+            throttlers = [None] * len(candidate_classes)
+
         """Initialize the CandidateExtractor."""
         super(CandidateExtractor, self).__init__(
             session,
@@ -53,8 +57,10 @@ class CandidateExtractor(UDFRunner):
             symmetric_relations=symmetric_relations,
         )
         # Check that arity is sensible
-        if len(candidate_classes) < len(throttlers):
-            raise ValueError("Provided more throttlers than candidate classes.")
+        if len(candidate_classes) != len(throttlers):
+            raise ValueError(
+                "Provided different number of throttlers and candidate classes."
+            )
 
         self.candidate_classes = candidate_classes
 
