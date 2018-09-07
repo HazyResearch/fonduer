@@ -161,6 +161,50 @@ def test_cand_gen(caplog):
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
     PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
+    with pytest.raises(ValueError):
+        candidate_extractor = CandidateExtractor(
+            session,
+            [PartTemp, PartVolt],
+            throttlers=[
+                temp_throttler,
+                volt_throttler,
+                volt_throttler,
+            ],  # Fail, mismatched arity
+        )
+
+    with pytest.raises(ValueError):
+        candidate_extractor = CandidateExtractor(
+            session,
+            [PartTemp],  # Fail, mismatched arity
+            throttlers=[temp_throttler, volt_throttler],
+        )
+
+    # Test that no throttler in candidate extractor
+    candidate_extractor = CandidateExtractor(
+        session, [PartTemp, PartVolt]
+    )  # Pass, no throttler
+
+    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+    assert session.query(PartTemp).count() == 3654
+    assert session.query(PartVolt).count() == 3657
+    assert session.query(Candidate).count() == 7311
+    candidate_extractor.clear_all(split=0)
+    assert session.query(Candidate).count() == 0
+
+    # Test that None in throttlers in candidate extractor
+    candidate_extractor = CandidateExtractor(
+        session, [PartTemp, PartVolt], throttlers=[temp_throttler, None]
+    )
+
+    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+    assert session.query(PartTemp).count() == 3530
+    assert session.query(PartVolt).count() == 3657
+    assert session.query(Candidate).count() == 7187
+    candidate_extractor.clear_all(split=0)
+    assert session.query(Candidate).count() == 0
+
     candidate_extractor = CandidateExtractor(
         session, [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
     )
