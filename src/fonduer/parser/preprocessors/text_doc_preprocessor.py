@@ -13,6 +13,9 @@ class TextDocPreprocessor(DocPreprocessor):
             name = os.path.basename(fp).rsplit(".", 1)[0]
             stable_id = self.get_stable_id(name)
             doc = Document(
-                name=name, stable_id=stable_id, meta={"file_name": file_name}
+                name=name,
+                stable_id=stable_id,
+                meta={"file_name": file_name},
+                text=f.read(),
             )
-            yield doc, f.read()
+            yield doc

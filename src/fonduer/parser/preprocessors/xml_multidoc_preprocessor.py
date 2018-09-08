@@ -40,7 +40,7 @@ class XMLMultiDocPreprocessor(DocPreprocessor):
             if self.keep_xml_tree:
                 meta["root"] = et.tostring(doc)
             stable_id = self.get_stable_id(doc_id)
-            yield Document(name=doc_id, stable_id=stable_id, meta=meta), text
+            yield Document(name=doc_id, stable_id=stable_id, meta=meta, text=text)
 
     def _can_read(self, fpath):
         return fpath.endswith(".xml")
