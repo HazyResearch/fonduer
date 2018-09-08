@@ -151,9 +151,9 @@ class ParserUDF(UDF):
             self.pdf_path = pdf_path
             self.vizlink = VisualLinker()
 
-    def apply(self, x, **kwargs):
-        # The document is the Document model. Text is string representation.
-        document, text = x
+    def apply(self, document, **kwargs):
+        # The document is the Document model
+        text = document.text
         if self.visual:
             if not self.pdf_path:
                 warnings.warn(
@@ -418,7 +418,10 @@ class ParserUDF(UDF):
                     if attr.find("style") >= 0:
                         cur_style_index = index
                         break
-                styles = state["root"].find("head").find("style")
+                head = state["root"].find("head")
+                styles = None
+                if head is not None:
+                    styles = head.find("style")
                 if styles is not None:
                     for x in list(context_node.attrib.items()):
                         if x[0] == "class":

@@ -26,28 +26,26 @@ class DocPreprocessor(object):
         """
         doc_count = 0
         for fp in self.all_files:
-            file_name = os.path.basename(fp)
-            if self._can_read(file_name):
-                for doc, text in self.parse_file(fp, file_name):
-                    yield doc, text
-                    doc_count += 1
-                    if doc_count >= self.max_docs:
-                        return
-
-    def parse_by_index(self, index):
-        fp = self.all_files[index]
-        file_name = os.path.basename(fp)
-        if self._can_read(file_name):
-            for doc, text in self.parse_file(fp, file_name):
-                yield doc, text
+            for doc in self.get_docs_for_path(fp):
+                yield doc
+                doc_count += 1
+                if doc_count >= self.max_docs:
+                    return
 
     def __len__(self):
-        """Provide a len attribute based on max_docs and number of files in folder."""
-        num_docs = min(len(self.all_files), self.max_docs)
-        return num_docs
+        raise NotImplementedError(
+            "One generic file can yield more than one Document object, "
+            "so length can not be yielded before we process all files"
+        )
 
     def __iter__(self):
         return self.generate()
+
+    def get_docs_for_path(self, fp):
+        file_name = os.path.basename(fp)
+        if self._can_read(file_name):
+            for doc in self.parse_file(fp, file_name):
+                yield doc
 
     def get_stable_id(self, doc_id):
         return "%s::document:0:0" % doc_id

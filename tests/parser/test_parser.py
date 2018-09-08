@@ -52,7 +52,7 @@ def test_parse_md_details(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor.parse_file(docs_path, "md"))
 
     # Check that doc has a name
     assert doc.name == "md"
@@ -72,7 +72,7 @@ def test_parse_md_details(caplog):
         pdf_path=pdf_path,
         language="en",
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     # Check that doc has a figure
@@ -153,13 +153,13 @@ def test_spacy_non_english_languages(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor.parse_file(docs_path, "md"))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="de"
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     # Check that doc has sentences
@@ -202,11 +202,11 @@ def test_spacy_non_english_languages(caplog):
 
     # Test japanese alpha tokenization
     docs_path = "tests/data/pure_html/japan.html"
-    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor.parse_file(docs_path, "md"))
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="ja"
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     assert len(doc.sentences) == 289
@@ -227,14 +227,14 @@ def test_warning_on_missing_pdf(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "md_para"))
+    doc = next(preprocessor.parse_file(docs_path, "md_para"))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     with pytest.warns(RuntimeWarning) as record:
-        for _ in parser_udf.apply((doc, text)):
+        for _ in parser_udf.apply(doc):
             pass
     assert len(record) == 1
     assert "Visual parse failed" in record[0].message.args[0]
@@ -249,14 +249,14 @@ def test_warning_on_incorrect_filename(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "md_para"))
+    doc = next(preprocessor.parse_file(docs_path, "md_para"))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     with pytest.warns(RuntimeWarning) as record:
-        for _ in parser_udf.apply((doc, text)):
+        for _ in parser_udf.apply(doc):
             pass
     assert len(record) == 1
     assert "Visual parse failed" in record[0].message.args[0]
@@ -271,7 +271,7 @@ def test_parse_md_paragraphs(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "md_para"))
+    doc = next(preprocessor.parse_file(docs_path, "md_para"))
 
     # Check that doc has a name
     assert doc.name == "md_para"
@@ -280,7 +280,7 @@ def test_parse_md_paragraphs(caplog):
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     # Check that doc has a figure
@@ -359,7 +359,7 @@ def test_simple_tokenizer(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor.parse_file(docs_path, "md"))
 
     # Check that doc has a name
     assert doc.name == "md"
@@ -368,7 +368,7 @@ def test_simple_tokenizer(caplog):
     parser_udf = get_parser_udf(
         structural=True, lingual=False, visual=True, pdf_path=pdf_path, language=None
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     logger.info("Doc: {}".format(doc))
@@ -404,7 +404,7 @@ def test_parse_document_diseases(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "diseases"))
+    doc = next(preprocessor.parse_file(docs_path, "diseases"))
 
     # Check that doc has a name
     assert doc.name == "diseases"
@@ -413,7 +413,7 @@ def test_parse_document_diseases(caplog):
     parser_udf = get_parser_udf(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     logger.info("Doc: {}".format(doc))
@@ -475,13 +475,13 @@ def test_parse_style(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc, text = next(preprocessor.parse_file(docs_path, "ext_diseases"))
+    doc = next(preprocessor.parse_file(docs_path, "ext_diseases"))
 
     # Create an Parser and parse the diseases document
     parser_udf = get_parser_udf(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    for _ in parser_udf.apply((doc, text)):
+    for _ in parser_udf.apply(doc):
         pass
 
     # Grab the sentences parsed by the Parser

@@ -1,5 +1,5 @@
 import logging
-from multiprocessing import JoinableQueue, Manager, Pool, Process
+from multiprocessing import JoinableQueue, Manager, Process
 from queue import Empty
 
 from fonduer.meta import Meta, new_sessionmaker
@@ -21,14 +21,6 @@ QUEUE_TIMEOUT = 3
 _meta = Meta.init()
 
 
-def async_fill_input_queue(arg_tuple):
-    input_queue = arg_tuple[0]
-    preprocessor = arg_tuple[1]
-    doc_index = arg_tuple[2]
-    for doc_tuple in preprocessor.parse_by_index(doc_index):
-        input_queue.put(doc_tuple)
-
-
 class UDFRunner(object):
     """
     Class to run UDFs in parallel using simple queue-based multiprocessing
@@ -44,10 +36,12 @@ class UDFRunner(object):
         self.session = session
         self.parallelism = parallelism
 
-    def apply(self, xs, clear=True, parallelism=None, progress_bar=True, **kwargs):
+    def apply(
+        self, doc_loader, clear=True, parallelism=None, progress_bar=True, **kwargs
+    ):
         """
-        Apply the given UDF to the set of objects xs, either single or
-        multi-threaded, and optionally calling clear() first.
+        Apply the given UDF to the set of objects returned by the doc_loader, either
+        single or multi-threaded, and optionally calling clear() first.
         """
         # Clear everything downstream of this UDF if requested
         if clear:
@@ -57,17 +51,19 @@ class UDFRunner(object):
         self.logger.info("Running UDF...")
 
         # Setup progress bar
-        if progress_bar and hasattr(xs, "__len__"):
+        if progress_bar:
             self.logger.debug("Setting up progress bar...")
-            self.pb = tqdm(total=len(xs))
+            if hasattr(doc_loader, "__len__"):
+                self.pb = tqdm(total=len(doc_loader))
+            else:
+                self.logger.error("Could not determine size of progress bar")
 
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
-
         if parallelism < 2:
-            self.apply_st(xs, clear=clear, **kwargs)
+            self.apply_st(doc_loader, clear=clear, **kwargs)
         else:
-            self.apply_mt(xs, parallelism, clear=clear, **kwargs)
+            self.apply_mt(doc_loader, parallelism, clear=clear, **kwargs)
 
         # Close progress bar
         if self.pb is not None:
@@ -77,33 +73,37 @@ class UDFRunner(object):
     def clear(self, **kwargs):
         raise NotImplementedError()
 
-    def apply_st(self, xs, **kwargs):
+    def apply_st(self, doc_loader, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
         # Run single-thread
-        for x in xs:
+        for doc in doc_loader:
             if self.pb is not None:
                 self.pb.update(1)
 
-            udf.session.add_all(y for y in udf.apply(x, **kwargs))
+            udf.session.add_all(y for y in udf.apply(doc, **kwargs))
 
         # Commit session and close progress bar if applicable
         udf.session.commit()
 
-    def apply_mt(self, xs, parallelism, **kwargs):
+    def apply_mt(self, doc_loader, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if not _meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
-        # Create a Queue to feed documents to parsers
+        def fill_input_queue(in_queue, doc_loader, terminal_signal):
+            for doc in doc_loader:
+                in_queue.put(doc)
+            in_queue.put(terminal_signal)
+
+        # Create an input queue to feed documents to UDF workers
         manager = Manager()
         in_queue = manager.Queue()
-
         # Use an output queue to track multiprocess progress
         out_queue = JoinableQueue()
 
-        total_count = len(xs)
+        total_count = len(doc_loader)
 
         # Start UDF Processes
         for i in range(parallelism):
@@ -121,14 +121,16 @@ class UDFRunner(object):
             udf.start()
 
         # Fill input queue with documents
-        pool = Pool(parallelism)
-        in_tuples = ((in_queue, xs, index) for index in range(total_count))
-        pool.map_async(func=async_fill_input_queue, iterable=in_tuples)
+        terminal_signal = UDF.QUEUE_CLOSED
+        in_queue_filler = Process(
+            target=fill_input_queue, args=(in_queue, doc_loader, terminal_signal)
+        )
+        in_queue_filler.start()
 
         count_parsed = 0
         while count_parsed < total_count:
             y = out_queue.get()
-            # Update progress bar whenever an item is processed
+            # Update progress bar whenever an item has been  processed
             if y == UDF.TASK_DONE:
                 count_parsed += 1
                 if self.pb is not None:
@@ -136,8 +138,7 @@ class UDFRunner(object):
             else:
                 raise ValueError("Got non-sentinal output.")
 
-        pool.close()
-        pool.join()
+        in_queue_filler.join()
         in_queue.put(UDF.QUEUE_CLOSED)
 
         for udf in self.udfs:
@@ -179,17 +180,17 @@ class UDF(Process):
         """
         while True:
             try:
-                x = self.in_queue.get(True, QUEUE_TIMEOUT)
-                if x == UDF.QUEUE_CLOSED:
+                doc = self.in_queue.get(True, QUEUE_TIMEOUT)
+                if doc == UDF.QUEUE_CLOSED:
                     self.in_queue.put(UDF.QUEUE_CLOSED)
                     break
-                self.session.add_all(y for y in self.apply(x, **self.apply_kwargs))
+                self.session.add_all(y for y in self.apply(doc, **self.apply_kwargs))
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
                 continue
         self.session.commit()
         self.session.close()
 
-    def apply(self, x, **kwargs):
+    def apply(self, doc, **kwargs):
         """This function takes in an object, and returns a generator / set / list"""
         raise NotImplementedError()

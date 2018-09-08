@@ -13,6 +13,9 @@ class TSVDocPreprocessor(DocPreprocessor):
                 (doc_name, doc_text) = line.split("\t")
                 stable_id = self.get_stable_id(doc_name)
                 doc = Document(
-                    name=doc_name, stable_id=stable_id, meta={"file_name": file_name}
+                    name=doc_name,
+                    stable_id=stable_id,
+                    meta={"file_name": file_name},
+                    text=doc_text,
                 )
-                yield doc, doc_text
+                yield doc
