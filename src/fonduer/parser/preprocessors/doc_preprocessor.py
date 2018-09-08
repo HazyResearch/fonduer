@@ -32,13 +32,9 @@ class DocPreprocessor(object):
                 if doc_count >= self.max_docs:
                     return
 
-    def __getitem__(self, index):
-        fp = self.all_files[index]
-        return [doc for doc in self.get_docs_for_path(fp)]
-
     def __len__(self):
         raise NotImplementedError(
-            "One generec file can yield more than one Document objects, "
+            "One generic file can yield more than one Document object, "
             "so length can not be yielded before we process all files"
         )
 
