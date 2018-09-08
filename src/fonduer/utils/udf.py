@@ -60,7 +60,6 @@ class UDFRunner(object):
 
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
-        print("parallelism: {}".format(parallelism))
         if parallelism < 2:
             self.apply_st(doc_loader, clear=clear, **kwargs)
         else:
