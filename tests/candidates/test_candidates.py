@@ -5,7 +5,8 @@ import os
 import pytest
 
 from fonduer import Meta
-from fonduer.candidates import CandidateExtractor, MentionExtractor
+from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionNgrams
+from fonduer.candidates.matchers import PersonMatcher
 from fonduer.candidates.mentions import Ngrams
 from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
 from fonduer.parser import Parser
@@ -91,7 +92,7 @@ def test_span_char_start_and_char_end(caplog):
 def test_cand_gen(caplog):
     """Test extracting candidates from mentions from documents."""
     caplog.set_level(logging.INFO)
-    # SpaCy on mac has issue on parallel parseing
+    # SpaCy on mac has issue on parallel parsing
     if os.name == "posix":
         logger.info("Using single core.")
         PARALLEL = 1
@@ -231,3 +232,48 @@ def test_cand_gen(caplog):
     session.query(Volt).delete()
     assert session.query(Volt).count() == 0
     assert session.query(PartVolt).count() == 0
+
+
+def test_ngrams(caplog):
+    """Test ngram limits in mention extraction"""
+    caplog.set_level(logging.INFO)
+    PARALLEL = 1
+
+    max_docs = 1
+    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+
+    docs_path = "tests/data/pure_html/lincoln_short.html"
+
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(session, structural=True, lingual=True)
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    assert session.query(Document).count() == max_docs
+    assert session.query(Sentence).count() == 503
+    docs = session.query(Document).order_by(Document.name).all()
+
+    # Mention Extraction
+    Person = mention_subclass("Person")
+    person_ngrams = MentionNgrams(n_max=3)
+    person_matcher = PersonMatcher()
+
+    mention_extractor = MentionExtractor(
+        session, [Person], [person_ngrams], [person_matcher]
+    )
+    mention_extractor.apply(docs, parallelism=PARALLEL)
+
+    assert session.query(Person).count() == 126
+    mentions = session.query(Person).all()
+    assert len([x for x in mentions if x.span.get_n() == 1]) == 50
+    assert len([x for x in mentions if x.span.get_n() > 3]) == 0
+
+    # Test for unigram exclusion
+    person_ngrams = MentionNgrams(n_min=2, n_max=3)
+    mention_extractor = MentionExtractor(
+        session, [Person], [person_ngrams], [person_matcher]
+    )
+    mention_extractor.apply(docs, parallelism=PARALLEL)
+    assert session.query(Person).count() == 76
+    mentions = session.query(Person).all()
+    assert len([x for x in mentions if x.span.get_n() == 1]) == 0
+    assert len([x for x in mentions if x.span.get_n() > 3]) == 0

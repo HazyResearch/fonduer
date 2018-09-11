@@ -27,12 +27,18 @@ class MentionSpace(object):
 
 class Ngrams(MentionSpace):
     """
-    Defines the space of Mentions as all n-grams (n <= n_max) in a Sentence _x_,
-    indexing by **character offset**.
+    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a Sentence
+    _x_, indexing by **character offset**.
+
+    :param n_min: Lower limit for the generated n_grams.
+    :param n_max: Upper limit for the generated n_grams.
+    :param split_tokens: Tokens, on which unigrams are split into two separate unigrams.
+
     """
 
-    def __init__(self, n_max=5, split_tokens=("-", "/")):
+    def __init__(self, n_min=1, n_max=5, split_tokens=("-", "/")):
         MentionSpace.__init__(self)
+        self.n_min = n_min
         self.n_max = n_max
         self.split_rgx = (
             r"(" + r"|".join(split_tokens) + r")"
@@ -50,7 +56,7 @@ class Ngrams(MentionSpace):
         # longest-match semantics)
         L = len(offsets)
         seen = set()
-        for j in range(1, self.n_max + 1)[::-1]:
+        for j in range(self.n_min, self.n_max + 1)[::-1]:
             for i in range(L - j + 1):
                 w = context.words[i + j - 1]
                 start = offsets[i]
@@ -62,12 +68,18 @@ class Ngrams(MentionSpace):
 
                 # Check for split
                 # NOTE: For simplicity, we only split single tokens right now!
-                if j == 1 and self.split_rgx is not None and end - start > 0:
+                if (
+                    j == 1
+                    and self.n_max >= 1
+                    and self.n_min <= 1
+                    and self.split_rgx is not None
+                    and end - start > 0
+                ):
                     m = re.search(
                         self.split_rgx,
                         context.text[start - offsets[0] : end - offsets[0] + 1],
                     )
-                    if m is not None and j < self.n_max + 1:
+                    if m is not None:
                         ts1 = TemporarySpan(
                             char_start=start,
                             char_end=start + m.start(1) - 1,
@@ -87,15 +99,19 @@ class Ngrams(MentionSpace):
 class MentionNgrams(Ngrams):
     """Defines the **space** of Mentions.
 
-    Defines the space of Mentions as all n-grams (n <= n_max) in a Document _x_,
-    divided into Sentences inside of html elements (such as table cells).
+    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a Document
+    _x_, divided into Sentences inside of html elements (such as table cells).
+
+    :param n_min: Lower limit for the generated n_grams.
+    :param n_max: Upper limit for the generated n_grams.
+    :param split_tokens: Tokens, on which unigrams are split into two separate unigrams.
     """
 
-    def __init__(self, n_max=5, split_tokens=["-", "/"]):
+    def __init__(self, n_min=1, n_max=5, split_tokens=["-", "/"]):
         """
         Initialize MentionNgrams.
         """
-        Ngrams.__init__(self, n_max=n_max, split_tokens=split_tokens)
+        Ngrams.__init__(self, n_min=n_min, n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, session, context):
         """
