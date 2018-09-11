@@ -11,16 +11,11 @@ from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
-from fonduer.learning import (
-    LSTM,
-    GenerativeModel,
-    LogisticRegression,
-    SparseLogisticRegression,
-)
+from fonduer.learning import LSTM, LogisticRegression, SparseLogisticRegression
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.supervision import Labeler
+from fonduer.supervision import Labeler, LabelLearner
 from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
     LF_collector_aligned,
@@ -286,7 +281,7 @@ def test_e2e(caplog):
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
     assert L_train_gold[0].shape == (3346, 1)
 
-    gen_model = GenerativeModel(cardinalities=2)
+    gen_model = LabelLearner(cardinalities=2)
     gen_model.train(L_train[0], n_epochs=500, print_every=100)
 
     train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
@@ -340,7 +335,7 @@ def test_e2e(caplog):
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3346, 13)
 
-    gen_model = GenerativeModel(cardinalities=2)
+    gen_model = LabelLearner(cardinalities=2)
     gen_model.train(L_train[0], n_epochs=500, print_every=100)
 
     train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
