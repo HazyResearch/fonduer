@@ -27,8 +27,13 @@ class MentionSpace(object):
 
 class Ngrams(MentionSpace):
     """
-    Defines the space of Mentions as all n-grams (n <= n_max) in a Sentence _x_,
-    indexing by **character offset**.
+    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a Sentence
+    _x_, indexing by **character offset**.
+
+    :param n_min: Lower limit for the generated n_grams.
+    :param n_max: Upper limit for the generated n_grams.
+    :param split_tokens: Tokens, on which unigrams are split into two separate unigrams.
+
     """
 
     def __init__(self, n_min=1, n_max=5, split_tokens=("-", "/")):
@@ -94,8 +99,12 @@ class Ngrams(MentionSpace):
 class MentionNgrams(Ngrams):
     """Defines the **space** of Mentions.
 
-    Defines the space of Mentions as all n-grams (n <= n_max) in a Document _x_,
-    divided into Sentences inside of html elements (such as table cells).
+    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a Document
+    _x_, divided into Sentences inside of html elements (such as table cells).
+
+    :param n_min: Lower limit for the generated n_grams.
+    :param n_max: Upper limit for the generated n_grams.
+    :param split_tokens: Tokens, on which unigrams are split into two separate unigrams.
     """
 
     def __init__(self, n_min=1, n_max=5, split_tokens=["-", "/"]):

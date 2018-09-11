@@ -20,6 +20,8 @@ Added
 
 Changed
 ^^^^^^^
+* `@j-rausch`_: ``Ngrams`` now has a ``n_min`` argument to specify a minimum
+  number of tokens per extracted n-gram.
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``Labeler`` and
   ``BatchFeatureAnnotator`` to ``Featurizer``. The classes now support multiple
   relations.
