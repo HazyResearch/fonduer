@@ -20,6 +20,7 @@ Added
 
 Changed
 ^^^^^^^
+* `@senwu`_: Rename ``gen_learning`` to ``label_learner`` and move to supervision.
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``Labeler`` and
   ``BatchFeatureAnnotator`` to ``Featurizer``. The classes now support multiple
   relations.
