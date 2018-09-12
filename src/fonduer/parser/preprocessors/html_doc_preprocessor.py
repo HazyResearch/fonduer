@@ -10,7 +10,7 @@ from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 class HTMLDocPreprocessor(DocPreprocessor):
     """Simple parsing of files into html documents"""
 
-    def parse_file(self, fp, file_name):
+    def _parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as f:
             soup = BeautifulSoup(f, "lxml")
             all_html_elements = soup.find_all("html")
@@ -18,7 +18,7 @@ class HTMLDocPreprocessor(DocPreprocessor):
                 raise NotImplementedError("Expecting one html element per html file")
             text = all_html_elements[0]
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
-            stable_id = self.get_stable_id(name)
+            stable_id = self._get_stable_id(name)
             yield Document(
                 name=name,
                 stable_id=stable_id,
