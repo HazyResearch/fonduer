@@ -100,13 +100,11 @@ class LabelBalancer(object):
     def __init__(self, y):
         """Utility class to rebalance training labels.
 
-        For example, to get the indices of a training set with labels y and
-        around 90 percent negative examples:
+        :Example:
+            To get the indices of a training set with labels y and
+            around 90 percent negative examples::
 
-        .. code::python
-
-            LabelBalancer(y).get_train_idxs(rebalance=0.1)
-
+                LabelBalancer(y).get_train_idxs(rebalance=0.1)
         """
         self.y = np.ravel(y)
 

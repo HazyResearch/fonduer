@@ -13,6 +13,7 @@ The following describes the Feature element.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    :special-members: __init__
 
 Core Objects
 ------------
@@ -24,6 +25,7 @@ These are Fonduer_'s core objects used for featurization.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    :special-members: __init__
 
 Configuration Settings
 ----------------------
