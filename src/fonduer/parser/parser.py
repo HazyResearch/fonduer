@@ -39,7 +39,7 @@ class Parser(UDFRunner):
         language="en",
         lingual=True,  # lingual information
         strip=True,
-        replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
+        replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
         tabular=True,  # tabular information
         visual=False,  # visual information
         pdf_path=None,
@@ -56,7 +56,7 @@ class Parser(UDFRunner):
         :param strip: Whether or not to strip whitespace during parsing. Default True.
         :param replacements: A list of tuples where the regex string in the
             first position is replaced by the character in the second position.
-            Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")].
+            Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")].
         :param tabular: Whether to include tabular information in the parse.
         :param visual: Whether to include visual information in the parse.
             Requires PDFs for each input document.
