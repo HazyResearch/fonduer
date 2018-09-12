@@ -98,10 +98,15 @@ def reshape_marginals(marginals):
 
 class LabelBalancer(object):
     def __init__(self, y):
-        """Utility class to rebalance training labels
-        For example, to get the indices of a training set
-        with labels y and around 90 percent negative examples,
+        """Utility class to rebalance training labels.
+
+        For example, to get the indices of a training set with labels y and
+        around 90 percent negative examples:
+
+        .. code::python
+
             LabelBalancer(y).get_train_idxs(rebalance=0.1)
+
         """
         self.y = np.ravel(y)
 
@@ -125,10 +130,11 @@ class LabelBalancer(object):
             return self._try_frac(npos, nneg, 1.0 - frac_pos)[::-1]
 
     def get_train_idxs(self, rebalance=False, split=0.5, rand_state=None):
-        """Get training indices based on @y
-            @rebalance: bool or fraction of positive examples desired
-                        If True, default fraction is 0.5. If False no balancing.
-            @split: Split point for positive and negative classes
+        """Get training indices based on y.
+
+        :param rebalance: bool or fraction of positive examples desired If
+            True, default fraction is 0.5. If False no balancing.
+        :param split: Split point for positive and negative classes.
         """
         rs = np.random if rand_state is None else rand_state
         pos, neg = self._get_pos(split), self._get_neg(split)
