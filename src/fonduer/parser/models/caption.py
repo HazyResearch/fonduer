@@ -9,34 +9,33 @@ class Caption(Context):
 
     __tablename__ = "caption"
 
-    #: The unique id the Caption.
+    #: The unique id the ``Caption``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
 
-    #: The position of the caption.
+    #: The position of the ``Caption``.
     position = Column(Integer, nullable=False)
 
-    #: The id of the parent Document.
+    #: The id of the parent ``Document``.
     document_id = Column(Integer, ForeignKey("document.id"))
-
-    #: The parent Document.
+    #: The parent ``Document``.
     document = relationship(
         "Document",
         backref=backref("captions", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
 
-    #: The id of the parent Table, if any.
+    #: The id of the parent ``Table``, if any.
     table_id = Column(Integer, ForeignKey("table.id"))
-    #: The parent Table, if any.
+    #: The parent ``Table``, if any.
     table = relationship(
         "Table",
         backref=backref("captions", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=table_id,
     )
 
-    #: The id of the parent Figure, if any.
+    #: The id of the parent ``Figure``, if any.
     figure_id = Column(Integer, ForeignKey("figure.id"))
-    #: The parent Figure, if any.
+    #: The parent ``Figure``, if any.
     figure = relationship(
         "Figure",
         backref=backref("captions", order_by=position, cascade="all, delete-orphan"),
