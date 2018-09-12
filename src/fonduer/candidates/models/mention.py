@@ -33,10 +33,6 @@ class Mention(_meta.Base):
         """Get the consituent context making up this mention."""
         return tuple(getattr(self, name) for name in self.__argnames__)
 
-    def get_cids(self):
-        """Get the canonical IDs (CIDs) of the context making up this mention."""
-        return tuple(getattr(self, name + "_cid") for name in self.__argnames__)
-
     def __len__(self):
         return len(self.__argnames__)
 
@@ -142,8 +138,7 @@ def mention_subclass(class_name, cardinality=None, values=None, table_name=None)
         )
 
         # Create named arguments, i.e. the entity mentions comprising the
-        # relation mention. For each entity mention: id, cid ("canonical id"),
-        # and pointer to Context
+        # relation mention.
         unique_args = []
         for arg in args:
 
@@ -162,9 +157,6 @@ def mention_subclass(class_name, cardinality=None, values=None, table_name=None)
                 foreign_keys=class_attribs[arg + "_id"],
             )
             unique_args.append(class_attribs[arg + "_id"])
-
-            # Canonical ids, to be set post-entity normalization stage
-            class_attribs[arg + "_cid"] = Column(String)
 
         # Add unique constraints to the arguments
         class_attribs["__table_args__"] = (UniqueConstraint(*unique_args),)

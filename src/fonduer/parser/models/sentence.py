@@ -349,8 +349,6 @@ class Sentence(
             # 'document': self.document,
             "position": self.position,
             "text": self.text,
-            "entity_cids": self.entity_cids,
-            "entity_types": self.entity_types,
             # tabular
             # 'table': self.table,
             # 'cell': self.cell,
