@@ -5,7 +5,10 @@ from fonduer.parser.models.context import Context
 
 
 class Table(Context):
-    """A table Context in a Document."""
+    """A Table Context in a Document.
+
+    Used to represent tables found in a document.
+    """
 
     __tablename__ = "table"
 
@@ -48,7 +51,10 @@ class Table(Context):
 
 
 class Cell(Context):
-    """A cell Context in a Document."""
+    """A cell Context in a Document.
+
+    Used to represent the cells that comprise a table in a document.
+    """
 
     __tablename__ = "cell"
 

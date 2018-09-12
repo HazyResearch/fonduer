@@ -7,8 +7,9 @@ _meta = Meta.init()
 
 
 class Context(_meta.Base):
-    """
-    A piece of content from which Candidates are composed.
+    """A piece of content from which Candidates are composed.
+
+    This serves as the base class of the Fonduer document model.
     """
 
     __tablename__ = "context"

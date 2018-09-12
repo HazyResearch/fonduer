@@ -5,8 +5,9 @@ from fonduer.parser.models.context import Context
 
 
 class Document(Context):
-    """
-    A root Context.
+    """A document Context.
+
+    Represents all the information of a particular document.
     """
 
     __tablename__ = "document"

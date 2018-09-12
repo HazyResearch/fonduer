@@ -5,7 +5,10 @@ from fonduer.parser.models.context import Context
 
 
 class Paragraph(Context):
-    """A paragraph Context in a Document."""
+    """A paragraph Context in a Document.
+
+    Represents a grouping of adjacent sentences.
+    """
 
     __tablename__ = "paragraph"
 
