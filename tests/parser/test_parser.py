@@ -52,7 +52,7 @@ def test_parse_md_details(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor._parse_file(docs_path, "md"))
 
     # Check that doc has a name
     assert doc.name == "md"
@@ -153,7 +153,7 @@ def test_spacy_non_english_languages(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor._parse_file(docs_path, "md"))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
@@ -202,7 +202,7 @@ def test_spacy_non_english_languages(caplog):
 
     # Test japanese alpha tokenization
     docs_path = "tests/data/pure_html/japan.html"
-    doc = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor._parse_file(docs_path, "md"))
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="ja"
     )
@@ -227,7 +227,7 @@ def test_warning_on_missing_pdf(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "md_para"))
+    doc = next(preprocessor._parse_file(docs_path, "md_para"))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
@@ -249,7 +249,7 @@ def test_warning_on_incorrect_filename(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "md_para"))
+    doc = next(preprocessor._parse_file(docs_path, "md_para"))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
@@ -271,7 +271,7 @@ def test_parse_md_paragraphs(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "md_para"))
+    doc = next(preprocessor._parse_file(docs_path, "md_para"))
 
     # Check that doc has a name
     assert doc.name == "md_para"
@@ -359,7 +359,7 @@ def test_simple_tokenizer(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "md"))
+    doc = next(preprocessor._parse_file(docs_path, "md"))
 
     # Check that doc has a name
     assert doc.name == "md"
@@ -404,7 +404,7 @@ def test_parse_document_diseases(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "diseases"))
+    doc = next(preprocessor._parse_file(docs_path, "diseases"))
 
     # Check that doc has a name
     assert doc.name == "diseases"
@@ -475,7 +475,7 @@ def test_parse_style(caplog):
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor.parse_file(docs_path, "ext_diseases"))
+    doc = next(preprocessor._parse_file(docs_path, "ext_diseases"))
 
     # Create an Parser and parse the diseases document
     parser_udf = get_parser_udf(

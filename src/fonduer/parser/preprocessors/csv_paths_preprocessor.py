@@ -5,7 +5,7 @@ from fonduer.parser.preprocessors.text_doc_preprocessor import TextDocPreprocess
 
 
 class CSVPathsPreprocessor(DocPreprocessor):
-    """This `DocumentPreprocessor` treats inputs file as index of paths to
+    """This ``DocPreprocessor`` treats inputs file as index of paths to
      actual documents; each line in the input file contains a path to a document.
 
      **Defaults and Customization:**
@@ -33,11 +33,13 @@ class CSVPathsPreprocessor(DocPreprocessor):
         :param path: input file having paths
         :param parser_factory: The parser class to be used to parse the
             referenced files. default = TextDocPreprocessor
-        :param column: index of the column which references path.
-                 default=None, which implies that each line has only one column
+        :param column: index of the column which references path. default=None,
+            which implies that each line has only one column
         :param delim: delimiter to be used to separate columns when file has
-                      more than one column. It is active only when
-                      ``column is not None``. default=','
+            more than one column. It is active only when ``column is not
+            None``. default=','
+
+        :rtype: A generator of ``Documents``.
         """
         super(CSVPathsPreprocessor, self).__init__(path, *args, **kwargs)
         self.column = column
@@ -52,5 +54,5 @@ class CSVPathsPreprocessor(DocPreprocessor):
                     doc_path = doc_path.split(self.delim)[self.column]
                 yield doc_path.strip()
 
-    def parse_file(self, fp, file_name):
+    def _parse_file(self, fp, file_name):
         return self.parser.parse_file(fp, file_name)
