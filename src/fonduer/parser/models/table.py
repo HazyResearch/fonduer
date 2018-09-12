@@ -12,7 +12,7 @@ class Table(Context):
     #: The unique id of the ``Table``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
 
-    #: The position of the ``Table``.
+    #: The position of the ``Table`` in the ``Document``.
     position = Column(Integer, nullable=False)
 
     #: The id of the parent ``Document``.
@@ -55,7 +55,7 @@ class Cell(Context):
     #: The unique id of the ``Cell``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
 
-    #: The position of the ``Cell``.
+    #: The position of the ``Cell`` in the ``Table``.
     position = Column(Integer, nullable=False)
 
     #: The id of the parent ``Table``.

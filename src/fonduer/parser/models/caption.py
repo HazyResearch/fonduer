@@ -12,7 +12,7 @@ class Caption(Context):
     #: The unique id the ``Caption``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
 
-    #: The position of the ``Caption``.
+    #: The position of the ``Caption`` in the ``Document``.
     position = Column(Integer, nullable=False)
 
     #: The id of the parent ``Document``.
