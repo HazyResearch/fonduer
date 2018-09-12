@@ -12,6 +12,7 @@ can be used when creating *matchers*, *throttlers*, and *labeling functions*.
 .. automodule:: fonduer.parser.models
     :members:
     :undoc-members:
+    :inherited-members:
     :show-inheritance:
 
 Core Objects

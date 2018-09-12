@@ -322,10 +322,6 @@ class Spacy(object):
                 parts["dep_parents"].append(0)  # placeholder for later NLP parsing
                 parts["dep_labels"].append("")  # placeholder for later NLP parsing
 
-            # Add null entity array (matching null for CoreNLP)
-            parts["entity_cids"] = ["O" for _ in parts["words"]]
-            parts["entity_types"] = ["O" for _ in parts["words"]]
-
             # make char_offsets relative to start of sentence
             parts["char_offsets"] = [
                 p - parts["char_offsets"][0] for p in parts["char_offsets"]
@@ -335,10 +331,6 @@ class Spacy(object):
             # Link the sentence to its parent document object
             parts["document"] = document
             parts["text"] = text
-
-            # Add null entity array (matching null for CoreNLP)
-            parts["entity_cids"] = ["O" for _ in parts["words"]]
-            parts["entity_types"] = ["O" for _ in parts["words"]]
 
             position += 1
 
