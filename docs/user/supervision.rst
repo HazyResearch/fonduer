@@ -10,6 +10,7 @@ These are the model classes used for supervision in Fonduer_.
 
 .. automodule:: fonduer.supervision.models
     :members:
+    :undoc-members:
 
 Core Objects
 ------------
@@ -18,5 +19,6 @@ These are Fonduer_'s core objects used for supervision.
 
 .. automodule:: fonduer.supervision
     :members:
+    :undoc-members:
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer
