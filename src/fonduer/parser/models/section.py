@@ -7,15 +7,22 @@ from fonduer.parser.models.context import Context
 class Section(Context):
     """A Section Context in a Document.
 
-    Currently, each document simply has a single Section. Future parsing
-    improvements can add better section recognition, such as the sections of an
-    academic paper.
+    .. note:: Currently, each document simply has a single Section. Future
+        parsing improvements can add better section recognition, such as the
+        sections of an academic paper.
     """
 
     __tablename__ = "section"
+
+    #: The unique id of the ``Section``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
-    document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
+
+    #: The position of the ``Section`` in a ``Document``.
     position = Column(Integer, nullable=False)
+
+    #: The id of the parent ``Document``.
+    document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
+    #: The parent ``Document``.
     document = relationship(
         "Document",
         backref=backref("sections", order_by=position, cascade="all, delete-orphan"),
