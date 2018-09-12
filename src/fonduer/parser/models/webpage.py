@@ -4,19 +4,26 @@ from fonduer.parser.models.document import Document
 
 
 class Webpage(Document):
-    """
-    Declares name for storage table.
-    """
+    """A Webpage document context enhanced with additional metadata."""
 
     __tablename__ = "webpage"
+
+    #: The unique id of the ``Webpage``.
     id = Column(
         Integer, ForeignKey("document.id", ondelete="CASCADE"), primary_key=True
     )
-    # Connects NewType records to generic Context records
+    #: The URL of the ``Webpage``.
     url = Column(String)
+    #: The host of the ``Webpage``.
     host = Column(String)
+
+    #: The type of the ``Webpage``.
     page_type = Column(String)
+
+    #: The raw content of the ``Webpage``.
     raw_content = Column(String)
+
+    #: The timestamp of when the ``Webpage`` was crawled.
     crawltime = Column(String)
     all = Column(String)
 
