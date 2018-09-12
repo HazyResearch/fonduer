@@ -28,7 +28,7 @@ autodoc_mock_imports = [
     "pandas",
     "psycopg2",
     "scipy",
-    "snorkel-metal",
+    "metal",
     "spacy",
     "torch",
     "tqdm",
