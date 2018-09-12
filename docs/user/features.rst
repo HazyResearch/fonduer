@@ -10,6 +10,7 @@ The following describes the Feature element.
 
 .. automodule:: fonduer.features.models
     :members:
+    :undoc-members:
 
 Core Objects
 ------------
@@ -18,6 +19,7 @@ These are Fonduer_'s core objects used for featurization.
 
 .. automodule:: fonduer.features
     :members:
+    :undoc-members:
 
 Configuration Settings
 ----------------------
