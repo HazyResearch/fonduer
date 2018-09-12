@@ -1,5 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Text, UniqueConstraint
-from sqlalchemy.dialects import postgresql
+from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context
@@ -9,15 +8,25 @@ class Table(Context):
     """A table Context in a Document."""
 
     __tablename__ = "table"
+
+    #: The unique id of the ``Table``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
-    document_id = Column(Integer, ForeignKey("document.id"))
+
+    #: The position of the ``Table``.
     position = Column(Integer, nullable=False)
+
+    #: The id of the parent ``Document``.
+    document_id = Column(Integer, ForeignKey("document.id"))
+    #: The parent ``Document``.
     document = relationship(
         "Document",
         backref=backref("tables", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
+
+    #: The id of the parent ``Section``.
     section_id = Column(Integer, ForeignKey("section.id"))
+    #: The parent ``Section``.
     section = relationship(
         "Section",
         backref=backref("tables", order_by=position, cascade="all, delete-orphan"),
@@ -42,26 +51,41 @@ class Cell(Context):
     """A cell Context in a Document."""
 
     __tablename__ = "cell"
+
+    #: The unique id of the ``Cell``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
-    document_id = Column(Integer, ForeignKey("document.id"))
-    table_id = Column(Integer, ForeignKey("table.id"))
+
+    #: The position of the ``Cell``.
     position = Column(Integer, nullable=False)
-    document = relationship(
-        "Document",
-        backref=backref("cells", order_by=position, cascade="all, delete-orphan"),
-        foreign_keys=document_id,
-    )
+
+    #: The id of the parent ``Table``.
+    table_id = Column(Integer, ForeignKey("table.id"))
+    #: The parent ``Table``.
     table = relationship(
         "Table",
         backref=backref("cells", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=table_id,
     )
+
+    #: The id of the parent ``Document``.
+    document_id = Column(Integer, ForeignKey("document.id"))
+    #: The parent ``Document``.
+    document = relationship(
+        "Document",
+        backref=backref("cells", order_by=position, cascade="all, delete-orphan"),
+        foreign_keys=document_id,
+    )
+
+    #: The start index of the row in the ``Table`` the ``Cell`` is in.
     row_start = Column(Integer)
+    #: The end index of the row in the ``Table`` the ``Cell`` is in.
     row_end = Column(Integer)
+
+    #: The start index of the column in the ``Table`` the ``Cell`` is in.
     col_start = Column(Integer)
+
+    #: The end index of the column in the ``Table`` the ``Cell`` is in.
     col_end = Column(Integer)
-    html_tag = Column(Text)
-    html_attrs = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {"polymorphic_identity": "cell"}
 

@@ -18,8 +18,8 @@ from fonduer.parser.models import (
     Section,
     Sentence,
     Table,
-    construct_stable_id,
 )
+from fonduer.parser.models.utils import construct_stable_id
 from fonduer.parser.simple_tokenizer import SimpleTokenizer
 from fonduer.parser.spacy_parser import Spacy
 from fonduer.parser.visual_linker import VisualLinker
