@@ -8,27 +8,43 @@ class Paragraph(Context):
     """A paragraph Context in a Document."""
 
     __tablename__ = "paragraph"
+
+    #: The unique id of the ``Paragraph``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
-    document_id = Column(Integer, ForeignKey("document.id"))
+
+    #: The position of the ``Paragraph`` in the ``Document``.
     position = Column(Integer, nullable=False)
+
+    #: The id of the parent ``Document``.
+    document_id = Column(Integer, ForeignKey("document.id"))
+    #: The parent ``Document``.
     document = relationship(
         "Document",
         backref=backref("paragraphs", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
+
+    #: The id of the parent ``Section``.
     section_id = Column(Integer, ForeignKey("section.id"))
+    #: The parent ``Section``.
     section = relationship(
         "Section",
         backref=backref("paragraphs", cascade="all, delete-orphan"),
         foreign_keys=section_id,
     )
+
+    #: The id of the parent ``Cell``, if any.
     cell_id = Column(Integer, ForeignKey("cell.id"))
+    #: The parent ``Cell``, if any.
     cell = relationship(
         "Cell",
         backref=backref("paragraphs", cascade="all, delete-orphan"),
         foreign_keys=cell_id,
     )
+
+    #: The id of the parent ``Caption``, if any.
     caption_id = Column(Integer, ForeignKey("caption.id"))
+    #: The parent ``Caption``, if any.
     caption = relationship(
         "Caption",
         backref=backref("paragraphs", cascade="all, delete-orphan"),
