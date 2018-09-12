@@ -13,6 +13,7 @@ These are the model classes used for supervision in Fonduer_.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    :special-members: __init__
 
 Core Objects
 ------------
@@ -24,5 +25,6 @@ These are Fonduer_'s core objects used for supervision.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    :special-members: __init__
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer

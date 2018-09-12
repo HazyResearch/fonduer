@@ -14,6 +14,7 @@ These are Fonduer_'s core objects used for learning.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    :special-members: __init__
 
 Learning Utilities
 ------------------
@@ -26,6 +27,7 @@ insights.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    :special-members: __init__
 
 Configuration Settings
 ----------------------
