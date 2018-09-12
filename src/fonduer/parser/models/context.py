@@ -12,8 +12,16 @@ class Context(_meta.Base):
     """
 
     __tablename__ = "context"
+
+    #: The unique id of the Context.
     id = Column(Integer, primary_key=True)
+
+    #: The type of the context represented as a String (e.g. "sentence",
+    #: "paragraph", "figure").
     type = Column(String, nullable=False)
+
+    #: A stable representation of the Context that will not change between
+    #: runs.
     stable_id = Column(String, unique=True, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": "context", "polymorphic_on": type}
