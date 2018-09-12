@@ -5,7 +5,10 @@ from fonduer.parser.models.context import Context
 
 
 class Caption(Context):
-    """A caption Context in a Document."""
+    """A Caption Context in a Document.
+
+    Used to represent figure or table captions in a document.
+    """
 
     __tablename__ = "caption"
 
