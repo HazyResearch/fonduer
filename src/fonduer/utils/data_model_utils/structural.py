@@ -10,6 +10,9 @@ from lxml.html import fromstring
 
 from fonduer.utils.data_model_utils.utils import _to_span
 
+# Cache all etree objects of documents
+etrees = {}
+
 
 def get_tag(mention):
     """Return the HTML tag of the Mention.
@@ -39,11 +42,13 @@ def get_attributes(mention):
     return span.sentence.html_attrs
 
 
-# TODO: Too slow
 def _get_node(sentence):
-    return (
-        etree.ElementTree(fromstring(sentence.document.text)).xpath(sentence.xpath)
-    )[0]
+    # Using caching to speed up retrieve process
+    if sentence.document.id not in etrees:
+        etrees[sentence.document.id] = etree.ElementTree(
+            fromstring(sentence.document.text)
+        )
+    return etrees[sentence.document.id].xpath(sentence.xpath)[0]
 
 
 def get_parent_tag(mention):
