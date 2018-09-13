@@ -285,7 +285,7 @@ class MentionExtractorUDF(UDF):
             for tc in self.matchers[i].apply(
                 self.mention_spaces[i].apply(self.session, context)
             ):
-                tc.load_id_or_insert(self.session)
+                tc._load_id_or_insert(self.session)
                 self.child_context_set.add(tc)
 
             # Generates and persists mentions

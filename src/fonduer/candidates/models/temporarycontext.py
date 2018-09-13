@@ -24,7 +24,7 @@ class TemporaryContext(object):
     def __init__(self):
         self.id = None
 
-    def load_id_or_insert(self, session):
+    def _load_id_or_insert(self, session):
         if self.id is None:
             stable_id = self.get_stable_id()
             id = session.execute(
