@@ -75,7 +75,7 @@ class CandidateExtractor(UDFRunner):
 
         self.candidate_classes = candidate_classes
 
-    def apply(self, xs, split=0, **kwargs):
+    def apply(self, docs, split=0, clear=True, parallelism=1, progress_bar=True):
         """Run the CandidateExtractor.
 
         :Example: To extract candidates from a set of training documents using
@@ -83,18 +83,34 @@ class CandidateExtractor(UDFRunner):
 
                 candidate_extractor.apply(train_docs, split=0, parallelism=4)
 
-        :param xs: Set of documents to extract from.
+        :param docs: Set of documents to extract from.
         :param split: Which split to assign the extracted Candidates to.
         :type split: int
+        :param clear: Whether or not to clear the existing Candidates
+            beforehand.
+        :type clear: bool
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the
             CandidateExtractor if it is provided.
         :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
         """
-        super(CandidateExtractor, self).apply(xs, split=split, **kwargs)
+        super(CandidateExtractor, self).apply(
+            docs,
+            split=split,
+            clear=clear,
+            parallelism=parallelism,
+            progress_bar=progress_bar,
+        )
 
-    def clear(self, split, **kwargs):
-        """Delete Candidates of each class from given split the database."""
+    def clear(self, split):
+        """Delete Candidates of each class from given split the database.
+
+        :param split: Which split to clear.
+        :type split: int
+        """
         for candidate_class in self.candidate_classes:
             logger.info(
                 "Clearing table {} (split {})".format(
@@ -105,7 +121,7 @@ class CandidateExtractor(UDFRunner):
                 Candidate.type == candidate_class.__tablename__
             ).filter(Candidate.split == split).delete()
 
-    def clear_all(self, split, **kwargs):
+    def clear_all(self, split):
         """Delete all Candidates from given split the database."""
         logger.info("Clearing ALL Candidates.")
         self.session.query(Candidate).filter(Candidate.split == split).delete()
