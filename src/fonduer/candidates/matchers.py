@@ -112,18 +112,30 @@ class _NgramMatcher(_Matcher):
 
 
 class DictionaryMatch(_NgramMatcher):
-    """Selects mention Ngrams that match against a given list d"""
+    """Selects mention Ngrams that match against a given list *d*.
+
+    :param d: A list of strings.
+    :type d: list
+    :param ignore_case: Whether to ignore the case when matching. Default True.
+    :type ignore_case: bool
+    :param inverse: Whether to invert the results (e.g., return those which are
+        not in the list). Default False.
+    :type inverse: bool
+    :param stemmer: Optionally provide a stemmer to preprocess the dictionary.
+        Can be any object which has a ``stem()`` method. Use stemmer="porter"
+        to use a PorterStemmer(). Default None.
+    """
 
     def init(self):
         self.ignore_case = self.opts.get("ignore_case", True)
         self.attrib = self.opts.get("attrib", WORDS)
-        self.reverse = self.opts.get("reverse", False)
+        self.inverse = self.opts.get("inverse", False)
         try:
             self.d = frozenset(
                 w.lower() if self.ignore_case else w for w in self.opts["d"]
             )
         except KeyError:
-            raise Exception("Please supply a dictionary (list of sentences) d as d=d.")
+            raise Exception("Please supply a dictionary (list of strings) d as d=d.")
 
         # Optionally use a stemmer, preprocess the dictionary
         # Note that user can provide *an object having a stem() method*
@@ -144,14 +156,17 @@ class DictionaryMatch(_NgramMatcher):
         p = m.get_attrib_span(self.attrib)
         p = p.lower() if self.ignore_case else p
         p = self._stem(p) if self.stemmer is not None else p
-        return (not self.reverse) if p in self.d else self.reverse
+        return (not self.inverse) if p in self.d else self.inverse
 
 
 class LambdaFunctionMatcher(_NgramMatcher):
-    """Selects mention Ngrams that return True when fed to a function f."""
+    """Selects Ngrams that return True when fed to a function f.
+
+    :param func: The function to evaluate.
+    :type func: function
+    """
 
     def init(self):
-        self.ignore_case = self.opts.get("ignore_case", True)
         self.attrib = self.opts.get("attrib", WORDS)
         try:
             self.func = self.opts["func"]
@@ -164,7 +179,7 @@ class LambdaFunctionMatcher(_NgramMatcher):
 
 
 class Union(_NgramMatcher):
-    """Takes the union of mention sets returned by child operators"""
+    """Takes the union of mention sets returned by the provided ``Matchers``."""
 
     def f(self, m):
         for child in self.children:
@@ -174,7 +189,7 @@ class Union(_NgramMatcher):
 
 
 class Intersect(_Matcher):
-    """Takes the intersection of mention sets returned by child operators"""
+    """Takes the intersection of mention sets returned by the provided ``Matchers``."""
 
     def f(self, m):
         for child in self.children:
@@ -184,10 +199,15 @@ class Intersect(_Matcher):
 
 
 class Inverse(_Matcher):
-    """Returns the opposite result of its child operator"""
+    """Returns the opposite result of ifs child ``Matcher``.
+
+    :raises ValueError: If more than one Matcher is provided.
+    """
 
     # TODO: confirm that this only has one child
     def f(self, m):
+        if len(self.children) > 1:
+            raise ValueError("Provide a single Matcher.")
         for child in self.children:
             return not child.f(m)
 
@@ -195,6 +215,26 @@ class Inverse(_Matcher):
 class Concat(_NgramMatcher):
     """Selects mentions which are the concatenation of adjacent matches from
     child operators.
+
+    :Example:
+        A concatenation of a NumberMatcher and PersonMatcher could match on
+        a span of text like "10 Obama".
+
+    :param permutations: Default False.
+    :type permutations: bool
+    :param left_required: Whether or not to require the left child to match.
+        Default True.
+    :type left_required: bool
+    :param right_required: Whether or not to require the right child to match.
+        Default True.
+    :type right_required: bool
+    :param ignore_sep: Whether or not to ignore the separator. Default True.
+    :type ignore_sep: bool
+    :param sep: If not ignoring the separator, specify which separator to look
+        for. Default sep=" ".
+    :type set: str
+    :raises ValueError: If Concat is not provided with two child matcher
+        objects.
 
     .. note:: Currently slices on **word index** and considers concatenation
         along these divisions only.
@@ -341,7 +381,7 @@ class PersonMatcher(RegexMatchEach):
     Matches Spans that are the names of people, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as a person.
+    for which each token was tagged as a person (PERSON).
     """
 
     def __init__(self, *children, **kwargs):
@@ -355,7 +395,7 @@ class LocationMatcher(RegexMatchEach):
     Matches Spans that are the names of locations, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as a location.
+    for which each token was tagged as a location (GPE or LOC).
     """
 
     def __init__(self, *children, **kwargs):
@@ -369,7 +409,7 @@ class OrganizationMatcher(RegexMatchEach):
     Matches Spans that are the names of organizations, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as an organization.
+    for which each token was tagged as an organization (NORG or ORG).
     """
 
     def __init__(self, *children, **kwargs):
@@ -383,7 +423,7 @@ class DateMatcher(RegexMatchEach):
     Matches Spans that are dates, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as a date.
+    for which each token was tagged as a date (DATE).
     """
 
     def __init__(self, *children, **kwargs):
@@ -397,7 +437,7 @@ class NumberMatcher(RegexMatchEach):
     Matches Spans that are numbers, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as a number.
+    for which each token was tagged as a number (NUMBER or QUANTITY).
     """
 
     def __init__(self, *children, **kwargs):
@@ -411,7 +451,7 @@ class MiscMatcher(RegexMatchEach):
     Matches Spans that are miscellaneous named entities, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as miscellaneous.
+    for which each token was tagged as miscellaneous (MISC).
     """
 
     def __init__(self, *children, **kwargs):
@@ -420,7 +460,7 @@ class MiscMatcher(RegexMatchEach):
         super(MiscMatcher, self).__init__(*children, **kwargs)
 
 
-class FigureMatcher(_Matcher):
+class _FigureMatcher(_Matcher):
     """Matcher base class for Figure objects"""
 
     def _is_subspan(self, m, span):
@@ -435,8 +475,12 @@ class FigureMatcher(_Matcher):
         return (m.figure.document.id, m.figure.position)
 
 
-class LambdaFunctionFigureMatcher(FigureMatcher):
-    """Selects mention Figures that return True when fed to a function f."""
+class LambdaFunctionFigureMatcher(_FigureMatcher):
+    """Selects Figures that return True when fed to a function f.
+
+    :param func: The function to evaluate.
+    :type func: function
+    """
 
     def init(self):
         try:

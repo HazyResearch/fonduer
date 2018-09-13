@@ -37,9 +37,6 @@ Mentions.
 .. autoclass:: fonduer.candidates.matchers.DictionaryMatch
     :show-inheritance:
 
-.. autoclass:: fonduer.candidates.matchers.FigureMatcher
-    :show-inheritance:
-
 .. autoclass:: fonduer.candidates.matchers.LambdaFunctionFigureMatcher
     :show-inheritance:
 
