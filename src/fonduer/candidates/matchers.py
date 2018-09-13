@@ -13,7 +13,7 @@ if "CI" not in os.environ:
 WORDS = "words"
 
 
-class Matcher(object):
+class _Matcher(object):
     """
     Applies a function ``f : m -> {True,False}`` to a generator of mentions,
     returning only mentions *m* s.t. *f(m) == True*,
@@ -89,7 +89,7 @@ class Matcher(object):
                 yield m
 
 
-class NgramMatcher(Matcher):
+class _NgramMatcher(_Matcher):
     """Matcher base class for Ngram objects"""
 
     def _is_subspan(self, m, span):
@@ -111,7 +111,7 @@ class NgramMatcher(Matcher):
         return (m.sentence.id, m.char_start, m.char_end)
 
 
-class DictionaryMatch(NgramMatcher):
+class DictionaryMatch(_NgramMatcher):
     """Selects mention Ngrams that match against a given list d"""
 
     def init(self):
@@ -147,7 +147,7 @@ class DictionaryMatch(NgramMatcher):
         return (not self.reverse) if p in self.d else self.reverse
 
 
-class LambdaFunctionMatcher(NgramMatcher):
+class LambdaFunctionMatcher(_NgramMatcher):
     """Selects mention Ngrams that return True when fed to a function f."""
 
     def init(self):
@@ -163,7 +163,7 @@ class LambdaFunctionMatcher(NgramMatcher):
         return self.func(m)
 
 
-class Union(NgramMatcher):
+class Union(_NgramMatcher):
     """Takes the union of mention sets returned by child operators"""
 
     def f(self, m):
@@ -173,7 +173,7 @@ class Union(NgramMatcher):
         return False
 
 
-class Intersect(Matcher):
+class Intersect(_Matcher):
     """Takes the intersection of mention sets returned by child operators"""
 
     def f(self, m):
@@ -183,7 +183,7 @@ class Intersect(Matcher):
         return True
 
 
-class Inverse(Matcher):
+class Inverse(_Matcher):
     """Returns the opposite result of its child operator"""
 
     # TODO: confirm that this only has one child
@@ -192,7 +192,7 @@ class Inverse(Matcher):
             return not child.f(m)
 
 
-class Concat(NgramMatcher):
+class Concat(_NgramMatcher):
     """Selects mentions which are the concatenation of adjacent matches from
     child operators.
 
@@ -236,7 +236,7 @@ class Concat(NgramMatcher):
         return False
 
 
-class RegexMatch(NgramMatcher):
+class _RegexMatch(_NgramMatcher):
     """
     Base regex class. Does not specify specific semantics of *what* is being
     matched yet.
@@ -251,7 +251,7 @@ class RegexMatch(NgramMatcher):
         self.attrib = self.opts.get("attrib", WORDS)
         self.sep = self.opts.get("sep", " ")
 
-        # Extending the RegexMatch to handle search(instead of only match)
+        # Extending the _RegexMatch to handle search(instead of only match)
         # and adding a toggle for full span match.
         # Default values are set to False and True for search flag and full
         # span matching flag respectively.
@@ -275,7 +275,7 @@ class RegexMatch(NgramMatcher):
         raise NotImplementedError()
 
 
-class RegexMatchSpan(RegexMatch):
+class RegexMatchSpan(_RegexMatch):
     """Matches regex pattern on **full concatenated span**.
 
     :param rgx: The RegEx pattern to use.
@@ -289,7 +289,8 @@ class RegexMatchSpan(RegexMatch):
     :param full_match: If True, wrap the provided rgx with ``(<rgx>)$``.
         Default True.
     :type full_match: bool
-    :param longest_match_only: If True, only return the longest match.
+    :param longest_match_only: If True, only return the longest match. Default
+        True.
     :type longest_match_only: bool
     """
 
@@ -310,8 +311,21 @@ class RegexMatchSpan(RegexMatch):
             )
 
 
-class RegexMatchEach(RegexMatch):
-    """Matches regex pattern on **each token**"""
+class RegexMatchEach(_RegexMatch):
+    """Matches regex pattern on **each token**.
+
+    :param rgx: The RegEx pattern to use.
+    :type rgx: str
+    :param ignore_case: Whether or not to ignore case in the RegEx. Default
+        True.
+    :type ignore_case: bool
+    :param full_match: If True, wrap the provided rgx with ``(<rgx>)$``.
+        Default True.
+    :type full_match: bool
+    :param longest_match_only: If True, only return the longest match. Default
+        True.
+    :type longest_match_only: bool
+    """
 
     def _f(self, m):
         tokens = m.get_attrib_tokens(self.attrib)
@@ -406,7 +420,7 @@ class MiscMatcher(RegexMatchEach):
         super(MiscMatcher, self).__init__(*children, **kwargs)
 
 
-class FigureMatcher(Matcher):
+class FigureMatcher(_Matcher):
     """Matcher base class for Figure objects"""
 
     def _is_subspan(self, m, span):
