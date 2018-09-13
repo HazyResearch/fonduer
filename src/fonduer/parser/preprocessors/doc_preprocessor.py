@@ -6,19 +6,15 @@ class DocPreprocessor(object):
     """
     A generator which processes a file or directory of files into a set of
     Document objects.
+
+    :param encoding: file encoding to use.
+    :param path: filesystem path to file or directory to parse.
+    :param max_docs: the maximum number of ``Documents`` to produce.
+
+    :rtype: A generator of ``Documents``.
     """
 
     def __init__(self, path, encoding="utf-8", max_docs=float("inf")):
-        """Initialize the DocPreprocessor.
-
-        :param encoding: file encoding to use, default='utf-8'
-        :param path: filesystem path to file or directory to parse
-        :param max_docs: the maximum number of Documents to produce,
-            default=float('inf')
-
-        :rtype: A generator of ``Documents``.
-        """
-
         self.path = path
         self.encoding = encoding
         self.max_docs = max_docs

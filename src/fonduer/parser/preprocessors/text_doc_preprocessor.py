@@ -6,9 +6,16 @@ from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 
 
 class TextDocPreprocessor(DocPreprocessor):
-    """A generator for simple parsing of raw text files.
+    """A generator which processes a text file or directory of text files into
+    a set of Document objects.
 
     Assumes one document per file.
+
+    :param encoding: file encoding to use.
+    :param path: filesystem path to file or directory to parse.
+    :param max_docs: the maximum number of ``Documents`` to produce.
+
+    :rtype: A generator of ``Documents``.
     """
 
     def _parse_file(self, fp, file_name):

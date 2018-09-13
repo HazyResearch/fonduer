@@ -18,6 +18,17 @@ class CSVPathsPreprocessor(DocPreprocessor):
        using ``TextDocPreprocessor``. However, if the referenced files are
        complex, an advanced parser may be used by specifying ``parser_factory``
        parameter to constructor.
+
+    :param path: input file having paths
+    :param parser_factory: The parser class to be used to parse the
+        referenced files. default = TextDocPreprocessor
+    :param column: index of the column which references path. default=None,
+        which implies that each line has only one column
+    :param delim: delimiter to be used to separate columns when file has
+        more than one column. It is active only when ``column is not
+        None``. default=','
+
+    :rtype: A generator of ``Documents``.
      """
 
     def __init__(
@@ -29,18 +40,6 @@ class CSVPathsPreprocessor(DocPreprocessor):
         *args,
         **kwargs
     ):
-        """
-        :param path: input file having paths
-        :param parser_factory: The parser class to be used to parse the
-            referenced files. default = TextDocPreprocessor
-        :param column: index of the column which references path. default=None,
-            which implies that each line has only one column
-        :param delim: delimiter to be used to separate columns when file has
-            more than one column. It is active only when ``column is not
-            None``. default=','
-
-        :rtype: A generator of ``Documents``.
-        """
         super(CSVPathsPreprocessor, self).__init__(path, *args, **kwargs)
         self.column = column
         self.delim = delim
