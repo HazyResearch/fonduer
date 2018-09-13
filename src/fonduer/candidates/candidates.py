@@ -27,19 +27,27 @@ class CandidateExtractor(UDFRunner):
     :param session: An initialized database session.
     :param candidate_classes: The types of relation to extract, defined using
         :func: fonduer.candidates.candidate_subclass.
+    :type candidate_classes: list
     :param throttlers: optional functions for filtering out candidates
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.
+    :type throttlers: list
     :param self_relations: Boolean indicating whether to extract Candidates
         that relate the same context. Only applies to binary relations.
+    :type self_relations: bool
     :param nested_relations: Boolean indicating whether to extract Candidates
         that relate one Context with another that contains it. Only applies to
         binary relations.
+    :type nested_relations: bool
     :param symmetric_relations: Boolean indicating whether to extract symmetric
         Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
         Only applies to binary relations.
+    :type symmetric_relations: bool
     :param parallelism: The number of processes to use in parallel for calls
         to apply().
+    :type parallelism: int
+    :raises ValueError: If throttlers are provided, but a throtters are not the
+        same length as candidate classes.
     """
 
     def __init__(
@@ -106,7 +114,8 @@ class CandidateExtractor(UDFRunner):
         )
 
     def clear(self, split):
-        """Delete Candidates of each class from given split the database.
+        """Delete Candidates of each class initialized with the
+        CandidateExtractor from given split the database.
 
         :param split: Which split to clear.
         :type split: int
@@ -122,7 +131,11 @@ class CandidateExtractor(UDFRunner):
             ).filter(Candidate.split == split).delete()
 
     def clear_all(self, split):
-        """Delete all Candidates from given split the database."""
+        """Delete ALL Candidates from given split the database.
+
+        :param split: Which split to clear.
+        :type split: int
+        """
         logger.info("Clearing ALL Candidates.")
         self.session.query(Candidate).filter(Candidate.split == split).delete()
 
@@ -134,9 +147,12 @@ class CandidateExtractor(UDFRunner):
 
         :param docs: If provided, return candidates from these documents from
             all splits.
+        :type docs: list, tuple
         :param split: If docs is None, then return all the candidates from this
             split.
-        :return: List of lists of candidates for each candidate_class.
+        :type split: int
+        :return: Candidates for each candidate_class.
+        :rtype: List of lists.
         """
         result = []
         if docs:
