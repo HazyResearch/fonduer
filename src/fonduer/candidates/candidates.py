@@ -13,6 +13,17 @@ logger = logging.getLogger(__name__)
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
+    :Example:
+
+        Assuming we have already defined a Part and Temp ``Mention`` subclass,
+        as a throttler called templ_throttler, we can create a candidate
+        extractor as follows::
+
+            PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+            candidate_extractor = CandidateExtractor(
+                session, [PartTemp], throttlers=[temp_throttler]
+            )
+
     :param session: An initialized database session.
     :param candidate_classes: The types of relation to extract, defined using
         :func: fonduer.candidates.candidate_subclass.
@@ -20,15 +31,15 @@ class CandidateExtractor(UDFRunner):
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.
     :param self_relations: Boolean indicating whether to extract Candidates
-        that relate the same context. Only applies to binary relations. Default
-        is False.
+        that relate the same context. Only applies to binary relations.
     :param nested_relations: Boolean indicating whether to extract Candidates
         that relate one Context with another that contains it. Only applies to
-        binary relations. Default is False.
+        binary relations.
     :param symmetric_relations: Boolean indicating whether to extract symmetric
         Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
-        Only applies to binary relations. Default is True.
-    :param parallelism: The number of processes to use in parallel. Default 1.
+        Only applies to binary relations.
+    :param parallelism: The number of processes to use in parallel for calls
+        to apply().
     """
 
     def __init__(
@@ -65,7 +76,21 @@ class CandidateExtractor(UDFRunner):
         self.candidate_classes = candidate_classes
 
     def apply(self, xs, split=0, **kwargs):
-        """Call the CandidateExtractorUDF."""
+        """Run the CandidateExtractor.
+
+        :Example: To extract candidates from a set of training documents using
+            4 cores::
+
+                candidate_extractor.apply(train_docs, split=0, parallelism=4)
+
+        :param xs: Set of documents to extract from.
+        :param split: Which split to assign the extracted Candidates to.
+        :type split: int
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the
+            CandidateExtractor if it is provided.
+        :type parallelism: int
+        """
         super(CandidateExtractor, self).apply(xs, split=split, **kwargs)
 
     def clear(self, split, **kwargs):
