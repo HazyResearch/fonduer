@@ -90,6 +90,11 @@ class TemporaryImplicitSpan(TemporarySpan):
         )
 
     def get_stable_id(self):
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
         doc_id, _, parent_doc_char_start, _ = split_stable_id(self.sentence.stable_id)
         return "%s::%s:%s:%s:%s:%s" % (
             self.sentence.document.name,
@@ -215,7 +220,7 @@ class TemporaryImplicitSpan(TemporarySpan):
 
 
 class ImplicitSpan(Context, TemporaryImplicitSpan):
-    """A span of characters that may not have appeared verbatim in the source text.
+    """A span of characters that may not appear verbatim in the source text.
 
     It is identified by Context id, character-index start and end (inclusive),
     as well as a key representing what 'expander' function drew the ImplicitSpan
@@ -227,26 +232,70 @@ class ImplicitSpan(Context, TemporaryImplicitSpan):
     """
 
     __tablename__ = "implicit_span"
+
+    #: The unique id of the ``ImplicitSpan``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
+
+    #: The id of the parent ``Sentence``.
     sentence_id = Column(
         Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True
     )
+    #: The parent ``Sentence``.
+    sentence = relationship(
+        "Context",
+        backref=backref("implicit_spans", cascade="all, delete-orphan"),
+        foreign_keys=sentence_id,
+    )
+
+    #: The starting character-index of the ``ImplicitSpan``.
     char_start = Column(Integer, nullable=False)
+    #: The ending character-index of the ``ImplicitSpan`` (inclusive).
     char_end = Column(Integer, nullable=False)
+
+    #: The key representing the expander function which produced this ``ImplcitiSpan``.
     expander_key = Column(String, nullable=False)
+
+    #: The position of the ``ImplicitSpan`` where position=0 is the first
+    #: ``ImplicitSpan`` produced by the expander.
     position = Column(Integer, nullable=False)
+
+    #: The raw text of the ``ImplicitSpan``.
     text = Column(String)
+
+    #: A list of the words in the ``ImplicitSpan``.
     words = Column(postgresql.ARRAY(String), nullable=False)
+
+    #: A list of the lemmas for each word in the ``ImplicitSpan``.
     lemmas = Column(postgresql.ARRAY(String))
+
+    #: A list of the POS tags for each word in the ``ImplicitSpan``.
     pos_tags = Column(postgresql.ARRAY(String))
+
+    #: A list of the NER tags for each word in the ``ImplicitSpan``.
     ner_tags = Column(postgresql.ARRAY(String))
+
+    #: A list of the dependency parents for each word in the ``ImplicitSpan``.
     dep_parents = Column(postgresql.ARRAY(Integer))
+
+    #: A list of the dependency labels for each word in the ``ImplicitSpan``.
     dep_labels = Column(postgresql.ARRAY(String))
+
+    #: A list of the page number each word in the ``ImplicitSpan``.
     page = Column(postgresql.ARRAY(Integer))
+
+    #: A list of each word's TOP bounding box coordinate in the ``ImplicitSpan``.
     top = Column(postgresql.ARRAY(Integer))
+
+    #: A list of each word's LEFT bounding box coordinate in the ``ImplicitSpan``.
     left = Column(postgresql.ARRAY(Integer))
+
+    #: A list of each word's BOTTOM bounding box coordinate in the ``ImplicitSpan``.
     bottom = Column(postgresql.ARRAY(Integer))
+
+    #: A list of each word's RIGHT bounding box coordinate in the ``ImplicitSpan``.
     right = Column(postgresql.ARRAY(Integer))
+
+    #: Pickled metadata about the ``ImplicitSpan``.
     meta = Column(PickleType)
 
     __table_args__ = (
@@ -257,12 +306,6 @@ class ImplicitSpan(Context, TemporaryImplicitSpan):
         "polymorphic_identity": "implicit_span",
         "inherit_condition": (id == Context.id),
     }
-
-    sentence = relationship(
-        "Context",
-        backref=backref("implicit_spans", cascade="all, delete-orphan"),
-        foreign_keys=sentence_id,
-    )
 
     def _get_instance(self, **kwargs):
         return ImplicitSpan(**kwargs)
