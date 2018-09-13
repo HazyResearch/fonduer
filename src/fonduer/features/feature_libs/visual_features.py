@@ -1,4 +1,4 @@
-from fonduer.candidates.models import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.utils.data_model_utils import (
     get_visual_aligned_lemmas,
     is_horz_aligned,

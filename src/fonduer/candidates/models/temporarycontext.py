@@ -9,9 +9,9 @@ class TemporaryContext(object):
     """
     A context which does not incur the overhead of a proper ORM-based Context
     object. The TemporaryContext class is specifically for the candidate
-    extraction process, during which a CandidateSpace object will generate many
+    extraction process, during which a MentionSpace object will generate many
     TemporaryContexts, which will then be filtered by Matchers prior to
-    materialization of Candidates and constituent Context objects.
+    materialization of Mentions and constituent Context objects.
 
     Every Context object has a corresponding TemporaryContext object from which
     it inherits.

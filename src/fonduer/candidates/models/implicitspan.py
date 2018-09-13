@@ -156,11 +156,34 @@ class TemporaryImplicitSpan(TemporarySpan):
         }
 
     def get_attrib_tokens(self, a="words"):
-        """Get the tokens of sentence attribute *a*."""
+        """Get the tokens of sentence attribute *a*.
+
+        Intuitively, like calling::
+
+            implicit_span.a
+
+
+        :param a: The attribute to get tokens for.
+        :type a: str
+        :return: The tokens of sentence attribute defined by *a* for the span.
+        :rtype: list
+        """
         return self.__getattribute__(a)
 
     def get_attrib_span(self, a, sep=" "):
-        """Get the span of sentence attribute *a*."""
+        """Get the span of sentence attribute *a*.
+
+        Intuitively, like calling::
+
+            sep.join(implicit_span.a)
+
+        :param a: The attribute to get a span for.
+        :type a: str
+        :param sep: The separator to use for the join.
+        :type sep: str
+        :return: The joined tokens, or text if a="words".
+        :rtype: str
+        """
         if a == "words":
             return self.text
         else:

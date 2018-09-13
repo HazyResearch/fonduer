@@ -24,7 +24,12 @@ class Mention(_meta.Base):
     """
 
     __tablename__ = "mention"
+
+    #: The unique id of the ``Mention``.
     id = Column(Integer, primary_key=True)
+
+    #: The type for the ``Mention``, which corresponds to the names the user
+    #: gives to the mention_subclass.
     type = Column(String, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": "mention", "polymorphic_on": type}

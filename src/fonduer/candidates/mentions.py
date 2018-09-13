@@ -5,7 +5,9 @@ from copy import deepcopy
 
 from sqlalchemy.sql import select
 
-from fonduer.candidates.models import Mention, TemporaryImage, TemporarySpan
+from fonduer.candidates.models import Mention
+from fonduer.candidates.models.image import TemporaryImage
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.parser.models import Document
 from fonduer.utils.udf import UDF, UDFRunner
 
