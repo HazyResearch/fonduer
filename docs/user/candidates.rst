@@ -11,7 +11,6 @@ extraction.
 
 .. automodule:: fonduer.candidates.models
     :members:
-    :undoc-members:
     :inherited-members:
     :show-inheritance:
 
@@ -25,7 +24,6 @@ These are Fonduer_'s core objects used for Mention and Candidate extraction.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
-    :special-members: __init__
 
 Matchers
 --------
@@ -39,7 +37,6 @@ Mentions.
     :undoc-members:
     :inherited-members:
     :show-inheritance:
-    :special-members: __init__
 
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer
