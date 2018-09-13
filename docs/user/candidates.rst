@@ -21,7 +21,6 @@ These are Fonduer_'s core objects used for Mention and Candidate extraction.
 
 .. automodule:: fonduer.candidates
     :members:
-    :undoc-members:
     :inherited-members:
     :show-inheritance:
 
@@ -34,8 +33,6 @@ Mentions.
 
 .. automodule:: fonduer.candidates.matchers
     :members:
-    :undoc-members:
-    :inherited-members:
     :show-inheritance:
 
 

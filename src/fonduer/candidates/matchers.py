@@ -193,12 +193,11 @@ class Inverse(Matcher):
 
 
 class Concat(NgramMatcher):
-    """
-    Selects mentions which are the concatenation of adjacent matches from
-    child operators
+    """Selects mentions which are the concatenation of adjacent matches from
+    child operators.
 
-    NOTE: Currently slices on **word index** and considers concatenation along
-    these divisions only
+    .. note:: Currently slices on **word index** and considers concatenation
+        along these divisions only.
     """
 
     def init(self):
@@ -239,7 +238,7 @@ class Concat(NgramMatcher):
 
 class RegexMatch(NgramMatcher):
     """
-    Base regex class- does not specify specific semantics of *what* is being
+    Base regex class. Does not specify specific semantics of *what* is being
     matched yet.
     """
 
@@ -279,8 +278,19 @@ class RegexMatch(NgramMatcher):
 class RegexMatchSpan(RegexMatch):
     """Matches regex pattern on **full concatenated span**.
 
-    If search flag is set to True, searches regex pattern in **full
-    concatenated span**
+    :param rgx: The RegEx pattern to use.
+    :type rgx: str
+    :param ignore_case: Whether or not to ignore case in the RegEx. Default
+        True.
+    :type ignore_case: bool
+    :param search: If True, _search_ regex pattern on full concatenated span.
+        Default False.
+    :type search: bool
+    :param full_match: If True, wrap the provided rgx with ``(<rgx>)$``.
+        Default True.
+    :type full_match: bool
+    :param longest_match_only: If True, only return the longest match.
+    :type longest_match_only: bool
     """
 
     def _f(self, m):
