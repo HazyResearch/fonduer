@@ -40,6 +40,7 @@ class TemporaryImage(TemporaryContext):
         return hash(self.figure)
 
     def get_stable_id(self):
+        """Return a stable id for the ``Image``."""
         return "%s::%s:%s" % (
             self.figure.document.id,
             self._get_polymorphic_identity(),
