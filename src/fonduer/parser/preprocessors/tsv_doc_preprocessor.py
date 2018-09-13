@@ -5,7 +5,17 @@ from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 
 
 class TSVDocPreprocessor(DocPreprocessor):
-    """Simple parsing of TSV file with one (doc_name <tab> doc_text) per line"""
+    """A generator which processes a TSV file or directory of TSV files into
+    a set of Document objects.
+
+    The TSV file should have one (doc_name <tab> doc_test) per line.
+
+    :param encoding: file encoding to use.
+    :param path: filesystem path to file or directory to parse.
+    :param max_docs: the maximum number of ``Documents`` to produce.
+
+    :rtype: A generator of ``Documents``.
+    """
 
     def _parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as tsv:
