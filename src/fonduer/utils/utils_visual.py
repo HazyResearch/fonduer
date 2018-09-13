@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from fonduer.candidates.models import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.parser.models import Sentence
 
 Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"])

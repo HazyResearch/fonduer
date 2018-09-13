@@ -219,7 +219,7 @@ class Concat(NgramMatcher):
         # Iterate over mention splits **at the word boundaries**
         for wsplit in range(m.get_word_start() + 1, m.get_word_end() + 1):
             csplit = (
-                m.word_to_char_index(wsplit) - m.char_start
+                m._word_to_char_index(wsplit) - m.char_start
             )  # NOTE the switch to **mention-relative** char index
 
             # Optionally check for specific separator

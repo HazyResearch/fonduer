@@ -14,7 +14,7 @@ from treedlib import (
     compile_relation_feature_generator,
 )
 
-from fonduer.candidates.models import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.features.feature_libs.tree_structs import corenlp_to_xmltree
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams

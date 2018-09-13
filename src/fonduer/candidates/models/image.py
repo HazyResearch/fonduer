@@ -6,7 +6,7 @@ from fonduer.parser.models.context import Context
 
 
 class TemporaryImage(TemporaryContext):
-    """The TemporaryContext version of Figure"""
+    """The TemporaryContext version of Image"""
 
     def __init__(self, figure):
         super(TemporaryImage, self).__init__()
