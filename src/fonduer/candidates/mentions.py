@@ -247,7 +247,7 @@ class MentionExtractor(UDFRunner):
 
         self.mention_classes = mention_classes
 
-    def apply(self, docs, clear=True, parallelism=1, progress_bar=True):
+    def apply(self, docs, clear=True, parallelism=None, progress_bar=True):
         """Run the MentionExtractor.
 
         :Example: To extract mentions from a set of training documents using

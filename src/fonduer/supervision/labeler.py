@@ -18,12 +18,27 @@ logger = logging.getLogger(__name__)
 
 
 def load_gold_labels(session, cand_lists, annotator_name="gold"):
-    """Load the sparse matrix for the specified annotator."""
+    """Load the sparse matrix for the specified annotator.
+
+    :param session: The database session.
+    :param cand_lists: The candidates to get gold labels for.
+    :type cand_lists: List of list of candidates.
+    :param annotator: A specific annotator key to get labels for. Default
+        "gold".
+    :type annotator: str
+    """
     return get_sparse_matrix(session, GoldLabelKey, cand_lists, key=annotator_name)
 
 
 class Labeler(UDFRunner):
-    """An operator to add Label Annotations to Candidates."""
+    """An operator to add Label Annotations to Candidates.
+
+    :param session: The database session to use.
+    :param candidate_classes: A list of candidate_subclasses to label.
+    :type candidate_classes: list
+    :param parallelism: The number of processes to use in parallel. Default 1.
+    :type parallelism: int
+    """
 
     def __init__(self, session, candidate_classes, parallelism=1):
         """Initialize the Labeler."""
@@ -36,7 +51,7 @@ class Labeler(UDFRunner):
         self.candidate_classes = candidate_classes
         self.lfs = []
 
-    def update(self, docs=None, split=0, lfs=None, **kwargs):
+    def update(self, docs=None, split=0, lfs=None, parallelism=1, progress_bar=True):
         """Update the labels of the specified candidates based on the provided LFs.
 
         :param docs: If provided, apply the updated LFs to all the candidates
@@ -46,6 +61,13 @@ class Labeler(UDFRunner):
         :param lfs: A list of lists of labeling functions to update. Each list
             should correspond with the candidate_classes used to initialize the
             Labeler.
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the Labeler if
+            it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
         """
         if lfs is None:
             raise ValueError("Please provide a list of lists of labeling functions.")
@@ -53,22 +75,53 @@ class Labeler(UDFRunner):
         if len(lfs) != len(self.candidate_classes):
             raise ValueError("Please provide LFs for each candidate class.")
 
-        self.apply(docs=docs, split=split, lfs=lfs, train=True, clear=False, **kwargs)
+        self.apply(
+            docs=docs,
+            split=split,
+            lfs=lfs,
+            train=True,
+            clear=False,
+            parallelism=parallelism,
+            progress_bar=progress_bar,
+        )
 
-    def apply(self, docs=None, split=0, train=False, lfs=None, clear=True, **kwargs):
+    def apply(
+        self,
+        docs=None,
+        split=0,
+        train=False,
+        lfs=None,
+        clear=True,
+        parallelism=None,
+        progress_bar=True,
+    ):
         """Apply the labels of the specified candidates based on the provided LFs.
 
         :param docs: If provided, apply the LFs to all the candidates in these
             documents.
         :param split: If docs is None, apply the LFs to the candidates in this
             particular split.
+        :type split: int
         :param train: Whether or not to update the global key set of labels and
             the labels of candidates.
+        :type train: bool
         :param lfs: A list of lists of labeling functions to apply. Each list
             should correspond with the candidate_classes used to initialize the
             Labeler.
+        :type lfs: list of lists
         :param clear: Whether or not to clear the labels table before applying
             these LFs.
+        :type clear: bool
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the Labeler if
+            it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
+
+        :raises ValueError: If labeling functions are not provided for each
+            candidate class.
         """
         if lfs is None:
             raise ValueError("Please provide a list of labeling functions.")
@@ -81,7 +134,13 @@ class Labeler(UDFRunner):
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
             super(Labeler, self).apply(
-                docs, split=split, train=train, lfs=self.lfs, clear=clear, **kwargs
+                docs,
+                split=split,
+                train=train,
+                lfs=self.lfs,
+                clear=clear,
+                parallelism=parallelism,
+                progress_bar=progress_bar,
             )
             # Needed to sync the bulk operations
             self.session.commit()
@@ -96,17 +155,26 @@ class Labeler(UDFRunner):
                 train=train,
                 lfs=self.lfs,
                 clear=clear,
-                **kwargs
+                parallelism=parallelism,
+                progress_bar=progress_bar,
             )
             # Needed to sync the bulk operations
             self.session.commit()
 
     def get_keys(self):
-        """Return a list of keys for the Features."""
+        """Return a list of keys for the Labels.
+
+        :return: List of LabelKeys.
+        :rtype: list
+        """
         return list(get_sparse_matrix_keys(self.session, LabelKey))
 
     def drop_keys(self, keys):
-        """Drop the specified keys from LabelKeys."""
+        """Drop the specified keys from LabelKeys.
+
+        :param keys: A list of labeling functions to delete.
+        :type keys: list, tuple
+        """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
 
@@ -119,8 +187,14 @@ class Labeler(UDFRunner):
             except AttributeError:
                 self.session.query(LabelKey).filter(LabelKey.name == key).delete()
 
-    def clear(self, train=False, split=0, **kwargs):
-        """Delete Labels of each class from the database."""
+    def clear(self, train=False, split=0):
+        """Delete Labels of each class from the database.
+
+        :param train: Whether or not to clear the LabelKeys .
+        :type train: bool
+        :param split: Which split of candidates to clear labels from.
+        :type split: int
+        """
         # Clear Labels for the candidates in the split passed in.
         logger.info("Clearing Labels (split {})".format(split))
 
@@ -136,18 +210,35 @@ class Labeler(UDFRunner):
             query = self.session.query(LabelKey)
             query.delete(synchronize_session="fetch")
 
-    def clear_all(self, **kwargs):
+    def clear_all(self):
         """Delete all Labels."""
         logger.info("Clearing ALL Labels and LabelKeys.")
         self.session.query(Label).delete()
         self.session.query(LabelKey).delete()
 
     def get_gold_labels(self, cand_lists, annotator=None):
-        """Load sparse matrix of GoldLabels for each candidate_class."""
+        """Load sparse matrix of GoldLabels for each candidate_class.
+
+        :param cand_lists: The candidates to get gold labels for.
+        :type cand_lists: List of list of candidates.
+        :param annotator: A specific annotator key to get labels for. Default
+            None.
+        :type annotator: str
+        :return: An MxN sparse matrix where M are the candidates and N is the
+            annotators. If annotator is provided, return an Mx1 matrix.
+        :rtype: csr_matrix
+        """
         return get_sparse_matrix(self.session, GoldLabelKey, cand_lists, key=annotator)
 
     def get_label_matrices(self, cand_lists):
-        """Load sparse matrix of Labels for each candidate_class."""
+        """Load sparse matrix of Labels for each candidate_class.
+
+        :param cand_lists: The candidates to get labels for.
+        :type cand_lists: List of list of candidates.
+        :return: An MxN sparse matrix where M are the candidates and N is the
+            labeling functions.
+        :rtype: csr_matrix
+        """
         return get_sparse_matrix(self.session, LabelKey, cand_lists)
 
 

@@ -83,7 +83,7 @@ class CandidateExtractor(UDFRunner):
 
         self.candidate_classes = candidate_classes
 
-    def apply(self, docs, split=0, clear=True, parallelism=1, progress_bar=True):
+    def apply(self, docs, split=0, clear=True, parallelism=None, progress_bar=True):
         """Run the CandidateExtractor.
 
         :Example: To extract candidates from a set of training documents using
