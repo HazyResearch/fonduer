@@ -26,7 +26,7 @@ class LSTM(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self.gpu
+            if self.model_kwargs["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -145,7 +145,7 @@ class LSTM(NoiseAwareModel):
                     attention=model_kwargs["attention"],
                     dropout=model_kwargs["dropout"],
                     bidirectional=model_kwargs["bidirectional"],
-                    use_cuda=model_kwargs["host_device"] in self.gpu,
+                    use_cuda=model_kwargs["host_device"] in self._gpu,
                 )
             ]
             * model_kwargs["relation_arity"]
@@ -178,7 +178,7 @@ class LSTM(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self.gpu
+            if self.model_kwargs["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -197,14 +197,14 @@ class LSTM(NoiseAwareModel):
                 x, x_mask = pad_batch(
                     sequence, self.model_kwargs["max_sentence_length"]
                 )
-                if self.model_kwargs["host_device"] in self.gpu:
+                if self.model_kwargs["host_device"] in self._gpu:
                     x = x.cuda()
                     x_mask = x_mask.cuda()
                 sequences.append((x, x_mask))
 
             features = (
                 F[batch_st:batch_ed].cuda()
-                if self.model_kwargs["host_device"] in self.gpu
+                if self.model_kwargs["host_device"] in self._gpu
                 else F[batch_st:batch_ed]
             )
 

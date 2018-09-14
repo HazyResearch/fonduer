@@ -22,7 +22,7 @@ class NoiseAwareModel(Classifier, nn.Module):
     :param seed: Random seed which is passed into both numpy and PyTorch.
     """
 
-    gpu = ["gpu", "GPU"]
+    _gpu = ["gpu", "GPU"]
 
     def __init__(self, seed=123, **kwargs):
         self.logger = logging.getLogger(__name__)
@@ -162,7 +162,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         if "host_device" not in self.model_kwargs:
             self.model_kwargs["host_device"] = "CPU"
             self.logger.info("Using CPU...")
-        if self.model_kwargs["host_device"] in self.gpu:
+        if self.model_kwargs["host_device"] in self._gpu:
             if not torch.cuda.is_available():
                 self.model_kwargs["host_device"] = "CPU"
                 self.logger.info("GPU is not available, switching to CPU...")
@@ -176,7 +176,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         self._setup_model_loss(lr)
 
         # Set up GPU if necessary
-        if self.model_kwargs["host_device"] in self.gpu:
+        if self.model_kwargs["host_device"] in self._gpu:
             nn.Module.cuda(self)
 
         # Run mini-batch SGD
@@ -213,7 +213,7 @@ class NoiseAwareModel(Classifier, nn.Module):
 
                 # Calculate loss for current batch
                 y = torch.Tensor(_Y_train[idxs[batch_st:batch_ed]])
-                if self.model_kwargs["host_device"] in self.gpu:
+                if self.model_kwargs["host_device"] in self._gpu:
                     y = y.cuda()
                 loss = self.loss(output, y)
 
@@ -223,7 +223,7 @@ class NoiseAwareModel(Classifier, nn.Module):
                 # Update the parameters
                 self.optimizer.step()
 
-                if self.model_kwargs["host_device"] in self.gpu:
+                if self.model_kwargs["host_device"] in self._gpu:
                     iteration_losses.append(loss.cpu())
                 else:
                     iteration_losses.append(loss)
@@ -276,7 +276,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         nn.Module.train(self, False)
         marginal = self._calc_logits(X, batch_size)
 
-        if self.model_kwargs["host_device"] in self.gpu:
+        if self.model_kwargs["host_device"] in self._gpu:
             marginal = marginal.cpu()
 
         # marginals = self.forward(X, batch_size)

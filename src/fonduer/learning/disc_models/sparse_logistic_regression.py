@@ -116,7 +116,7 @@ class SparseLogisticRegression(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self.gpu
+            if self.model_kwargs["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -129,7 +129,7 @@ class SparseLogisticRegression(NoiseAwareModel):
             features, _ = pad_batch(F[batch_st:batch_ed], 0)
             values, _ = pad_batch(V[batch_st:batch_ed], 0, type="float")
 
-            if self.model_kwargs["host_device"] in self.gpu:
+            if self.model_kwargs["host_device"] in self._gpu:
                 features = features.cuda()
                 values = values.cuda()
 

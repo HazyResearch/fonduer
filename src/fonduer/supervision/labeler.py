@@ -187,13 +187,14 @@ class Labeler(UDFRunner):
             except AttributeError:
                 self.session.query(LabelKey).filter(LabelKey.name == key).delete()
 
-    def clear(self, train=False, split=0):
+    def clear(self, train, split, lfs):
         """Delete Labels of each class from the database.
 
-        :param train: Whether or not to clear the LabelKeys .
+        :param train: Whether or not to clear the LabelKeys.
         :type train: bool
         :param split: Which split of candidates to clear labels from.
         :type split: int
+        :param lfs: This parameter is unused.
         """
         # Clear Labels for the candidates in the split passed in.
         logger.info("Clearing Labels (split {})".format(split))

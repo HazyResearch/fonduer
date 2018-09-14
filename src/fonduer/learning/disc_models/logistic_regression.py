@@ -82,7 +82,7 @@ class LogisticRegression(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self.gpu
+            if self.model_kwargs["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -94,7 +94,7 @@ class LogisticRegression(NoiseAwareModel):
 
             features = (
                 F[batch_st:batch_ed].cuda()
-                if self.model_kwargs["host_device"] in self.gpu
+                if self.model_kwargs["host_device"] in self._gpu
                 else F[batch_st:batch_ed]
             )
 

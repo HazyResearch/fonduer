@@ -79,7 +79,7 @@ class Parser(UDFRunner):
             language=language,
         )
 
-    def clear(self, **kwargs):
+    def clear(self):
         self.session.query(Context).delete()
 
 
