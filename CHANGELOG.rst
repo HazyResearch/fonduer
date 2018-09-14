@@ -76,6 +76,7 @@ Removed
 
 Fixed
 ^^^^^
+* `@senwu`_: Speed-up of ``_get_node`` using caching.
 * `@HiromuHota`_: Fixed bug with Ngram splitting and empty TemporarySpans.
   (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_,
   `#112 <https://github.com/HazyResearch/fonduer/pull/112>`_)
