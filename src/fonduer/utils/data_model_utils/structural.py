@@ -2,6 +2,7 @@
 # Structural modality utilities
 ###############################
 
+import functools
 from builtins import str
 
 import numpy as np
@@ -39,11 +40,15 @@ def get_attributes(mention):
     return span.sentence.html_attrs
 
 
-# TODO: Too slow
+@functools.lru_cache(maxsize=16)
+def _get_etree_for_text(text):
+    return etree.ElementTree(fromstring(text))
+
+
 def _get_node(sentence):
-    return (
-        etree.ElementTree(fromstring(sentence.document.text)).xpath(sentence.xpath)
-    )[0]
+    # Using caching to speed up retrieve process
+    doc_etree = _get_etree_for_text(sentence.document.text)
+    return doc_etree.xpath(sentence.xpath)[0]
 
 
 def get_parent_tag(mention):

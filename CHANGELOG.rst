@@ -20,6 +20,8 @@ Added
 
 Changed
 ^^^^^^^
+* `@j-rausch`_: ``Document.text`` now returns the modified document text, based
+  on the user-defined html-tag stripping in the parsing stage.
 * `@j-rausch`_: ``Ngrams`` now has a ``n_min`` argument to specify a minimum
   number of tokens per extracted n-gram.
 * `@senwu`_: Rename ``gen_learning`` to ``label_learner`` and move to supervision.
@@ -74,6 +76,7 @@ Removed
 
 Fixed
 ^^^^^
+* `@senwu`_: Speed-up of ``_get_node`` using caching.
 * `@HiromuHota`_: Fixed bug with Ngram splitting and empty TemporarySpans.
   (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_,
   `#112 <https://github.com/HazyResearch/fonduer/pull/112>`_)
