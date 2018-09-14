@@ -36,13 +36,11 @@ def get_structural_feats(candidates):
             if span.sentence.is_structural():
                 if span.stable_id not in unary_strlib_feats:
                     unary_strlib_feats[span.stable_id] = set()
-                    for feature_str, feature_val in strlib_unary_features(span):
-                        unary_strlib_feats[span.stable_id].add(
-                            (feature_str, feature_val)
-                        )
+                    for feature, value in strlib_unary_features(span):
+                        unary_strlib_feats[span.stable_id].add((feature, value))
 
-                for feature_str, feature_val in unary_strlib_feats[span.stable_id]:
-                    yield candidate.id, FEATURE_PREFIX + feature_str, feature_val
+                for feature, value in unary_strlib_feats[span.stable_id]:
+                    yield candidate.id, FEATURE_PREFIX + feature, value
 
         # Binary candidates
         elif len(args) == 2:
@@ -51,26 +49,19 @@ def get_structural_feats(candidates):
                 for span, prefix in [(span1, "e1_"), (span2, "e2_")]:
                     if span.stable_id not in unary_strlib_feats:
                         unary_strlib_feats[span.stable_id] = set()
-                        for feature_str, feature_val in strlib_unary_features(span):
-                            unary_strlib_feats[span.stable_id].add(
-                                (feature_str, feature_val)
-                            )
+                        for feature, value in strlib_unary_features(span):
+                            unary_strlib_feats[span.stable_id].add((feature, value))
 
-                    for feature_str, feature_val in unary_strlib_feats[span.stable_id]:
-                        combined_str = FEATURE_PREFIX + prefix + feature_str
-                        yield candidate.id, combined_str, feature_val
+                    for feature, value in unary_strlib_feats[span.stable_id]:
+                        yield candidate.id, FEATURE_PREFIX + prefix + feature, value
 
                 if candidate.id not in binary_strlib_feats:
                     binary_strlib_feats[candidate.id] = set()
-                    for feature_str, feature_val in strlib_binary_features(
-                        span1, span2
-                    ):
-                        binary_strlib_feats[candidate.id].add(
-                            (feature_str, feature_val)
-                        )
+                    for feature, value in strlib_binary_features(span1, span2):
+                        binary_strlib_feats[candidate.id].add((feature, value))
 
-                for feature_str, feature_val in binary_strlib_feats[candidate.id]:
-                    yield candidate.id, FEATURE_PREFIX + feature_str, feature_val
+                for feature, value in binary_strlib_feats[candidate.id]:
+                    yield candidate.id, FEATURE_PREFIX + feature, value
         else:
             raise NotImplementedError(
                 "Only handles unary and binary candidates currently"

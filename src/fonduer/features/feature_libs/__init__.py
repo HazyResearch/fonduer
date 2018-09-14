@@ -6,16 +6,16 @@ from fonduer.features.feature_libs.visual_features import get_visual_feats
 
 
 def get_all_feats(candidates):
-    for candidate_id, feature_string, feature_value in get_core_feats(candidates):
-        yield candidate_id, feature_string, feature_value
-    for candidate_id, feature_string, feature_value in get_content_feats(candidates):
-        yield candidate_id, feature_string, feature_value
-    for candidate_id, feature_string, feature_value in get_structural_feats(candidates):
-        yield candidate_id, feature_string, feature_value
-    for candidate_id, feature_string, feature_value in get_table_feats(candidates):
-        yield candidate_id, feature_string, feature_value
-    for candidate_id, feature_string, feature_value in get_visual_feats(candidates):
-        yield candidate_id, feature_string, feature_value
+    for candidate_id, feature, value in get_core_feats(candidates):
+        yield candidate_id, feature, value
+    for candidate_id, feature, value in get_content_feats(candidates):
+        yield candidate_id, feature, value
+    for candidate_id, feature, value in get_structural_feats(candidates):
+        yield candidate_id, feature, value
+    for candidate_id, feature, value in get_table_feats(candidates):
+        yield candidate_id, feature, value
+    for candidate_id, feature, value in get_visual_feats(candidates):
+        yield candidate_id, feature, value
 
 
 __all__ = [
