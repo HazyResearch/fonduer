@@ -642,8 +642,7 @@ class ParserUDF(UDF):
         if self.flatten:
             lxml.etree.strip_tags(root, self.flatten)
         # Assign the text, which was stripped of the 'flatten'-tags, to the document
-        stripped_text = lxml.etree.tostring(root).decode("utf-8")
-        document.text = stripped_text
+        document.text = lxml.etree.tostring(root).decode("utf-8")
 
         # This dictionary contain the global state necessary to parse a
         # document and each context element. This reflects the relationships

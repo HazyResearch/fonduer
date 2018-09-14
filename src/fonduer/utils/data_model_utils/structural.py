@@ -2,6 +2,7 @@
 # Structural modality utilities
 ###############################
 
+import functools
 from builtins import str
 
 import numpy as np
@@ -9,9 +10,6 @@ from lxml import etree
 from lxml.html import fromstring
 
 from fonduer.utils.data_model_utils.utils import _to_span
-
-# Cache all etree objects of documents
-etrees = {}
 
 
 def get_tag(mention):
@@ -42,13 +40,15 @@ def get_attributes(mention):
     return span.sentence.html_attrs
 
 
+@functools.lru_cache(maxsize=256)
+def _get_etree_for_text(text):
+    return etree.ElementTree(fromstring(text))
+
+
 def _get_node(sentence):
     # Using caching to speed up retrieve process
-    if sentence.document.id not in etrees:
-        etrees[sentence.document.id] = etree.ElementTree(
-            fromstring(sentence.document.text)
-        )
-    return etrees[sentence.document.id].xpath(sentence.xpath)[0]
+    doc_etree = _get_etree_for_text(sentence.document.text)
+    return doc_etree.xpath(sentence.xpath)[0]
 
 
 def get_parent_tag(mention):
