@@ -40,7 +40,7 @@ def get_attributes(mention):
     return span.sentence.html_attrs
 
 
-@functools.lru_cache(maxsize=256)
+@functools.lru_cache(maxsize=16)
 def _get_etree_for_text(text):
     return etree.ElementTree(fromstring(text))
 
