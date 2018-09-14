@@ -21,7 +21,6 @@ This is Fonduer_'s core Parser object.
 
 .. automodule:: fonduer.parser
     :members:
-    :undoc-members:
     :inherited-members:
     :show-inheritance:
 
@@ -33,7 +32,6 @@ with Fonduer_ which are used in parsing documents of different formats.
 
 .. automodule:: fonduer.parser.preprocessors
     :members:
-    :undoc-members:
     :inherited-members:
     :show-inheritance:
 
