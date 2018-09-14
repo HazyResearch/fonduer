@@ -1,6 +1,7 @@
 import logging
 
-from fonduer.candidates.models import Candidate, Mention, TemporarySpan
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.candidates.models.span import TemporarySpan
 
 
 def _to_span(x, idx=0):

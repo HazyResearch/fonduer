@@ -6,12 +6,22 @@ from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 
 
 class TextDocPreprocessor(DocPreprocessor):
-    """Simple parsing of raw text files, assuming one document per file"""
+    """A generator which processes a text file or directory of text files into
+    a set of Document objects.
 
-    def parse_file(self, fp, file_name):
+    Assumes one document per file.
+
+    :param encoding: file encoding to use.
+    :param path: filesystem path to file or directory to parse.
+    :param max_docs: the maximum number of ``Documents`` to produce.
+
+    :rtype: A generator of ``Documents``.
+    """
+
+    def _parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as f:
             name = os.path.basename(fp).rsplit(".", 1)[0]
-            stable_id = self.get_stable_id(name)
+            stable_id = self._get_stable_id(name)
             doc = Document(
                 name=name,
                 stable_id=stable_id,

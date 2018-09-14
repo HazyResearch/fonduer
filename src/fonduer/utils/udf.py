@@ -61,9 +61,9 @@ class UDFRunner(object):
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
         if parallelism < 2:
-            self.apply_st(doc_loader, clear=clear, **kwargs)
+            self._apply_st(doc_loader, clear=clear, **kwargs)
         else:
-            self.apply_mt(doc_loader, parallelism, clear=clear, **kwargs)
+            self._apply_mt(doc_loader, parallelism, clear=clear, **kwargs)
 
         # Close progress bar
         if self.pb is not None:
@@ -71,9 +71,10 @@ class UDFRunner(object):
             self.pb.close()
 
     def clear(self, **kwargs):
+        """Clear the associated data from the database."""
         raise NotImplementedError()
 
-    def apply_st(self, doc_loader, **kwargs):
+    def _apply_st(self, doc_loader, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
@@ -87,7 +88,7 @@ class UDFRunner(object):
         # Commit session and close progress bar if applicable
         udf.session.commit()
 
-    def apply_mt(self, doc_loader, parallelism, **kwargs):
+    def _apply_mt(self, doc_loader, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
         if not _meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")

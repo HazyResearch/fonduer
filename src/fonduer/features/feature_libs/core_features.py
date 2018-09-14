@@ -1,4 +1,5 @@
-from fonduer.candidates.models import ImplicitSpan, TemporarySpan
+from fonduer.candidates.models import ImplicitSpan
+from fonduer.candidates.models.span import TemporarySpan
 
 FEAT_PRE = "CORE_"
 DEF_VALUE = 1

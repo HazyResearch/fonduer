@@ -10,6 +10,8 @@ The following describes the Feature element.
 
 .. automodule:: fonduer.features.models
     :members:
+    :inherited-members:
+    :show-inheritance:
 
 Core Objects
 ------------
@@ -18,6 +20,8 @@ These are Fonduer_'s core objects used for featurization.
 
 .. automodule:: fonduer.features
     :members:
+    :inherited-members:
+    :show-inheritance:
 
 Configuration Settings
 ----------------------
@@ -25,7 +29,7 @@ Configuration Settings
 Visit the `Configuring Fonduer`_ page to see how to provide configuration
 parameters to Fonduer_ via ``.fonduer-config.yaml``.
 
-The different featurization parameters are explained in this section.
+The different featurization parameters are explained in this section::
 
     featurization:
       # settings of content-based features

@@ -6,7 +6,7 @@ from fonduer.parser.models.context import Context
 
 
 class TemporaryImage(TemporaryContext):
-    """The TemporaryContext version of Figure"""
+    """The TemporaryContext version of Image"""
 
     def __init__(self, figure):
         super(TemporaryImage, self).__init__()
@@ -40,6 +40,7 @@ class TemporaryImage(TemporaryContext):
         return hash(self.figure)
 
     def get_stable_id(self):
+        """Return a stable id for the ``Image``."""
         return "%s::%s:%s" % (
             self.figure.document.id,
             self._get_polymorphic_identity(),
@@ -75,15 +76,26 @@ class TemporaryImage(TemporaryContext):
 
 
 class Image(Context, TemporaryImage):
-    """
-    A candidate of figure, identified by Context id and position.
+    """A figure-based ``Candidate``.
+
+    Note that this image should not be confused with the ``Figure`` context of
+    the document model.
     """
 
     __tablename__ = "image"
+
+    #: The unique id of the ``Image``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
-    document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
+
+    #: The position of the ``Image`` in the ``Document``.
     position = Column(Integer, nullable=False)
+
+    #: The url of the ``Image``.
     url = Column(String)
+
+    #: The id of the parent ``Document``.
+    document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
+    #: The parent ``Document``.
     document = relationship(
         "Document",
         backref=backref("images", order_by=position, cascade="all, delete-orphan"),

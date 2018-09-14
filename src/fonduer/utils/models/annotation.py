@@ -23,6 +23,7 @@ class AnnotationKeyMixin(object):
 
     @declared_attr
     def name(cls):
+        """The name of the Key."""
         return Column(String, primary_key=True)
 
     @declared_attr
@@ -59,11 +60,13 @@ class AnnotationMixin(object):
     # feature, lf, or of a human annotator
     @declared_attr
     def keys(cls):
+        """A list of strings of each Key name."""
         return Column(postgresql.ARRAY(String), nullable=False)
 
     # Every annotation is with respect to a candidate
     @declared_attr
     def candidate_id(cls):
+        """The id of the ``Candidate`` being annotated."""
         return Column(
             "candidate_id",
             Integer,
@@ -73,6 +76,7 @@ class AnnotationMixin(object):
 
     @declared_attr
     def candidate(cls):
+        """The ``Candidate``."""
         return relationship(
             "Candidate",
             backref=backref(

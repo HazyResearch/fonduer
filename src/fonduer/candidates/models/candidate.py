@@ -24,8 +24,15 @@ class Candidate(_meta.Base):
     """
 
     __tablename__ = "candidate"
+
+    #: The unique id for the ``Candidate``.
     id = Column(Integer, primary_key=True)
+
+    #: The type for the ``Candidate``, which corresponds to the names the user
+    #: gives to the candidate_subclasses.
     type = Column(String, nullable=False)
+
+    #: Which split the ``Candidate`` belongs to. Used to organize train/dev/test.
     split = Column(Integer, nullable=False, default=0, index=True)
 
     __mapper_args__ = {"polymorphic_identity": "candidate", "polymorphic_on": type}
@@ -33,21 +40,11 @@ class Candidate(_meta.Base):
     # __table_args__ = {"extend_existing" : True}
 
     def get_contexts(self):
-        """Get a tuple of the consituent contexts making up this candidate"""
+        """Return a tuple of the consituent ``Mentions`` making up this ``Candidate``.
+
+        :rtype: tuple
+        """
         return tuple(getattr(self, name) for name in self.__argnames__)
-
-    def get_parent(self):
-        # Fails if both contexts don't have same parent
-        p = [c.get_parent() for c in self.get_contexts()]
-        if p.count(p[0]) == len(p):
-            return p[0]
-        else:
-            raise Exception("Contexts do not all have same parent")
-
-    def get_cids(self):
-        """Get a tuple of the canonical IDs (CIDs) of the contexts making up
-        this candidate"""
-        return tuple(getattr(self, name + "_cid") for name in self.__argnames__)
 
     def __len__(self):
         return len(self.__argnames__)
@@ -159,8 +156,7 @@ def candidate_subclass(
         )
 
         # Create named arguments, i.e. the entity mentions comprising the
-        # relation mention. For each entity mention: id, cid ("canonical id"),
-        # and pointer to Context
+        # relation mention.
         unique_args = []
         for arg in args:
             # Primary arguments are constituent Contexts, and their ids
@@ -178,9 +174,6 @@ def candidate_subclass(
                 foreign_keys=class_attribs[arg.__tablename__ + "_id"],
             )
             unique_args.append(class_attribs[arg.__tablename__ + "_id"])
-
-            # Canonical ids, to be set post-entity normalization stage
-            class_attribs[arg.__tablename__ + "_cid"] = Column(String)
 
         # Add unique constraints to the arguments
         class_attribs["__table_args__"] = (UniqueConstraint(*unique_args),)

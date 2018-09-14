@@ -13,29 +13,44 @@ General Data Model Utilities
 
 .. automodule:: fonduer.utils.data_model_utils.utils
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Textual Data Model Utilities
 ----------------------------
 
 .. automodule:: fonduer.utils.data_model_utils.textual
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Structural Data Model Utilities
 -------------------------------
 
 .. automodule:: fonduer.utils.data_model_utils.structural
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Tabular Data Model Utilities
 ----------------------------
 
 .. automodule:: fonduer.utils.data_model_utils.tabular
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Visual Data Model Utilities
 ---------------------------
 
 .. automodule:: fonduer.utils.data_model_utils.visual
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer

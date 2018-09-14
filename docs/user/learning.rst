@@ -11,6 +11,9 @@ These are Fonduer_'s core objects used for learning.
 
 .. automodule:: fonduer.learning
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Learning Utilities
 ------------------
@@ -20,6 +23,9 @@ insights.
 
 .. automodule:: fonduer.learning.utils
     :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Configuration Settings
 ----------------------

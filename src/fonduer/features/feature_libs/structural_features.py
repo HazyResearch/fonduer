@@ -1,6 +1,6 @@
 from builtins import str
 
-from fonduer.candidates.models import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.utils.data_model_utils import (
     common_ancestor,
     get_ancestor_class_names,

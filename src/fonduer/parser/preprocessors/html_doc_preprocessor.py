@@ -8,9 +8,17 @@ from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 
 
 class HTMLDocPreprocessor(DocPreprocessor):
-    """Simple parsing of files into html documents"""
+    """A generator which processes an HTML file or directory of HTML files into
+    a set of Document objects.
 
-    def parse_file(self, fp, file_name):
+    :param encoding: file encoding to use.
+    :param path: filesystem path to file or directory to parse.
+    :param max_docs: the maximum number of ``Documents`` to produce.
+
+    :rtype: A generator of ``Documents``.
+    """
+
+    def _parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as f:
             soup = BeautifulSoup(f, "lxml")
             all_html_elements = soup.find_all("html")
@@ -18,7 +26,7 @@ class HTMLDocPreprocessor(DocPreprocessor):
                 raise NotImplementedError("Expecting one html element per html file")
             text = all_html_elements[0]
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
-            stable_id = self.get_stable_id(name)
+            stable_id = self._get_stable_id(name)
             yield Document(
                 name=name,
                 stable_id=stable_id,
