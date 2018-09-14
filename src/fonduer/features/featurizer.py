@@ -44,7 +44,7 @@ class Featurizer(UDFRunner):
         split=0,
         train=False,
         clear=True,
-        parallelism=1,
+        parallelism=None,
         progress_bar=True,
     ):
         """Apply features to the specified candidates.
@@ -152,7 +152,7 @@ class Featurizer(UDFRunner):
 
         :param cand_lists: The candidates to get features for.
         :type cand_lists: List of list of candidates.
-        :return: An NxM sparse matrix where N are the candidates and M is the
+        :return: An MxN sparse matrix where M are the candidates and N is the
             features.
         :rtype: csr_matrix
         """
