@@ -27,31 +27,42 @@ parameters to Fonduer_ via ``.fonduer-config.yaml``.
 
 The different featurization parameters are explained in this section.
 
-[TODO] give descriptions for the following::
-
     featurization:
+      # settings of content-based features
       content:
+        # settings for window features
         window_feature:
           size: 3
           combinations: True
           isolated: True
+        # settings for word window usd to extract features from surrounding words
         word_feature:
           window: 7
+      # settings of table-based features
       table:
+        # unary feture settings
         unary_features:
+          # type of attributes
           attrib:
             - words
+          # number of gram for features extract in cells
           get_cell_ngrams:
             max: 2
+          # number of gram for features extract in headers
           get_head_ngrams:
             max: 2
+          # number of gram for features extract in rows
           get_row_ngrams:
             max: 2
+          # number of gram for features extract in columns
           get_col_ngrams:
             max: 2
+        # binary feature settings
         binary_features:
+          # minimal difference in rows to check
           min_row_diff:
             absolute: False
+          # minimal difference in cols to check
           min_col_diff:
             absolute: False
 
