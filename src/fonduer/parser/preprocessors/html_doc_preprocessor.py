@@ -15,7 +15,9 @@ class HTMLDocPreprocessor(DocPreprocessor):
             soup = BeautifulSoup(f, "lxml")
             all_html_elements = soup.find_all("html")
             if len(all_html_elements) != 1:
-                raise NotImplementedError("Expecting one html element per html file")
+                raise NotImplementedError(
+                    "Expecting one html element per html file: {}".format(file_name)
+                )
             text = all_html_elements[0]
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
             stable_id = self.get_stable_id(name)

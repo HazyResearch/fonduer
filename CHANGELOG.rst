@@ -20,6 +20,8 @@ Added
 
 Changed
 ^^^^^^^
+* `@j-rausch`_: ``Document.text`` now returns the modified document text, based
+  on the user-defined html-tag stripping in the parsing stage.
 * `@j-rausch`_: ``Ngrams`` now has a ``n_min`` argument to specify a minimum
   number of tokens per extracted n-gram.
 * `@senwu`_: Rename ``gen_learning`` to ``label_learner`` and move to supervision.
