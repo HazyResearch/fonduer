@@ -51,7 +51,7 @@ class Labeler(UDFRunner):
         self.candidate_classes = candidate_classes
         self.lfs = []
 
-    def update(self, docs=None, split=0, lfs=None, parallelism=1, progress_bar=True):
+    def update(self, docs=None, split=0, lfs=None, parallelism=None, progress_bar=True):
         """Update the labels of the specified candidates based on the provided LFs.
 
         :param docs: If provided, apply the updated LFs to all the candidates
