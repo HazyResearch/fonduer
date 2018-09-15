@@ -16,12 +16,14 @@ from fonduer.utils.config import get_config
 
 class LSTM(NoiseAwareModel):
     def forward(self, x, f):
-        """
-        Run forward pass.
+        """Forward function.
 
         :param x: The sequence input (batch) of the model
+        :type x: torch.Tensor
         :param f: The feature input of the model
+        :type f: torch.Tensor
         """
+
         batch_size = len(f)
 
         outputs = (
@@ -42,10 +44,10 @@ class LSTM(NoiseAwareModel):
         return self.linear(outputs)
 
     def _check_input(self, X):
-        """
-        Check input format.
+        """Check input format.
 
         :param X: The input data of the model
+        :type X: pair
         """
         return isinstance(X, tuple)
 
@@ -57,10 +59,15 @@ class LSTM(NoiseAwareModel):
         3. Select subset of the input if idxs exists.
 
         :param X: The input data of the model
+        :type X: pair with candidates and corresponding features
         :param Y: The labels of input data (optional)
+        :type Y: list
         :param idxs: The selected indexs of input data
+        :type idxs: list or numpy.array
         :param train: An indicator for word dictionary to extend new words
+        :type train: bool
         """
+
         C, F = X
 
         # Covert sparse feature matrix to dense matrix
@@ -112,8 +119,11 @@ class LSTM(NoiseAwareModel):
         Update the model argument.
 
         :param X: The input data of the model
+        :type X: list
         :param model_kwargs: The arguments of the model
+        :type model_kwargs: dict
         """
+
         self.logger.info("Load defalut parameters for LSTM")
         settings = get_config()["learning"]["LSTM"]
 
@@ -133,6 +143,7 @@ class LSTM(NoiseAwareModel):
         Build the model.
 
         :param model_kwargs: The arguments of the model
+        :type model_kwargs: dict
         """
         # Set up LSTM modules
         self.lstms = nn.ModuleList(
@@ -164,8 +175,11 @@ class LSTM(NoiseAwareModel):
         Calculate the logits.
 
         :param X: The input data of the model
+        :type X: list
         :param batch_size: The batch size
+        :type batch_size: int
         """
+
         # Generate LSTM input
         C = np.array(list(zip(*X))[0])
 

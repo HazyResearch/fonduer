@@ -4,23 +4,49 @@ from fonduer.learning.utils import MentionScorer, save_marginals
 
 
 class Classifier(object):
-    """An abstract class for a probabilistic classifier."""
+    """An abstract class for a probabilistic classifier.
+
+    :param cardinality: Cardinality of class
+    :type cardinality: int
+    :param name: Name of the model
+    :type name: str
+    """
 
     def __init__(self, cardinality=2, name=None):
         self.name = name or self.__class__.__name__
         self.cardinality = cardinality
 
     def marginals(self, X, batch_size=None, **kwargs):
-        """Calculate the predicted marginal probabilities for the Candidates X."""
+        """Calculate the predicted marginal probabilities for the Candidates X.
+
+        :param X: Input data.
+        :param batch_size: Batch size.
+        :type batch_size: int
+        """
+
         raise NotImplementedError()
 
     def save_marginals(self, session, X, training=False):
-        """Save the predicted marginal probabilities for the Candidates X."""
+        """Save the predicted marginal probabilities for the Candidates X.
+
+        :param session: The database session to use.
+        :param X: Input data.
+        :param training: If True, these are training marginals / labels;
+            else they are saved as end model predictions.
+        :type training: bool
+        """
+
         save_marginals(session, X, self.marginals(X), training=training)
 
     def predictions(self, X, b=0.5, batch_size=None):
         """Return numpy array of elements in {-1,0,1}
         based on predicted marginal probabilities.
+
+        :param X: Input data.
+        :param b: Prediction threshold.
+        :type b: float
+        :param batch_size: Batch size.
+        :type batch_size: int
         """
         if self._check_input(X):
             X = self._preprocess_data(X)
@@ -43,16 +69,23 @@ class Classifier(object):
             * For binary: precision, recall, F-beta score
             * For categorical: accuracy
 
-        :param X_test: The input test candidates, as a list or annotation matrix
-        :param Y_test: The input test labels, as a list or annotation matrix
+        :param X_test: The input test candidates
+        :type X_test: pair with candidates and corresponding features
+        :param Y_test: The input test labels
+        :type Y_test: list
         :param b: Decision boundary *for binary setting only*
+        :type b: float
         :param set_unlabeled_as_neg: Whether to map 0 labels -> -1,
             *binary setting.*
+        :type set_unlabeled_as_neg: bool
         :param beta: For F-beta score; by default beta = 1 => F-1 score.
-
+        :type beta: int
+        :param batch_size: Batch size.
+        :type batch_size: int
         Note: Unlike in self.error_analysis, this method assumes X_test and
         Y_test are properly collated!
         """
+
         if self._check_input(X_test):
             X_test, Y_test = self._preprocess_data(X_test, Y_test)
 
@@ -110,12 +143,19 @@ class Classifier(object):
             * For binary: TP, FP, TN, FN
             * For categorical: correct, incorrect
 
-        :param X_test: The input test candidates, as a list or annotation matrix
-        :param Y_test: The input test labels, as a list or annotation matrix
+        :param session: The database session to use.
+        :param X_test: The input test candidates
+        :type X_test: pair with candidates and corresponding features
+        :param Y_test: The input test labels
+        :type Y_test: list
         :param gold_candidate_set: Full set of TPs in the test set
+        :type gold_candidate_set: set
         :param b: Decision boundary *for binary setting only*
+        :type b: float
         :param set_unlabeled_as_neg: Whether to map 0 labels -> -1, *binary setting*
+        :type set_unlabeled_as_neg: bool
         :param display: Print score report
+        :type display: bool
         :param scorer: The Scorer sub-class to use
 
         Todo:
@@ -138,11 +178,21 @@ class Classifier(object):
         )
 
     def _check_input(self, X):
-        """Generic data checking function"""
+        """Generic data checking function
+
+        :param X: The input data of the model
+        :type X: pair with candidates and corresponding features
+        """
         return True
 
     def _preprocess_data(self, X, Y=None):
-        """Generic preprocessing function"""
+        """Generic preprocessing function
+
+        :param X: The input data of the model
+        :type X: pair with candidates and corresponding features
+        :param Y: The labels of input data
+        :type Y: list
+        """
         if Y is None:
             return X
         return X, Y

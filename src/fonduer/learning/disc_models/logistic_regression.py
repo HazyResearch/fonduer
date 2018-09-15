@@ -8,19 +8,21 @@ from fonduer.learning.disc_learning import NoiseAwareModel
 
 class LogisticRegression(NoiseAwareModel):
     def forward(self, x):
-        """
-        Run forward pass.
+        """Forward function.
 
         :param x: The input (batch) of the model
+        :type x: torch.Tensor
         """
+
         return self.linear(x)
 
     def _check_input(self, X):
-        """
-        Check input format.
+        """Check input format.
 
         :param X: The input data of the model
+        :type X: pair
         """
+
         return isinstance(X, tuple)
 
     def _preprocess_data(self, X, Y=None, idxs=None, train=False):
@@ -30,8 +32,15 @@ class LogisticRegression(NoiseAwareModel):
         2. Select subset of the input if idxs exists.
 
         :param X: The input data of the model
-        :param X: The labels of input data
+        :type X: pair with candidates and corresponding features
+        :param Y: The labels of input data
+        :type Y: list
+        :param idxs: The selected indices of input data
+        :type idxs: list or numpy.array
+        :param train: Indicator of training set.
+        :type train: bool
         """
+
         C, F = X
         if issparse(F):
             F = F.todense()
@@ -51,8 +60,11 @@ class LogisticRegression(NoiseAwareModel):
         Update the model argument.
 
         :param X: The input data of the model
+        :type X: list
         :param model_kwargs: The arguments of the model
+        :type model_kwargs: dict
         """
+
         model_kwargs["input_dim"] = X[1].shape[1]
         return model_kwargs
 
@@ -61,7 +73,9 @@ class LogisticRegression(NoiseAwareModel):
         Build the model.
 
         :param model_kwargs: The arguments of the model
+        :type model_kwargs: dict
         """
+
         if "input_dim" not in model_kwargs:
             raise ValueError("Kwarg input_dim cannot be None.")
 
@@ -74,8 +88,11 @@ class LogisticRegression(NoiseAwareModel):
         Calculate the logits.
 
         :param X: The input data of the model
+        :type X: list
         :param batch_size: The batch size
+        :type batch_size: int
         """
+
         # Generate multi-modal feature input
         F = np.array(list(zip(*X))[1])
         F = torch.Tensor(F).squeeze(1)

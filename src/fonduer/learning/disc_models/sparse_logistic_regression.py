@@ -12,6 +12,7 @@ class SparseLogisticRegression(NoiseAwareModel):
         Run forward pass.
 
         :param x: The input (batch) of the model
+        :type x: torch.Tensor
         """
         return self.sparse_linear(x, w)
 
@@ -20,7 +21,9 @@ class SparseLogisticRegression(NoiseAwareModel):
         Check input format.
 
         :param X: The input data of the model
+        :type X: pair
         """
+
         return isinstance(X, tuple)
 
     def _preprocess_data(self, X, Y=None, idxs=None, train=False):
@@ -30,8 +33,15 @@ class SparseLogisticRegression(NoiseAwareModel):
         2. Select subset of the input if idxs exists.
 
         :param X: The input data of the model
+        :type X: pair with candidates and corresponding features
         :param Y: The labels of input data
+        :type Y: list
+        :param idxs: The selected indices of input data
+        :type idxs: list or numpy.array
+        :param train: Indicator of training set.
+        :type train: bool
         """
+
         C, F = X
 
         if idxs is None:
@@ -83,8 +93,11 @@ class SparseLogisticRegression(NoiseAwareModel):
         Update the model argument.
 
         :param X: The input data of the model
+        :type X: list
         :param model_kwargs: The arguments of the model
+        :type model_kwargs: dict
         """
+
         # Add one feature for padding vector (all 0s)
         model_kwargs["input_dim"] = X[1].shape[1] + 1
         return model_kwargs
@@ -94,7 +107,9 @@ class SparseLogisticRegression(NoiseAwareModel):
         Build the model.
 
         :param model_kwargs: The arguments of the model
+        :type model_kwargs: dict
         """
+
         if "input_dim" not in model_kwargs:
             raise ValueError("Kwarg input_dim cannot be None.")
 
@@ -108,8 +123,11 @@ class SparseLogisticRegression(NoiseAwareModel):
         Calculate the logits.
 
         :param X: The input data of the model
+        :type X: list
         :param batch_size: The batch size
+        :type batch_size: int
         """
+
         # Generate sparse multi-modal feature input
         F = np.array(list(zip(*X))[1]) + 1  # Correct the index since 0 is the padding
         V = np.array(list(zip(*X))[2])

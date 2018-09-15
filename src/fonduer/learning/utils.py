@@ -80,7 +80,10 @@ def save_marginals(session, X, marginals, training=True):
 
 
 def reshape_marginals(marginals):
-    """Returns correctly shaped marginals as np array"""
+    """Returns correctly shaped marginals as np array
+
+    :param marginals: Marginal maxtrix
+    """
     # Make sure training marginals are a numpy array first
     try:
         shape = marginals.shape
@@ -97,15 +100,19 @@ def reshape_marginals(marginals):
 
 
 class LabelBalancer(object):
+    """Utility class to rebalance training labels.
+
+    :param y: Labels to balance
+    :tyep y: numpy.array
+
+    :Example:
+        To get the indices of a training set with labels y and
+        around 90 percent negative examples::
+
+            LabelBalancer(y).get_train_idxs(rebalance=0.1)
+    """
+
     def __init__(self, y):
-        """Utility class to rebalance training labels.
-
-        :Example:
-            To get the indices of a training set with labels y and
-            around 90 percent negative examples::
-
-                LabelBalancer(y).get_train_idxs(rebalance=0.1)
-        """
         self.y = np.ravel(y)
 
     def _get_pos(self, split):

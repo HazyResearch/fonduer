@@ -20,6 +20,7 @@ class NoiseAwareModel(Classifier, nn.Module):
     Generic NoiseAwareModel class.
 
     :param seed: Random seed which is passed into both numpy and PyTorch.
+    :type seed: int
     """
 
     _gpu = ["gpu", "GPU"]
@@ -69,6 +70,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         pass
 
     def _calc_logits(self, X, batch_size):
+        """Calculate the logits of input."""
         raise NotImplementedError()
 
     def train(
@@ -91,27 +93,37 @@ class NoiseAwareModel(Classifier, nn.Module):
         """
         Generic training procedure for PyTorch model
 
-        :param X_train: The training Candidates which is a pair with a list of
-            Candidate objects and a csr_AnnotationMatrix with rows corresponding
+        :param X_train: The training Candidates with a pair with a list of
+            Candidate objects and a sparse with rows corresponding
             to training candidates and columns corresponding to features.
+        :type X_train: pair
         :param Y_train: Array of marginal probabilities for each Candidate.
-        :param n_epochs: Number of training epochs.
+        :type Y_train: list or numpy.array
+        :param n_epochs: Number of training epochs.\
+        :type n_epochs: int
         :param lr: Learning rate.
+        :type lr: float
         :param batch_size: Batch size for learning model.
+        :type batch_size: int
         :param rebalance: Bool or fraction of positive examples for training
                     - if True, defaults to standard 0.5 class balance
                     - if False, no class balancing
+        :type rebalance: bool
         :param X_dev: Candidates for evaluation, same format as X_train
         :param Y_dev: Labels for evaluation, same format as Y_train
         :param print_freq: number of epochs at which to print status, and if present,
             evaluate the dev set (X_dev, Y_dev).
+        :type print_freq: int
         :param dev_ckpt: If True, save a checkpoint whenever highest score
             on (X_dev, Y_dev) reached. Note: currently only evaluates at
             every @print_freq epochs.
         :param dev_ckpt_delay: Start dev checkpointing after this portion
             of n_epochs.
+        :type dev_ckpt_delay: float
         :param save_dir: Save dir path for checkpointing.
+        :type save_dir: str
         :param seed: Random seed
+        :type seed: int
         :param kwargs: All hyperparameters that needs for the actually model.
         """
 
@@ -272,6 +284,11 @@ class NoiseAwareModel(Classifier, nn.Module):
         Compute the marginals for the given candidates X.
         Split into batches to avoid OOM errors, then call _marginals_batch;
         defaults to no batching.
+
+        :param X: Input data.
+        :type X: pair
+        :param batch_size: Batch size.
+        :type batch_size: int
         """
         nn.Module.train(self, False)
         marginal = self._calc_logits(X, batch_size)
@@ -288,7 +305,18 @@ class NoiseAwareModel(Classifier, nn.Module):
     def save(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
     ):
-        """Save current model."""
+        """Save current model.
+
+        :param model_name: Saved model name.
+        :type model_name: str
+        :param save_dir: Saved model directory.
+        :type save_dir: str
+        :param verbose: Print log or not
+        :type verbose: bool
+        :param global_step: learned epoch of saved model
+        :type global_step: int
+        """
+
         model_name = model_name or self.name
 
         # Check existence of model saving directory and create if does not exist.
@@ -321,7 +349,18 @@ class NoiseAwareModel(Classifier, nn.Module):
     def load(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
     ):
-        """Load model from file and rebuild the model."""
+        """Load model from file and rebuild the model.
+
+        :param model_name: Saved model name.
+        :type model_name: str
+        :param save_dir: Saved model directory.
+        :type save_dir: str
+        :param verbose: Print log or not
+        :type verbose: bool
+        :param global_step: learned epoch of saved model
+        :type global_step: int
+        """
+
         model_name = model_name or self.name
 
         model_dir = os.path.join(save_dir, model_name)
