@@ -134,6 +134,7 @@ class LabelBalancer(object):
         :param rebalance: bool or fraction of positive examples desired If
             True, default fraction is 0.5. If False no balancing.
         :param split: Split point for positive and negative classes.
+        :param rand_state: numpy random state to random select data indices.
         """
         rs = np.random if rand_state is None else rand_state
         pos, neg = self._get_pos(split), self._get_neg(split)
@@ -160,7 +161,7 @@ def SoftCrossEntropyLoss(input, target):
     """
     Calculate the CrossEntropyLoss with soft targets
 
-    :param input: prediction logicts
+    :param input: prediction logits
     :param target: target probabilities
     """
     total_loss = torch.tensor(0.0)
