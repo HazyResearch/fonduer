@@ -76,7 +76,7 @@ def save_marginals(session, X, marginals, training=True):
 def reshape_marginals(marginals):
     """Returns correctly shaped marginals as np array
 
-    :param marginals: Marginal maxtrix
+    :param marginals: Marginal matrix
     """
     # Make sure training marginals are a numpy array first
     try:
@@ -97,7 +97,7 @@ class LabelBalancer(object):
     """Utility class to rebalance training labels.
 
     :param y: Labels to balance
-    :tyep y: numpy.array
+    :type y: numpy.array
 
     :Example:
         To get the indices of a training set with labels y and
