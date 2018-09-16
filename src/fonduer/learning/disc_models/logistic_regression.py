@@ -4,16 +4,13 @@ import torch.nn as nn
 from scipy.sparse import issparse
 
 from fonduer.learning.disc_learning import NoiseAwareModel
+from fonduer.utils.config import get_config
 
 
 class LogisticRegression(NoiseAwareModel):
     """
     Logistic Regression model.
 
-    :param seed: Random seed of model which is passed into both numpy and PyTorch.
-    :type seed: int
-    :param cardinality: Cardinality of class
-    :type cardinality: int
     :param name: User-defined name of the model
     :type name: str
     """
@@ -72,34 +69,35 @@ class LogisticRegression(NoiseAwareModel):
         else:
             return [(C[i], F[i]) for i in idxs]
 
-    def _update_kwargs(self, X, **model_kwargs):
+    def _update_settings(self, X):
         """
         Update the model argument.
 
         :param X: The input data of the model
         :type X: list
-        :param model_kwargs: The arguments of the model
-        :type model_kwargs: dict
-        :return: Updated model arguments
-        :rtype: dict
         """
 
-        model_kwargs["input_dim"] = X[1].shape[1]
-        return model_kwargs
+        self.logger.info("Load defalut parameters for Logistic Regression")
+        config = get_config()["learning"]["LogisticRegression"]
 
-    def _build_model(self, model_kwargs):
+        for key in config.keys():
+            if key not in self.settings:
+                self.settings[key] = config[key]
+
+        self.settings["input_dim"] = X[1].shape[1]
+
+    def _build_model(self):
         """
-        Build the model.
-
-        :param model_kwargs: The arguments of the model
-        :type model_kwargs: dict
+        Build model.
         """
 
-        if "input_dim" not in model_kwargs:
-            raise ValueError("Kwarg input_dim cannot be None.")
+        if "input_dim" not in self.settings:
+            raise ValueError("Model parameter input_dim cannot be None.")
 
         self.linear = nn.Linear(
-            model_kwargs["input_dim"], self.cardinality if self.cardinality > 2 else 1
+            self.settings["input_dim"],
+            self.cardinality if self.cardinality > 2 else 1,
+            self.settings["bias"],
         )
 
     def _calc_logits(self, X, batch_size=None):
@@ -120,7 +118,7 @@ class LogisticRegression(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self._gpu
+            if self.settings["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -132,7 +130,7 @@ class LogisticRegression(NoiseAwareModel):
 
             features = (
                 F[batch_st:batch_ed].cuda()
-                if self.model_kwargs["host_device"] in self._gpu
+                if self.settings["host_device"] in self._gpu
                 else F[batch_st:batch_ed]
             )
 

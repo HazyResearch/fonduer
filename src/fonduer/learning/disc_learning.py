@@ -19,20 +19,16 @@ class NoiseAwareModel(Classifier, nn.Module):
     """
     Generic NoiseAwareModel class.
 
-    :param seed: Random seed which is passed into both numpy and PyTorch.
-    :type seed: int
-    :param cardinality: Cardinality of class
-    :type cardinality: int
     :param name: Name of the model
     :type name: str
     """
 
     _gpu = ["gpu", "GPU"]
 
-    def __init__(self, seed=123, cardinality=2, name=None):
+    def __init__(self, name=None):
         self.logger = logging.getLogger(__name__)
-        self.seed = seed
-        Classifier.__init__(self, cardinality, name)
+        self.settings = None
+        Classifier.__init__(self, name)
         nn.Module.__init__(self)
 
     def _set_random_seed(self, seed):
@@ -45,11 +41,11 @@ class NoiseAwareModel(Classifier, nn.Module):
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-    def _build_model(self, **model_kwargs):
+    def _build_model(self):
         raise NotImplementedError()
 
-    def _update_kwargs(self, X, **model_kwargs):
-        return model_kwargs
+    def _update_settings(self, X):
+        pass
 
     def _preprocess_data(self, X, Y, idxs=None, train=False):
         return X, Y
@@ -92,7 +88,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         dev_ckpt_delay=0.75,
         save_dir="checkpoints",
         seed=1234,
-        **kwargs
+        host_device="CPU",
     ):
         """
         Generic training procedure for PyTorch model
@@ -128,24 +124,27 @@ class NoiseAwareModel(Classifier, nn.Module):
         :type save_dir: str
         :param seed: Random seed
         :type seed: int
-        :param kwargs: All hyperparameters that needs for the actually model.
+        :param host_device: Host device
+        :type host_device: str
         """
 
+        # Set model parameters
+        self.settings = {
+            "n_epochs": n_epochs,
+            "lr": lr,
+            "batch_size": batch_size,
+            "seed": 1234,
+            "host_device": host_device,
+        }
+
         # Set random seed
-        self._set_random_seed(seed)
+        self._set_random_seed(self.settings["seed"])
 
         self._check_input(X_train)
         verbose = print_freq > 0
 
-        # Check that the cardinality of the training marginals and model agree
-        cardinality = Y_train.shape[1] if len(Y_train.shape) > 1 else 2
-        if cardinality != self.cardinality:
-            raise ValueError(
-                "Training marginals cardinality ({0}) does not"
-                "match model cardinality ({1}).".format(
-                    Y_train.shape[1], self.cardinality
-                )
-            )
+        # Update cardinality of the model with training marginals
+        self.cardinality = Y_train.shape[1] if len(Y_train.shape) > 1 else 2
 
         # Make sure marginals are in correct default format
         Y_train = reshape_marginals(Y_train)
@@ -167,7 +166,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             diffs = Y_train.max(axis=1) - Y_train.min(axis=1)
             train_idxs = np.where(diffs > 1e-6)[0]
 
-        self.model_kwargs = self._update_kwargs(X_train, **kwargs)
+        self._update_settings(X_train)
 
         _X_train, _Y_train = self._preprocess_data(
             X_train, Y_train, idxs=train_idxs, train=True
@@ -175,42 +174,39 @@ class NoiseAwareModel(Classifier, nn.Module):
         if X_dev is not None:
             _X_dev, _Y_dev = self._preprocess_data(X_dev, Y_dev)
 
-        if "host_device" not in self.model_kwargs:
-            self.model_kwargs["host_device"] = "CPU"
-            self.logger.info("Using CPU...")
-        if self.model_kwargs["host_device"] in self._gpu:
+        if self.settings["host_device"] in self._gpu:
             if not torch.cuda.is_available():
-                self.model_kwargs["host_device"] = "CPU"
+                self.settings["host_device"] = "CPU"
                 self.logger.info("GPU is not available, switching to CPU...")
             else:
                 self.logger.info("Using GPU...")
 
-        self.logger.info("Settings: {}".format(self.model_kwargs))
+        self.logger.info("Settings: {}".format(self.settings))
 
         # Build network
-        self._build_model(self.model_kwargs)
-        self._setup_model_loss(lr)
+        self._build_model()
+        self._setup_model_loss(self.settings["lr"])
 
         # Set up GPU if necessary
-        if self.model_kwargs["host_device"] in self._gpu:
+        if self.settings["host_device"] in self._gpu:
             nn.Module.cuda(self)
 
         # Run mini-batch SGD
         n = len(_X_train)
-        batch_size = min(batch_size, n)
+        batch_size = min(self.settings["batch_size"], n)
 
         if verbose:
             st = time()
             self.logger.info("[{0}] Training model".format(self.name))
             self.logger.info(
                 "[{0}] n_train={1}  #epochs={2}  batch size={3}".format(
-                    self.name, n, n_epochs, batch_size
+                    self.name, n, self.settings["n_epochs"], batch_size
                 )
             )
 
         dev_score_opt = 0.0
         dev_score_epo = -1
-        for epoch in range(n_epochs):
+        for epoch in range(self.settings["n_epochs"]):
             iteration_losses = []
 
             # Shuffle the training data
@@ -229,7 +225,7 @@ class NoiseAwareModel(Classifier, nn.Module):
 
                 # Calculate loss for current batch
                 y = torch.Tensor(_Y_train[idxs[batch_st:batch_ed]])
-                if self.model_kwargs["host_device"] in self._gpu:
+                if self.settings["host_device"] in self._gpu:
                     y = y.cuda()
                 loss = self.loss(output, y)
 
@@ -239,14 +235,17 @@ class NoiseAwareModel(Classifier, nn.Module):
                 # Update the parameters
                 self.optimizer.step()
 
-                if self.model_kwargs["host_device"] in self._gpu:
+                if self.settings["host_device"] in self._gpu:
                     iteration_losses.append(loss.cpu())
                 else:
                     iteration_losses.append(loss)
 
             # Print training stats and optionally checkpoint model
             if verbose and (
-                ((epoch + 1) % print_freq == 0 or epoch in [0, (n_epochs - 1)])
+                (
+                    (epoch + 1) % print_freq == 0
+                    or epoch in [0, (self.settings["n_epochs"] - 1)]
+                )
             ):
                 msg = "[{0}] Epoch {1} ({2:.2f}s)\tAverage loss={3:.6f}".format(
                     self.name,
@@ -255,7 +254,9 @@ class NoiseAwareModel(Classifier, nn.Module):
                     torch.stack(iteration_losses).mean(),
                 )
                 if X_dev is not None:
-                    scores = self.score(_X_dev, Y_dev, batch_size=batch_size)
+                    scores = self.score(
+                        _X_dev, Y_dev, batch_size=self.settings["batch_size"]
+                    )
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
                     msg += "\tDev {0}={1:.2f}".format(score_label, 100. * score)
@@ -266,7 +267,7 @@ class NoiseAwareModel(Classifier, nn.Module):
                 if (
                     X_dev is not None
                     and dev_ckpt
-                    and epoch > dev_ckpt_delay * n_epochs
+                    and epoch > dev_ckpt_delay * self.settings["n_epochs"]
                     and score > dev_score_opt
                 ):
                     dev_score_opt = score
@@ -297,7 +298,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         nn.Module.train(self, False)
         marginal = self._calc_logits(X, batch_size)
 
-        if self.model_kwargs["host_device"] in self._gpu:
+        if self.settings["host_device"] in self._gpu:
             marginal = marginal.cpu()
 
         if self.cardinality == 2:
@@ -331,7 +332,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             "model": self.state_dict(),
             "cardinality": self.cardinality,
             "name": model_name,
-            "config": self.model_kwargs,
+            "config": self.settings,
             "epoch": global_step,
         }
 
@@ -382,7 +383,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             )
 
         self.load_state_dict(checkpoint["model"])
-        self.model_kwargs = checkpoint["config"]
+        self.settings = checkpoint["config"]
         self.cardinality = checkpoint["cardinality"]
         self.name = checkpoint["name"]
 

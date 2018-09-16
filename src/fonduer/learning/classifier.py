@@ -6,15 +6,13 @@ from fonduer.learning.utils import save_marginals
 class Classifier(object):
     """An abstract class for a probabilistic classifier.
 
-    :param cardinality: Cardinality of class
-    :type cardinality: int
     :param name: Name of the model
     :type name: str
     """
 
-    def __init__(self, cardinality=2, name=None):
+    def __init__(self, name=None):
         self.name = name or self.__class__.__name__
-        self.cardinality = cardinality
+        self.cardinality = 2
 
     def marginals(self, X, batch_size=None):
         """Calculate the predicted marginal probabilities for the Candidates X.

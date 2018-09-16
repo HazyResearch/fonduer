@@ -35,7 +35,9 @@ default = {
             "bidirectional": True,
             "host_device": "CPU",
             "max_sentence_length": 100,
-        }
+        },
+        "LogisticRegression": {"bias": False},
+        "SparseLogisticRegression": {"bias": False},
     },
 }
 

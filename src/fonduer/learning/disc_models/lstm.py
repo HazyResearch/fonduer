@@ -18,10 +18,6 @@ class LSTM(NoiseAwareModel):
     """
     LSTM model.
 
-    :param seed: Random seed of model which is passed into both numpy and PyTorch.
-    :type seed: int
-    :param cardinality: Cardinality of class
-    :type cardinality: int
     :param name: User-defined name of the model
     :type name: str
     """
@@ -41,7 +37,7 @@ class LSTM(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self._gpu
+            if self.settings["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -131,38 +127,29 @@ class LSTM(NoiseAwareModel):
         else:
             return [(seq_data[i], F[i]) for i in idxs]
 
-    def _update_kwargs(self, X, **model_kwargs):
+    def _update_settings(self, X):
         """
         Update the model argument.
 
         :param X: The input data of the model
         :type X: list
-        :param model_kwargs: The arguments of the model
-        :type model_kwargs: dict
-        :return: Updated model arguments
-        :rtype: dict
         """
 
         self.logger.info("Load defalut parameters for LSTM")
-        settings = get_config()["learning"]["LSTM"]
+        config = get_config()["learning"]["LSTM"]
 
-        for key in settings.keys():
-            if key not in model_kwargs:
-                model_kwargs[key] = settings[key]
+        for key in config.keys():
+            if key not in self.settings:
+                self.settings[key] = config[key]
 
-        model_kwargs["relation_arity"] = len(X[0][0])
-        model_kwargs["input_dim"] = X[1].shape[1] + len(X[0][0]) * model_kwargs[
+        self.settings["relation_arity"] = len(X[0][0])
+        self.settings["input_dim"] = X[1].shape[1] + len(X[0][0]) * self.settings[
             "hidden_dim"
-        ] * (2 if model_kwargs["bidirectional"] else 1)
+        ] * (2 if self.settings["bidirectional"] else 1)
 
-        return model_kwargs
-
-    def _build_model(self, model_kwargs):
+    def _build_model(self):
         """
         Build the model.
-
-        :param model_kwargs: The arguments of the model
-        :type model_kwargs: dict
         """
         # Set up LSTM modules
         self.lstms = nn.ModuleList(
@@ -170,23 +157,23 @@ class LSTM(NoiseAwareModel):
                 RNN(
                     n_classes=0,
                     num_tokens=self.word_dict.s,
-                    emb_size=model_kwargs["emb_dim"],
-                    lstm_hidden=model_kwargs["hidden_dim"],
-                    attention=model_kwargs["attention"],
-                    dropout=model_kwargs["dropout"],
-                    bidirectional=model_kwargs["bidirectional"],
-                    use_cuda=model_kwargs["host_device"] in self._gpu,
+                    emb_size=self.settings["emb_dim"],
+                    lstm_hidden=self.settings["hidden_dim"],
+                    attention=self.settings["attention"],
+                    dropout=self.settings["dropout"],
+                    bidirectional=self.settings["bidirectional"],
+                    use_cuda=self.settings["host_device"] in self._gpu,
                 )
             ]
-            * model_kwargs["relation_arity"]
+            * self.settings["relation_arity"]
         )
 
-        if "input_dim" not in model_kwargs:
-            raise ValueError("Kwarg input_dim cannot be None.")
+        if "input_dim" not in self.settings:
+            raise ValueError("Model parameter input_dim cannot be None.")
 
         # Set up final linear layer
         self.linear = nn.Linear(
-            model_kwargs["input_dim"], self.cardinality if self.cardinality > 2 else 1
+            self.settings["input_dim"], self.cardinality if self.cardinality > 2 else 1
         )
 
     def _calc_logits(self, X, batch_size=None):
@@ -213,7 +200,7 @@ class LSTM(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self._gpu
+            if self.settings["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -229,17 +216,15 @@ class LSTM(NoiseAwareModel):
                 sequence = []
                 for j in range(batch_st, batch_ed):
                     sequence.append(C[j][i])
-                x, x_mask = pad_batch(
-                    sequence, self.model_kwargs["max_sentence_length"]
-                )
-                if self.model_kwargs["host_device"] in self._gpu:
+                x, x_mask = pad_batch(sequence, self.settings["max_sentence_length"])
+                if self.settings["host_device"] in self._gpu:
                     x = x.cuda()
                     x_mask = x_mask.cuda()
                 sequences.append((x, x_mask))
 
             features = (
                 F[batch_st:batch_ed].cuda()
-                if self.model_kwargs["host_device"] in self._gpu
+                if self.settings["host_device"] in self._gpu
                 else F[batch_st:batch_ed]
             )
 
