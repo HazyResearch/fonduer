@@ -1,6 +1,6 @@
 import numpy as np
 
-from fonduer.learning.utils import MentionScorer, save_marginals
+from fonduer.learning.utils import save_marginals
 
 
 class Classifier(object):
@@ -123,59 +123,6 @@ class Classifier(object):
             else:
                 f_beta = 0.0
             return p, r, f_beta
-
-    def error_analysis(
-        self,
-        session,
-        X_test,
-        Y_test,
-        gold_candidate_set=None,
-        b=0.5,
-        set_unlabeled_as_neg=True,
-        display=True,
-        scorer=MentionScorer,
-        **kwargs
-    ):
-        """
-        Prints full score analysis using the Scorer class, and then returns the
-        a tuple of sets conatining the test candidates bucketed for error
-        analysis, i.e.:
-            * For binary: TP, FP, TN, FN
-            * For categorical: correct, incorrect
-
-        :param session: The database session to use.
-        :param X_test: The input test candidates
-        :type X_test: pair with candidates and corresponding features
-        :param Y_test: The input test labels
-        :type Y_test: list
-        :param gold_candidate_set: Full set of TPs in the test set
-        :type gold_candidate_set: set
-        :param b: Decision boundary *for binary setting only*
-        :type b: float
-        :param set_unlabeled_as_neg: Whether to map 0 labels -> -1, *binary setting*
-        :type set_unlabeled_as_neg: bool
-        :param display: Print score report
-        :type display: bool
-        :param scorer: The Scorer sub-class to use
-
-        Todo:
-            * need update, this only works for debugging labeling functions now
-        """
-        # Compute the marginals
-        test_marginals = self.marginals(X_test, **kwargs)
-
-        # Get the test candidates
-        test_candidates = X_test
-
-        # Initialize and return scorer
-        s = scorer(test_candidates, Y_test, gold_candidate_set)
-        return s.score(
-            test_marginals,
-            train_marginals=None,
-            b=b,
-            display=display,
-            set_unlabeled_as_neg=set_unlabeled_as_neg,
-        )
 
     def _check_input(self, X):
         """Generic data checking function
