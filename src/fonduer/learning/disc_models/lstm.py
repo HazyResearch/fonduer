@@ -22,6 +22,8 @@ class LSTM(NoiseAwareModel):
         :type x: torch.Tensor
         :param f: The feature input of the model
         :type f: torch.Tensor
+        :return: The output of LSTM layer
+        :rtype: torch.Tensor
         """
 
         batch_size = len(f)
@@ -48,6 +50,8 @@ class LSTM(NoiseAwareModel):
 
         :param X: The input data of the model
         :type X: pair
+        :return: True if valid, otherwise False
+        :rtype: bool
         """
         return isinstance(X, tuple)
 
@@ -66,6 +70,8 @@ class LSTM(NoiseAwareModel):
         :type idxs: list or numpy.array
         :param train: An indicator for word dictionary to extend new words
         :type train: bool
+        :return: Preprocessed data.
+        :rtype: list of (candidate, fetures) pair
         """
 
         C, F = X
@@ -122,6 +128,8 @@ class LSTM(NoiseAwareModel):
         :type X: list
         :param model_kwargs: The arguments of the model
         :type model_kwargs: dict
+        :return: Updated model arguments
+        :rtype: dict
         """
 
         self.logger.info("Load defalut parameters for LSTM")
@@ -178,6 +186,8 @@ class LSTM(NoiseAwareModel):
         :type X: list
         :param batch_size: The batch size
         :type batch_size: int
+        :return: The output logits of model
+        :rtype: torch.Tensor
         """
 
         # Generate LSTM input

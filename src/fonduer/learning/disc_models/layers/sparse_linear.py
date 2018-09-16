@@ -57,6 +57,8 @@ class SparseLinear(nn.Module):
         :type x: torch.Tensor (batch_size * length)
         :param w: Feature weights.
         :type w: torch.Tensor (batch_size * length)
+        :return: Output of linear layer
+        :rtype: torch.Tensor
         """
 
         if self.bias is None:

@@ -44,6 +44,8 @@ def mention_to_tokens(mention, token_type="words", lowercase=False):
     :type token_type: str
     :param lowercase: use lowercase or not
     :type lowercase: bool
+    :return: The token list
+    :rtype: list
     """
 
     tokens = mention.span.sentence.__dict__[token_type]
@@ -60,6 +62,8 @@ def mark(l, h, idx):
     :type h: int
     :param idx: argument index (1 or 2)
     :type idx: int
+    :return: markers
+    :rtype: list of markers
     """
     return [(l, "{}{}".format("~~[[", idx)), (h + 1, "{}{}".format(idx, "]]~~"))]
 
@@ -72,6 +76,8 @@ def mark_sentence(s, args):
     :param args: list of triples (l, h, idx) as per @_mark(...) corresponding
                to relation arguments
     :type args: list
+    :return: The marked sentence
+    :rtype: list
 
     Example: Then Barack married Michelle.
          ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
@@ -92,6 +98,8 @@ def pad_batch(batch, max_len=0, type="int"):
     :type max_len: int
     :param type: mask value type
     :type type: str
+    :return: The padded matrix and correspoing mask matrix
+    :rtype: pair of torch.Tensors
     """
     batch_size = len(batch)
     max_sent_len = int(np.max([len(x) for x in batch]))

@@ -92,6 +92,8 @@ class RNN(nn.Module):
         :type x_mask: torch.Tensor (batch_size * length)
         :param state_word: Initial state of LSTM.
         :type state_word: torch.Tensor
+        :return: Output of LSTM layer, either after mean pooling or attention
+        :rtype: torch.Tensor
         """
 
         x_emb = self.drop(self.lookup(x))
@@ -137,6 +139,8 @@ class RNN(nn.Module):
 
         :param batch_size: batch size.
         :type batch_size: int
+        :return: Initial state of LSTM
+        :rtype: pair of torch.Tensors
         """
 
         b = 2 if self.bidirectional else 1

@@ -12,6 +12,8 @@ class LogisticRegression(NoiseAwareModel):
 
         :param x: The input (batch) of the model
         :type x: torch.Tensor
+        :return: The output of Logistic Regression layer
+        :rtype: torch.Tensor
         """
 
         return self.linear(x)
@@ -21,6 +23,8 @@ class LogisticRegression(NoiseAwareModel):
 
         :param X: The input data of the model
         :type X: pair
+        :return: True if valid, otherwise False
+        :rtype: bool
         """
 
         return isinstance(X, tuple)
@@ -39,6 +43,8 @@ class LogisticRegression(NoiseAwareModel):
         :type idxs: list or numpy.array
         :param train: Indicator of training set.
         :type train: bool
+        :return: Preprocessed data.
+        :rtype: list of (candidate, fetures) pair
         """
 
         C, F = X
@@ -63,6 +69,8 @@ class LogisticRegression(NoiseAwareModel):
         :type X: list
         :param model_kwargs: The arguments of the model
         :type model_kwargs: dict
+        :return: Updated model arguments
+        :rtype: dict
         """
 
         model_kwargs["input_dim"] = X[1].shape[1]
@@ -91,6 +99,8 @@ class LogisticRegression(NoiseAwareModel):
         :type X: list
         :param batch_size: The batch size
         :type batch_size: int
+        :return: The output logits of model
+        :rtype: torch.Tensor
         """
 
         # Generate multi-modal feature input
