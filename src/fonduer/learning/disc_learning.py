@@ -21,14 +21,18 @@ class NoiseAwareModel(Classifier, nn.Module):
 
     :param seed: Random seed which is passed into both numpy and PyTorch.
     :type seed: int
+    :param cardinality: Cardinality of class
+    :type cardinality: int
+    :param name: Name of the model
+    :type name: str
     """
 
     _gpu = ["gpu", "GPU"]
 
-    def __init__(self, seed=123, **kwargs):
+    def __init__(self, seed=123, cardinality=2, name=None):
         self.logger = logging.getLogger(__name__)
         self.seed = seed
-        Classifier.__init__(self, **kwargs)
+        Classifier.__init__(self, cardinality, name)
         nn.Module.__init__(self)
 
     def _set_random_seed(self, seed):
@@ -296,7 +300,6 @@ class NoiseAwareModel(Classifier, nn.Module):
         if self.model_kwargs["host_device"] in self._gpu:
             marginal = marginal.cpu()
 
-        # marginals = self.forward(X, batch_size)
         if self.cardinality == 2:
             return torch.sigmoid(marginal).detach().numpy()
         else:

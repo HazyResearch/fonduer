@@ -16,7 +16,7 @@ class Classifier(object):
         self.name = name or self.__class__.__name__
         self.cardinality = cardinality
 
-    def marginals(self, X, batch_size=None, **kwargs):
+    def marginals(self, X, batch_size=None):
         """Calculate the predicted marginal probabilities for the Candidates X.
 
         :param X: Input data.
