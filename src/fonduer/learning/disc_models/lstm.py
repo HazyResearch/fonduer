@@ -15,6 +15,17 @@ from fonduer.utils.config import get_config
 
 
 class LSTM(NoiseAwareModel):
+    """
+    LSTM model.
+
+    :param seed: Random seed of model which is passed into both numpy and PyTorch.
+    :type seed: int
+    :param cardinality: Cardinality of class
+    :type cardinality: int
+    :param name: User-defined name of the model
+    :type name: str
+    """
+
     def forward(self, x, f):
         """Forward function.
 

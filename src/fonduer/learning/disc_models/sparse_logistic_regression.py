@@ -7,6 +7,17 @@ from fonduer.learning.disc_models.utils import pad_batch
 
 
 class SparseLogisticRegression(NoiseAwareModel):
+    """
+    Sparse Logistic Regression model.
+
+    :param seed: Random seed of model which is passed into both numpy and PyTorch.
+    :type seed: int
+    :param cardinality: Cardinality of class
+    :type cardinality: int
+    :param name: User-defined name of the model
+    :type name: str
+    """
+
     def forward(self, x, w):
         """
         Run forward pass.
