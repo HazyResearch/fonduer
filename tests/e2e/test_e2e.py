@@ -85,8 +85,9 @@ def test_e2e(caplog):
     logger.info("Sentences: {}".format(num_sentences))
 
     # Divide into test and train
-    docs = session.query(Document).order_by(Document.name).all()
+    docs = corpus_parser.get_documents()
     ld = len(docs)
+    assert ld == len(corpus_parser.get_last_documents())
     assert len(docs[0].sentences) == 799
     assert len(docs[1].sentences) == 663
     assert len(docs[2].sentences) == 784
