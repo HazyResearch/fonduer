@@ -11,10 +11,12 @@ class TextDocPreprocessor(DocPreprocessor):
 
     Assumes one document per file.
 
-    :param encoding: file encoding to use.
+    :param encoding: file encoding to use (e.g. "utf-8").
+    :type encoding: str
     :param path: filesystem path to file or directory to parse.
+    :type path: str
     :param max_docs: the maximum number of ``Documents`` to produce.
-
+    :type max_docs: int
     :rtype: A generator of ``Documents``.
     """
 
