@@ -17,8 +17,8 @@ from fonduer.utils.utils_udf import (
 logger = logging.getLogger(__name__)
 
 
-def load_gold_labels(session, cand_lists, annotator_name="gold"):
-    """Load the sparse matrix for the specified annotator.
+def get_gold_labels(session, cand_lists, annotator_name="gold"):
+    """Get the sparse matrix for the specified annotator.
 
     :param session: The database session.
     :param cand_lists: The candidates to get gold labels for.

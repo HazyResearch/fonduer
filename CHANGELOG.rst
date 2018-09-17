@@ -185,7 +185,7 @@ Fixed
         from fonduer.parser import Parser
         from fonduer.parser.models import Document, Sentence
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
-        from fonduer.supervision import Labeler, load_gold_labels
+        from fonduer.supervision import Labeler, get_gold_labels
 
 
 [0.2.3] - 2018-07-23
