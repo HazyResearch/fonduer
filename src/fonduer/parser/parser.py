@@ -41,7 +41,9 @@ class Parser(UDFRunner):
     :param strip: Whether or not to strip whitespace during parsing. Default True.
     :param replacements: A list of tuples where the regex string in the
         first position is replaced by the character in the second position.
-        Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")].
+        Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")], which
+        replaces various unicode variants of a hyphen (e.g. emdash, endash,
+        minus, etc.) with a standard ASCII hyphen.
     :param tabular: Whether to include tabular information in the parse.
     :param visual: Whether to include visual information in the parse.
         Requires PDFs for each input document.
