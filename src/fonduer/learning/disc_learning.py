@@ -192,6 +192,8 @@ class NoiseAwareModel(Classifier, nn.Module):
 
         # Run mini-batch SGD
         n = len(_X_train)
+        if self.settings["batch_size"] > n:
+            self.logger.info("Switching batch size to {} for training.".format(n))
         batch_size = min(self.settings["batch_size"], n)
 
         if verbose:
