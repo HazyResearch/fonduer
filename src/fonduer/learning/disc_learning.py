@@ -287,15 +287,20 @@ class NoiseAwareModel(Classifier, nn.Module):
     def marginals(self, X, batch_size=None):
         """
         Compute the marginals for the given candidates X.
-        Split into batches to avoid OOM errors, then call _marginals_batch;
-        defaults to no batching.
+        Note: split into batches to avoid OOM errors.
 
-        :param X: Input data.
-        :type X: pair
+        :param X: The input data which is either a pair with a list of Candidate
+            objects and a sparse with rows corresponding to candidates and columns
+            corresponding to features or a list of (Candidate, features) pairs.
+        :type X: pair or list
         :param batch_size: Batch size.
         :type batch_size: int
         """
         nn.Module.train(self, False)
+
+        if self._check_input(X):
+            X = self._preprocess_data(X)
+
         marginal = self._calc_logits(X, batch_size)
 
         if self.settings["host_device"] in self._gpu:
