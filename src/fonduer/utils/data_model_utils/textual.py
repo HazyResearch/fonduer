@@ -28,8 +28,8 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
             "Only applicable to Candidates where both spans are \
                           from the same immediate Context."
         )
-    distance = abs(span0.get_word_start() - span1.get_word_start())
-    if span0.get_word_start() < span1.get_word_start():
+    distance = abs(span0.get_word_start_index() - span1.get_word_start_index())
+    if span0.get_word_start_index() < span1.get_word_start_index():
         for ngram in get_right_ngrams(
             span0,
             window=distance - 1,
@@ -39,7 +39,7 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
             lower=lower,
         ):
             yield ngram
-    else:  # span0.get_word_start() > span1.get_word_start()
+    else:  # span0.get_word_start_index() > span1.get_word_start_index()
         for ngram in get_left_ngrams(
             span1,
             window=distance - 1,
@@ -67,7 +67,7 @@ def get_left_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=T
     :rtype: a *generator* of ngrams
     """
     span = _to_span(mention)
-    i = span.get_word_start()
+    i = span.get_word_start_index()
     for ngram in tokens_to_ngrams(
         getattr(span.sentence, attrib)[max(0, i - window) : i],
         n_min=n_min,
@@ -93,7 +93,7 @@ def get_right_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=
     :rtype: a *generator* of ngrams
     """
     span = _to_span(mention, idx=-1)
-    i = span.get_word_end()
+    i = span.get_word_end_index()
     for ngram in tokens_to_ngrams(
         getattr(span.sentence, attrib)[i + 1 : i + 1 + window],
         n_min=n_min,

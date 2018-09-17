@@ -233,8 +233,8 @@ class TemporaryImplicitSpan(TemporarySpan):
             self.__class__.__name__,
             self.get_span(),
             self.sentence.id,
-            self.get_word_start(),
-            self.get_word_end(),
+            self.get_word_start_index(),
+            self.get_word_end_index(),
             self.position,
         )
 

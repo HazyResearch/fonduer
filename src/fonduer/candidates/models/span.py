@@ -76,7 +76,7 @@ class TemporarySpan(TemporaryContext):
             "meta": self.meta,
         }
 
-    def get_word_start(self):
+    def get_word_start_index(self):
         """Get the index of the starting word of the span.
 
         :return: The word-index of the start of the span.
@@ -84,7 +84,7 @@ class TemporarySpan(TemporaryContext):
         """
         return self._char_to_word_index(self.char_start)
 
-    def get_word_end(self):
+    def get_word_end_index(self):
         """Get the index of the ending word of the span.
 
         :return: The word-index of the last word of the span.
@@ -98,7 +98,7 @@ class TemporarySpan(TemporaryContext):
         :return: The number of words in the span (n of the ngrams).
         :rtype: int
         """
-        return self.get_word_end() - self.get_word_start() + 1
+        return self.get_word_end_index() - self.get_word_start_index() + 1
 
     def _char_to_word_index(self, ci):
         """Return the index of the **word this char is in**.
@@ -140,7 +140,7 @@ class TemporarySpan(TemporaryContext):
         :rtype: list
         """
         return self.sentence.__getattribute__(a)[
-            self.get_word_start() : self.get_word_end() + 1
+            self.get_word_start_index() : self.get_word_end_index() + 1
         ]
 
     def get_attrib_span(self, a, sep=" "):
@@ -209,8 +209,8 @@ class TemporarySpan(TemporaryContext):
             self.sentence.id,
             self.char_start,
             self.char_end,
-            self.get_word_start(),
-            self.get_word_end(),
+            self.get_word_start_index(),
+            self.get_word_end_index(),
         )
 
     def _get_instance(self, **kwargs):

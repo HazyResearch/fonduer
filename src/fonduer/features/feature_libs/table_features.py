@@ -153,7 +153,7 @@ def tablelib_binary_features(span1, span2):
                 if span1.sentence.cell == span2.sentence.cell:
                     yield u"SAME_CELL", DEF_VALUE
                     yield u"WORD_DIFF_[%s]" % (
-                        span1.get_word_start() - span2.get_word_start()
+                        span1.get_word_start_index() - span2.get_word_start_index()
                     ), DEF_VALUE
                     yield u"CHAR_DIFF_[%s]" % (
                         span1.char_start - span2.char_start
