@@ -13,6 +13,7 @@ from fonduer.parser.models import (
     Caption,
     Cell,
     Context,
+    Document,
     Figure,
     Paragraph,
     Section,
@@ -79,7 +80,15 @@ class Parser(UDFRunner):
         )
 
     def clear(self, **kwargs):
+        """Clear all of the ``Context`` objects in the database."""
         self.session.query(Context).delete()
+
+    def get_documents(self):
+        """Return all the parsed ``Documents`` in the database.
+
+        :rtype: A generator for all ``Documents`` in the database.
+        """
+        return self.session.query(Document).order_by(Document.name).all()
 
 
 class ParserUDF(UDF):
