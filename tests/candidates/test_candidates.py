@@ -264,8 +264,8 @@ def test_ngrams(caplog):
 
     assert session.query(Person).count() == 126
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.span.get_n() == 1]) == 50
-    assert len([x for x in mentions if x.span.get_n() > 3]) == 0
+    assert len([x for x in mentions if x.span.get_num_words() == 1]) == 50
+    assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
     person_ngrams = MentionNgrams(n_min=2, n_max=3)
@@ -275,5 +275,5 @@ def test_ngrams(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
     assert session.query(Person).count() == 76
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.span.get_n() == 1]) == 0
-    assert len([x for x in mentions if x.span.get_n() > 3]) == 0
+    assert len([x for x in mentions if x.span.get_num_words() == 1]) == 0
+    assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0

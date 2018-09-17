@@ -53,4 +53,4 @@ def _generate_core_feats(span):
     if span.get_span()[0].isupper():
         yield "STARTS_WITH_CAPITAL"
 
-    yield "LENGTH_{}".format(span.get_n())
+    yield "LENGTH_{}".format(span.get_num_words())

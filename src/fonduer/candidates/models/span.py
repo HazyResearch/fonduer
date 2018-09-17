@@ -92,7 +92,7 @@ class TemporarySpan(TemporaryContext):
         """
         return self._char_to_word_index(self.char_end)
 
-    def get_n(self):
+    def get_num_words(self):
         """Get the number of words in the span.
 
         :return: The number of words in the span (n of the ngrams).
