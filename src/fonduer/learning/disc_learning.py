@@ -93,24 +93,23 @@ class NoiseAwareModel(Classifier, nn.Module):
         """
         Generic training procedure for PyTorch model
 
-        :param X_train: The training Candidates with a pair with a list of
-            Candidate objects and a sparse with rows corresponding
-            to training candidates and columns corresponding to features.
+        :param X_train: The training data which is a pair of a list of
+            Candidate objects and a sparse matrix of corresponding features.
         :type X_train: pair
         :param Y_train: Array of marginal probabilities for each Candidate.
         :type Y_train: list or numpy.array
-        :param n_epochs: Number of training epochs.\
+        :param n_epochs: Number of training epochs.
         :type n_epochs: int
         :param lr: Learning rate.
         :type lr: float
         :param batch_size: Batch size for learning model.
         :type batch_size: int
-        :param rebalance: Bool or fraction of positive examples for training
+        :param rebalance: Bool or fraction of positive examples for training.
                     - if True, defaults to standard 0.5 class balance
                     - if False, no class balancing
         :type rebalance: bool
-        :param X_dev: Candidates for evaluation, same format as X_train
-        :param Y_dev: Labels for evaluation, same format as Y_train
+        :param X_dev: Candidates for evaluation, same format as X_train.
+        :param Y_dev: Labels for evaluation, same format as Y_train.
         :param print_freq: number of epochs at which to print status, and if present,
             evaluate the dev set (X_dev, Y_dev).
         :type print_freq: int
@@ -289,9 +288,9 @@ class NoiseAwareModel(Classifier, nn.Module):
         Compute the marginals for the given candidates X.
         Note: split into batches to avoid OOM errors.
 
-        :param X: The input data which is either a pair with a list of Candidate
-            objects and a sparse with rows corresponding to candidates and columns
-            corresponding to features or a list of (Candidate, features) pairs.
+        :param X: The input data which is a pair of a list of Candidate objects and
+            a sparse matrix of corresponding features or a list of
+            (Candidate, features) pairs.
         :type X: pair or list
         :param batch_size: Batch size.
         :type batch_size: int
