@@ -4,14 +4,25 @@ import torch
 from fonduer.learning.disc_learning import NoiseAwareModel
 from fonduer.learning.disc_models.layers.sparse_linear import SparseLinear
 from fonduer.learning.disc_models.utils import pad_batch
+from fonduer.utils.config import get_config
 
 
 class SparseLogisticRegression(NoiseAwareModel):
+    """
+    Sparse Logistic Regression model.
+
+    :param name: User-defined name of the model
+    :type name: str
+    """
+
     def forward(self, x, w):
         """
         Run forward pass.
 
         :param x: The input (batch) of the model
+        :type x: torch.Tensor
+        :return: The output of sparse Logistic Regression layer
+        :rtype: torch.Tensor
         """
         return self.sparse_linear(x, w)
 
@@ -20,7 +31,11 @@ class SparseLogisticRegression(NoiseAwareModel):
         Check input format.
 
         :param X: The input data of the model
+        :type X: pair
+        :return: True if valid, otherwise False
+        :rtype: bool
         """
+
         return isinstance(X, tuple)
 
     def _preprocess_data(self, X, Y=None, idxs=None, train=False):
@@ -30,8 +45,17 @@ class SparseLogisticRegression(NoiseAwareModel):
         2. Select subset of the input if idxs exists.
 
         :param X: The input data of the model
+        :type X: pair with candidates and corresponding features
         :param Y: The labels of input data
+        :type Y: list
+        :param idxs: The selected indices of input data
+        :type idxs: list or numpy.array
+        :param train: Indicator of training set.
+        :type train: bool
+        :return: Preprocessed data.
+        :rtype: list of (candidate, fetures) pair
         """
+
         C, F = X
 
         if idxs is None:
@@ -78,45 +102,57 @@ class SparseLogisticRegression(NoiseAwareModel):
                 for i in idxs
             ]
 
-    def _update_kwargs(self, X, **model_kwargs):
+    def _update_settings(self, X):
         """
         Update the model argument.
 
         :param X: The input data of the model
-        :param model_kwargs: The arguments of the model
+        :type X: list
         """
-        # Add one feature for padding vector (all 0s)
-        model_kwargs["input_dim"] = X[1].shape[1] + 1
-        return model_kwargs
 
-    def _build_model(self, model_kwargs):
+        self.logger.info("Load defalut parameters for Sparse Logistic Regression")
+        config = get_config()["learning"]["SparseLogisticRegression"]
+
+        for key in config.keys():
+            if key not in self.settings:
+                self.settings[key] = config[key]
+
+        # Add one feature for padding vector (all 0s)
+        self.settings["input_dim"] = X[1].shape[1] + 1
+
+    def _build_model(self):
         """
         Build the model.
-
-        :param model_kwargs: The arguments of the model
         """
-        if "input_dim" not in model_kwargs:
-            raise ValueError("Kwarg input_dim cannot be None.")
+        print(self.settings)
+        if "input_dim" not in self.settings:
+            raise ValueError("Model parameter input_dim cannot be None.")
 
         cardinality = self.cardinality if self.cardinality > 2 else 1
-        bias = False if "bias" not in model_kwargs else model_kwargs["bias"]
 
-        self.sparse_linear = SparseLinear(model_kwargs["input_dim"], cardinality, bias)
+        self.sparse_linear = SparseLinear(
+            self.settings["input_dim"], cardinality, self.settings["bias"]
+        )
 
     def _calc_logits(self, X, batch_size=None):
         """
         Calculate the logits.
 
         :param X: The input data of the model
+        :type X: list
         :param batch_size: The batch size
+        :type batch_size: int
+        :return: The output logits of model
+        :rtype: torch.Tensor
         """
+
         # Generate sparse multi-modal feature input
         F = np.array(list(zip(*X))[1]) + 1  # Correct the index since 0 is the padding
         V = np.array(list(zip(*X))[2])
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self._gpu
+            if self.settings["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -129,7 +165,7 @@ class SparseLogisticRegression(NoiseAwareModel):
             features, _ = pad_batch(F[batch_st:batch_ed], 0)
             values, _ = pad_batch(V[batch_st:batch_ed], 0, type="float")
 
-            if self.model_kwargs["host_device"] in self._gpu:
+            if self.settings["host_device"] in self._gpu:
                 features = features.cuda()
                 values = values.cuda()
 

@@ -7,6 +7,28 @@ import torch.nn as nn
 
 
 class RNN(nn.Module):
+    """A recurrent neural network layer.
+
+    :param n_classes: Number of classes.
+    :type n_classes: int
+    :param num_tokens: Size of embeddings.
+    :type num_tokens: int
+    :param emb_size: Dimension of embeddings.
+    :type emb_size: int
+    :param lstm_hidden: Size of LSTM hidden layer size.
+    :type lstm_hidden: int
+    :param num_layers: Number of recurrent layers.
+    :type num_layers: int
+    :param dropout: Dropout parameter of LSTM.
+    :type dropout: float
+    :param attention: Use attention or not.
+    :type attention: bool
+    :param bidirectional: Use bidirectional LSTM or not.
+    :type bidirectional: bool
+    :param use_cuda: Use use_cuda or not.
+    :type use_cuda: bool
+    """
+
     def __init__(
         self,
         n_classes,
@@ -62,10 +84,18 @@ class RNN(nn.Module):
             self.linear = nn.Linear(b * lstm_hidden, n_classes)
 
     def forward(self, x, x_mask, state_word):
+        """Forward function.
+
+        :param x: Input sequence tensor.
+        :type x: torch.Tensor (batch_size * length)
+        :param x_mask: Use use_cuda or not.
+        :type x_mask: torch.Tensor (batch_size * length)
+        :param state_word: Initial state of LSTM.
+        :type state_word: torch.Tensor
+        :return: Output of LSTM layer, either after mean pooling or attention
+        :rtype: torch.Tensor
         """
-        x      : batch_size * length
-        x_mask : batch_size * length
-        """
+
         x_emb = self.drop(self.lookup(x))
         output_word, state_word = self.word_lstm(x_emb, state_word)
         output_word = self.drop(output_word)
@@ -105,6 +135,14 @@ class RNN(nn.Module):
         return output
 
     def init_hidden(self, batch_size):
+        """Initiate the initial state.
+
+        :param batch_size: batch size.
+        :type batch_size: int
+        :return: Initial state of LSTM
+        :rtype: pair of torch.Tensors
+        """
+
         b = 2 if self.bidirectional else 1
         if self.use_cuda:
             return (

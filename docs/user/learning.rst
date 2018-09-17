@@ -33,9 +33,10 @@ Configuration Settings
 Visit the `Configuring Fonduer`_ page to see how to provide configuration
 parameters to Fonduer_ via ``.fonduer-config.yaml``.
 
-The different learning parameters are described below::
+The learning parameters of different models are described below::
 
     learning:
+      # LSTM model
       LSTM:
         # Word embedding dimension size
         emb_dim: 100
@@ -51,6 +52,14 @@ The different learning parameters are described below::
         host_device: "CPU"
         # Maximum sentence length of LSTM input
         max_sentence_length: 100
+      # Logistic Regression model
+      LogisticRegression:
+        # bias term
+        bias: False
+      # Sparse Logistic Regression model
+      SparseLogisticRegression:
+        # bias term
+        bias: False
 
 .. _Configuring Fonduer: config.html
 .. _Fonduer: https://github.com/HazyResearch/fonduer

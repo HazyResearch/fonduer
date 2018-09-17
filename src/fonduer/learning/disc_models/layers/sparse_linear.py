@@ -9,6 +9,18 @@ import torch.nn as nn
 
 
 class SparseLinear(nn.Module):
+    """A sparse linear layer.
+
+    :param num_features: Size of features.
+    :type num_features: int
+    :param num_features: Number of classes.
+    :type n_classes: int
+    :param bias: Use bias term or not.
+    :type bias: bool
+    :param padding_idx: padding index.
+    :type padding_idx: int
+    """
+
     def __init__(self, num_features, num_classes, bias=False, padding_idx=0):
 
         super(SparseLinear, self).__init__()
@@ -28,6 +40,9 @@ class SparseLinear(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        """Reinitiate the weight parameters.
+        """
+
         stdv = 1. / math.sqrt(self.num_features)
         self.weight.weight.data.uniform_(-stdv, stdv)
         if self.bias is not None:
@@ -36,10 +51,16 @@ class SparseLinear(nn.Module):
             self.weight.weight.data[self.padding_idx].fill_(0)
 
     def forward(self, x, w):
+        """Forward function.
+
+        :param x: Feature indices.
+        :type x: torch.Tensor (batch_size * length)
+        :param w: Feature weights.
+        :type w: torch.Tensor (batch_size * length)
+        :return: Output of linear layer
+        :rtype: torch.Tensor
         """
-        x : batch_size * length, the feature indices
-        w : batch_size * length, the weight for each feature
-        """
+
         if self.bias is None:
             return (w.unsqueeze(2) * self.weight(x)).sum(dim=1)
         else:
