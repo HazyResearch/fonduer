@@ -36,6 +36,31 @@ class Featurizer(UDFRunner):
         )
         self.candidate_classes = candidate_classes
 
+    def update(self, docs=None, split=0, parallelism=None, progress_bar=True):
+        """Update the labels of the specified candidates based on the provided LFs.
+
+        :param docs: If provided, apply features to all the candidates in these
+            documents.
+        :param split: If docs is None, apply features to the candidates in this
+            particular split.
+        :type split: int
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the Featurizer if
+            it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
+        """
+        self.apply(
+            docs=docs,
+            split=split,
+            train=True,
+            clear=False,
+            parallelism=parallelism,
+            progress_bar=progress_bar,
+        )
+
     def apply(self, docs=None, split=0, train=False, clear=True, **kwargs):
         """Apply features to the specified candidates.
 
