@@ -16,7 +16,7 @@ class CandidateExtractor(UDFRunner):
     :Example:
 
         Assuming we have already defined a Part and Temp ``Mention`` subclass,
-        as a throttler called templ_throttler, we can create a candidate
+        and a throttler called templ_throttler, we can create a candidate
         extractor as follows::
 
             PartTemp = candidate_subclass("PartTemp", [Part, Temp])

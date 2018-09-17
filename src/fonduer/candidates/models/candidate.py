@@ -39,7 +39,7 @@ class Candidate(_meta.Base):
 
     # __table_args__ = {"extend_existing" : True}
 
-    def get_contexts(self):
+    def get_mentions(self):
         """Return a tuple of the consituent ``Mentions`` making up this ``Candidate``.
 
         :rtype: tuple
@@ -50,12 +50,12 @@ class Candidate(_meta.Base):
         return len(self.__argnames__)
 
     def __getitem__(self, key):
-        return self.get_contexts()[key]
+        return self.get_mentions()[key]
 
     def __repr__(self):
         return "%s(%s)" % (
             self.__class__.__name__,
-            ", ".join(map(str, self.get_contexts())),
+            ", ".join(map(str, self.get_mentions())),
         )
 
     def __gt__(self, other_cand):

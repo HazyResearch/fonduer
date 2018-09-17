@@ -38,7 +38,8 @@ class Ngrams(MentionSpace):
     :param n_max: Upper limit for the generated n_grams.
     :type n_max: int
     :param split_tokens: Tokens, on which unigrams are split into two separate
-        unigrams.
+        unigrams. Unigrams are split exclusively on the *first* occurence of a
+        split token.
     :type split_tokens: tuple, list
     """
 
@@ -114,7 +115,8 @@ class MentionNgrams(Ngrams):
     :param n_max: Upper limit for the generated n_grams.
     :type n_max: int
     :param split_tokens: Tokens, on which unigrams are split into two separate
-        unigrams.
+        unigrams. Unigrams are split exclusively on the *first* occurence of a
+        split token.
     :type split_tokens: tuple, list
     """
 

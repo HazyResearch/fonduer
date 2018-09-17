@@ -65,7 +65,7 @@ class Visualizer(object):
             else:
                 logger.error("display_candidates failed: pdf file missing.")
         boxes = [
-            get_box(mention.span) for c in candidates for mention in c.get_contexts()
+            get_box(mention.span) for c in candidates for mention in c.get_mentions()
         ]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)
