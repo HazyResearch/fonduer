@@ -9,8 +9,8 @@ import torch.nn as nn
 class RNN(nn.Module):
     """A recurrent neural network layer.
 
-    :param n_classes: Number of classes.
-    :type n_classes: int
+    :param num_classes: Number of classes.
+    :type num_classes: int
     :param num_tokens: Size of embeddings.
     :type num_tokens: int
     :param emb_size: Dimension of embeddings.
@@ -31,7 +31,7 @@ class RNN(nn.Module):
 
     def __init__(
         self,
-        n_classes,
+        num_classes,
         num_tokens,
         emb_size,
         lstm_hidden,
@@ -53,9 +53,9 @@ class RNN(nn.Module):
         self.dropout = dropout
         self.use_cuda = use_cuda
         # Number of dimensions of output.  means no final linear layer.
-        self.n_classes = n_classes
+        self.num_classes = num_classes
 
-        if self.n_classes > 0:
+        if self.num_classes > 0:
             self.final_linear = True
         else:
             self.final_linear = False
@@ -81,7 +81,7 @@ class RNN(nn.Module):
             self.attn_linear_w_2 = nn.Linear(b * lstm_hidden, 1, bias=False)
 
         if self.final_linear:
-            self.linear = nn.Linear(b * lstm_hidden, n_classes)
+            self.linear = nn.Linear(b * lstm_hidden, num_classes)
 
     def forward(self, x, x_mask, state_word):
         """Forward function.
@@ -94,7 +94,7 @@ class RNN(nn.Module):
         :type state_word: torch.Tensor (see init_hidden() for more information)
         :return: Output of LSTM layer, either after mean pooling or attention.
         :rtype: torch.Tensor with shape (batch_size, num_directions * hidden_size)
-            if n_classes > 0 otherwise with shape (batch_size, n_classes)
+            if num_classes > 0 otherwise with shape (batch_size, num_classes)
         """
 
         x_emb = self.drop(self.lookup(x))

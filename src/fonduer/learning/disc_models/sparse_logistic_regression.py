@@ -125,7 +125,7 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Build the model.
         """
-        print(self.settings)
+
         if "input_dim" not in self.settings:
             raise ValueError("Model parameter input_dim cannot be None.")
 

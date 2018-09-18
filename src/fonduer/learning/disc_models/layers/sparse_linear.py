@@ -13,8 +13,8 @@ class SparseLinear(nn.Module):
 
     :param num_features: Size of features.
     :type num_features: int
-    :param num_features: Number of classes.
-    :type n_classes: int
+    :param num_classes: Number of classes.
+    :type num_classes: int
     :param bias: Use bias term or not.
     :type bias: bool
     :param padding_idx: padding index.
