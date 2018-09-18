@@ -2,9 +2,11 @@
 [Unreleased]
 ------------
 
+[0.3.0] - 2018-09-18
+--------------------
+
 Added
 ^^^^^
-
 * `@lukehsiao`_: Add supporting functions for incremental knowledge base
   construction. (`#154 <https://github.com/HazyResearch/fonduer/pull/154>`_)
 * `@j-rausch`_: Added alpha spacy support for Japanese tokenizer.

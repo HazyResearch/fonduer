@@ -3,15 +3,13 @@
 Welcome to Fonduer
 ==================
 
-Fonduer is a framework for building knowledge base construction (KBC)
-applications from richy formatted data and is a Python package which leverages
-a modified version of Snorkel_.
+Fonduer is a Python package and framework for building knowledge base
+construction (KBC) applications from **richly formatted data**.
 
-Note that Fonduer is still actively under development, so feedback and
-contributions are welcome. Let us know in the Issues_ section or feel free to
+Note that Fonduer is still *actively under development*, so feedback and
+contributions are welcome. Submit bugs in the Issues_ section or feel free to
 submit your contributions as a pull request.
 
-.. _Snorkel: https://github.com/hazyresearch/snorkel
 .. _Issues: https://github.com/hazyresearch/fonduer/issues
 .. |FonduerLogo| image:: static/img/fonduer-logo.png
    :target: http://fonduer.readthedocs.io/en/latest/
