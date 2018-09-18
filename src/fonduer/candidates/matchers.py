@@ -114,7 +114,7 @@ class _NgramMatcher(_Matcher):
 class DictionaryMatch(_NgramMatcher):
     """Selects mention Ngrams that match against a given list *d*.
 
-    :param d: A list of strings.
+    :param d: A list of strings representing a dictionary.
     :type d: list of str
     :param ignore_case: Whether to ignore the case when matching. Default True.
     :type ignore_case: bool
