@@ -156,7 +156,7 @@ class LSTM(NoiseAwareModel):
         self.lstms = nn.ModuleList(
             [
                 RNN(
-                    n_classes=0,
+                    num_classes=0,
                     num_tokens=self.word_dict.s,
                     emb_size=self.settings["emb_dim"],
                     lstm_hidden=self.settings["hidden_dim"],
