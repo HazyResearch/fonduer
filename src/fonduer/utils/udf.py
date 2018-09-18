@@ -82,9 +82,9 @@ class UDFRunner(object):
     def get_last_documents(self):
         """Return the last set of documents that was operated on with apply().
 
-        :rtype: set of ``Documents`` operated on in the last call to ``apply()``.
+        :rtype: list of ``Documents`` operated on in the last call to ``apply()``.
         """
-        return self.last_docs
+        return list(self.last_docs)
 
     def apply_st(self, doc_loader, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
