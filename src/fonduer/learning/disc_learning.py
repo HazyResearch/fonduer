@@ -19,15 +19,16 @@ class NoiseAwareModel(Classifier, nn.Module):
     """
     Generic NoiseAwareModel class.
 
-    :param seed: Random seed which is passed into both numpy and PyTorch.
+    :param name: Name of the model
+    :type name: str
     """
 
-    gpu = ["gpu", "GPU"]
+    _gpu = ["gpu", "GPU"]
 
-    def __init__(self, seed=123, **kwargs):
+    def __init__(self, name=None):
         self.logger = logging.getLogger(__name__)
-        self.seed = seed
-        Classifier.__init__(self, **kwargs)
+        self.settings = None
+        Classifier.__init__(self, name)
         nn.Module.__init__(self)
 
     def _set_random_seed(self, seed):
@@ -40,11 +41,11 @@ class NoiseAwareModel(Classifier, nn.Module):
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-    def _build_model(self, **model_kwargs):
+    def _build_model(self):
         raise NotImplementedError()
 
-    def _update_kwargs(self, X, **model_kwargs):
-        return model_kwargs
+    def _update_settings(self, X):
+        pass
 
     def _preprocess_data(self, X, Y, idxs=None, train=False):
         return X, Y
@@ -69,6 +70,7 @@ class NoiseAwareModel(Classifier, nn.Module):
         pass
 
     def _calc_logits(self, X, batch_size):
+        """Calculate the logits of input."""
         raise NotImplementedError()
 
     def train(
@@ -86,50 +88,62 @@ class NoiseAwareModel(Classifier, nn.Module):
         dev_ckpt_delay=0.75,
         save_dir="checkpoints",
         seed=1234,
-        **kwargs
+        host_device="CPU",
     ):
         """
         Generic training procedure for PyTorch model
 
-        :param X_train: The training Candidates which is a pair with a list of
-            Candidate objects and a csr_AnnotationMatrix with rows corresponding
-            to training candidates and columns corresponding to features.
+        :param X_train: The training data which is a (list of Candidate objects,
+            a sparse matrix of corresponding features) pair.
+        :type X_train: pair
         :param Y_train: Array of marginal probabilities for each Candidate.
+        :type Y_train: list or numpy.array
         :param n_epochs: Number of training epochs.
+        :type n_epochs: int
         :param lr: Learning rate.
+        :type lr: float
         :param batch_size: Batch size for learning model.
-        :param rebalance: Bool or fraction of positive examples for training
+        :type batch_size: int
+        :param rebalance: Bool or fraction of positive examples for training.
                     - if True, defaults to standard 0.5 class balance
                     - if False, no class balancing
-        :param X_dev: Candidates for evaluation, same format as X_train
-        :param Y_dev: Labels for evaluation, same format as Y_train
+        :type rebalance: bool
+        :param X_dev: Candidates for evaluation, same format as X_train.
+        :param Y_dev: Labels for evaluation, same format as Y_train.
         :param print_freq: number of epochs at which to print status, and if present,
             evaluate the dev set (X_dev, Y_dev).
+        :type print_freq: int
         :param dev_ckpt: If True, save a checkpoint whenever highest score
             on (X_dev, Y_dev) reached. Note: currently only evaluates at
             every @print_freq epochs.
         :param dev_ckpt_delay: Start dev checkpointing after this portion
             of n_epochs.
+        :type dev_ckpt_delay: float
         :param save_dir: Save dir path for checkpointing.
+        :type save_dir: str
         :param seed: Random seed
-        :param kwargs: All hyperparameters that needs for the actually model.
+        :type seed: int
+        :param host_device: Host device
+        :type host_device: str
         """
 
+        # Set model parameters
+        self.settings = {
+            "n_epochs": n_epochs,
+            "lr": lr,
+            "batch_size": batch_size,
+            "seed": 1234,
+            "host_device": host_device,
+        }
+
         # Set random seed
-        self._set_random_seed(seed)
+        self._set_random_seed(self.settings["seed"])
 
         self._check_input(X_train)
         verbose = print_freq > 0
 
-        # Check that the cardinality of the training marginals and model agree
-        cardinality = Y_train.shape[1] if len(Y_train.shape) > 1 else 2
-        if cardinality != self.cardinality:
-            raise ValueError(
-                "Training marginals cardinality ({0}) does not"
-                "match model cardinality ({1}).".format(
-                    Y_train.shape[1], self.cardinality
-                )
-            )
+        # Update cardinality of the model with training marginals
+        self.cardinality = Y_train.shape[1] if len(Y_train.shape) > 1 else 2
 
         # Make sure marginals are in correct default format
         Y_train = reshape_marginals(Y_train)
@@ -151,7 +165,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             diffs = Y_train.max(axis=1) - Y_train.min(axis=1)
             train_idxs = np.where(diffs > 1e-6)[0]
 
-        self.model_kwargs = self._update_kwargs(X_train, **kwargs)
+        self._update_settings(X_train)
 
         _X_train, _Y_train = self._preprocess_data(
             X_train, Y_train, idxs=train_idxs, train=True
@@ -159,42 +173,41 @@ class NoiseAwareModel(Classifier, nn.Module):
         if X_dev is not None:
             _X_dev, _Y_dev = self._preprocess_data(X_dev, Y_dev)
 
-        if "host_device" not in self.model_kwargs:
-            self.model_kwargs["host_device"] = "CPU"
-            self.logger.info("Using CPU...")
-        if self.model_kwargs["host_device"] in self.gpu:
+        if self.settings["host_device"] in self._gpu:
             if not torch.cuda.is_available():
-                self.model_kwargs["host_device"] = "CPU"
+                self.settings["host_device"] = "CPU"
                 self.logger.info("GPU is not available, switching to CPU...")
             else:
                 self.logger.info("Using GPU...")
 
-        self.logger.info("Settings: {}".format(self.model_kwargs))
+        self.logger.info("Settings: {}".format(self.settings))
 
         # Build network
-        self._build_model(self.model_kwargs)
-        self._setup_model_loss(lr)
+        self._build_model()
+        self._setup_model_loss(self.settings["lr"])
 
         # Set up GPU if necessary
-        if self.model_kwargs["host_device"] in self.gpu:
+        if self.settings["host_device"] in self._gpu:
             nn.Module.cuda(self)
 
         # Run mini-batch SGD
         n = len(_X_train)
-        batch_size = min(batch_size, n)
+        if self.settings["batch_size"] > n:
+            self.logger.info("Switching batch size to {} for training.".format(n))
+        batch_size = min(self.settings["batch_size"], n)
 
         if verbose:
             st = time()
             self.logger.info("[{0}] Training model".format(self.name))
             self.logger.info(
                 "[{0}] n_train={1}  #epochs={2}  batch size={3}".format(
-                    self.name, n, n_epochs, batch_size
+                    self.name, n, self.settings["n_epochs"], batch_size
                 )
             )
 
         dev_score_opt = 0.0
         dev_score_epo = -1
-        for epoch in range(n_epochs):
+        for epoch in range(self.settings["n_epochs"]):
             iteration_losses = []
 
             # Shuffle the training data
@@ -213,7 +226,7 @@ class NoiseAwareModel(Classifier, nn.Module):
 
                 # Calculate loss for current batch
                 y = torch.Tensor(_Y_train[idxs[batch_st:batch_ed]])
-                if self.model_kwargs["host_device"] in self.gpu:
+                if self.settings["host_device"] in self._gpu:
                     y = y.cuda()
                 loss = self.loss(output, y)
 
@@ -223,14 +236,17 @@ class NoiseAwareModel(Classifier, nn.Module):
                 # Update the parameters
                 self.optimizer.step()
 
-                if self.model_kwargs["host_device"] in self.gpu:
+                if self.settings["host_device"] in self._gpu:
                     iteration_losses.append(loss.cpu())
                 else:
                     iteration_losses.append(loss)
 
             # Print training stats and optionally checkpoint model
             if verbose and (
-                ((epoch + 1) % print_freq == 0 or epoch in [0, (n_epochs - 1)])
+                (
+                    (epoch + 1) % print_freq == 0
+                    or epoch in [0, (self.settings["n_epochs"] - 1)]
+                )
             ):
                 msg = "[{0}] Epoch {1} ({2:.2f}s)\tAverage loss={3:.6f}".format(
                     self.name,
@@ -239,7 +255,9 @@ class NoiseAwareModel(Classifier, nn.Module):
                     torch.stack(iteration_losses).mean(),
                 )
                 if X_dev is not None:
-                    scores = self.score(_X_dev, Y_dev, batch_size=batch_size)
+                    scores = self.score(
+                        _X_dev, Y_dev, batch_size=self.settings["batch_size"]
+                    )
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
                     msg += "\tDev {0}={1:.2f}".format(score_label, 100. * score)
@@ -250,7 +268,7 @@ class NoiseAwareModel(Classifier, nn.Module):
                 if (
                     X_dev is not None
                     and dev_ckpt
-                    and epoch > dev_ckpt_delay * n_epochs
+                    and epoch > dev_ckpt_delay * self.settings["n_epochs"]
                     and score > dev_score_opt
                 ):
                     dev_score_opt = score
@@ -270,16 +288,25 @@ class NoiseAwareModel(Classifier, nn.Module):
     def marginals(self, X, batch_size=None):
         """
         Compute the marginals for the given candidates X.
-        Split into batches to avoid OOM errors, then call _marginals_batch;
-        defaults to no batching.
+        Note: split into batches to avoid OOM errors.
+
+        :param X: The input data which is a (list of Candidate objects, a sparse
+            matrix of corresponding features) pair or a list of
+            (Candidate, features) pairs.
+        :type X: pair or list
+        :param batch_size: Batch size.
+        :type batch_size: int
         """
         nn.Module.train(self, False)
+
+        if self._check_input(X):
+            X = self._preprocess_data(X)
+
         marginal = self._calc_logits(X, batch_size)
 
-        if self.model_kwargs["host_device"] in self.gpu:
+        if self.settings["host_device"] in self._gpu:
             marginal = marginal.cpu()
 
-        # marginals = self.forward(X, batch_size)
         if self.cardinality == 2:
             return torch.sigmoid(marginal).detach().numpy()
         else:
@@ -288,7 +315,18 @@ class NoiseAwareModel(Classifier, nn.Module):
     def save(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
     ):
-        """Save current model."""
+        """Save current model.
+
+        :param model_name: Saved model name.
+        :type model_name: str
+        :param save_dir: Saved model directory.
+        :type save_dir: str
+        :param verbose: Print log or not
+        :type verbose: bool
+        :param global_step: learned epoch of saved model
+        :type global_step: int
+        """
+
         model_name = model_name or self.name
 
         # Check existence of model saving directory and create if does not exist.
@@ -300,7 +338,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             "model": self.state_dict(),
             "cardinality": self.cardinality,
             "name": model_name,
-            "config": self.model_kwargs,
+            "config": self.settings,
             "epoch": global_step,
         }
 
@@ -321,7 +359,18 @@ class NoiseAwareModel(Classifier, nn.Module):
     def load(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
     ):
-        """Load model from file and rebuild the model."""
+        """Load model from file and rebuild the model.
+
+        :param model_name: Saved model name.
+        :type model_name: str
+        :param save_dir: Saved model directory.
+        :type save_dir: str
+        :param verbose: Print log or not
+        :type verbose: bool
+        :param global_step: learned epoch of saved model
+        :type global_step: int
+        """
+
         model_name = model_name or self.name
 
         model_dir = os.path.join(save_dir, model_name)
@@ -340,7 +389,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             )
 
         self.load_state_dict(checkpoint["model"])
-        self.model_kwargs = checkpoint["config"]
+        self.settings = checkpoint["config"]
         self.cardinality = checkpoint["cardinality"]
         self.name = checkpoint["name"]
 

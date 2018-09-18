@@ -1,4 +1,4 @@
-from fonduer.candidates.models import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.utils.data_model_utils import (
     get_visual_aligned_lemmas,
     is_horz_aligned,
@@ -19,7 +19,7 @@ binary_vizlib_feats = {}
 def get_visual_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = tuple([arg.span for arg in candidate.get_contexts()])
+        args = tuple([m.span for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)

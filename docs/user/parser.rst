@@ -11,6 +11,8 @@ can be used when creating *matchers*, *throttlers*, and *labeling functions*.
 
 .. automodule:: fonduer.parser.models
     :members:
+    :inherited-members:
+    :show-inheritance:
 
 Core Objects
 ------------
@@ -19,6 +21,8 @@ This is Fonduer_'s core Parser object.
 
 .. automodule:: fonduer.parser
     :members:
+    :inherited-members:
+    :show-inheritance:
 
 Preprocessors
 -------------
@@ -28,6 +32,7 @@ with Fonduer_ which are used in parsing documents of different formats.
 
 .. automodule:: fonduer.parser.preprocessors
     :members:
-
+    :inherited-members:
+    :show-inheritance:
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer

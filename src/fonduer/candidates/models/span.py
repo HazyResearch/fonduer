@@ -3,7 +3,8 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.types import PickleType
 
 from fonduer.candidates.models.temporarycontext import TemporaryContext
-from fonduer.parser.models.context import Context, construct_stable_id
+from fonduer.parser.models.context import Context
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporarySpan(TemporaryContext):
@@ -43,6 +44,11 @@ class TemporarySpan(TemporaryContext):
         return hash(self.sentence) + hash(self.char_start) + hash(self.char_end)
 
     def get_stable_id(self):
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
         return construct_stable_id(
             self.sentence,
             self._get_polymorphic_identity(),
@@ -70,17 +76,38 @@ class TemporarySpan(TemporaryContext):
             "meta": self.meta,
         }
 
-    def get_word_start(self):
-        return self.char_to_word_index(self.char_start)
+    def get_word_start_index(self):
+        """Get the index of the starting word of the span.
 
-    def get_word_end(self):
-        return self.char_to_word_index(self.char_end)
+        :return: The word-index of the start of the span.
+        :rtype: int
+        """
+        return self._char_to_word_index(self.char_start)
 
-    def get_n(self):
-        return self.get_word_end() - self.get_word_start() + 1
+    def get_word_end_index(self):
+        """Get the index of the ending word of the span.
 
-    def char_to_word_index(self, ci):
-        """Return the index of the **word this char is in**"""
+        :return: The word-index of the last word of the span.
+        :rtype: int
+        """
+        return self._char_to_word_index(self.char_end)
+
+    def get_num_words(self):
+        """Get the number of words in the span.
+
+        :return: The number of words in the span (n of the ngrams).
+        :rtype: int
+        """
+        return self.get_word_end_index() - self.get_word_start_index() + 1
+
+    def _char_to_word_index(self, ci):
+        """Return the index of the **word this char is in**.
+
+        :param ci: The character-level index of the char.
+        :type ci: int
+        :return: The word-level index the char was in.
+        :rtype: int
+        """
         i = None
         for i, co in enumerate(self.sentence.char_offsets):
             if ci == co:
@@ -89,18 +116,47 @@ class TemporarySpan(TemporaryContext):
                 return i - 1
         return i
 
-    def word_to_char_index(self, wi):
-        """Return the character-level index (offset) of the word's start"""
+    def _word_to_char_index(self, wi):
+        """Return the character-level index (offset) of the word's start.
+
+        :param wi: The word-index.
+        :type wi: int
+        :return: The character-level index of the word's start.
+        :rtype: int
+        """
         return self.sentence.char_offsets[wi]
 
     def get_attrib_tokens(self, a="words"):
-        """Get the tokens of sentence attribute *a*."""
+        """Get the tokens of sentence attribute *a*.
+
+        Intuitively, like calling::
+
+            span.a
+
+
+        :param a: The attribute to get tokens for.
+        :type a: str
+        :return: The tokens of sentence attribute defined by *a* for the span.
+        :rtype: list
+        """
         return self.sentence.__getattribute__(a)[
-            self.get_word_start() : self.get_word_end() + 1
+            self.get_word_start_index() : self.get_word_end_index() + 1
         ]
 
     def get_attrib_span(self, a, sep=" "):
-        """Get the span of sentence attribute *a*."""
+        """Get the span of sentence attribute *a*.
+
+        Intuitively, like calling::
+
+            sep.join(span.a)
+
+        :param a: The attribute to get a span for.
+        :type a: str
+        :param sep: The separator to use for the join.
+        :type sep: str
+        :return: The joined tokens, or text if a="words".
+        :rtype: str
+        """
         # NOTE: Special behavior for words currently (due to correspondence
         # with char_offsets)
         if a == "words":
@@ -108,8 +164,13 @@ class TemporarySpan(TemporaryContext):
         else:
             return sep.join(self.get_attrib_tokens(a))
 
-    def get_span(self, sep=" "):
-        return self.get_attrib_span("words", sep)
+    def get_span(self):
+        """Return the text of the ``Span``.
+
+        :return: The text of the ``Span``.
+        :rtype: str
+        """
+        return self.get_attrib_span("words")
 
     def __contains__(self, other_span):
         return (
@@ -148,8 +209,8 @@ class TemporarySpan(TemporaryContext):
             self.sentence.id,
             self.char_start,
             self.char_end,
-            self.get_word_start(),
-            self.get_word_end(),
+            self.get_word_start_index(),
+            self.get_word_end_index(),
         )
 
     def _get_instance(self, **kwargs):
@@ -164,10 +225,25 @@ class Span(Context, TemporarySpan):
     """
 
     __tablename__ = "span"
+
+    #: The unique id of the ``Span``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
+
+    #: The id of the parent ``Sentence``.
     sentence_id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"))
+    #: The parent ``Sentence``.
+    sentence = relationship(
+        "Context",
+        backref=backref("spans", cascade="all, delete-orphan"),
+        foreign_keys=sentence_id,
+    )
+
+    #: The starting character-index of the ``Span``.
     char_start = Column(Integer, nullable=False)
+    #: The ending character-index of the ``Span`` (inclusive).
     char_end = Column(Integer, nullable=False)
+
+    #: Pickled metadata about the ``ImplicitSpan``.
     meta = Column(PickleType)
 
     __table_args__ = (UniqueConstraint(sentence_id, char_start, char_end),)
@@ -176,12 +252,6 @@ class Span(Context, TemporarySpan):
         "polymorphic_identity": "span",
         "inherit_condition": (id == Context.id),
     }
-
-    sentence = relationship(
-        "Context",
-        backref=backref("spans", cascade="all, delete-orphan"),
-        foreign_keys=sentence_id,
-    )
 
     def _get_instance(self, **kwargs):
         return Span(**kwargs)

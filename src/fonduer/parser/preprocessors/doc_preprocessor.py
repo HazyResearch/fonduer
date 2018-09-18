@@ -4,13 +4,16 @@ import os
 
 class DocPreprocessor(object):
     """
-    Processes a file or directory of files into a set of Document objects.
+    A generator which processes a file or directory of files into a set of
+    Document objects.
 
-    :param encoding: file encoding to use, default='utf-8'
-    :param path: filesystem path to file or directory to parse
-    :param max_docs: the maximum number of Documents to produce,
-        default=float('inf')
-
+    :param encoding: file encoding to use (e.g. "utf-8").
+    :type encoding: str
+    :param path: filesystem path to file or directory to parse.
+    :type path: str
+    :param max_docs: the maximum number of ``Documents`` to produce.
+    :type max_docs: int
+    :rtype: A generator of ``Documents``.
     """
 
     def __init__(self, path, encoding="utf-8", max_docs=float("inf")):
@@ -19,14 +22,11 @@ class DocPreprocessor(object):
         self.max_docs = max_docs
         self.all_files = self._get_files(self.path)
 
-    def generate(self):
-        """
-        Parses a file or directory of files into a set of Document objects.
-
-        """
+    def _generate(self):
+        """Parses a file or directory of files into a set of ``Document`` objects."""
         doc_count = 0
         for fp in self.all_files:
-            for doc in self.get_docs_for_path(fp):
+            for doc in self._get_docs_for_path(fp):
                 yield doc
                 doc_count += 1
                 if doc_count >= self.max_docs:
@@ -39,18 +39,18 @@ class DocPreprocessor(object):
         )
 
     def __iter__(self):
-        return self.generate()
+        return self._generate()
 
-    def get_docs_for_path(self, fp):
+    def _get_docs_for_path(self, fp):
         file_name = os.path.basename(fp)
         if self._can_read(file_name):
-            for doc in self.parse_file(fp, file_name):
+            for doc in self._parse_file(fp, file_name):
                 yield doc
 
-    def get_stable_id(self, doc_id):
+    def _get_stable_id(self, doc_id):
         return "%s::document:0:0" % doc_id
 
-    def parse_file(self, fp, file_name):
+    def _parse_file(self, fp, file_name):
         raise NotImplementedError()
 
     def _can_read(self, fpath):

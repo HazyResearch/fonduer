@@ -5,7 +5,9 @@ from copy import deepcopy
 
 from sqlalchemy.sql import select
 
-from fonduer.candidates.models import Mention, TemporaryImage, TemporarySpan
+from fonduer.candidates.models import Mention
+from fonduer.candidates.models.image import TemporaryImage
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.parser.models import Document
 from fonduer.utils.udf import UDF, UDFRunner
 
@@ -15,7 +17,8 @@ logger = logging.getLogger(__name__)
 class MentionSpace(object):
     """Defines the **space** of Mention objects.
 
-    Calling _apply(x)_ given an object _x_ returns a generator over mentions in _x_.
+    Calling *apply(x)* given an object *x* returns a generator over mentions in
+    *x*.
     """
 
     def __init__(self):
@@ -27,13 +30,17 @@ class MentionSpace(object):
 
 class Ngrams(MentionSpace):
     """
-    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a Sentence
-    _x_, indexing by **character offset**.
+    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
+    Sentence *x*, indexing by **character offset**.
 
     :param n_min: Lower limit for the generated n_grams.
+    :type n_min: int
     :param n_max: Upper limit for the generated n_grams.
-    :param split_tokens: Tokens, on which unigrams are split into two separate unigrams.
-
+    :type n_max: int
+    :param split_tokens: Tokens, on which unigrams are split into two separate
+        unigrams. Unigrams are split exclusively on the *first* occurence of a
+        split token.
+    :type split_tokens: tuple, list of str.
     """
 
     def __init__(self, n_min=1, n_max=5, split_tokens=("-", "/")):
@@ -99,12 +106,18 @@ class Ngrams(MentionSpace):
 class MentionNgrams(Ngrams):
     """Defines the **space** of Mentions.
 
-    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a Document
-    _x_, divided into Sentences inside of html elements (such as table cells).
+    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
+    Document *x*, divided into Sentences inside of html elements (such as table
+    cells).
 
     :param n_min: Lower limit for the generated n_grams.
+    :type n_min: int
     :param n_max: Upper limit for the generated n_grams.
-    :param split_tokens: Tokens, on which unigrams are split into two separate unigrams.
+    :type n_max: int
+    :param split_tokens: Tokens, on which unigrams are split into two separate
+        unigrams. Unigrams are split exclusively on the *first* occurence of a
+        split token.
+    :type split_tokens: tuple, list of str.
     """
 
     def __init__(self, n_min=1, n_max=5, split_tokens=["-", "/"]):
@@ -113,65 +126,104 @@ class MentionNgrams(Ngrams):
         """
         Ngrams.__init__(self, n_min=n_min, n_max=n_max, split_tokens=split_tokens)
 
-    def apply(self, session, context):
+    def apply(self, session, doc):
+        """Generate MentionNgrams from a Document by parsing all of its Sentences.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``.
+        :raises TypeError: If the input doc is not of type ``Document``.
         """
-        Generate MentionNgrams from a Document by parsing all of its Sentences.
-        """
-        if not isinstance(context, Document):
+        if not isinstance(doc, Document):
             raise TypeError(
                 "Input Contexts to MentionNgrams.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == context.id).one()
+        doc = session.query(Document).filter(Document.id == doc.id).one()
         for sentence in doc.sentences:
             for ts in Ngrams.apply(self, sentence):
                 yield ts
 
 
 class MentionFigures(MentionSpace):
-    """
-    Defines the space of Mentions as all figures in a Document _x_,
-    indexing by **position offset**.
+    """Defines the space of Mentions as all figures in a Document *x*, indexing
+    by **position offset**.
     """
 
-    def __init__(self, type=None):
+    def __init__(self, types=None):
         """
         Initialize MentionFigures.
 
-        Only support figure type filter.
+        :param types: If specified, only yield TemporaryImages whose url ends in
+            one of the specified types. Example: type=["png, jpg, jpeg"].
+        :type types: list, tuple of str
         """
         MentionSpace.__init__(self)
-        if type is not None:
-            self.type = type.strip().lower()
-        self.type = None
+        if types is not None:
+            self.types = [t.strip().lower() for t in types]
+        else:
+            self.types = None
 
-    def apply(self, session, context):
+    def apply(self, session, doc):
         """
         Generate MentionFigures from a Document by parsing all of its Figures.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``.
+        :raises TypeError: If the input doc is not of type ``Document``.
         """
-        if not isinstance(context, Document):
+        if not isinstance(doc, Document):
             raise TypeError(
                 "Input Contexts to MentionFigures.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == context.id).one()
+        doc = session.query(Document).filter(Document.id == doc.id).one()
         for figure in doc.figures:
-            if self.type is None or figure.url.lower().endswith(self.type):
+            if self.type is None or any(
+                figure.url.lower().endswith(type) for type in self.types
+            ):
                 yield TemporaryImage(figure)
 
 
 class MentionExtractor(UDFRunner):
     """An operator to extract Mention objects from a Context.
 
+    :Example:
+
+        Assuming we want to extract two types of ``Mentions``, a Part and a
+        Temperature, and we have already defined Matchers to use::
+
+            part_ngrams = MentionNgrams(n_max=3)
+            temp_ngrams = MentionNgrams(n_max=2)
+
+            Part = mention_subclass("Part")
+            Temp = mention_subclass("Temp")
+
+            mention_extractor = MentionExtractor(
+                session,
+                [Part, Temp],
+                [part_ngrams, temp_ngrams],
+                [part_matcher, temp_matcher]
+            )
+
     :param session: An initialized database session.
     :param mention_classes: The type of relation to extract, defined using
         :func: fonduer.mentions.mention_subclass.
+    :type mention_classes: list
     :param mention_spaces: one or list of :class:`MentionSpace` objects, one for
         each relation argument. Defines space of Contexts to consider
+    :type mention_spaces: list
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
         one for each relation argument. Only tuples of Contexts for which each
         element is accepted by the corresponding Matcher will be returned as
         Mentions
+    :type matchers: list
+    :param parallelism: The number of processes to use in parallel for calls
+        to apply().
+    :type parallelism: int
+    :raises ValueError: If mention classes, spaces, and matchers are not the
+        same length.
     """
 
     def __init__(
@@ -197,11 +249,31 @@ class MentionExtractor(UDFRunner):
 
         self.mention_classes = mention_classes
 
-    def apply(self, xs, split=0, **kwargs):
-        """Call the MentionExtractorUDF."""
-        super(MentionExtractor, self).apply(xs, split=split, **kwargs)
+    def apply(self, docs, clear=True, parallelism=None, progress_bar=True):
+        """Run the MentionExtractor.
 
-    def clear(self, **kwargs):
+        :Example: To extract mentions from a set of training documents using
+            4 cores::
+
+                mention_extractor.apply(train_docs, parallelism=4)
+
+        :param docs: Set of documents to extract from.
+        :param clear: Whether or not to clear the existing Mentions
+            beforehand.
+        :type clear: bool
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the
+            MentionExtractor if it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
+        """
+        super(MentionExtractor, self).apply(
+            docs, clear=clear, parallelism=parallelism, progress_bar=progress_bar
+        )
+
+    def clear(self):
         """Delete Mentions of each class in the extractor from the given split."""
         for mention_class in self.mention_classes:
             logger.info("Clearing table: {}".format(mention_class.__tablename__))
@@ -209,7 +281,7 @@ class MentionExtractor(UDFRunner):
                 Mention.type == mention_class.__tablename__
             ).delete()
 
-    def clear_all(self, **kwargs):
+    def clear_all(self):
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete()
@@ -222,7 +294,8 @@ class MentionExtractor(UDFRunner):
 
         :param docs: If provided, return Mentions from these documents. Else,
             return all Mentions.
-        :return: List of lists of Mentions for each mention_class.
+        :return: Mentions for each mention_class.
+        :rtype: List of lists.
         """
         result = []
         if docs:
@@ -285,7 +358,7 @@ class MentionExtractorUDF(UDF):
             for tc in self.matchers[i].apply(
                 self.mention_spaces[i].apply(self.session, context)
             ):
-                tc.load_id_or_insert(self.session)
+                tc._load_id_or_insert(self.session)
                 self.child_context_set.add(tc)
 
             # Generates and persists mentions

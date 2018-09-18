@@ -1,6 +1,6 @@
 from builtins import range, str
 
-from fonduer.candidates.models import TemporarySpan
+from fonduer.candidates.models.span import TemporarySpan
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import (
     get_cell_ngrams,
@@ -22,7 +22,7 @@ settings = get_config()
 def get_table_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = tuple([arg.span for arg in candidate.get_contexts()])
+        args = tuple([m.span for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpan)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
@@ -153,7 +153,7 @@ def tablelib_binary_features(span1, span2):
                 if span1.sentence.cell == span2.sentence.cell:
                     yield u"SAME_CELL", DEF_VALUE
                     yield u"WORD_DIFF_[%s]" % (
-                        span1.get_word_start() - span2.get_word_start()
+                        span1.get_word_start_index() - span2.get_word_start_index()
                     ), DEF_VALUE
                     yield u"CHAR_DIFF_[%s]" % (
                         span1.char_start - span2.char_start

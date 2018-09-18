@@ -19,15 +19,17 @@ logger = logging.getLogger(__name__)
 
 
 class Featurizer(UDFRunner):
-    """An operator to add Feature Annotations to Candidates."""
+    """An operator to add Feature Annotations to Candidates.
+
+    :param session: The database session to use.
+    :param candidate_classes: A list of candidate_subclasses to featurize.
+    :type candidate_classes: list
+    :param parallelism: The number of processes to use in parallel. Default 1.
+    :type parallelism: int
+    """
 
     def __init__(self, session, candidate_classes, parallelism=1):
-        """Initialize the Featurizer.
-
-        :param session: The database session to use.
-        :param candidate_classes: A list of candidate_subclasses to featurize.
-        :param parallelism: The number of processes to use in parallel. Default 1.
-        """
+        """Initialize the Featurizer."""
         super(Featurizer, self).__init__(
             session,
             FeaturizerUDF,
@@ -61,23 +63,46 @@ class Featurizer(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def apply(self, docs=None, split=0, train=False, clear=True, **kwargs):
+    def apply(
+        self,
+        docs=None,
+        split=0,
+        train=False,
+        clear=True,
+        parallelism=None,
+        progress_bar=True,
+    ):
         """Apply features to the specified candidates.
 
         :param docs: If provided, apply features to all the candidates in these
             documents.
         :param split: If docs is None, apply features to the candidates in this
             particular split.
-        :param train: Whether or not to update the global key set of features and
-            the features of candidates.
-        :param clear: Whether or not to clear the features table before applying
-            features.
+        :type split: int
+        :param train: Whether or not to update the global key set of features
+            and the features of candidates.
+        :type train: bool
+        :param clear: Whether or not to clear the features table before
+            applying features.
+        :type clear: bool
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the Featurizer if
+            it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
         """
         if docs:
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
             super(Featurizer, self).apply(
-                docs, split=split, train=train, clear=clear, **kwargs
+                docs,
+                split=split,
+                train=train,
+                clear=clear,
+                parallelism=parallelism,
+                progress_bar=progress_bar,
             )
             # Needed to sync the bulk operations
             self.session.commit()
@@ -87,13 +112,22 @@ class Featurizer(UDFRunner):
                 self.session, self.candidate_classes, split
             )
             super(Featurizer, self).apply(
-                split_docs, split=split, train=train, clear=clear, **kwargs
+                split_docs,
+                split=split,
+                train=train,
+                clear=clear,
+                parallelism=parallelism,
+                progress_bar=progress_bar,
             )
             # Needed to sync the bulk operations
             self.session.commit()
 
     def drop_keys(self, keys):
-        """Drop the specified keys from FeatureKeys."""
+        """Drop the specified keys from FeatureKeys.
+
+        :param keys: A list of FeatureKey names to delete.
+        :type keys: list, tuple
+        """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
 
@@ -102,11 +136,21 @@ class Featurizer(UDFRunner):
             self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
 
     def get_keys(self):
-        """Return a list of keys for the Features."""
+        """Return a list of keys for the Features.
+
+        :return: List of FeatureKeys.
+        :rtype: list
+        """
         return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
-    def clear(self, train=False, split=0, **kwargs):
-        """Delete Features of each class from the database."""
+    def clear(self, train=False, split=0):
+        """Delete Features of each class from the database.
+
+        :param train: Whether or not to clear the FeatureKeys
+        :type train: bool
+        :param split: Which split of candidates to clear features from.
+        :type split: int
+        """
         # Clear Features for the candidates in the split passed in.
         logger.info("Clearing Features (split {})".format(split))
 
@@ -122,14 +166,21 @@ class Featurizer(UDFRunner):
             query = self.session.query(FeatureKey)
             query.delete(synchronize_session="fetch")
 
-    def clear_all(self, **kwargs):
+    def clear_all(self):
         """Delete all Features."""
         logger.info("Clearing ALL Features and FeatureKeys.")
         self.session.query(Feature).delete()
         self.session.query(FeatureKey).delete()
 
     def get_feature_matrices(self, cand_lists):
-        """Load sparse matrix of Features for each candidate_class."""
+        """Load sparse matrix of Features for each candidate_class.
+
+        :param cand_lists: The candidates to get features for.
+        :type cand_lists: List of list of candidates.
+        :return: An MxN sparse matrix where M are the candidates and N is the
+            features.
+        :rtype: csr_matrix
+        """
         return get_sparse_matrix(self.session, FeatureKey, cand_lists)
 
 

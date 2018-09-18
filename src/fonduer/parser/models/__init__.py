@@ -1,5 +1,5 @@
 from fonduer.parser.models.caption import Caption
-from fonduer.parser.models.context import Context, construct_stable_id, split_stable_id
+from fonduer.parser.models.context import Context
 from fonduer.parser.models.document import Document
 from fonduer.parser.models.figure import Figure
 from fonduer.parser.models.paragraph import Paragraph
@@ -19,6 +19,4 @@ __all__ = [
     "Sentence",
     "Table",
     "Webpage",
-    "construct_stable_id",
-    "split_stable_id",
 ]

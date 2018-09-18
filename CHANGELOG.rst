@@ -5,8 +5,8 @@
 Added
 ^^^^^
 
-* `@lukehsiao`_: Add supporting functions for incrementally adding documents.
-  (`#154 <https://github.com/HazyResearch/fonduer/pull/154>`_)
+* `@lukehsiao`_: Add supporting functions for incremental knowledge base
+  construction. (`#154 <https://github.com/HazyResearch/fonduer/pull/154>`_)
 * `@j-rausch`_: Added alpha spacy support for Japanese tokenizer.
 * `@senwu`_: Add sparse logistic regression support.
 * `@j-rausch`_: Added unit tests for changed lingual parsing pipeline.
@@ -71,6 +71,7 @@ Changed
 
 Removed
 ^^^^^^^
+* `@lukehsiao`_: Remove the XMLMultiDocPreprocessor.
 * `@lukehsiao`_: Remove reduce option for UDFs, which were never used.
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context.
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
@@ -186,7 +187,7 @@ Fixed
         from fonduer.parser import Parser
         from fonduer.parser.models import Document, Sentence
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
-        from fonduer.supervision import Labeler, load_gold_labels
+        from fonduer.supervision import Labeler, get_gold_labels
 
 
 [0.2.3] - 2018-07-23

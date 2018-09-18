@@ -19,8 +19,8 @@ from fonduer.parser.models import (
     Section,
     Sentence,
     Table,
-    construct_stable_id,
 )
+from fonduer.parser.models.utils import construct_stable_id
 from fonduer.parser.simple_tokenizer import SimpleTokenizer
 from fonduer.parser.spacy_parser import Spacy
 from fonduer.parser.visual_linker import VisualLinker
@@ -30,6 +30,27 @@ logger = logging.getLogger(__name__)
 
 
 class Parser(UDFRunner):
+    """Parses into documents into Fonduer's Data Model.
+
+    :param session: The database session to use.
+    :param parallelism: The number of processes to use in parallel. Default 1.
+    :param structural: Whether to parse structural information from a DOM.
+    :param blacklist: A list of tag types to ignore. Default ["style", "script"].
+    :param flatten: A list of tag types to flatten. Default ["span", "br"]
+    :param language: Which spaCy NLP language package. Default "en".
+    :param lingual: Whether or not to include NLP information. Default True.
+    :param strip: Whether or not to strip whitespace during parsing. Default True.
+    :param replacements: A list of tuples where the regex string in the
+        first position is replaced by the character in the second position.
+        Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")], which
+        replaces various unicode variants of a hyphen (e.g. emdash, endash,
+        minus, etc.) with a standard ASCII hyphen.
+    :param tabular: Whether to include tabular information in the parse.
+    :param visual: Whether to include visual information in the parse.
+        Requires PDFs for each input document.
+    :param pdf_path: The path to the corresponding PDFs use for visual info.
+    """
+
     def __init__(
         self,
         session,
@@ -40,29 +61,11 @@ class Parser(UDFRunner):
         language="en",
         lingual=True,  # lingual information
         strip=True,
-        replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
+        replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
         tabular=True,  # tabular information
         visual=False,  # visual information
         pdf_path=None,
     ):
-        """Initialize the Parser.
-
-        :param session: The database session to use.
-        :param parallelism: The number of processes to use in parallel. Default 1.
-        :param structural: Whether to parse structural information from a DOM.
-        :param blacklist: A list of tag types to ignore. Default ["style", "script"].
-        :param flatten: A list of tag types to flatten. Default ["span", "br"]
-        :param language: Which spaCy NLP language package. Default "en".
-        :param lingual: Whether or not to include NLP information. Default True.
-        :param strip: Whether or not to strip whitespace during parsing. Default True.
-        :param replacements: A list of tuples where the regex string in the
-            first position is replaced by the character in the second position.
-            Default [(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")].
-        :param tabular: Whether to include tabular information in the parse.
-        :param visual: Whether to include visual information in the parse.
-            Requires PDFs for each input document.
-        :param pdf_path: The path to the corresponding PDFs use for visual info.
-        """
         super(Parser, self).__init__(
             session,
             ParserUDF,

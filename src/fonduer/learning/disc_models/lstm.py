@@ -15,18 +15,29 @@ from fonduer.utils.config import get_config
 
 
 class LSTM(NoiseAwareModel):
-    def forward(self, x, f):
-        """
-        Run forward pass.
+    """
+    LSTM model.
 
-        :param x: The sequence input (batch) of the model
-        :param f: The feature input of the model
+    :param name: User-defined name of the model
+    :type name: str
+    """
+
+    def forward(self, x, f):
+        """Forward function.
+
+        :param x: The sequence input (batch) of the model.
+        :type x: torch.Tensor of shape (sequence_len * batch_size)
+        :param f: The feature input of the model.
+        :type f: torch.Tensor of shape (batch_size * feature_size)
+        :return: The output of LSTM layer.
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
+
         batch_size = len(f)
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self.gpu
+            if self.settings["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -42,10 +53,12 @@ class LSTM(NoiseAwareModel):
         return self.linear(outputs)
 
     def _check_input(self, X):
-        """
-        Check input format.
+        """Check input format.
 
-        :param X: The input data of the model
+        :param X: The input data of the model.
+        :type X: (candidates, features) pair
+        :return: True if valid, otherwise False.
+        :rtype: bool
         """
         return isinstance(X, tuple)
 
@@ -56,11 +69,19 @@ class LSTM(NoiseAwareModel):
         2. Make sentence with mention into sequence data for LSTM.
         3. Select subset of the input if idxs exists.
 
-        :param X: The input data of the model
-        :param Y: The labels of input data (optional)
-        :param idxs: The selected indexs of input data
-        :param train: An indicator for word dictionary to extend new words
+        :param X: The input data of the model.
+        :type X: pair with candidates and corresponding features
+        :param Y: The labels of input data (optional).
+        :type Y: list of floats if num_classes = 2
+            otherwise num_classes-length numpy array
+        :param idxs: The selected indexs of input data.
+        :type idxs: list or numpy.array
+        :param train: An indicator for word dictionary to extend new words.
+        :type train: bool
+        :return: Preprocessed data.
+        :rtype: list of (candidate, features) pairs
         """
+
         C, F = X
 
         # Covert sparse feature matrix to dense matrix
@@ -86,8 +107,8 @@ class LSTM(NoiseAwareModel):
                 # Add mark for each mention in the original sentence
                 args = [
                     (
-                        candidate[i].span.get_word_start(),
-                        candidate[i].span.get_word_end(),
+                        candidate[i].span.get_word_start_index(),
+                        candidate[i].span.get_word_end_index(),
                         i,
                     )
                 ]
@@ -107,65 +128,68 @@ class LSTM(NoiseAwareModel):
         else:
             return [(seq_data[i], F[i]) for i in idxs]
 
-    def _update_kwargs(self, X, **model_kwargs):
+    def _update_settings(self, X):
         """
         Update the model argument.
 
-        :param X: The input data of the model
-        :param model_kwargs: The arguments of the model
+        :param X: The input data of the model.
+        :type X: list of (candidate, features) pairs
         """
+
         self.logger.info("Load defalut parameters for LSTM")
-        settings = get_config()["learning"]["LSTM"]
+        config = get_config()["learning"]["LSTM"]
 
-        for key in settings.keys():
-            if key not in model_kwargs:
-                model_kwargs[key] = settings[key]
+        for key in config.keys():
+            if key not in self.settings:
+                self.settings[key] = config[key]
 
-        model_kwargs["relation_arity"] = len(X[0][0])
-        model_kwargs["input_dim"] = X[1].shape[1] + len(X[0][0]) * model_kwargs[
+        self.settings["relation_arity"] = len(X[0][0])
+        self.settings["input_dim"] = X[1].shape[1] + len(X[0][0]) * self.settings[
             "hidden_dim"
-        ] * (2 if model_kwargs["bidirectional"] else 1)
+        ] * (2 if self.settings["bidirectional"] else 1)
 
-        return model_kwargs
-
-    def _build_model(self, model_kwargs):
+    def _build_model(self):
         """
         Build the model.
-
-        :param model_kwargs: The arguments of the model
         """
         # Set up LSTM modules
         self.lstms = nn.ModuleList(
             [
                 RNN(
-                    n_classes=0,
+                    num_classes=0,
                     num_tokens=self.word_dict.s,
-                    emb_size=model_kwargs["emb_dim"],
-                    lstm_hidden=model_kwargs["hidden_dim"],
-                    attention=model_kwargs["attention"],
-                    dropout=model_kwargs["dropout"],
-                    bidirectional=model_kwargs["bidirectional"],
-                    use_cuda=model_kwargs["host_device"] in self.gpu,
+                    emb_size=self.settings["emb_dim"],
+                    lstm_hidden=self.settings["hidden_dim"],
+                    attention=self.settings["attention"],
+                    dropout=self.settings["dropout"],
+                    bidirectional=self.settings["bidirectional"],
+                    use_cuda=self.settings["host_device"] in self._gpu,
                 )
             ]
-            * model_kwargs["relation_arity"]
+            * self.settings["relation_arity"]
         )
 
-        if "input_dim" not in model_kwargs:
-            raise ValueError("Kwarg input_dim cannot be None.")
+        if "input_dim" not in self.settings:
+            raise ValueError("Model parameter input_dim cannot be None.")
 
         # Set up final linear layer
         self.linear = nn.Linear(
-            model_kwargs["input_dim"], self.cardinality if self.cardinality > 2 else 1
+            self.settings["input_dim"], self.cardinality if self.cardinality > 2 else 1
         )
 
     def _calc_logits(self, X, batch_size=None):
         """
         Calculate the logits.
 
-        :param X: The input data of the model
-        :param batch_size: The batch size
+        :param X: The input data of the model.
+        :type X: list of (candidate, features) pairs
+        :param batch_size: The batch size.
+        :type batch_size: int
+        :return: The output logits of model.
+        :rtype: torch.Tensor of shape (batch_size, num_classes) if num_classes > 2
+            otherwise shape (batch_size, 1)
         """
+
         # Generate LSTM input
         C = np.array(list(zip(*X))[0])
 
@@ -178,7 +202,7 @@ class LSTM(NoiseAwareModel):
 
         outputs = (
             torch.Tensor([]).cuda()
-            if self.model_kwargs["host_device"] in self.gpu
+            if self.settings["host_device"] in self._gpu
             else torch.Tensor([])
         )
 
@@ -194,17 +218,15 @@ class LSTM(NoiseAwareModel):
                 sequence = []
                 for j in range(batch_st, batch_ed):
                     sequence.append(C[j][i])
-                x, x_mask = pad_batch(
-                    sequence, self.model_kwargs["max_sentence_length"]
-                )
-                if self.model_kwargs["host_device"] in self.gpu:
+                x, x_mask = pad_batch(sequence, self.settings["max_sentence_length"])
+                if self.settings["host_device"] in self._gpu:
                     x = x.cuda()
                     x_mask = x_mask.cuda()
                 sequences.append((x, x_mask))
 
             features = (
                 F[batch_st:batch_ed].cuda()
-                if self.model_kwargs["host_device"] in self.gpu
+                if self.settings["host_device"] in self._gpu
                 else F[batch_st:batch_ed]
             )
 

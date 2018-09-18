@@ -3,7 +3,7 @@ from builtins import object
 
 import numpy as np
 
-from fonduer.parser.models import construct_stable_id
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class SimpleTokenizer(object):

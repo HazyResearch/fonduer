@@ -13,22 +13,41 @@ logger = logging.getLogger(__name__)
 class CandidateExtractor(UDFRunner):
     """An operator to extract Candidate objects from a Context.
 
+    :Example:
+
+        Assuming we have already defined a Part and Temp ``Mention`` subclass,
+        and a throttler called templ_throttler, we can create a candidate
+        extractor as follows::
+
+            PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+            candidate_extractor = CandidateExtractor(
+                session, [PartTemp], throttlers=[temp_throttler]
+            )
+
     :param session: An initialized database session.
     :param candidate_classes: The types of relation to extract, defined using
         :func: fonduer.candidates.candidate_subclass.
+    :type candidate_classes: list of candidate subclasses.
     :param throttlers: optional functions for filtering out candidates
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.
+    :type throttlers: list of throttlers.
     :param self_relations: Boolean indicating whether to extract Candidates
-        that relate the same context. Only applies to binary relations. Default
-        is False.
+        that relate the same context. Only applies to binary relations.
+    :type self_relations: bool
     :param nested_relations: Boolean indicating whether to extract Candidates
         that relate one Context with another that contains it. Only applies to
-        binary relations. Default is False.
+        binary relations.
+    :type nested_relations: bool
     :param symmetric_relations: Boolean indicating whether to extract symmetric
         Candidates, i.e., rel(A,B) and rel(B,A), where A and B are Contexts.
-        Only applies to binary relations. Default is True.
-    :param parallelism: The number of processes to use in parallel. Default 1.
+        Only applies to binary relations.
+    :type symmetric_relations: bool
+    :param parallelism: The number of processes to use in parallel for calls
+        to apply().
+    :type parallelism: int
+    :raises ValueError: If throttlers are provided, but a throtters are not the
+        same length as candidate classes.
     """
 
     def __init__(
@@ -64,12 +83,43 @@ class CandidateExtractor(UDFRunner):
 
         self.candidate_classes = candidate_classes
 
-    def apply(self, xs, split=0, **kwargs):
-        """Call the CandidateExtractorUDF."""
-        super(CandidateExtractor, self).apply(xs, split=split, **kwargs)
+    def apply(self, docs, split=0, clear=True, parallelism=None, progress_bar=True):
+        """Run the CandidateExtractor.
 
-    def clear(self, split, **kwargs):
-        """Delete Candidates of each class from given split the database."""
+        :Example: To extract candidates from a set of training documents using
+            4 cores::
+
+                candidate_extractor.apply(train_docs, split=0, parallelism=4)
+
+        :param docs: Set of documents to extract from.
+        :param split: Which split to assign the extracted Candidates to.
+        :type split: int
+        :param clear: Whether or not to clear the existing Candidates
+            beforehand.
+        :type clear: bool
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the
+            CandidateExtractor if it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
+        """
+        super(CandidateExtractor, self).apply(
+            docs,
+            split=split,
+            clear=clear,
+            parallelism=parallelism,
+            progress_bar=progress_bar,
+        )
+
+    def clear(self, split):
+        """Delete Candidates of each class initialized with the
+        CandidateExtractor from given split the database.
+
+        :param split: Which split to clear.
+        :type split: int
+        """
         for candidate_class in self.candidate_classes:
             logger.info(
                 "Clearing table {} (split {})".format(
@@ -80,8 +130,12 @@ class CandidateExtractor(UDFRunner):
                 Candidate.type == candidate_class.__tablename__
             ).filter(Candidate.split == split).delete()
 
-    def clear_all(self, split, **kwargs):
-        """Delete all Candidates from given split the database."""
+    def clear_all(self, split):
+        """Delete ALL Candidates from given split the database.
+
+        :param split: Which split to clear.
+        :type split: int
+        """
         logger.info("Clearing ALL Candidates.")
         self.session.query(Candidate).filter(Candidate.split == split).delete()
 
@@ -93,9 +147,12 @@ class CandidateExtractor(UDFRunner):
 
         :param docs: If provided, return candidates from these documents from
             all splits.
+        :type docs: list, tuple of ``Documents``.
         :param split: If docs is None, then return all the candidates from this
             split.
-        :return: List of lists of candidates for each candidate_class.
+        :type split: int
+        :return: Candidates for each candidate_class.
+        :rtype: List of lists of ``Candidates``.
         """
         result = []
         if docs:

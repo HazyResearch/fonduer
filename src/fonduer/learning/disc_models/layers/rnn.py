@@ -7,9 +7,31 @@ import torch.nn as nn
 
 
 class RNN(nn.Module):
+    """A recurrent neural network layer.
+
+    :param num_classes: Number of classes.
+    :type num_classes: int
+    :param num_tokens: Size of embeddings.
+    :type num_tokens: int
+    :param emb_size: Dimension of embeddings.
+    :type emb_size: int
+    :param lstm_hidden: Size of LSTM hidden layer size.
+    :type lstm_hidden: int
+    :param num_layers: Number of recurrent layers.
+    :type num_layers: int
+    :param dropout: Dropout parameter of LSTM.
+    :type dropout: float
+    :param attention: Use attention or not.
+    :type attention: bool
+    :param bidirectional: Use bidirectional LSTM or not.
+    :type bidirectional: bool
+    :param use_cuda: Use use_cuda or not.
+    :type use_cuda: bool
+    """
+
     def __init__(
         self,
-        n_classes,
+        num_classes,
         num_tokens,
         emb_size,
         lstm_hidden,
@@ -31,9 +53,9 @@ class RNN(nn.Module):
         self.dropout = dropout
         self.use_cuda = use_cuda
         # Number of dimensions of output.  means no final linear layer.
-        self.n_classes = n_classes
+        self.num_classes = num_classes
 
-        if self.n_classes > 0:
+        if self.num_classes > 0:
             self.final_linear = True
         else:
             self.final_linear = False
@@ -59,13 +81,22 @@ class RNN(nn.Module):
             self.attn_linear_w_2 = nn.Linear(b * lstm_hidden, 1, bias=False)
 
         if self.final_linear:
-            self.linear = nn.Linear(b * lstm_hidden, n_classes)
+            self.linear = nn.Linear(b * lstm_hidden, num_classes)
 
     def forward(self, x, x_mask, state_word):
+        """Forward function.
+
+        :param x: Input sequence tensor.
+        :type x: torch.Tensor of shape (batch_size * length)
+        :param x_mask: Use use_cuda or not.
+        :type x_mask: torch.Tensor of shape (batch_size * length)
+        :param state_word: Initial state of LSTM.
+        :type state_word: torch.Tensor (see init_hidden() for more information)
+        :return: Output of LSTM layer, either after mean pooling or attention.
+        :rtype: torch.Tensor with shape (batch_size, num_directions * hidden_size)
+            if num_classes > 0 otherwise with shape (batch_size, num_classes)
         """
-        x      : batch_size * length
-        x_mask : batch_size * length
-        """
+
         x_emb = self.drop(self.lookup(x))
         output_word, state_word = self.word_lstm(x_emb, state_word)
         output_word = self.drop(output_word)
@@ -105,6 +136,15 @@ class RNN(nn.Module):
         return output
 
     def init_hidden(self, batch_size):
+        """Initiate the initial state.
+
+        :param batch_size: batch size.
+        :type batch_size: int
+        :return: Initial state of LSTM
+        :rtype: pair of torch.Tensors of shape (num_layers * num_directions,
+            batch_size, hidden_size)
+        """
+
         b = 2 if self.bidirectional else 1
         if self.use_cuda:
             return (
