@@ -40,7 +40,7 @@ class Ngrams(MentionSpace):
     :param split_tokens: Tokens, on which unigrams are split into two separate
         unigrams. Unigrams are split exclusively on the *first* occurence of a
         split token.
-    :type split_tokens: tuple, list
+    :type split_tokens: tuple, list of str.
     """
 
     def __init__(self, n_min=1, n_max=5, split_tokens=("-", "/")):

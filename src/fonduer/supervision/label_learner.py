@@ -17,7 +17,7 @@ def LabelLearner(cardinalities=2, dependencies=[], **kwargs):
     :param cardinalities: In the single task case, a single integer for the
         number of classes in the task. In the multi-task case, a t-length list
         of integers corresponding to the classes of each task.
-    :type cardinalities: int or list
+    :type cardinalities: int or list of int
     :param dependencies: A list of (a,b) tuples meaning a is a parent of b in a
         tree.
     :type dependencies: list

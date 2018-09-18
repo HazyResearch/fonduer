@@ -27,11 +27,11 @@ class CandidateExtractor(UDFRunner):
     :param session: An initialized database session.
     :param candidate_classes: The types of relation to extract, defined using
         :func: fonduer.candidates.candidate_subclass.
-    :type candidate_classes: list
+    :type candidate_classes: list of candidate subclasses.
     :param throttlers: optional functions for filtering out candidates
         which returns a Boolean expressing whether or not the candidate should
         be instantiated.
-    :type throttlers: list
+    :type throttlers: list of throttlers.
     :param self_relations: Boolean indicating whether to extract Candidates
         that relate the same context. Only applies to binary relations.
     :type self_relations: bool
@@ -147,12 +147,12 @@ class CandidateExtractor(UDFRunner):
 
         :param docs: If provided, return candidates from these documents from
             all splits.
-        :type docs: list, tuple
+        :type docs: list, tuple of ``Documents``.
         :param split: If docs is None, then return all the candidates from this
             split.
         :type split: int
         :return: Candidates for each candidate_class.
-        :rtype: List of lists.
+        :rtype: List of lists of ``Candidates``.
         """
         result = []
         if docs:
