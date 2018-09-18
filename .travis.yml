@@ -111,4 +111,4 @@ deploy:
   on:
     tags: true
     branch: master
-    condition: $TRAVIS_OS_NAME = "linux"
+    condition: $TRAVIS_OS_NAME = "linux" && $PYTHON = "3.7"
