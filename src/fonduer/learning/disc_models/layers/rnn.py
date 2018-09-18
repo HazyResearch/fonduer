@@ -87,13 +87,14 @@ class RNN(nn.Module):
         """Forward function.
 
         :param x: Input sequence tensor.
-        :type x: torch.Tensor (batch_size * length)
+        :type x: torch.Tensor of shape (batch_size * length)
         :param x_mask: Use use_cuda or not.
-        :type x_mask: torch.Tensor (batch_size * length)
+        :type x_mask: torch.Tensor of shape (batch_size * length)
         :param state_word: Initial state of LSTM.
-        :type state_word: torch.Tensor
-        :return: Output of LSTM layer, either after mean pooling or attention
-        :rtype: torch.Tensor
+        :type state_word: torch.Tensor (see init_hidden() for more information)
+        :return: Output of LSTM layer, either after mean pooling or attention.
+        :rtype: torch.Tensor with shape (batch_size, num_directions * hidden_size)
+            if n_classes > 0 otherwise with shape (batch_size, n_classes)
         """
 
         x_emb = self.drop(self.lookup(x))
@@ -140,7 +141,8 @@ class RNN(nn.Module):
         :param batch_size: batch size.
         :type batch_size: int
         :return: Initial state of LSTM
-        :rtype: pair of torch.Tensors
+        :rtype: pair of torch.Tensors of shape (num_layers * num_directions,
+            batch_size, hidden_size)
         """
 
         b = 2 if self.bidirectional else 1

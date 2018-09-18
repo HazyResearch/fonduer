@@ -11,7 +11,7 @@ class SparseLogisticRegression(NoiseAwareModel):
     """
     Sparse Logistic Regression model.
 
-    :param name: User-defined name of the model
+    :param name: User-defined name of the model.
     :type name: str
     """
 
@@ -19,10 +19,10 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Run forward pass.
 
-        :param x: The input (batch) of the model
-        :type x: torch.Tensor
-        :return: The output of sparse Logistic Regression layer
-        :rtype: torch.Tensor
+        :param x: The input (batch) of the model.
+        :type x: torch.Tensor of shape (batch_size, num_classes)
+        :return: The output of sparse Logistic Regression layer.
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
         return self.sparse_linear(x, w)
 
@@ -30,9 +30,9 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Check input format.
 
-        :param X: The input data of the model
-        :type X: pair
-        :return: True if valid, otherwise False
+        :param X: The input data of the model.
+        :type X: (candidates, features) pair
+        :return: True if valid, otherwise False.
         :rtype: bool
         """
 
@@ -44,11 +44,12 @@ class SparseLogisticRegression(NoiseAwareModel):
         1. Convert sparse matrix to dense matrix.
         2. Select subset of the input if idxs exists.
 
-        :param X: The input data of the model
+        :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
-        :param Y: The labels of input data
-        :type Y: list
-        :param idxs: The selected indices of input data
+        :param Y: The labels of input data.
+        :type Y: list of float if num_classes = 2
+            otherwise num_classes-length numpy array
+        :param idxs: The selected indices of input data.
         :type idxs: list or numpy.array
         :param train: Indicator of training set.
         :type train: bool
@@ -106,8 +107,8 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Update the model argument.
 
-        :param X: The input data of the model
-        :type X: list
+        :param X: The input data of the model.
+        :type X: list of (candidate, features) pair
         """
 
         self.logger.info("Load defalut parameters for Sparse Logistic Regression")
@@ -138,12 +139,13 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Calculate the logits.
 
-        :param X: The input data of the model
-        :type X: list
-        :param batch_size: The batch size
+        :param X: The input data of the model.
+        :type X: list of (candidate, fetures) pair
+        :param batch_size: The batch size.
         :type batch_size: int
-        :return: The output logits of model
-        :rtype: torch.Tensor
+        :return: The output logits of model.
+        :rtype: torch.Tensor of shape (batch_size, num_classes) if num_classes > 2
+            otherwise shape (batch_size, 1)
         """
 
         # Generate sparse multi-modal feature input

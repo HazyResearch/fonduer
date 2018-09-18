@@ -76,7 +76,8 @@ def save_marginals(session, X, marginals, training=True):
 def reshape_marginals(marginals):
     """Returns correctly shaped marginals as np array
 
-    :param marginals: Marginal matrix
+    :param marginals: Marginal matrix.
+    :return: The reshaped marginal matrix.
     """
     # Make sure training marginals are a numpy array first
     try:
@@ -163,6 +164,7 @@ def SoftCrossEntropyLoss(input, target):
 
     :param input: prediction logits
     :param target: target probabilities
+    :return: loss
     """
     total_loss = torch.tensor(0.0)
     for i in range(input.size(1)):

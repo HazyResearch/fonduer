@@ -54,11 +54,11 @@ class SparseLinear(nn.Module):
         """Forward function.
 
         :param x: Feature indices.
-        :type x: torch.Tensor (batch_size * length)
+        :type x: torch.Tensor of shape (batch_size * length)
         :param w: Feature weights.
-        :type w: torch.Tensor (batch_size * length)
-        :return: Output of linear layer
-        :rtype: torch.Tensor
+        :type w: torch.Tensor of shape (batch_size * length)
+        :return: Output of linear layer.
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
         if self.bias is None:

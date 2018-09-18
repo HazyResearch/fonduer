@@ -93,8 +93,8 @@ class NoiseAwareModel(Classifier, nn.Module):
         """
         Generic training procedure for PyTorch model
 
-        :param X_train: The training data which is a pair of a list of
-            Candidate objects and a sparse matrix of corresponding features.
+        :param X_train: The training data which is a (list of Candidate objects,
+            a sparse matrix of corresponding features) pair.
         :type X_train: pair
         :param Y_train: Array of marginal probabilities for each Candidate.
         :type Y_train: list or numpy.array
@@ -290,8 +290,8 @@ class NoiseAwareModel(Classifier, nn.Module):
         Compute the marginals for the given candidates X.
         Note: split into batches to avoid OOM errors.
 
-        :param X: The input data which is a pair of a list of Candidate objects and
-            a sparse matrix of corresponding features or a list of
+        :param X: The input data which is a (list of Candidate objects, a sparse
+            matrix of corresponding features) pair or a list of
             (Candidate, features) pairs.
         :type X: pair or list
         :param batch_size: Batch size.

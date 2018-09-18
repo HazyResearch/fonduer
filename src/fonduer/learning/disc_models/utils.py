@@ -5,9 +5,9 @@ import torch
 class SymbolTable(object):
     """Wrapper for dict to encode unknown symbols
 
-    :param starting_symbol: Starting index of symbol
+    :param starting_symbol: Starting index of symbol.
     :type starting_symbol: int
-    :param unknown_symbol: Index of unknown symbol
+    :param unknown_symbol: Index of unknown symbol.
     :type unknown_symbol: int
     """
 
@@ -39,12 +39,12 @@ def mention_to_tokens(mention, token_type="words", lowercase=False):
     """
     Extract tokens from the mention
 
-    :param mention: mention object
-    :param token_type: token type that wants to extract
+    :param mention: mention object.
+    :param token_type: token type that wants to extract.
     :type token_type: str
-    :param lowercase: use lowercase or not
+    :param lowercase: use lowercase or not.
     :type lowercase: bool
-    :return: The token list
+    :return: The token list.
     :rtype: list
     """
 
@@ -56,13 +56,13 @@ def mark(l, h, idx):
     """
     Produce markers based on argument positions
 
-    :param l: sentence position of first word in argument
+    :param l: sentence position of first word in argument.
     :type l: int
-    :param h: sentence position of last word in argument
+    :param h: sentence position of last word in argument.
     :type h: int
-    :param idx: argument index (1 or 2)
+    :param idx: argument index (1 or 2).
     :type idx: int
-    :return: markers
+    :return: markers.
     :rtype: list of markers
     """
     return [(l, "{}{}".format("~~[[", idx)), (h + 1, "{}{}".format(idx, "]]~~"))]
@@ -71,12 +71,12 @@ def mark(l, h, idx):
 def mark_sentence(s, args):
     """Insert markers around relation arguments in word sequence
 
-    :param s: list of tokens in sentence
+    :param s: list of tokens in sentence.
     :type s: list
     :param args: list of triples (l, h, idx) as per @_mark(...) corresponding
                to relation arguments
     :type args: list
-    :return: The marked sentence
+    :return: The marked sentence.
     :rtype: list
 
     Example: Then Barack married Michelle.
@@ -92,14 +92,14 @@ def mark_sentence(s, args):
 def pad_batch(batch, max_len=0, type="int"):
     """Pad the batch into matrix
 
-    :param batch: The data for padding
-    :type batch: list
-    :param max_len: Max length of sequence of padding
+    :param batch: The data for padding.
+    :type batch: list of word index sequences
+    :param max_len: Max length of sequence of padding.
     :type max_len: int
-    :param type: mask value type
+    :param type: mask value type.
     :type type: str
-    :return: The padded matrix and correspoing mask matrix
-    :rtype: pair of torch.Tensors
+    :return: The padded matrix and correspoing mask matrix.
+    :rtype: pair of torch.Tensors with shape (batch_size, max_sent_len)
     """
     batch_size = len(batch)
     max_sent_len = int(np.max([len(x) for x in batch]))

@@ -67,11 +67,11 @@ class Classifier(object):
             * For binary: precision, recall, F-beta score
             * For categorical: accuracy
 
-        :param X_test: The input test candidates
+        :param X_test: The input test candidates.
         :type X_test: pair with candidates and corresponding features
-        :param Y_test: The input test labels
-        :type Y_test: list
-        :param b: Decision boundary *for binary setting only*
+        :param Y_test: The input test labels.
+        :type Y_test: list of labels
+        :param b: Decision boundary *for binary setting only*.
         :type b: float
         :param set_unlabeled_as_neg: Whether to map 0 labels -> -1,
             *binary setting.*
@@ -80,8 +80,6 @@ class Classifier(object):
         :type beta: int
         :param batch_size: Batch size.
         :type batch_size: int
-        Note: Unlike in self.error_analysis, this method assumes X_test and
-        Y_test are properly collated!
         """
 
         if self._check_input(X_test):
@@ -125,7 +123,7 @@ class Classifier(object):
     def _check_input(self, X):
         """Generic data checking function
 
-        :param X: The input data of the model
+        :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
         """
         return True
@@ -133,10 +131,10 @@ class Classifier(object):
     def _preprocess_data(self, X, Y=None):
         """Generic preprocessing function
 
-        :param X: The input data of the model
+        :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
-        :param Y: The labels of input data
-        :type Y: list
+        :param Y: The labels of input data (optional).
+        :type Y: list of labels
         """
         if Y is None:
             return X
