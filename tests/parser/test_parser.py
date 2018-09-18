@@ -16,7 +16,7 @@ def get_parser_udf(
     language="en",
     lingual=True,  # lingual information
     strip=True,
-    replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212\uf02d]", "-")],
+    replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
     pdf_path=None,

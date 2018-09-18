@@ -47,6 +47,148 @@ DB = "e2e_test"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+def test_incremental(caplog):
+    """Run an end-to-end test on incremental additions."""
+    caplog.set_level(logging.INFO)
+    # SpaCy on mac has issue on parallel parsing
+    if os.name == "posix":
+        logger.info("Using single core.")
+        PARALLEL = 1
+    else:
+        PARALLEL = 2  # Travis only gives 2 cores
+
+    max_docs = 1
+
+    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+
+    docs_path = "tests/data/html/dtc114w.html"
+    pdf_path = "tests/data/pdf/dtc114w.pdf"
+
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+
+    corpus_parser = Parser(
+        session,
+        parallelism=PARALLEL,
+        structural=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
+    )
+    corpus_parser.apply(doc_preprocessor)
+
+    num_docs = session.query(Document).count()
+    logger.info("Docs: {}".format(num_docs))
+    assert num_docs == max_docs
+
+    docs = corpus_parser.get_documents()
+
+    # Mention Extraction
+    part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
+    temp_ngrams = MentionNgramsTemp(n_max=2)
+
+    Part = mention_subclass("Part")
+    Temp = mention_subclass("Temp")
+
+    mention_extractor = MentionExtractor(
+        session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
+    )
+
+    mention_extractor.apply(docs, parallelism=PARALLEL)
+
+    assert session.query(Part).count() == 11
+    assert session.query(Temp).count() == 9
+
+    # Candidate Extraction
+    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+
+    candidate_extractor = CandidateExtractor(
+        session, [PartTemp], throttlers=[temp_throttler]
+    )
+
+    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 78
+
+    # Grab candidate lists
+    train_cands = candidate_extractor.get_candidates(split=0)
+    assert len(train_cands) == 1
+    assert len(train_cands[0]) == 78
+
+    # Featurization
+    featurizer = Featurizer(session, [PartTemp])
+
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 78
+    assert session.query(FeatureKey).count() == 496
+    F_train = featurizer.get_feature_matrices(train_cands)
+    assert F_train[0].shape == (78, 496)
+    assert len(featurizer.get_keys()) == 496
+
+    stg_temp_lfs = [
+        LF_storage_row,
+        LF_operating_row,
+        LF_temperature_row,
+        LF_tstg_row,
+        LF_to_left,
+        LF_negative_number_left,
+    ]
+
+    labeler = Labeler(session, [PartTemp])
+
+    labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
+    assert session.query(Label).count() == 78
+
+    # Only 5 because LF_operating_row doesn't apply to the first test doc
+    assert session.query(LabelKey).count() == 5
+    L_train = labeler.get_label_matrices(train_cands)
+    assert L_train[0].shape == (78, 5)
+    assert len(labeler.get_keys()) == 5
+
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/112823.pdf"
+
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+
+    corpus_parser.apply(doc_preprocessor, pdf_path=pdf_path, clear=False)
+
+    assert len(corpus_parser.get_documents()) == 2
+
+    new_docs = corpus_parser.get_last_documents()
+
+    assert len(new_docs) == 1
+    assert new_docs[0].name == "112823"
+
+    # Get mentions from just the new docs
+    mention_extractor.apply(new_docs, parallelism=PARALLEL, clear=False)
+
+    assert session.query(Part).count() == 81
+    assert session.query(Temp).count() == 27
+
+    # Just run candidate extraction and assign to split 0
+    candidate_extractor.apply(new_docs, split=0, parallelism=PARALLEL, clear=False)
+
+    # Grab candidate lists
+    train_cands = candidate_extractor.get_candidates(split=0)
+    assert len(train_cands) == 1
+    assert len(train_cands[0]) == 1256
+
+    # Update features
+    featurizer.update(new_docs, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 1256
+    assert session.query(FeatureKey).count() == 2295
+    F_train = featurizer.get_feature_matrices(train_cands)
+    assert F_train[0].shape == (1256, 2295)
+    assert len(featurizer.get_keys()) == 2295
+
+    # Update Labels
+    labeler.update(new_docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)
+    assert session.query(Label).count() == 1256
+    assert session.query(LabelKey).count() == 6
+    L_train = labeler.get_label_matrices(train_cands)
+    assert L_train[0].shape == (1256, 6)
+
+
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
@@ -85,8 +227,9 @@ def test_e2e(caplog):
     logger.info("Sentences: {}".format(num_sentences))
 
     # Divide into test and train
-    docs = session.query(Document).order_by(Document.name).all()
+    docs = corpus_parser.get_documents()
     ld = len(docs)
+    assert ld == len(corpus_parser.get_last_documents())
     assert len(docs[0].sentences) == 799
     assert len(docs[1].sentences) == 663
     assert len(docs[2].sentences) == 784
@@ -231,7 +374,7 @@ def test_e2e(caplog):
     assert session.query(FeatureKey).count() == 675
     session.query(Feature).delete()
 
-    featurizer.apply(split=0, train=True, parallelism=1)
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 3346
     assert session.query(FeatureKey).count() == 3578
     F_train = featurizer.get_feature_matrices(train_cands)
