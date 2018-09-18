@@ -9,7 +9,6 @@ Added
   construction. (`#154 <https://github.com/HazyResearch/fonduer/pull/154>`_)
 * `@j-rausch`_: Added alpha spacy support for Japanese tokenizer.
 * `@senwu`_: Add sparse logistic regression support.
-* `@j-rausch`_: Added unit tests for changed lingual parsing pipeline.
 * `@senwu`_: Support Python 3.7.
 * `@lukehsiao`_: Allow user to change featurization settings by providing
   ``.fonduer-config.yaml`` in their project.
@@ -17,8 +16,6 @@ Added
   composed of Mention objects, rather than directly of Spans. This allows a
   single Mention to be reused in multiple relations.
 * `@lukehsiao`_: Improved connection-string validation for the Meta class.
-* `@lukehsiao`_: Add unit test for Meta class.
-* `@lukehsiao`_: Enforce flake8 checks on tests directory.
 
 Changed
 ^^^^^^^
@@ -26,7 +23,6 @@ Changed
   on the user-defined html-tag stripping in the parsing stage.
 * `@j-rausch`_: ``Ngrams`` now has a ``n_min`` argument to specify a minimum
   number of tokens per extracted n-gram.
-* `@senwu`_: Rename ``gen_learning`` to ``label_learner`` and move to supervision.
 * `@lukehsiao`_: Rename ``BatchLabelAnnotator`` to ``Labeler`` and
   ``BatchFeatureAnnotator`` to ``Featurizer``. The classes now support multiple
   relations.
@@ -37,10 +33,6 @@ Changed
   (`#126 <https://github.com/HazyResearch/fonduer/pull/126>`_)
 * `@lukehsiao`_: Add ``session`` and ``parallelism`` as a parameter to all UDF
   classes.
-* `@j-rausch`_: Speed-up of ``spacy_parser``. We split the lingual parsing
-  pipeline into two stages. First, we parse structure and gather all
-  sentences for a document. Then, we merge and feed all sentences per
-  document into the spacy NLP pipeline for more efficient processing.
 * `@j-rausch`_: Sentence splitting in lingual mode is now performed by
   spacy's sentencizer instead of the dependency parser. This can lead to
   variations in sentence segmentation and tokenization.
@@ -63,7 +55,7 @@ Changed
 * `@lukehsiao`_: Set the default PostgreSQL client encoding to "utf8".
 * `@lukehsiao`_: Organize documentation for ``data_model_utils`` by modality.
   (`#85 <https://github.com/HazyResearch/fonduer/pull/85>`_)
-* `@lukehsiao`_: Change ``lf_helpers`` to ``data_model_utils``, since they can
+* `@lukehsiao`_: Rename ``lf_helpers`` to ``data_model_utils``, since they can
   be applied more generally to throttlers or used for error analysis, and are
   not limited to just being used in labeling functions.
 * `@lukehsiao`_: Update the CHANGELOG to start following `KeepAChangelog
@@ -72,13 +64,17 @@ Changed
 Removed
 ^^^^^^^
 * `@lukehsiao`_: Remove the XMLMultiDocPreprocessor.
-* `@lukehsiao`_: Remove reduce option for UDFs, which were never used.
+* `@lukehsiao`_: Remove the ``reduce`` option for UDFs, which were unused.
 * `@lukehsiao`_: Remove get parent/children/sentence generator from Context.
   (`#87 <https://github.com/HazyResearch/fonduer/pull/87>`_)
 * `@lukehsiao`_: Remove dependency on ``pdftotree``, which is currently unused.
 
 Fixed
 ^^^^^
+* `@j-rausch`_: Improve ``spacy_parser`` performance. We split the lingual
+  parsing pipeline into two stages. First, we parse structure and gather all
+  sentences for a document. Then, we merge and feed all sentences per document
+  into the spacy NLP pipeline for more efficient processing.
 * `@senwu`_: Speed-up of ``_get_node`` using caching.
 * `@HiromuHota`_: Fixed bug with Ngram splitting and empty TemporarySpans.
   (`#108 <https://github.com/HazyResearch/fonduer/pull/108>`_,
