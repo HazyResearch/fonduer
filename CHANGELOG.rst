@@ -5,8 +5,8 @@
 Added
 ^^^^^
 
-* `@lukehsiao`_: Add supporting functions for incrementally adding documents.
-  (`#154 <https://github.com/HazyResearch/fonduer/pull/154>`_)
+* `@lukehsiao`_: Add supporting functions for incremental knowledge base
+  construction. (`#154 <https://github.com/HazyResearch/fonduer/pull/154>`_)
 * `@j-rausch`_: Added alpha spacy support for Japanese tokenizer.
 * `@senwu`_: Add sparse logistic regression support.
 * `@j-rausch`_: Added unit tests for changed lingual parsing pipeline.
