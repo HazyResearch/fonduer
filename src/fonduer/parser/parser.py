@@ -195,10 +195,9 @@ class ParserUDF(UDF):
         # The document is the Document model
         text = document.text
 
-        # Use the provided pdf_path if present
-        self.pdf_path = pdf_path if pdf_path else self.pdf_path
-
         if self.visual:
+            # Use the provided pdf_path if present
+            self.pdf_path = pdf_path if pdf_path else self.pdf_path
             if not self.pdf_path:
                 warnings.warn(
                     "Visual parsing failed: pdf_path is required. "
