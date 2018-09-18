@@ -1,5 +1,5 @@
 |Fonduer|
-=======
+=========
 
 |Travis| |CodeClimate| |Coveralls| |ReadTheDocs| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
