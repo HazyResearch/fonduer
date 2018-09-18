@@ -36,6 +36,9 @@ class UDFRunner(object):
         self.session = session
         self.parallelism = parallelism
 
+        #: The last set of documents that apply() was called on
+        self.last_docs = set()
+
     def apply(
         self, doc_loader, clear=True, parallelism=None, progress_bar=True, **kwargs
     ):
@@ -46,6 +49,9 @@ class UDFRunner(object):
         # Clear everything downstream of this UDF if requested
         if clear:
             self.clear(**kwargs)
+
+        # Clear the last operated documents
+        self.last_docs.clear()
 
         # Execute the UDF
         self.logger.info("Running UDF...")
@@ -73,6 +79,13 @@ class UDFRunner(object):
     def clear(self, **kwargs):
         """Clear the associated data from the database."""
         raise NotImplementedError()
+        
+    def get_last_documents(self):
+        """Return the last set of documents that was operated on with apply().
+
+        :rtype: list of ``Documents`` operated on in the last call to ``apply()``.
+        """
+        return list(self.last_docs)
 
     def _apply_st(self, doc_loader, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
@@ -80,6 +93,7 @@ class UDFRunner(object):
 
         # Run single-thread
         for doc in doc_loader:
+            self.last_docs.add(doc)
             if self.pb is not None:
                 self.pb.update(1)
 
@@ -95,6 +109,7 @@ class UDFRunner(object):
 
         def fill_input_queue(in_queue, doc_loader, terminal_signal):
             for doc in doc_loader:
+                self.last_docs.add(doc)
                 in_queue.put(doc)
             in_queue.put(terminal_signal)
 

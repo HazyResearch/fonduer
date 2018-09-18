@@ -13,6 +13,7 @@ from fonduer.parser.models import (
     Caption,
     Cell,
     Context,
+    Document,
     Figure,
     Paragraph,
     Section,
@@ -81,8 +82,47 @@ class Parser(UDFRunner):
             language=language,
         )
 
-    def clear(self):
+    def apply(
+        self, doc_loader, pdf_path=None, clear=True, parallelism=None, progress_bar=True
+    ):
+        """Run the Parser.
+
+        :param doc_loader: An iteratable of ``Documents`` to parse. Typically,
+            one of Fonduer's document preprocessors.
+        :param pdf_path: The path to the PDF documents, if any. This path will
+            override the one used in initialization, if provided.
+        :param clear: Whether or not to clear the labels table before applying
+            these LFs.
+        :type clear: bool
+        :param parallelism: How many threads to use for extraction. This will
+            override the parallelism value used to initialize the Labeler if
+            it is provided.
+        :type parallelism: int
+        :param progress_bar: Whether or not to display a progress bar. The
+            progress bar is measured per document.
+        :type progress_bar: bool
+        """
+        super(Parser, self).apply(
+            doc_loader,
+            pdf_path=pdf_path,
+            clear=clear,
+            parallelism=parallelism,
+            progress_bar=progress_bar,
+        )
+
+    def clear(self, pdf_path=None):
+        """Clear all of the ``Context`` objects in the database.
+
+        :param pdf_path: This parameter is ignored.
+        """
         self.session.query(Context).delete()
+
+    def get_documents(self):
+        """Return all the parsed ``Documents`` in the database.
+
+        :rtype: A list of all ``Documents`` in the database ordered by name.
+        """
+        return self.session.query(Document).order_by(Document.name).all()
 
 
 class ParserUDF(UDF):
@@ -154,10 +194,13 @@ class ParserUDF(UDF):
             self.pdf_path = pdf_path
             self.vizlink = VisualLinker()
 
-    def apply(self, document, **kwargs):
+    def apply(self, document, pdf_path=None, **kwargs):
         # The document is the Document model
         text = document.text
+
         if self.visual:
+            # Use the provided pdf_path if present
+            self.pdf_path = pdf_path if pdf_path else self.pdf_path
             if not self.pdf_path:
                 warnings.warn(
                     "Visual parsing failed: pdf_path is required. "
