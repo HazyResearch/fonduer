@@ -79,7 +79,7 @@ class UDFRunner(object):
     def clear(self, **kwargs):
         """Clear the associated data from the database."""
         raise NotImplementedError()
-        
+
     def get_last_documents(self):
         """Return the last set of documents that was operated on with apply().
 
