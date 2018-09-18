@@ -2,6 +2,9 @@
 [Unreleased]
 ------------
 
+[0.3.1] - 2018-09-18
+--------------------
+
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix the layers module in fonduer.learning.disc_models.layers.
