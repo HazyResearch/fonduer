@@ -37,7 +37,7 @@ class Featurizer(UDFRunner):
         self.candidate_classes = candidate_classes
 
     def update(self, docs=None, split=0, parallelism=None, progress_bar=True):
-        """Update the labels of the specified candidates based on the provided LFs.
+        """Update the features of the specified candidates.
 
         :param docs: If provided, apply features to all the candidates in these
             documents.
