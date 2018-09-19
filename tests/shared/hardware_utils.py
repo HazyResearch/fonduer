@@ -18,6 +18,11 @@ else:
 
 logger = logging.getLogger(__name__)
 
+# Define labels
+ABSTAIN = 0
+FALSE = 1
+TRUE = 2
+
 
 def get_gold_dict(
     filename, doc_on=True, part_on=True, val_on=True, attribute=None, docs=None
@@ -30,7 +35,7 @@ def get_gold_dict(
             if docs is None or doc.upper() in docs:
                 if attribute and attr != attribute:
                     continue
-                if not val:
+                if val == TRUE:
                     continue
                 else:
                     key = []
@@ -88,9 +93,9 @@ def load_hardware_labels(
         label = session.query(GoldLabel).filter(GoldLabel.candidate == c).first()
         if label is None:
             if (doc, part, val) in gold_dict:
-                values.append(1)
+                values.append(TRUE)
             else:
-                values.append(-1)
+                values.append(FALSE)
 
             cands.append(c)
             labels += 1
