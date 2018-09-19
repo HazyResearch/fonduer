@@ -359,9 +359,9 @@ class MentionExtractorUDF(UDF):
             for tc in self.matchers[i].apply(
                 self.mention_spaces[i].apply(self.session, context)
             ):
-                tc_to_insert[tc._get_table()].append(
-                    tc._load_id_or_insert(self.session)
-                )
+                rec = tc._load_id_or_insert(self.session)
+                if rec:
+                    tc_to_insert[tc._get_table()].append(rec)
                 self.child_context_set.add(tc)
 
             # Bulk insert temporary contexts
