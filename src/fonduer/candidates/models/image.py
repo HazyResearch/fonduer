@@ -47,19 +47,16 @@ class TemporaryImage(TemporaryContext):
             self.figure.position,
         )
 
-    def _get_table_name(self):
-        return "image"
+    def _get_table(self):
+        return Image
 
     def _get_polymorphic_identity(self):
         return "image"
 
-    def _get_insert_query(self):
-        return """INSERT INTO image VALUES(:id, :document_id, :image_id, :url)"""
-
     def _get_insert_args(self):
         return {
             "document_id": self.figure.document.id,
-            "image_id": self.figure.position,
+            "position": self.figure.position,
             "url": self.figure.url,
         }
 
@@ -87,20 +84,21 @@ class Image(Context, TemporaryImage):
     #: The unique id of the ``Image``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
 
+    #: The id of the parent ``Document``.
+    document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
+
     #: The position of the ``Image`` in the ``Document``.
     position = Column(Integer, nullable=False)
 
-    #: The url of the ``Image``.
-    url = Column(String)
-
-    #: The id of the parent ``Document``.
-    document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
     #: The parent ``Document``.
     document = relationship(
         "Document",
         backref=backref("images", order_by=position, cascade="all, delete-orphan"),
         foreign_keys=document_id,
     )
+
+    #: The url of the ``Image``.
+    url = Column(String)
 
     __table_args__ = (UniqueConstraint(document_id, position),)
 

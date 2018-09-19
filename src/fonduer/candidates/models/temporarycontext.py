@@ -1,6 +1,6 @@
 from builtins import object
 
-from sqlalchemy.sql import select, text
+from sqlalchemy.sql import select
 
 from fonduer.parser.models.context import Context
 
@@ -25,22 +25,29 @@ class TemporaryContext(object):
         self.id = None
 
     def _load_id_or_insert(self, session):
+        """Load the id of the temporary context if it exists or return insert args.
+
+        As a side effect, this also inserts the Context object for the stableid.
+
+        :return: The record of the temporary context to insert.
+        :rtype: dict
+        """
         if self.id is None:
             stable_id = self.get_stable_id()
+            # Check if exists
             id = session.execute(
                 select([Context.id]).where(Context.stable_id == stable_id)
             ).first()
+
+            # If not, insert
             if id is None:
                 self.id = session.execute(
                     Context.__table__.insert(),
-                    {"type": self._get_table_name(), "stable_id": stable_id},
+                    {"type": self._get_table().__tablename__, "stable_id": stable_id},
                 ).inserted_primary_key[0]
                 insert_args = self._get_insert_args()
                 insert_args["id"] = self.id
-                for (key, val) in insert_args.items():
-                    if isinstance(val, list):
-                        insert_args[key] = val
-                session.execute(text(self._get_insert_query()), insert_args)
+                return insert_args
             else:
                 self.id = id[0]
 
@@ -59,10 +66,7 @@ class TemporaryContext(object):
     def get_stable_id(self):
         raise NotImplementedError()
 
-    def _get_table_name(self):
-        raise NotImplementedError()
-
-    def _get_insert_query(self):
+    def _get_table(self):
         raise NotImplementedError()
 
     def _get_insert_args(self):

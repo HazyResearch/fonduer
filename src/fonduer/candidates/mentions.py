@@ -1,8 +1,10 @@
 import logging
 import re
 from builtins import map, range
+from collections import defaultdict
 from copy import deepcopy
 
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import select
 
 from fonduer.candidates.models import Mention
@@ -148,16 +150,14 @@ class MentionNgrams(Ngrams):
 class MentionFigures(MentionSpace):
     """Defines the space of Mentions as all figures in a Document *x*, indexing
     by **position offset**.
+
+    :param types: If specified, only yield TemporaryImages whose url ends in
+        one of the specified types. Example: types=["png", "jpg", "jpeg"].
+    :type types: list, tuple of str
     """
 
     def __init__(self, types=None):
-        """
-        Initialize MentionFigures.
-
-        :param types: If specified, only yield TemporaryImages whose url ends in
-            one of the specified types. Example: type=["png, jpg, jpeg"].
-        :type types: list, tuple of str
-        """
+        """Initialize MentionFigures."""
         MentionSpace.__init__(self)
         if types is not None:
             self.types = [t.strip().lower() for t in types]
@@ -180,7 +180,7 @@ class MentionFigures(MentionSpace):
 
         doc = session.query(Document).filter(Document.id == doc.id).one()
         for figure in doc.figures:
-            if self.type is None or any(
+            if self.types is None or any(
                 figure.url.lower().endswith(type) for type in self.types
             ):
                 yield TemporaryImage(figure)
@@ -352,14 +352,22 @@ class MentionExtractorUDF(UDF):
 
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
-            # Generate TemporaryContexts that are children of the context using the
-            # mention_space and filtered by the Matcher
+            tc_to_insert = defaultdict(list)
+            # Generate TemporaryContexts that are children of the context using
+            # the mention_space and filtered by the Matcher
             self.child_context_set.clear()
             for tc in self.matchers[i].apply(
                 self.mention_spaces[i].apply(self.session, context)
             ):
-                tc._load_id_or_insert(self.session)
+                rec = tc._load_id_or_insert(self.session)
+                if rec:
+                    tc_to_insert[tc._get_table()].append(rec)
                 self.child_context_set.add(tc)
+
+            # Bulk insert temporary contexts
+            for table, records in tc_to_insert.items():
+                stmt = insert(table.__table__).values(records)
+                self.session.execute(stmt)
 
             # Generates and persists mentions
             mention_args = {"document_id": context.id}

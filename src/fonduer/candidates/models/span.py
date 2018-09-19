@@ -56,17 +56,11 @@ class TemporarySpan(TemporaryContext):
             self.char_end,
         )
 
-    def _get_table_name(self):
-        return "span"
+    def _get_table(self):
+        return Span
 
     def _get_polymorphic_identity(self):
         return "span"
-
-    def _get_insert_query(self):
-        return (
-            "INSERT INTO span VALUES"
-            + "(:id, :sentence_id, :char_start, :char_end, :meta)"
-        )
 
     def _get_insert_args(self):
         return {
