@@ -148,16 +148,14 @@ class MentionNgrams(Ngrams):
 class MentionFigures(MentionSpace):
     """Defines the space of Mentions as all figures in a Document *x*, indexing
     by **position offset**.
+
+    :param types: If specified, only yield TemporaryImages whose url ends in
+        one of the specified types. Example: types=["png", "jpg", "jpeg"].
+    :type types: list, tuple of str
     """
 
     def __init__(self, types=None):
-        """
-        Initialize MentionFigures.
-
-        :param types: If specified, only yield TemporaryImages whose url ends in
-            one of the specified types. Example: types=["png, jpg, jpeg"].
-        :type types: list, tuple of str
-        """
+        """Initialize MentionFigures."""
         MentionSpace.__init__(self)
         if types is not None:
             self.types = [t.strip().lower() for t in types]
