@@ -155,7 +155,7 @@ class MentionFigures(MentionSpace):
         Initialize MentionFigures.
 
         :param types: If specified, only yield TemporaryImages whose url ends in
-            one of the specified types. Example: type=["png, jpg, jpeg"].
+            one of the specified types. Example: types=["png, jpg, jpeg"].
         :type types: list, tuple of str
         """
         MentionSpace.__init__(self)
@@ -180,7 +180,7 @@ class MentionFigures(MentionSpace):
 
         doc = session.query(Document).filter(Document.id == doc.id).one()
         for figure in doc.figures:
-            if self.type is None or any(
+            if self.types is None or any(
                 figure.url.lower().endswith(type) for type in self.types
             ):
                 yield TemporaryImage(figure)
