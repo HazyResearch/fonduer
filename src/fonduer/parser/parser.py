@@ -239,9 +239,9 @@ class ParserUDF(UDF):
 
             yield from return_sentences
         except NotImplementedError as e:
-            logger.warning(
-                "Skipped parsing of document {}, because of parse error: {}."
-                " Not adding document to database".format(document.name, e)
+            warnings.warn(
+                "Document {} not added to database, "
+                "because of parse error: \n{}".format(document.name, e)
             )
 
     def _valid_pdf(self, path, filename):

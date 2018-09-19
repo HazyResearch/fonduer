@@ -514,17 +514,19 @@ def test_parse_error_doc_skipping(caplog):
     """Test skipping of faulty htmls."""
     caplog.set_level(logging.INFO)
 
-    faulty_doc_path = "tests/data/faulty_html/faulty_Matthew_Mercer.html"
+    faulty_doc_path = "tests/data/html_faulty/ext_diseases_missing_table_tag.html"
     preprocessor = HTMLDocPreprocessor(faulty_doc_path)
-    doc = next(preprocessor._parse_file(faulty_doc_path, "faulty_Matthew_Mercer"))
+    doc = next(
+        preprocessor._parse_file(faulty_doc_path, "ext_diseases_missing_table_tag")
+    )
     parser_udf = get_parser_udf(structural=True, lingual=True)
     sentence_lists = [x for x in parser_udf.apply(doc)]
     # No sentences are yielded for faulty document
     assert len(sentence_lists) == 0
 
-    faulty_doc_path = "tests/data/faulty_html/Bill_Gates.html"
-    preprocessor = HTMLDocPreprocessor(faulty_doc_path)
-    doc = next(preprocessor._parse_file(faulty_doc_path, "Bill_Gates"))
+    valid_doc_path = "tests/data/html_extended/ext_diseases.html"
+    preprocessor = HTMLDocPreprocessor(valid_doc_path)
+    doc = next(preprocessor._parse_file(valid_doc_path, "ext_diseases"))
     parser_udf = get_parser_udf(structural=True, lingual=True)
     sentence_lists = [x for x in parser_udf.apply(doc)]
-    assert len(sentence_lists) == 868
+    assert len(sentence_lists) == 37
