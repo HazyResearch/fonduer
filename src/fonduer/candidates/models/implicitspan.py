@@ -105,39 +105,13 @@ class TemporaryImplicitSpan(TemporarySpan):
             self.position,
         )
 
-    def _get_table_name(self):
-        return "implicit_span"
+    def _get_table(self):
+        return ImplicitSpan
 
     def _get_polymorphic_identity(self):
         return "implicit_span"
 
-    def _get_insert_query(self):
-        # NOTE: The order of these arguments MUST match the order of the
-        # columns declared in the implicit_span table.
-        return """INSERT INTO implicit_span VALUES(
-            :id,
-            :sentence_id,
-            :char_start,
-            :char_end,
-            :expander_key,
-            :position,
-            :text,
-            :words,
-            :lemmas,
-            :pos_tags,
-            :ner_tags,
-            :dep_parents,
-            :dep_labels,
-            :page,
-            :top,
-            :left,
-            :bottom,
-            :right,
-            :meta)"""
-
     def _get_insert_args(self):
-        # NOTE: The order of these arguments MUST match the order of the
-        # columns declared in the implicit_span table.
         return {
             "sentence_id": self.sentence.id,
             "char_start": self.char_start,

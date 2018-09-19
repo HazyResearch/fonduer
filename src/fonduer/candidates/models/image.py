@@ -47,20 +47,13 @@ class TemporaryImage(TemporaryContext):
             self.figure.position,
         )
 
-    def _get_table_name(self):
-        return "image"
+    def _get_table(self):
+        return Image
 
     def _get_polymorphic_identity(self):
         return "image"
 
-    def _get_insert_query(self):
-        # NOTE: The order of these arguments MUST match the order of the
-        # columns declared in the image table.
-        return """INSERT INTO image VALUES(:id, :document_id, :position, :url)"""
-
     def _get_insert_args(self):
-        # NOTE: The order of these arguments MUST match the order of the
-        # columns declared in the image table.
         return {
             "document_id": self.figure.document.id,
             "position": self.figure.position,
