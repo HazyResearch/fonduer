@@ -112,6 +112,8 @@ class TemporaryImplicitSpan(TemporarySpan):
         return "implicit_span"
 
     def _get_insert_query(self):
+        # NOTE: The order of these arguments MUST match the order of the
+        # columns declared in the implicit_span table.
         return """INSERT INTO implicit_span VALUES(
             :id,
             :sentence_id,
@@ -134,6 +136,8 @@ class TemporaryImplicitSpan(TemporarySpan):
             :meta)"""
 
     def _get_insert_args(self):
+        # NOTE: The order of these arguments MUST match the order of the
+        # columns declared in the implicit_span table.
         return {
             "sentence_id": self.sentence.id,
             "char_start": self.char_start,

@@ -63,12 +63,16 @@ class TemporarySpan(TemporaryContext):
         return "span"
 
     def _get_insert_query(self):
+        # NOTE: The order of these arguments MUST match the order of the
+        # columns declared in the span table.
         return (
             "INSERT INTO span VALUES"
             + "(:id, :sentence_id, :char_start, :char_end, :meta)"
         )
 
     def _get_insert_args(self):
+        # NOTE: The order of these arguments MUST match the order of the
+        # columns declared in the span table.
         return {
             "sentence_id": self.sentence.id,
             "char_start": self.char_start,
