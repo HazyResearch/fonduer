@@ -40,7 +40,7 @@ class Candidate(_meta.Base):
     # __table_args__ = {"extend_existing" : True}
 
     def get_mentions(self):
-        """Return a tuple of the consituent ``Mentions`` making up this ``Candidate``.
+        """Return a tuple of the constituent ``Mentions`` making up this ``Candidate``.
 
         :rtype: tuple
         """
@@ -78,7 +78,7 @@ def candidate_subclass(
 
     :param class_name: The name of the class, should be "camel case" e.g.
         NewCandidate
-    :param args: A list of names of consituent arguments, which refer to the
+    :param args: A list of names of constituent arguments, which refer to the
         Contexts--representing mentions--that comprise the candidate
     :param table_name: The name of the corresponding table in DB; if not
         provided, is converted from camel case by default, e.g. new_candidate

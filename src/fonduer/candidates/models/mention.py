@@ -35,7 +35,7 @@ class Mention(_meta.Base):
     __mapper_args__ = {"polymorphic_identity": "mention", "polymorphic_on": type}
 
     def get_contexts(self):
-        """Get the consituent context making up this mention."""
+        """Get the constituent context making up this mention."""
         return tuple(getattr(self, name) for name in self.__argnames__)
 
     def __len__(self):

@@ -5,8 +5,13 @@ import os
 import pytest
 
 from fonduer import Meta
-from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionNgrams
-from fonduer.candidates.matchers import PersonMatcher
+from fonduer.candidates import (
+    CandidateExtractor,
+    MentionExtractor,
+    MentionFigures,
+    MentionNgrams,
+)
+from fonduer.candidates.matchers import LambdaFunctionFigureMatcher, PersonMatcher
 from fonduer.candidates.mentions import Ngrams
 from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
 from fonduer.parser import Parser
@@ -99,6 +104,9 @@ def test_cand_gen(caplog):
     else:
         PARALLEL = 2  # Travis only gives 2 cores
 
+    def do_nothing_matcher(fig):
+        return True
+
     max_docs = 10
     session = Meta.init("postgres://localhost:5432/" + DB).Session()
 
@@ -120,10 +128,14 @@ def test_cand_gen(caplog):
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
     temp_ngrams = MentionNgramsTemp(n_max=2)
     volt_ngrams = MentionNgramsVolt(n_max=1)
+    figs = MentionFigures(types="png")
 
     Part = mention_subclass("Part")
     Temp = mention_subclass("Temp")
     Volt = mention_subclass("Volt")
+    Fig = mention_subclass("Fig")
+
+    fig_matcher = LambdaFunctionFigureMatcher(func=do_nothing_matcher)
 
     with pytest.raises(ValueError):
         mention_extractor = MentionExtractor(
@@ -142,15 +154,16 @@ def test_cand_gen(caplog):
 
     mention_extractor = MentionExtractor(
         session,
-        [Part, Temp, Volt],
-        [part_ngrams, temp_ngrams, volt_ngrams],
-        [part_matcher, temp_matcher, volt_matcher],
+        [Part, Temp, Volt, Fig],
+        [part_ngrams, temp_ngrams, volt_ngrams, figs],
+        [part_matcher, temp_matcher, volt_matcher, fig_matcher],
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 234
     assert session.query(Volt).count() == 107
     assert session.query(Temp).count() == 125
+    assert session.query(Fig).count() == 223
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]

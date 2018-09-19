@@ -31,7 +31,7 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y libmecab-dev mecab mecab-ipadic-utf8; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install mecab mecab-ipadic; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install mecab mecab-ipadic freetype; fi
 - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
@@ -111,4 +111,4 @@ deploy:
   on:
     tags: true
     branch: master
-    condition: $TRAVIS_OS_NAME = "linux"
+    condition: $TRAVIS_OS_NAME = "linux" && $PYTHON = "3.7"
