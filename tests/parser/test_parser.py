@@ -510,7 +510,7 @@ def test_parse_style(caplog):
     assert all(sentences[p["index"]].html_attrs == p["attr"] for p in sub_sentences)
 
 
-def test_parse_error_handling(caplog):
+def test_parse_error_doc_skipping(caplog):
     """Test skipping of faulty htmls."""
     caplog.set_level(logging.INFO)
 
