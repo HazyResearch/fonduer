@@ -193,7 +193,6 @@ class ParserUDF(UDF):
         if self.visual:
             self.pdf_path = pdf_path
             self.vizlink = VisualLinker()
-        self.table_parse_count = 0
 
     def apply(self, document, pdf_path=None, **kwargs):
         # The document is the Document model
