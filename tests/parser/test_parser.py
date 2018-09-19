@@ -508,3 +508,23 @@ def test_parse_style(caplog):
 
     # Assertions
     assert all(sentences[p["index"]].html_attrs == p["attr"] for p in sub_sentences)
+
+
+def test_parse_error_handling(caplog):
+    """Test skipping of faulty htmls."""
+    caplog.set_level(logging.INFO)
+
+    faulty_doc_path = "tests/data/faulty_html/faulty_Matthew_Mercer.html"
+    preprocessor = HTMLDocPreprocessor(faulty_doc_path)
+    doc = next(preprocessor._parse_file(faulty_doc_path, "faulty_Matthew_Mercer"))
+    parser_udf = get_parser_udf(structural=True, lingual=True)
+    sentence_lists = [x for x in parser_udf.apply(doc)]
+    # No sentences are yielded for faulty document
+    assert len(sentence_lists) == 0
+
+    faulty_doc_path = "tests/data/faulty_html/Bill_Gates.html"
+    preprocessor = HTMLDocPreprocessor(faulty_doc_path)
+    doc = next(preprocessor._parse_file(faulty_doc_path, "Bill_Gates"))
+    parser_udf = get_parser_udf(structural=True, lingual=True)
+    sentence_lists = [x for x in parser_udf.apply(doc)]
+    assert len(sentence_lists) == 868
