@@ -54,12 +54,12 @@ class TemporaryImage(TemporaryContext):
         return "image"
 
     def _get_insert_query(self):
-        return """INSERT INTO image VALUES(:id, :document_id, :image_id, :url)"""
+        return """INSERT INTO image VALUES(:id, :document_id, :position, :url)"""
 
     def _get_insert_args(self):
         return {
             "document_id": self.figure.document.id,
-            "image_id": self.figure.position,
+            "position": self.figure.position,
             "url": self.figure.url,
         }
 
