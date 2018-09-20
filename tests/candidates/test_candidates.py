@@ -84,10 +84,12 @@ def test_ngram_split(caplog):
     sent.words = ["A-B/C-D"]
     result = list(ngrams.apply(sent))
 
-    assert len(result) == 8
+    assert len(result) == 10
     spans = [r.get_span() for r in result]
     assert "A-B/C-D" in spans
     assert "A-B" in spans
+    assert "A-B/C" in spans
+    assert "B/C-D" in spans
     assert "C-D" in spans
     assert "B/C" in spans
     assert "A" in spans
@@ -233,8 +235,8 @@ def test_cand_gen(caplog):
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
     assert session.query(PartTemp).count() == 3879
-    assert session.query(PartVolt).count() == 3657
-    assert session.query(Candidate).count() == 7187
+    assert session.query(PartVolt).count() == 3610
+    assert session.query(Candidate).count() == 7489
     candidate_extractor.clear_all(split=0)
     assert session.query(Candidate).count() == 0
 
@@ -244,22 +246,22 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3530
-    assert session.query(PartVolt).count() == 3313
-    assert session.query(Candidate).count() == 6843
+    assert session.query(PartTemp).count() == 3879
+    assert session.query(PartVolt).count() == 3266
+    assert session.query(Candidate).count() == 7145
     assert docs[0].name == "112823"
     assert len(docs[0].parts) == 70
     assert len(docs[0].volts) == 33
-    assert len(docs[0].temps) == 18
+    assert len(docs[0].temps) == 24
 
     # Test that deletion of a Candidate does not delete the Mention
     session.query(PartTemp).delete()
     assert session.query(PartTemp).count() == 0
-    assert session.query(Temp).count() == 125
+    assert session.query(Temp).count() == 136
     assert session.query(Part).count() == 234
 
     # Test deletion of Candidate if Mention is deleted
-    assert session.query(PartVolt).count() == 3313
+    assert session.query(PartVolt).count() == 3266
     assert session.query(Volt).count() == 107
     session.query(Volt).delete()
     assert session.query(Volt).count() == 0
