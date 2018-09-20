@@ -48,7 +48,11 @@ class Ngrams(MentionSpace):
         MentionSpace.__init__(self)
         self.n_min = n_min
         self.n_max = n_max
-        self.split_tokens = split_tokens if split_tokens else None
+        self.split_rgx = (
+            r"(" + r"|".join(sorted(split_tokens, reverse=True)) + r")"
+            if split_tokens and len(split_tokens) > 0
+            else None
+        )
 
     def apply(self, context):
 
@@ -75,32 +79,27 @@ class Ngrams(MentionSpace):
                     j == 1
                     and self.n_max >= 1
                     and self.n_min <= 1
-                    and self.split_tokens is not None
+                    and self.split_rgx is not None
                     and end - start > 0
                 ):
                     text = context.text[start - offsets[0] : end - offsets[0] + 1]
-                    # Check splits individually
-                    for split_token in self.split_tokens:
-                        for word in re.split(split_token, text):
-                            ts = TemporarySpan(
-                                char_start=text.index(word),
-                                char_end=text.index(word) + len(word) - 1,
-                                sentence=context,
-                            )
-                            if ts not in seen and ts.get_span():
-                                seen.add(ts)
-                                yield ts
-                    # And check splits together
-                    for word in re.split("|".join(self.split_tokens), text):
-                        ts = TemporarySpan(
-                            char_start=text.index(word),
-                            char_end=text.index(word) + len(word) - 1,
-                            sentence=context,
-                        )
-                        if ts not in seen and ts.get_span():
-                            logger.warning(word)
-                            seen.add(ts)
-                            yield ts
+                    start_idxs = [0]
+                    end_idxs = []
+                    for m in re.finditer(self.split_rgx, text):
+                        start_idxs.append(m.end())
+                        end_idxs.append(m.start())
+                    end_idxs.append(len(text))
+                    for start_idx in start_idxs:
+                        for end_idx in end_idxs:
+                            if start_idx < end_idx:
+                                ts = TemporarySpan(
+                                    char_start=start_idx,
+                                    char_end=end_idx - 1,
+                                    sentence=context,
+                                )
+                                if ts not in seen and ts.get_span():
+                                    seen.add(ts)
+                                    yield ts
 
 
 class MentionNgrams(Ngrams):
