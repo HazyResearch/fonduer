@@ -198,38 +198,51 @@ class ParserUDF(UDF):
         # The document is the Document model
         text = document.text
 
-        if self.visual:
-            # Use the provided pdf_path if present
-            self.pdf_path = pdf_path if pdf_path else self.pdf_path
-            if not self.pdf_path:
-                warnings.warn(
-                    "Visual parsing failed: pdf_path is required. "
-                    + "Proceeding without visual parsing.",
-                    RuntimeWarning,
-                )
-                self.visual = False
-                yield from self.parse(document, text)
+        # Only return sentences, if no exceptions occur during parsing
+        try:
+            return_sentences = []
+            if self.visual:
+                # Use the provided pdf_path if present
+                self.pdf_path = pdf_path if pdf_path else self.pdf_path
+                if not self.pdf_path:
+                    warnings.warn(
+                        "Visual parsing failed: pdf_path is required. "
+                        + "Proceeding without visual parsing.",
+                        RuntimeWarning,
+                    )
+                    self.visual = False
+                    return_sentences += [y for y in self.parse(document, text)]
 
-            elif not self._valid_pdf(self.pdf_path, document.name):
-                warnings.warn(
-                    "Visual parse failed. {} not a PDF. {}".format(
-                        self.pdf_path + document.name,
-                        "Proceeding without visual parsing.",
-                    ),
-                    RuntimeWarning,
-                )
-                self.visual = False
-                yield from self.parse(document, text)
+                elif not self._valid_pdf(self.pdf_path, document.name):
+                    warnings.warn(
+                        "Visual parse failed. {} not a PDF. {}".format(
+                            self.pdf_path + document.name,
+                            "Proceeding without visual parsing.",
+                        ),
+                        RuntimeWarning,
+                    )
+                    self.visual = False
+                    return_sentences += [y for y in self.parse(document, text)]
+                else:
+                    # Populate document.sentences
+                    for _ in self.parse(document, text):
+                        pass
+                    # Add visual attributes
+                    return_sentences += [
+                        y
+                        for y in self.vizlink.parse_visual(
+                            document.name, document.sentences, self.pdf_path
+                        )
+                    ]
             else:
-                # Populate document.sentences
-                for _ in self.parse(document, text):
-                    pass
-                # Add visual attributes
-                yield from self.vizlink.parse_visual(
-                    document.name, document.sentences, self.pdf_path
-                )
-        else:
-            yield from self.parse(document, text)
+                return_sentences += [y for y in self.parse(document, text)]
+
+            yield from return_sentences
+        except NotImplementedError as e:
+            warnings.warn(
+                "Document {} not added to database, "
+                "because of parse error: \n{}".format(document.name, e)
+            )
 
     def _valid_pdf(self, path, filename):
         """Verify that the file exists and has a PDF extension."""

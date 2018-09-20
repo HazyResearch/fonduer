@@ -63,6 +63,7 @@ class DocPreprocessor(object):
             fpaths = [os.path.join(path, f) for f in os.listdir(path)]
         else:
             fpaths = glob.glob(path)
+        fpaths = [x for x in fpaths if self._can_read(x)]
         if len(fpaths) > 0:
             return sorted(fpaths)
         else:

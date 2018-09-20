@@ -6,6 +6,10 @@ Fixed
 ^^^^^
 * `@lukehsiao`_: Fix attribute error when using MentionFigures.
 
+Changed
+^^^^^^^
+* `@j-rausch`_: Parser will now skip documents with parsing errors rather than
+  crashing.
 
 [0.3.1] - 2018-09-18
 --------------------
