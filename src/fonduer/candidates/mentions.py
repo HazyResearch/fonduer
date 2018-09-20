@@ -40,20 +40,15 @@ class Ngrams(MentionSpace):
     :param n_max: Upper limit for the generated n_grams.
     :type n_max: int
     :param split_tokens: Tokens, on which unigrams are split into two separate
-        unigrams. Unigrams are split exclusively on the *first* occurence of a
-        split token.
+        unigrams.
     :type split_tokens: tuple, list of str.
     """
 
-    def __init__(self, n_min=1, n_max=5, split_tokens=("-", "/")):
+    def __init__(self, n_min=1, n_max=5, split_tokens=[]):
         MentionSpace.__init__(self)
         self.n_min = n_min
         self.n_max = n_max
-        self.split_rgx = (
-            r"(" + r"|".join(split_tokens) + r")"
-            if split_tokens and len(split_tokens) > 0
-            else None
-        )
+        self.split_tokens = split_tokens if split_tokens else None
 
     def apply(self, context):
 
@@ -76,33 +71,36 @@ class Ngrams(MentionSpace):
                     yield ts
 
                 # Check for split
-                # NOTE: For simplicity, we only split single tokens right now!
                 if (
                     j == 1
                     and self.n_max >= 1
                     and self.n_min <= 1
-                    and self.split_rgx is not None
+                    and self.split_tokens is not None
                     and end - start > 0
                 ):
-                    m = re.search(
-                        self.split_rgx,
-                        context.text[start - offsets[0] : end - offsets[0] + 1],
-                    )
-                    if m is not None:
-                        ts1 = TemporarySpan(
-                            char_start=start,
-                            char_end=start + m.start(1) - 1,
+                    text = context.text[start - offsets[0] : end - offsets[0] + 1]
+                    # Check splits individually
+                    for split_token in self.split_tokens:
+                        for word in re.split(split_token, text):
+                            ts = TemporarySpan(
+                                char_start=text.index(word),
+                                char_end=text.index(word) + len(word) - 1,
+                                sentence=context,
+                            )
+                            if ts not in seen and ts.get_span():
+                                seen.add(ts)
+                                yield ts
+                    # And check splits together
+                    for word in re.split("|".join(self.split_tokens), text):
+                        ts = TemporarySpan(
+                            char_start=text.index(word),
+                            char_end=text.index(word) + len(word) - 1,
                             sentence=context,
                         )
-                        if ts1 not in seen and ts1.get_span():
-                            seen.add(ts1)
-                            yield ts1
-                        ts2 = TemporarySpan(
-                            char_start=start + m.end(1), char_end=end, sentence=context
-                        )
-                        if ts2 not in seen and ts2.get_span():
-                            seen.add(ts2)
-                            yield ts2
+                        if ts not in seen and ts.get_span():
+                            logger.warning(word)
+                            seen.add(ts)
+                            yield ts
 
 
 class MentionNgrams(Ngrams):
@@ -117,12 +115,11 @@ class MentionNgrams(Ngrams):
     :param n_max: Upper limit for the generated n_grams.
     :type n_max: int
     :param split_tokens: Tokens, on which unigrams are split into two separate
-        unigrams. Unigrams are split exclusively on the *first* occurence of a
-        split token.
+        unigrams.
     :type split_tokens: tuple, list of str.
     """
 
-    def __init__(self, n_min=1, n_max=5, split_tokens=["-", "/"]):
+    def __init__(self, n_min=1, n_max=5, split_tokens=[]):
         """
         Initialize MentionNgrams.
         """

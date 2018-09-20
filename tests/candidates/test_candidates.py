@@ -33,7 +33,7 @@ DB = "cand_test"
 def test_ngram_split(caplog):
     """Test ngram split."""
     caplog.set_level(logging.INFO)
-    ngrams = Ngrams()
+    ngrams = Ngrams(split_tokens=["-", "/"])
     sent = Sentence()
 
     # When a split_token appears in the middle of the text.
@@ -71,10 +71,14 @@ def test_ngram_split(caplog):
     sent.words = ["New/Text-Word"]
     result = list(ngrams.apply(sent))
 
-    assert len(result) == 3
-    assert result[0].get_span() == "New/Text-Word"
-    assert result[1].get_span() == "New"
-    assert result[2].get_span() == "Text-Word"
+    assert len(result) == 6
+    spans = [r.get_span() for r in result]
+    assert "New/Text-Word" in spans
+    assert "New" in spans
+    assert "New/Text" in spans
+    assert "Text" in spans
+    assert "Text-Word" in spans
+    assert "Word" in spans
 
 
 def test_span_char_start_and_char_end(caplog):

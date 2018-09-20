@@ -8,6 +8,9 @@ Fixed
 
 Changed
 ^^^^^^^
+* `@lukehsiao`_: :class:`MentionNgrams` ``split_tokens`` now defaults to an
+  empty list and splits on all occurrences, rather than just the first
+  occurrence.
 * `@j-rausch`_: Parser will now skip documents with parsing errors rather than
   crashing.
 
