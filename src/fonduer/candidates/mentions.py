@@ -49,7 +49,7 @@ class Ngrams(MentionSpace):
         self.n_min = n_min
         self.n_max = n_max
         self.split_rgx = (
-            r"(" + r"|".join(sorted(split_tokens, reverse=True)) + r")"
+            r"(" + r"|".join(map(re.escape, sorted(split_tokens, reverse=True))) + r")"
             if split_tokens and len(split_tokens) > 0
             else None
         )
