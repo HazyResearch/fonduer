@@ -6,6 +6,10 @@ Fixed
 ^^^^^
 * `@lukehsiao`_: Fix attribute error when using MentionFigures.
 
+Changed
+^^^^^^^
+* `@j-rausch`_: Parser will now skip documents with parsing errors rather than
+  crashing.
 
 [0.3.1] - 2018-09-18
 --------------------
@@ -33,8 +37,6 @@ Added
 
 Changed
 ^^^^^^^
-* `@j-rausch`_: Parser will now skip documents with parsing errors rather than
-  crashing.
 * `@j-rausch`_: ``Document.text`` now returns the modified document text, based
   on the user-defined html-tag stripping in the parsing stage.
 * `@j-rausch`_: ``Ngrams`` now has a ``n_min`` argument to specify a minimum
