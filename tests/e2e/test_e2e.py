@@ -47,7 +47,7 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-#  @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_incremental(caplog):
     """Run an end-to-end test on incremental additions."""
     caplog.set_level(logging.INFO)
@@ -189,7 +189,7 @@ def test_incremental(caplog):
     assert L_train[0].shape == (1574, 6)
 
 
-#  @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
