@@ -80,6 +80,21 @@ def test_ngram_split(caplog):
     assert "Text-Word" in spans
     assert "Word" in spans
 
+    sent.text = "A-B/C-D"
+    sent.words = ["A-B/C-D"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 8
+    spans = [r.get_span() for r in result]
+    assert "A-B/C-D" in spans
+    assert "A-B" in spans
+    assert "C-D" in spans
+    assert "B/C" in spans
+    assert "A" in spans
+    assert "B" in spans
+    assert "C" in spans
+    assert "D" in spans
+
 
 def test_span_char_start_and_char_end(caplog):
     """Test chart_start and char_end of TemporarySpan that comes from Ngrams.apply."""
@@ -166,7 +181,7 @@ def test_cand_gen(caplog):
 
     assert session.query(Part).count() == 234
     assert session.query(Volt).count() == 107
-    assert session.query(Temp).count() == 125
+    assert session.query(Temp).count() == 136
     assert session.query(Fig).count() == 223
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
@@ -204,20 +219,20 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3654
-    assert session.query(PartVolt).count() == 3657
-    assert session.query(Candidate).count() == 7311
+    assert session.query(PartTemp).count() == 4141
+    assert session.query(PartVolt).count() == 3610
+    assert session.query(Candidate).count() == 7751
     candidate_extractor.clear_all(split=0)
     assert session.query(Candidate).count() == 0
 
-    # Test that None in throttlers in candidate extractor
+    # Test with None in throttlers in candidate extractor
     candidate_extractor = CandidateExtractor(
         session, [PartTemp, PartVolt], throttlers=[temp_throttler, None]
     )
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3530
+    assert session.query(PartTemp).count() == 3879
     assert session.query(PartVolt).count() == 3657
     assert session.query(Candidate).count() == 7187
     candidate_extractor.clear_all(split=0)
