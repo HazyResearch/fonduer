@@ -90,8 +90,6 @@ def test_ngram_split(caplog):
     assert "A-B/C" in spans
     assert "B/C-D" in spans
     assert "A-B" in spans
-    assert "A-B/C" in spans
-    assert "B/C-D" in spans
     assert "C-D" in spans
     assert "B/C" in spans
     assert "A" in spans
