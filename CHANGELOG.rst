@@ -193,7 +193,8 @@ Fixed
         )
         from fonduer.candidates.models import candidate_subclass, mention_subclass
         from fonduer.features import Featurizer
-        from fonduer.learning import GenerativeModel, SparseLogisticRegression
+        from metal.label_model import LabelModel # GenerativeModel in v0.2.3
+        from fonduer.learning import SparseLogisticRegression
         from fonduer.parser import Parser
         from fonduer.parser.models import Document, Sentence
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
