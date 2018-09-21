@@ -47,7 +47,7 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")
 def test_incremental(caplog):
     """Run an end-to-end test on incremental additions."""
     caplog.set_level(logging.INFO)
@@ -163,7 +163,7 @@ def test_incremental(caplog):
     mention_extractor.apply(new_docs, parallelism=PARALLEL, clear=False)
 
     assert session.query(Part).count() == 81
-    assert session.query(Temp).count() == 27
+    assert session.query(Temp).count() == 33
 
     # Just run candidate extraction and assign to split 0
     candidate_extractor.apply(new_docs, split=0, parallelism=PARALLEL, clear=False)
@@ -171,22 +171,22 @@ def test_incremental(caplog):
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0)
     assert len(train_cands) == 1
-    assert len(train_cands[0]) == 1256
+    assert len(train_cands[0]) == 1574
 
     # Update features
     featurizer.update(new_docs, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 1256
-    assert session.query(FeatureKey).count() == 2295
+    assert session.query(Feature).count() == 1574
+    assert session.query(FeatureKey).count() == 2425
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (1256, 2295)
-    assert len(featurizer.get_keys()) == 2295
+    assert F_train[0].shape == (1574, 2425)
+    assert len(featurizer.get_keys()) == 2425
 
     # Update Labels
     labeler.update(new_docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)
-    assert session.query(Label).count() == 1256
+    assert session.query(Label).count() == 1574
     assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (1256, 6)
+    assert L_train[0].shape == (1574, 6)
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
@@ -321,7 +321,7 @@ def test_e2e(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 299
-    assert session.query(Temp).count() == 134
+    assert session.query(Temp).count() == 147
     assert len(mention_extractor.get_mentions()) == 2
     assert len(mention_extractor.get_mentions()[0]) == 299
     assert (
@@ -343,23 +343,23 @@ def test_e2e(caplog):
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3346
-    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
-    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 420
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3684
+    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 72
+    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 448
 
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0)
     dev_cands = candidate_extractor.get_candidates(split=1)
     test_cands = candidate_extractor.get_candidates(split=2)
     assert len(train_cands) == 1
-    assert len(train_cands[0]) == 3346
+    assert len(train_cands[0]) == 3684
     assert (
         len(
             candidate_extractor.get_candidates(
                 docs=[session.query(Document).filter(Document.name == "112823").first()]
             )[0]
         )
-        == 1178
+        == 1496
     )
 
     # Featurization
@@ -367,36 +367,36 @@ def test_e2e(caplog):
 
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 61
-    assert session.query(FeatureKey).count() == 676
+    assert session.query(Feature).count() == 72
+    assert session.query(FeatureKey).count() == 716
 
     # Test Dropping FeatureKey
     featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NFP NN NFP]"])
-    assert session.query(FeatureKey).count() == 675
+    assert session.query(FeatureKey).count() == 715
     session.query(Feature).delete()
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 3346
-    assert session.query(FeatureKey).count() == 3578
+    assert session.query(Feature).count() == 3684
+    assert session.query(FeatureKey).count() == 3748
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3346, 3578)
-    assert len(featurizer.get_keys()) == 3578
+    assert F_train[0].shape == (3684, 3748)
+    assert len(featurizer.get_keys()) == 3748
 
     featurizer.apply(split=1, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 3407
-    assert session.query(FeatureKey).count() == 3578
+    assert session.query(Feature).count() == 3756
+    assert session.query(FeatureKey).count() == 3748
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (61, 3578)
+    assert F_dev[0].shape == (72, 3748)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 3827
-    assert session.query(FeatureKey).count() == 3578
+    assert session.query(Feature).count() == 4204
+    assert session.query(FeatureKey).count() == 3748
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (420, 3578)
+    assert F_test[0].shape == (448, 3748)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
-    assert session.query(GoldLabel).count() == 3827
+    assert session.query(GoldLabel).count() == 4204
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -413,17 +413,17 @@ def test_e2e(caplog):
         labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
 
     labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
-    assert session.query(Label).count() == 3346
+    assert session.query(Label).count() == 3684
     assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3346, 6)
+    assert L_train[0].shape == (3684, 6)
     assert len(labeler.get_keys()) == 6
 
     L_train_gold = labeler.get_gold_labels(train_cands)
-    assert L_train_gold[0].shape == (3346, 1)
+    assert L_train_gold[0].shape == (3684, 1)
 
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
-    assert L_train_gold[0].shape == (3346, 1)
+    assert L_train_gold[0].shape == (3684, 1)
 
     gen_model = LabelModel(k=2)
     gen_model.train(L_train[0], n_epochs=500, print_every=100)
@@ -474,10 +474,10 @@ def test_e2e(caplog):
         LF_not_temp_relevant,
     ]
     labeler.update(split=0, lfs=[stg_temp_lfs_2], parallelism=PARALLEL)
-    assert session.query(Label).count() == 3346
+    assert session.query(Label).count() == 3684
     assert session.query(LabelKey).count() == 13
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3346, 13)
+    assert L_train[0].shape == (3684, 13)
 
     gen_model = LabelModel(k=2)
     gen_model.train(L_train[0], n_epochs=500, print_every=100)

@@ -167,13 +167,15 @@ def char_range(a, b):
 
 
 class MentionNgramsPart(MentionNgrams):
-    def __init__(self, parts_by_doc=None, n_max=3, expand=True, split_tokens=None):
+    def __init__(
+        self, parts_by_doc=None, n_max=3, expand=True, split_tokens=["-", "/"]
+    ):
         """MentionNgrams specifically for transistor parts.
 
         :param parts_by_doc: a dictionary d where d[document_name.upper()] =
             [partA, partB, ...]
         """
-        MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
+        super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
         self.parts_by_doc = parts_by_doc
         self.expander = expand_part_range if expand else (lambda x: [x])
 
@@ -228,8 +230,8 @@ class MentionNgramsPart(MentionNgrams):
 
 
 class MentionNgramsTemp(MentionNgrams):
-    # def __init__(self, n_max=2, split_tokens=None):
-    #     MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
+    def __init__(self, n_max=2, split_tokens=["-", "/"]):
+        super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, session, context):
         for ts in MentionNgrams.apply(self, session, context):
@@ -287,8 +289,8 @@ class MentionNgramsTemp(MentionNgrams):
 
 
 class MentionNgramsVolt(MentionNgrams):
-    # def __init__(self, n_max=1, split_tokens=None):
-    #     MentionNgrams.__init__(self, n_max=n_max, split_tokens=None)
+    def __init__(self, n_max=1, split_tokens=["-", "/"]):
+        super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, session, context):
         for ts in MentionNgrams.apply(self, session, context):

@@ -33,7 +33,7 @@ DB = "cand_test"
 def test_ngram_split(caplog):
     """Test ngram split."""
     caplog.set_level(logging.INFO)
-    ngrams = Ngrams()
+    ngrams = Ngrams(split_tokens=["-", "/"])
     sent = Sentence()
 
     # When a split_token appears in the middle of the text.
@@ -71,10 +71,89 @@ def test_ngram_split(caplog):
     sent.words = ["New/Text-Word"]
     result = list(ngrams.apply(sent))
 
-    assert len(result) == 3
-    assert result[0].get_span() == "New/Text-Word"
-    assert result[1].get_span() == "New"
-    assert result[2].get_span() == "Text-Word"
+    assert len(result) == 6
+    spans = [r.get_span() for r in result]
+    assert "New/Text-Word" in spans
+    assert "New" in spans
+    assert "New/Text" in spans
+    assert "Text" in spans
+    assert "Text-Word" in spans
+    assert "Word" in spans
+
+    sent.text = "A-B/C-D"
+    sent.words = ["A-B/C-D"]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 10
+    spans = [r.get_span() for r in result]
+    assert "A-B/C-D" in spans
+    assert "A-B/C" in spans
+    assert "B/C-D" in spans
+    assert "A-B" in spans
+    assert "C-D" in spans
+    assert "B/C" in spans
+    assert "A" in spans
+    assert "B" in spans
+    assert "C" in spans
+    assert "D" in spans
+
+    ngrams = Ngrams(split_tokens=["~", "~~"])
+    sent = Sentence()
+
+    sent.text = "a~b~~c~d"
+    sent.words = ["a~b~~c~d"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 10
+    spans = [r.get_span() for r in result]
+    assert "a~b~~c~d" in spans
+    assert "a" in spans
+    assert "a~b" in spans
+    assert "a~b~~c" in spans
+    assert "b" in spans
+    assert "b~~c" in spans
+    assert "b~~c~d" in spans
+    assert "c" in spans
+    assert "c~d" in spans
+    assert "d" in spans
+
+    ngrams = Ngrams(split_tokens=["~a", "a~"])
+    sent = Sentence()
+
+    sent.text = "~a~b~~c~d"
+    sent.words = ["~a~b~~c~d"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 2
+    spans = [r.get_span() for r in result]
+    assert "~a~b~~c~d" in spans
+    assert "~b~~c~d" in spans
+
+    ngrams = Ngrams(split_tokens=["-", "/", "*"])
+    sent = Sentence()
+
+    sent.text = "A-B/C*D"
+    sent.words = ["A-B/C*D"]
+    sent.char_offsets = [0]
+    sent.abs_char_offsets = [0]
+    result = list(ngrams.apply(sent))
+
+    assert len(result) == 10
+    spans = [r.get_span() for r in result]
+    assert "A-B/C*D" in spans
+    assert "A" in spans
+    assert "A-B" in spans
+    assert "A-B/C" in spans
+    assert "B" in spans
+    assert "B/C" in spans
+    assert "B/C*D" in spans
+    assert "C" in spans
+    assert "C*D" in spans
+    assert "D" in spans
 
 
 def test_span_char_start_and_char_end(caplog):
@@ -162,7 +241,7 @@ def test_cand_gen(caplog):
 
     assert session.query(Part).count() == 234
     assert session.query(Volt).count() == 107
-    assert session.query(Temp).count() == 125
+    assert session.query(Temp).count() == 136
     assert session.query(Fig).count() == 223
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
@@ -200,22 +279,22 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3654
-    assert session.query(PartVolt).count() == 3657
-    assert session.query(Candidate).count() == 7311
+    assert session.query(PartTemp).count() == 4141
+    assert session.query(PartVolt).count() == 3610
+    assert session.query(Candidate).count() == 7751
     candidate_extractor.clear_all(split=0)
     assert session.query(Candidate).count() == 0
 
-    # Test that None in throttlers in candidate extractor
+    # Test with None in throttlers in candidate extractor
     candidate_extractor = CandidateExtractor(
         session, [PartTemp, PartVolt], throttlers=[temp_throttler, None]
     )
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3530
-    assert session.query(PartVolt).count() == 3657
-    assert session.query(Candidate).count() == 7187
+    assert session.query(PartTemp).count() == 3879
+    assert session.query(PartVolt).count() == 3610
+    assert session.query(Candidate).count() == 7489
     candidate_extractor.clear_all(split=0)
     assert session.query(Candidate).count() == 0
 
@@ -225,22 +304,22 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3530
-    assert session.query(PartVolt).count() == 3313
-    assert session.query(Candidate).count() == 6843
+    assert session.query(PartTemp).count() == 3879
+    assert session.query(PartVolt).count() == 3266
+    assert session.query(Candidate).count() == 7145
     assert docs[0].name == "112823"
     assert len(docs[0].parts) == 70
     assert len(docs[0].volts) == 33
-    assert len(docs[0].temps) == 18
+    assert len(docs[0].temps) == 24
 
     # Test that deletion of a Candidate does not delete the Mention
     session.query(PartTemp).delete()
     assert session.query(PartTemp).count() == 0
-    assert session.query(Temp).count() == 125
+    assert session.query(Temp).count() == 136
     assert session.query(Part).count() == 234
 
     # Test deletion of Candidate if Mention is deleted
-    assert session.query(PartVolt).count() == 3313
+    assert session.query(PartVolt).count() == 3266
     assert session.query(Volt).count() == 107
     session.query(Volt).delete()
     assert session.query(Volt).count() == 0
