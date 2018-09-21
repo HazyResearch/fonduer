@@ -47,7 +47,7 @@ ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")
 def test_incremental(caplog):
     """Run an end-to-end test on incremental additions."""
     caplog.set_level(logging.INFO)
