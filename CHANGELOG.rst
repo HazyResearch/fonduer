@@ -2,6 +2,8 @@
 [Unreleased]
 ------------
 
+[0.3.2] - 2018-09-20
+--------------------
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix attribute error when using MentionFigures.
