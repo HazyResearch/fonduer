@@ -56,18 +56,17 @@ def _batch_postgres_query(table, records):
         + ", ".join(["?"] * len(records[0].keys()))
         + ")\n"
     )
-    logger.warning(preamble)
     start = 0
     end = 0
     total_len = len(preamble)
     while end < len(records):
-        record_len = sum([len(v) for v in records[end].values()])
+        record_len = sum([len(str(v)) for v in records[end].values()])
 
         # Pre-increment to include the end element in the slice
         end += 1
 
         if total_len + record_len >= POSTGRESQL_MAX:
-            logger.warning("Splitting query due to length.")
+            logger.debug("Splitting query due to length ({} chars).".format(total_len))
             yield records[start:end]
             start = end
             # Reset the total query length
