@@ -8,6 +8,12 @@ Changed
   :class:`LambdaFunctionMatcher`, which defaults to False, rather than True.
   (`#165 <https://github.com/HazyResearch/fonduer/pull/165>`_)
 
+Fixed
+^^^^^
+* `@lukehsiao`_: Fixes the behavior of the ``get_between_ngrams`` data model
+  util. (`#164 <https://github.com/HazyResearch/fonduer/pull/164>`_)
+
+
 [0.3.2] - 2018-09-20
 --------------------
 Fixed
