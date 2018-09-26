@@ -29,6 +29,55 @@ def _get_cand_values(candidate, key_table):
         raise ValueError("{} is not a valid key table.".format(key_table))
 
 
+def _batch_postgres_query(table, records):
+    """Break the list into chunks that can be processed as a single statement.
+
+    Postgres query cannot be too long or it will fail.
+    See: https://dba.stackexchange.com/questions/131399/is-there-a-maximum-
+     length-constraint-for-a-postgres-query
+
+    :param records: The full list of records to batch.
+    :type records: iterable
+    :param table: The sqlalchemy table.
+    :return: A generator of lists of records.
+    """
+    if not records:
+        return
+
+    POSTGRESQL_MAX = 0x3fffffff
+
+    # Create preamble and measure its length
+    preamble = (
+        "INSERT INTO "
+        + table.__tablename__
+        + " ("
+        + ", ".join(records[0].keys())
+        + ") VALUES ("
+        + ", ".join(["?"] * len(records[0].keys()))
+        + ")\n"
+    )
+    logger.warning(preamble)
+    start = 0
+    end = 0
+    total_len = len(preamble)
+    while end < len(records):
+        record_len = sum([len(v) for v in records[end].values()])
+
+        # Pre-increment to include the end element in the slice
+        end += 1
+
+        if total_len + record_len >= POSTGRESQL_MAX:
+            logger.warning("Splitting query due to length.")
+            yield records[start:end]
+            start = end
+            # Reset the total query length
+            total_len = len(preamble)
+        else:
+            total_len += record_len
+
+    yield records[start:end]
+
+
 def get_sparse_matrix_keys(session, key_table):
     """Return a generator of keys for the sparse matrix."""
     return session.query(key_table).order_by(key_table.name).all()
@@ -38,14 +87,17 @@ def batch_upsert_records(session, table, records):
     """Batch upsert records into postgresql database."""
     if not records:
         return
-
-    stmt = insert(table.__table__).values(records)
-    stmt = stmt.on_conflict_do_update(
-        constraint=table.__table__.primary_key,
-        set_={"keys": stmt.excluded.get("keys"), "values": stmt.excluded.get("values")},
-    )
-    session.execute(stmt)
-    session.commit()
+    for record_batch in _batch_postgres_query(table, records):
+        stmt = insert(table.__table__)
+        stmt = stmt.on_conflict_do_update(
+            constraint=table.__table__.primary_key,
+            set_={
+                "keys": stmt.excluded.get("keys"),
+                "values": stmt.excluded.get("values"),
+            },
+        )
+        session.execute(stmt, record_batch)
+        session.commit()
 
 
 def get_sparse_matrix(session, key_table, cand_lists, key=None):
@@ -106,6 +158,8 @@ def get_mapping(session, table, candidates, generator, key_set):
     :param candidates: The candidates to get mappings for.
     :param generator: A generator yielding (candidate_id, key, value) tuples.
     :param key_set: A mutable set which keys will be added to.
+    :return: Dictionary of {"candidate_id": _, "keys": _, "values": _}
+    :rtype: dict
     """
     for cand in candidates:
         # Grab the old values currently in the DB
@@ -163,8 +217,9 @@ def add_keys(session, key_table, keys):
     if not keys:
         return
 
-    # Rather than deal with concurrency of querying first then inserting only
-    # new keys, insert with on_conflict_do_nothing.
-    stmt = insert(key_table.__table__).values([{"name": key} for key in keys])
-    stmt = stmt.on_conflict_do_nothing(constraint=key_table.__table__.primary_key)
-    session.execute(stmt)
+    for key_batch in _batch_postgres_query(key_table, [{"name": key} for key in keys]):
+        # Rather than deal with concurrency of querying first then inserting only
+        # new keys, insert with on_conflict_do_nothing.
+        stmt = insert(key_table.__table__)
+        stmt = stmt.on_conflict_do_nothing(constraint=key_table.__table__.primary_key)
+        session.execute(stmt, key_batch)
