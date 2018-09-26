@@ -2,6 +2,11 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@lukehsiao`_: Fixes the behavior of the ``get_between_ngrams`` data model
+  util. (`#164 <https://github.com/HazyResearch/fonduer/pull/164>`_)
+
 [0.3.2] - 2018-09-20
 --------------------
 Fixed
