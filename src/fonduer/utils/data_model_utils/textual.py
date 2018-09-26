@@ -40,7 +40,7 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
         ):
             yield ngram
     else:  # span0.get_word_start_index() > span1.get_word_start_index()
-        for ngram in get_left_ngrams(
+        for ngram in get_right_ngrams(
             span1,
             window=distance - 1,
             attrib=attrib,
