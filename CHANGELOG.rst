@@ -2,6 +2,11 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@lukehsiao`_: Batch queries so that PostgreSQL buffers aren't exceeded.
+  (`#162 <https://github.com/HazyResearch/fonduer/pull/162>`_)
+
 [0.3.2] - 2018-09-20
 --------------------
 Fixed
