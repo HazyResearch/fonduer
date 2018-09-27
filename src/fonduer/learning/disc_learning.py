@@ -260,7 +260,7 @@ class NoiseAwareModel(Classifier, nn.Module):
                     )
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
-                    msg += "\tDev {0}={1:.2f}".format(score_label, 100. * score)
+                    msg += "\tDev {0}={1:.2f}".format(score_label, 100.0 * score)
                 self.logger.info(msg)
 
                 # If best score on dev set so far and dev checkpointing is
