@@ -1,7 +1,8 @@
-
 [Unreleased]
 ------------
 
+[0.3.3] - 2018-09-27
+--------------------
 Changed
 ^^^^^^^
 * `@lukehsiao`_: Added ``longest_match_only`` parameter to
@@ -14,7 +15,6 @@ Fixed
   util. (`#164 <https://github.com/HazyResearch/fonduer/pull/164>`_)
 * `@lukehsiao`_: Batch queries so that PostgreSQL buffers aren't exceeded.
   (`#162 <https://github.com/HazyResearch/fonduer/pull/162>`_)
-
 
 [0.3.2] - 2018-09-20
 --------------------
@@ -32,14 +32,12 @@ Changed
 
 [0.3.1] - 2018-09-18
 --------------------
-
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix the layers module in fonduer.learning.disc_models.layers.
 
 [0.3.0] - 2018-09-18
 --------------------
-
 Added
 ^^^^^
 * `@lukehsiao`_: Add supporting functions for incremental knowledge base
