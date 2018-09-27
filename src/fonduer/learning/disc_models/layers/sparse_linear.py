@@ -43,7 +43,7 @@ class SparseLinear(nn.Module):
         """Reinitiate the weight parameters.
         """
 
-        stdv = 1. / math.sqrt(self.num_features)
+        stdv = 1.0 / math.sqrt(self.num_features)
         self.weight.weight.data.uniform_(-stdv, stdv)
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
