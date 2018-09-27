@@ -44,7 +44,7 @@ def _batch_postgres_query(table, records):
     if not records:
         return
 
-    POSTGRESQL_MAX = 0x3fffffff
+    POSTGRESQL_MAX = 0x3FFFFFFF
 
     # Create preamble and measure its length
     preamble = (
