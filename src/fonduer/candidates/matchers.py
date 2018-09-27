@@ -164,10 +164,16 @@ class LambdaFunctionMatcher(_NgramMatcher):
 
     :param func: The function to evaluate.
     :type func: function
+    :param longest_match_only: Whether to only return the longest span matched,
+        rather than all spans. Default False.
+    :type longest_match_only: bool
     """
 
     def init(self):
         self.attrib = self.opts.get("attrib", WORDS)
+
+        # Set longest match only to False by default.
+        self.longest_match_only = self.opts.get("longest_match_only", False)
         try:
             self.func = self.opts["func"]
         except KeyError:
@@ -483,6 +489,8 @@ class LambdaFunctionFigureMatcher(_FigureMatcher):
     """
 
     def init(self):
+        # Set longest match only to False
+        self.longest_match_only = False
         try:
             self.func = self.opts["func"]
         except KeyError:

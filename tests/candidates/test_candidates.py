@@ -11,12 +11,17 @@ from fonduer.candidates import (
     MentionFigures,
     MentionNgrams,
 )
-from fonduer.candidates.matchers import LambdaFunctionFigureMatcher, PersonMatcher
+from fonduer.candidates.matchers import (
+    LambdaFunctionFigureMatcher,
+    LambdaFunctionMatcher,
+    PersonMatcher,
+)
 from fonduer.candidates.mentions import Ngrams
 from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.utils.data_model_utils import get_row_ngrams
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,
@@ -369,3 +374,69 @@ def test_ngrams(caplog):
     mentions = session.query(Person).all()
     assert len([x for x in mentions if x.span.get_num_words() == 1]) == 0
     assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0
+
+
+def test_mention_longest_match(caplog):
+    """Test longest match filtering in mention extraction."""
+    caplog.set_level(logging.INFO)
+    # SpaCy on mac has issue on parallel parsing
+    PARALLEL = 1
+
+    max_docs = 1
+    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+
+    docs_path = "tests/data/pure_html/lincoln_short.html"
+
+    # Parsing
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(session, structural=True, lingual=True)
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    docs = session.query(Document).order_by(Document.name).all()
+    # Mention Extraction
+    name_ngrams = MentionNgramsPart(n_max=3)
+    place_ngrams = MentionNgramsTemp(n_max=4)
+
+    Name = mention_subclass("Name")
+    Place = mention_subclass("Place")
+
+    def is_birthplace_table_row(mention):
+        if not mention.sentence.is_tabular():
+            return False
+        ngrams = get_row_ngrams(mention, lower=True)
+        if "birth_place" in ngrams:
+            return True
+        else:
+            return False
+
+    birthplace_matcher = LambdaFunctionMatcher(
+        func=is_birthplace_table_row, longest_match_only=False
+    )
+    mention_extractor = MentionExtractor(
+        session,
+        [Name, Place],
+        [name_ngrams, place_ngrams],
+        [PersonMatcher(), birthplace_matcher],
+    )
+    mention_extractor.apply(docs, parallelism=PARALLEL)
+    mentions = session.query(Place).all()
+    mention_spans = [x.span.get_span() for x in mentions]
+    assert "Sinking Spring Farm" in mention_spans
+    assert "Farm" in mention_spans
+    assert len(mention_spans) == 23
+
+    birthplace_matcher = LambdaFunctionMatcher(
+        func=is_birthplace_table_row, longest_match_only=True
+    )
+    mention_extractor = MentionExtractor(
+        session,
+        [Name, Place],
+        [name_ngrams, place_ngrams],
+        [PersonMatcher(), birthplace_matcher],
+    )
+    mention_extractor.apply(docs, parallelism=PARALLEL)
+    mentions = session.query(Place).all()
+    mention_spans = [x.span.get_span() for x in mentions]
+    assert "Sinking Spring Farm" in mention_spans
+    assert "Farm" not in mention_spans
+    assert len(mention_spans) == 4
