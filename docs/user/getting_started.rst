@@ -15,11 +15,12 @@ For OS X using homebrew_::
 
     $ brew install poppler
     $ brew install postgresql
+    $ brew install libpng freetype pkg-config
 
 On Debian-based distros::
 
     $ sudo apt update
-    $ sudo apt install libxml2-dev libxslt-dev python3-dev
+    $ sudo apt install libxml2-dev libxslt-dev python3-dev build-dep python-matplotlib
     $ sudo apt install poppler-utils
     $ sudo apt install postgresql
 
