@@ -122,17 +122,32 @@ class Featurizer(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
-    def drop_keys(self, keys):
+    def drop_keys(self, keys, candidate_classes=None):
         """Drop the specified keys from FeatureKeys.
 
         :param keys: A list of FeatureKey names to delete.
         :type keys: list, tuple
+        :param candidate_classes: A list of the Candidates to drop the key for.
+            If None, drops the keys for all candidate classes.
+        :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
 
+        # Make sure candidate_classes is iterable
+        if candidate_classes:
+            candidate_classes = (
+                candidate_classes
+                if isinstance(candidate_classes, (list, tuple))
+                else [candidate_classes]
+            )
+        # If unspecified, just use all candidate classes
+        else:
+            candidate_classes = self.candidate_classes
+
         # Remove the specified keys
         for key in keys:
+            # TODO add subquery to filter by the relations
             self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
 
     def get_keys(self):
@@ -210,16 +225,16 @@ class FeaturizerUDF(UDF):
             self.session, self.candidate_classes, doc, split
         )
 
-        feature_keys = set()
+        feature_map = dict()
         for cands in cands_list:
             records = list(
-                get_mapping(self.session, Feature, cands, get_all_feats, feature_keys)
+                get_mapping(self.session, Feature, cands, get_all_feats, feature_map)
             )
             batch_upsert_records(self.session, Feature, records)
 
         # Insert all Feature Keys
         if train:
-            add_keys(self.session, FeatureKey, feature_keys)
+            add_keys(self.session, FeatureKey, feature_map)
 
         # This return + yield makes a completely empty generator
         return

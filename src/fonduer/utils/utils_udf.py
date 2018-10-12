@@ -149,16 +149,18 @@ def get_docs_from_split(session, candidate_classes, split):
     return split_docs
 
 
-def get_mapping(session, table, candidates, generator, key_set):
+def get_mapping(session, table, candidates, generator, key_map):
     """Generate map of keys and values for the candidate from the generator.
 
     :param session: The database session.
     :param table: The table we will be inserting into (i.e. Feature or Label).
     :param candidates: The candidates to get mappings for.
     :param generator: A generator yielding (candidate_id, key, value) tuples.
-    :param key_set: A mutable set which keys will be added to.
-    :return: Dictionary of {"candidate_id": _, "keys": _, "values": _}
-    :rtype: dict
+    :param key_map: A mutable dict which values will be added to as {key:
+        [relations]}.
+    :type key_map: Dict
+    :return: Generator of dictionaries of {"candidate_id": _, "keys": _, "values": _}
+    :rtype: generator of dict
     """
     for cand in candidates:
         # Grab the old values currently in the DB
@@ -178,8 +180,12 @@ def get_mapping(session, table, candidates, generator, key_set):
         map_args["keys"] = [*cand_map.keys()]
         map_args["values"] = [*cand_map.values()]
 
-        # mutate the passed in key_set
-        key_set.update(map_args["keys"])
+        # Update key_map by adding the candidate class for each key
+        for key in map_args["keys"]:
+            try:
+                key_map[key].add(cand.__class__.__tablename__)
+            except KeyError:
+                key_map[key] = {cand.__class__.__tablename__}
         yield map_args
 
 
@@ -210,15 +216,22 @@ def add_keys(session, key_table, keys):
     """Bulk add annotation keys to the specified table.
 
     :param table: The sqlalchemy class to insert into.
-    :param keys: A list of strings to insert into the table.
+    :param keys: A map of {name: [candidate_classes]}.
     """
     # Do nothing if empty
     if not keys:
         return
 
-    for key_batch in _batch_postgres_query(key_table, [{"name": key} for key in keys]):
-        # Rather than deal with concurrency of querying first then inserting only
-        # new keys, insert with on_conflict_do_nothing.
+    for key_batch in _batch_postgres_query(
+        key_table, [{"name": k[0], "candidate_classes": k[1]} for k in keys.items()]
+    ):
         stmt = insert(key_table.__table__)
-        stmt = stmt.on_conflict_do_nothing(constraint=key_table.__table__.primary_key)
+        stmt = stmt.on_conflict_do_update(
+            constraint=key_table.__table__.primary_key,
+            set_={
+                "name": stmt.excluded.get("name"),
+                "candidate_classes": stmt.excluded.get("candidate_classes"),
+            },
+        )
         session.execute(stmt, key_batch)
+        session.commit()
