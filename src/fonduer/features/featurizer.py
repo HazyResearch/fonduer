@@ -8,6 +8,7 @@ from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
     batch_upsert_records,
+    drop_keys,
     get_cands_list_from_split,
     get_docs_from_split,
     get_mapping,
@@ -146,16 +147,26 @@ class Featurizer(UDFRunner):
             # Ensure only candidate classes associated with the featurizer
             # are used.
             candidate_classes = [
-                x for x in candidate_classes if x in self.candidate_classes
+                _.__tablename__
+                for _ in candidate_classes
+                if _ in self.candidate_classes
             ]
+
+            if len(candidate_classes) == 0:
+                logger.warning(
+                    "You didn't specify valid candidate classes for this featurizer."
+                )
+                return
         # If unspecified, just use all candidate classes
         else:
-            candidate_classes = self.candidate_classes
+            candidate_classes = [_.__tablename__ for _ in self.candidate_classes]
 
-        # Remove the specified keys
+        # build dict for use by utils
+        key_map = dict()
         for key in keys:
-            # TODO add subquery to filter by the relations
-            self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
+            key_map[key] = set(candidate_classes)
+
+        drop_keys(self.session, FeatureKey, key_map)
 
     def get_keys(self):
         """Return a list of keys for the Features.
@@ -184,6 +195,7 @@ class Featurizer(UDFRunner):
 
         # Delete all old annotation keys
         if train:
+            # TODO add subquery to filter by the relations
             logger.debug("Clearing all FeatureKey...")
             query = self.session.query(FeatureKey)
             query.delete(synchronize_session="fetch")

@@ -212,10 +212,69 @@ def get_cands_list_from_split(session, candidate_classes, doc, split):
     return cands
 
 
+def drop_keys(session, key_table, keys):
+    """Bulk drop annotation keys to the specified table.
+
+    Rather than directly dropping the keys, this removes the candidate_classes
+    specified for the given keys only. If all candidate_classes are removed for
+    a key, the key is dropped.
+
+    :param key_table: The sqlalchemy class to insert into.
+    :param keys: A map of {name: [candidate_classes]}.
+    """
+    # Do nothing if empty
+    if not keys:
+        return
+
+    for key_batch in _batch_postgres_query(
+        key_table, [{"name": k[0], "candidate_classes": k[1]} for k in keys.items()]
+    ):
+        all_rows = (
+            session.query(key_table)
+            .filter(key_table.name.in_([key["name"] for key in key_batch]))
+            .all()
+        )
+
+        to_delete = set()
+        to_update = []
+
+        # All candidate classes will be the same for all keys, so just look at one
+        candidate_classes = key_batch[0]["candidate_classes"]
+        for row in all_rows:
+            # Remove the selected candidate_classes. If empty, mark for deletion.
+            row.candidate_classes = list(
+                set(row.candidate_classes) - set(candidate_classes)
+            )
+            if len(row.candidate_classes) == 0:
+                to_delete.add(row.name)
+            else:
+                to_update.append(
+                    {"name": row.name, "candidate_classes": row.candidate_classes}
+                )
+
+        # Perform all deletes
+        if to_delete:
+            query = session.query(key_table).filter(key_table.name.in_(to_delete))
+            query.delete(synchronize_session="fetch")
+
+        # Perform all updates
+        if to_update:
+            stmt = insert(key_table.__table__)
+            stmt = stmt.on_conflict_do_update(
+                constraint=key_table.__table__.primary_key,
+                set_={
+                    "name": stmt.excluded.get("name"),
+                    "candidate_classes": stmt.excluded.get("candidate_classes"),
+                },
+            )
+            session.execute(stmt, to_update)
+            session.commit()
+
+
 def add_keys(session, key_table, keys):
     """Bulk add annotation keys to the specified table.
 
-    :param table: The sqlalchemy class to insert into.
+    :param key_table: The sqlalchemy class to insert into.
     :param keys: A map of {name: [candidate_classes]}.
     """
     # Do nothing if empty

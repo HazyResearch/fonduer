@@ -7,6 +7,7 @@ from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
     batch_upsert_records,
+    drop_keys,
     get_cands_list_from_split,
     get_docs_from_split,
     get_mapping,
@@ -169,23 +170,53 @@ class Labeler(UDFRunner):
         """
         return list(get_sparse_matrix_keys(self.session, LabelKey))
 
-    def drop_keys(self, keys):
+    def drop_keys(self, keys, candidate_classes=None):
         """Drop the specified keys from LabelKeys.
 
         :param keys: A list of labeling functions to delete.
         :type keys: list, tuple
+        :param candidate_classes: A list of the Candidates to drop the key for.
+            If None, drops the keys for all candidate classes associated with
+            this Labeler.
+        :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
 
-        # Remove the specified keys
+        # Make sure candidate_classes is iterable
+        if candidate_classes:
+            candidate_classes = (
+                candidate_classes
+                if isinstance(candidate_classes, (list, tuple))
+                else [candidate_classes]
+            )
+
+            # Ensure only candidate classes associated with the labeler are used.
+            candidate_classes = [
+                _.__tablename__
+                for _ in candidate_classes
+                if _ in self.candidate_classes
+            ]
+
+            if len(candidate_classes) == 0:
+                logger.warning(
+                    "You didn't specify valid candidate classes for this Labeler."
+                )
+                return
+        # If unspecified, just use all candidate classes
+        else:
+            candidate_classes = [_.__tablename__ for _ in self.candidate_classes]
+
+        # build dict for use by utils
+        key_map = dict()
         for key in keys:
-            try:  # Assume key is an LF
-                self.session.query(LabelKey).filter(
-                    LabelKey.name == key.__name__
-                ).delete()
+            # Assume key is an LF
+            try:
+                key_map[key.__name__] = set(candidate_classes)
             except AttributeError:
-                self.session.query(LabelKey).filter(LabelKey.name == key).delete()
+                key_map[key] = set(candidate_classes)
+
+        drop_keys(self.session, LabelKey, key_map)
 
     def clear(self, train, split, lfs=None):
         """Delete Labels of each class from the database.
@@ -301,7 +332,7 @@ class LabelerUDF(UDF):
 
         self.lfs = lfs
 
-        # Get all the candidates in this doc that will be featurized
+        # Get all the candidates in this doc that will be labeled
         cands_list = get_cands_list_from_split(
             self.session, self.candidate_classes, doc, split
         )
