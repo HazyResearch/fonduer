@@ -9,7 +9,7 @@ Fixed
   relations associated with each key. In addition, this ensures that clearing a
   single relation, or relabeling a single training relation does not
   inadvertently corrupt the global index of keys.
-  (`#165 <https://github.com/HazyResearch/fonduer/pull/165>`_)
+  (`#167 <https://github.com/HazyResearch/fonduer/pull/167>`_)
 
 [0.3.3] - 2018-09-27
 --------------------
