@@ -128,7 +128,8 @@ class Featurizer(UDFRunner):
         :param keys: A list of FeatureKey names to delete.
         :type keys: list, tuple
         :param candidate_classes: A list of the Candidates to drop the key for.
-            If None, drops the keys for all candidate classes.
+            If None, drops the keys for all candidate classes associated with
+            this Featurizer.
         :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
@@ -141,6 +142,12 @@ class Featurizer(UDFRunner):
                 if isinstance(candidate_classes, (list, tuple))
                 else [candidate_classes]
             )
+
+            # Ensure only candidate classes associated with the featurizer
+            # are used.
+            candidate_classes = [
+                x for x in candidate_classes if x in self.candidate_classes
+            ]
         # If unspecified, just use all candidate classes
         else:
             candidate_classes = self.candidate_classes
