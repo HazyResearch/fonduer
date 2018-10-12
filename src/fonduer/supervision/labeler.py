@@ -7,6 +7,7 @@ from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
     batch_upsert_records,
+    drop_all_keys,
     drop_keys,
     get_cands_list_from_split,
     get_docs_from_split,
@@ -238,9 +239,10 @@ class Labeler(UDFRunner):
 
         # Delete all old annotation keys
         if train:
-            logger.debug("Clearing all LabelKey...")
-            query = self.session.query(LabelKey)
-            query.delete(synchronize_session="fetch")
+            logger.debug(
+                "Clearing all LabelKeys from {}...".format(self.candidate_classes)
+            )
+            drop_all_keys(self.session, LabelKey, self.candidate_classes)
 
     def clear_all(self):
         """Delete all Labels."""

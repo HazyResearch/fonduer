@@ -9,7 +9,7 @@ from metal.label_model import LabelModel
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
-from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.learning import LSTM, LogisticRegression, SparseLogisticRegression
@@ -109,6 +109,7 @@ def test_incremental(caplog):
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
     assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 78
+    assert session.query(Candidate).count() == 78
 
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0)
@@ -121,9 +122,14 @@ def test_incremental(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 78
     assert session.query(FeatureKey).count() == 496
+
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (78, 496)
     assert len(featurizer.get_keys()) == 496
+
+    # Test Dropping FeatureKey
+    featurizer.drop_keys(["CORE_e1_LENGTH_1"])
+    assert session.query(FeatureKey).count() == 495
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -187,6 +193,10 @@ def test_incremental(caplog):
     assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (1574, 6)
+
+    # Test clear
+    featurizer.clear(train=True)
+    assert session.query(FeatureKey).count() == 0
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")

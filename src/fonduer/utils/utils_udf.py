@@ -1,8 +1,10 @@
 import logging
 
 from scipy.sparse import csr_matrix
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import String
+from sqlalchemy.dialects.postgresql import ARRAY, insert
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import cast
 
 from fonduer.candidates.models import Candidate
 
@@ -210,6 +212,65 @@ def get_cands_list_from_split(session, candidate_classes, doc, split):
                 .all()
             )
     return cands
+
+
+def drop_all_keys(session, key_table, candidate_classes):
+    """Bulk drop annotation keys for all the candidate_classes in the table.
+
+    Rather than directly dropping the keys, this removes the candidate_classes
+    specified for the given keys only. If all candidate_classes are removed for
+    a key, the key is dropped.
+
+    :param key_table: The sqlalchemy class to insert into.
+    :param candidate_classes: A list of candidate classes to drop.
+    """
+    if not candidate_classes:
+        return
+
+    candidate_classes = set([c.__tablename__ for c in candidate_classes])
+
+    # Select all rows that contain ANY of the candidate_classes
+    all_rows = (
+        session.query(key_table)
+        .filter(
+            key_table.candidate_classes.overlap(cast(candidate_classes, ARRAY(String)))
+        )
+        .all()
+    )
+    to_delete = set()
+    to_update = []
+
+    # All candidate classes will be the same for all keys, so just look at one
+    for row in all_rows:
+        # Remove the selected candidate_classes. If empty, mark for deletion.
+        row.candidate_classes = list(
+            set(row.candidate_classes) - set(candidate_classes)
+        )
+        if len(row.candidate_classes) == 0:
+            to_delete.add(row.name)
+        else:
+            to_update.append(
+                {"name": row.name, "candidate_classes": row.candidate_classes}
+            )
+
+    # Perform all deletes
+    if to_delete:
+        query = session.query(key_table).filter(key_table.name.in_(to_delete))
+        query.delete(synchronize_session="fetch")
+
+    # Perform all updates
+    if to_update:
+        for batch in _batch_postgres_query(key_table, to_update):
+            stmt = insert(key_table.__table__)
+            stmt = stmt.on_conflict_do_update(
+                constraint=key_table.__table__.primary_key,
+                set_={
+                    "name": stmt.excluded.get("name"),
+                    "candidate_classes": stmt.excluded.get("candidate_classes"),
+                },
+            )
+            session.execute(stmt, batch)
+            session.commit()
 
 
 def drop_keys(session, key_table, keys):

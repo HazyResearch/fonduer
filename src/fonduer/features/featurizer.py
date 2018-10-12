@@ -8,6 +8,7 @@ from fonduer.utils.utils_udf import (
     ALL_SPLITS,
     add_keys,
     batch_upsert_records,
+    drop_all_keys,
     drop_keys,
     get_cands_list_from_split,
     get_docs_from_split,
@@ -195,10 +196,10 @@ class Featurizer(UDFRunner):
 
         # Delete all old annotation keys
         if train:
-            # TODO add subquery to filter by the relations
-            logger.debug("Clearing all FeatureKey...")
-            query = self.session.query(FeatureKey)
-            query.delete(synchronize_session="fetch")
+            logger.debug(
+                "Clearing all FeatureKeys from {}...".format(self.candidate_classes)
+            )
+            drop_all_keys(self.session, FeatureKey, self.candidate_classes)
 
     def clear_all(self):
         """Delete all Features."""
