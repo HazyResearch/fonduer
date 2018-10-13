@@ -1,4 +1,5 @@
 import logging
+import time
 
 from scipy.sparse import csr_matrix
 from sqlalchemy import String
@@ -29,6 +30,38 @@ def _get_cand_values(candidate, key_table):
         return candidate.gold_labels
     else:
         raise ValueError("{} is not a valid key table.".format(key_table))
+
+
+def _get_all_cands_values(session, candidates, key_table):
+    """Get the corresponding values of candidates for the key_table."""
+    # NOTE: Import just before checking to avoid circular imports.
+    from fonduer.features.models import Feature, FeatureKey
+    from fonduer.supervision.models import GoldLabel, GoldLabelKey, Label, LabelKey
+
+    if key_table == FeatureKey:
+        table = Feature
+    elif key_table == LabelKey:
+        table = Label
+    elif key_table == GoldLabelKey:
+        table = GoldLabel
+    else:
+        raise ValueError("{} is not a valid key table.".format(key_table))
+
+    s = time.time()
+    values = (
+        session.query(table)
+        .filter(table.candidate_id.in_([_.id for _ in candidates]))
+        .all()
+    )
+    e = time.time()
+    print(e - s)
+    s = time.time()
+    id_value = dict()
+    for idx, value in enumerate(values):
+        id_value[value.candidate_id] = idx
+    e = time.time()
+    print(e - s)
+    return [values[id_value[_.id]] for _ in candidates]
 
 
 def _batch_postgres_query(table, records):
@@ -106,16 +139,74 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
     result = []
     cand_lists = cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
 
-    # Keys are used as a global index
-    if key:
-        keys_map = {key: 0}
-    else:
-        keys_map = {
-            key.name: idx
-            for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table))
-        }
+    for cand_list in cand_lists:
+        if len(cand_list) == 0:
+            raise ValueError("cand_lists contain empty cand_list.")
+        candidate_class = cand_list[0].__tablename__
+
+        # Keys are used as a global index
+        if key:
+            keys_map = {key: 0}
+            key_size = len(keys_map)
+        else:
+            all_keys = get_sparse_matrix_keys(session, key_table)
+            key_size = len(all_keys)
+            keys_map = {}
+            for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table)):
+                if candidate_class in key.candidate_classes:
+                    keys_map[key.name] = idx
+
+        values = _get_all_cands_values(session, cand_list, key_table)
+        indptr = [0]
+        indices = []
+        data = []
+
+        for value in values:
+            if value:
+                for cand_key, cand_value in zip(value.keys, value.values):
+                    if cand_key in keys_map:
+                        indices.append(keys_map[cand_key])
+                        data.append(cand_value)
+
+            indptr.append(len(indices))
+
+        result.append(
+            csr_matrix((data, indices, indptr), shape=(len(cand_list), key_size))
+        )
+
+    return result
+
+
+def get_sparse_matrix_(session, key_table, cand_lists, key=None):
+    """Load sparse matrix of GoldLabels for each candidate_class."""
+    result = []
+    cand_lists = cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
 
     for cand_list in cand_lists:
+        if len(cand_list) == 0:
+            raise ValueError("cand_lists contain empty cand_list.")
+        candidate_class = cand_list[0].__tablename__
+        # Keys are used as a global index
+        if key:
+            keys_map = {key: 0}
+        else:
+            keys_map = {
+                key.name: idx
+                for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table))
+            }
+
+        # Keys are used as a global index
+        if key:
+            keys_map = {key: 0}
+            key_size = len(keys_map)
+        else:
+            all_keys = get_sparse_matrix_keys(session, key_table)
+            key_size = len(all_keys)
+            keys_map = {}
+            for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table)):
+                if candidate_class in key.candidate_classes:
+                    keys_map[key.name] = idx
+
         indptr = [0]
         indices = []
         data = []
@@ -130,7 +221,7 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
             indptr.append(len(indices))
 
         result.append(
-            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys_map)))
+            csr_matrix((data, indices, indptr), shape=(len(cand_list), key_size))
         )
 
     return result

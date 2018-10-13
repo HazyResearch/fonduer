@@ -14,6 +14,7 @@ from fonduer.utils.utils_udf import (
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
+    get_sparse_matrix_,
     get_sparse_matrix_keys,
 )
 
@@ -217,6 +218,17 @@ class Featurizer(UDFRunner):
         :rtype: csr_matrix
         """
         return get_sparse_matrix(self.session, FeatureKey, cand_lists)
+
+    def get_feature_matrices_(self, cand_lists):
+        """Load sparse matrix of Features for each candidate_class.
+
+        :param cand_lists: The candidates to get features for.
+        :type cand_lists: List of list of candidates.
+        :return: An MxN sparse matrix where M are the candidates and N is the
+            features.
+        :rtype: csr_matrix
+        """
+        return get_sparse_matrix_(self.session, FeatureKey, cand_lists)
 
 
 class FeaturizerUDF(UDF):
