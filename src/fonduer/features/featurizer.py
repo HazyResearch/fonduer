@@ -6,7 +6,6 @@ from fonduer.features.models import Feature, FeatureKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
-    add_keys,
     batch_upsert_records,
     drop_all_keys,
     drop_keys,
@@ -15,6 +14,7 @@ from fonduer.utils.utils_udf import (
     get_mapping,
     get_sparse_matrix,
     get_sparse_matrix_keys,
+    upsert_keys,
 )
 
 logger = logging.getLogger(__name__)
@@ -254,7 +254,7 @@ class FeaturizerUDF(UDF):
 
         # Insert all Feature Keys
         if train:
-            add_keys(self.session, FeatureKey, feature_map)
+            upsert_keys(self.session, FeatureKey, feature_map)
 
         # This return + yield makes a completely empty generator
         return

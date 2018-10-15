@@ -332,7 +332,7 @@ def drop_keys(session, key_table, keys):
             session.commit()
 
 
-def add_keys(session, key_table, keys):
+def upsert_keys(session, key_table, keys):
     """Bulk add annotation keys to the specified table.
 
     :param key_table: The sqlalchemy class to insert into.
