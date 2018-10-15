@@ -110,14 +110,6 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
         if len(cand_list) == 0:
             raise ValueError("cand_lists contain empty cand_list.")
         candidate_class = cand_list[0].__tablename__
-        # Keys are used as a global index
-        if key:
-            keys_map = {key: 0}
-        else:
-            keys_map = {
-                key.name: idx
-                for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table))
-            }
 
         # Keys are used as a global index
         if key:
