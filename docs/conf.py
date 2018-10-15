@@ -22,7 +22,6 @@ autodoc_mock_imports = [
     "editdistance",
     "fonduer.learning.classifier",
     "lxml",
-    "matplotlib",
     "nltk",
     "numpy",
     "pandas",
