@@ -80,7 +80,7 @@ def _batch_postgres_query(table, records):
 
 
 def get_sparse_matrix_keys(session, key_table):
-    """Return a generator of keys for the sparse matrix."""
+    """Return a list of keys for the sparse matrix."""
     return session.query(key_table).order_by(key_table.name).all()
 
 
