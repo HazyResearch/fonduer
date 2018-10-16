@@ -360,5 +360,10 @@ def upsert_keys(session, key_table, keys):
                 "candidate_classes": stmt.excluded.get("candidate_classes"),
             },
         )
-        session.execute(stmt, key_batch)
-        session.commit()
+        while True:
+            try:
+                session.execute(stmt, key_batch)
+                session.commit()
+                break
+            except Exception as e:
+                logger.debug("{}".format(e))
