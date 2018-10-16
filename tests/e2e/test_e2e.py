@@ -56,7 +56,7 @@ def test_incremental(caplog):
         logger.info("Using single core.")
         PARALLEL = 1
     else:
-        PARALLEL = 2  # Travis only gives 2 cores
+        PARALLEL = 4
 
     max_docs = 1
 
@@ -208,7 +208,7 @@ def test_e2e(caplog):
         logger.info("Using single core.")
         PARALLEL = 1
     else:
-        PARALLEL = 2  # Travis only gives 2 cores
+        PARALLEL = 4
 
     max_docs = 12
 
