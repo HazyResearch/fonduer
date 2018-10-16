@@ -396,13 +396,23 @@ def test_e2e(caplog):
     assert session.query(FeatureKey).count() == 1179
 
     # Test Dropping FeatureKey
+    # Should force a row deletion
     featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NFP NN NFP]"])
     assert session.query(FeatureKey).count() == 1178
+
+    # Should only remove the part_volt as a relation and leave part_temp
+    assert set(
+        session.query(FeatureKey)
+        .filter(FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]")
+        .one()
+        .candidate_classes
+    ) == {"part_temp", "part_volt"}
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
     assert session.query(FeatureKey).filter(
         FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
     assert session.query(FeatureKey).count() == 1178
+    # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
     assert session.query(FeatureKey).count() == 1177
     session.query(Feature).delete()
@@ -524,7 +534,7 @@ def test_e2e(caplog):
     assert session.query(Label).count() == 6669
     assert session.query(LabelKey).count() == 16
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (6669, 16)
+    assert L_train[0].shape == (3684, 16)
 
     gen_model = LabelModel(k=2)
     gen_model.train(L_train[0], n_epochs=500, print_every=100)
