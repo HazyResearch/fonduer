@@ -119,9 +119,9 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
             all_keys = get_sparse_matrix_keys(session, key_table)
             key_size = len(all_keys)
             keys_map = {}
-            for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table)):
-                if candidate_class in key.candidate_classes:
-                    keys_map[key.name] = idx
+            for (i, k) in enumerate(all_keys):
+                if candidate_class in k.candidate_classes:
+                    keys_map[k.name] = i
 
         indptr = [0]
         indices = []

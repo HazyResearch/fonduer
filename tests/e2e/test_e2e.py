@@ -19,10 +19,13 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision import Labeler
 from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
+    LF_bad_keywords_in_row,
     LF_collector_aligned,
     LF_complement_left_row,
     LF_current_aligned,
+    LF_current_in_row,
     LF_negative_number_left,
+    LF_non_ce_voltages_in_row,
     LF_not_temp_relevant,
     LF_operating_row,
     LF_storage_row,
@@ -37,9 +40,13 @@ from tests.shared.hardware_lfs import (
     LF_voltage_row_part,
     LF_voltage_row_temp,
 )
-from tests.shared.hardware_matchers import part_matcher, temp_matcher
-from tests.shared.hardware_spaces import MentionNgramsPart, MentionNgramsTemp
-from tests.shared.hardware_throttlers import temp_throttler
+from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
+from tests.shared.hardware_spaces import (
+    MentionNgramsPart,
+    MentionNgramsTemp,
+    MentionNgramsVolt,
+)
+from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 from tests.shared.hardware_utils import entity_level_f1, load_hardware_labels
 
 logger = logging.getLogger(__name__)
@@ -320,19 +327,25 @@ def test_e2e(caplog):
     # Mention Extraction
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
     temp_ngrams = MentionNgramsTemp(n_max=2)
+    volt_ngrams = MentionNgramsVolt(n_max=1)
 
     Part = mention_subclass("Part")
     Temp = mention_subclass("Temp")
+    Volt = mention_subclass("Volt")
 
     mention_extractor = MentionExtractor(
-        session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
+        session,
+        [Part, Temp, Volt],
+        [part_ngrams, temp_ngrams, volt_ngrams],
+        [part_matcher, temp_matcher, volt_matcher],
     )
 
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 299
     assert session.query(Temp).count() == 147
-    assert len(mention_extractor.get_mentions()) == 2
+    assert session.query(Volt).count() == 140
+    assert len(mention_extractor.get_mentions()) == 3
     assert len(mention_extractor.get_mentions()[0]) == 299
     assert (
         len(
@@ -345,9 +358,10 @@ def test_e2e(caplog):
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+    PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
     candidate_extractor = CandidateExtractor(
-        session, [PartTemp], throttlers=[temp_throttler]
+        session, [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
     )
 
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
@@ -356,12 +370,13 @@ def test_e2e(caplog):
     assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3684
     assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 72
     assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 448
+    assert session.query(PartVolt).count() == 4282
 
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0)
     dev_cands = candidate_extractor.get_candidates(split=1)
     test_cands = candidate_extractor.get_candidates(split=2)
-    assert len(train_cands) == 1
+    assert len(train_cands) == 2
     assert len(train_cands[0]) == 3684
     assert (
         len(
@@ -373,40 +388,53 @@ def test_e2e(caplog):
     )
 
     # Featurization
-    featurizer = Featurizer(session, [PartTemp])
+    featurizer = Featurizer(session, [PartTemp, PartVolt])
 
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 72
-    assert session.query(FeatureKey).count() == 716
+    assert session.query(Feature).count() == 225
+    assert session.query(FeatureKey).count() == 1179
 
     # Test Dropping FeatureKey
     featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NFP NN NFP]"])
-    assert session.query(FeatureKey).count() == 715
+    assert session.query(FeatureKey).count() == 1178
+    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
+    assert session.query(FeatureKey).filter(
+        FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
+    ).one().candidate_classes == ["part_temp"]
+    assert session.query(FeatureKey).count() == 1178
+    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
+    assert session.query(FeatureKey).count() == 1177
     session.query(Feature).delete()
+    session.query(FeatureKey).delete()
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 3684
-    assert session.query(FeatureKey).count() == 3748
+    assert session.query(Feature).count() == 6669
+    assert session.query(FeatureKey).count() == 4161
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3684, 3748)
-    assert len(featurizer.get_keys()) == 3748
+    assert F_train[0].shape == (3684, 4161)
+    assert F_train[1].shape == (2985, 4161)
+    assert len(featurizer.get_keys()) == 4161
 
     featurizer.apply(split=1, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 3756
-    assert session.query(FeatureKey).count() == 3748
+    assert session.query(Feature).count() == 6894
+    assert session.query(FeatureKey).count() == 4161
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (72, 3748)
+    assert F_dev[0].shape == (72, 4161)
+    assert F_dev[1].shape == (153, 4161)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 4204
-    assert session.query(FeatureKey).count() == 3748
+    assert session.query(Feature).count() == 8486
+    assert session.query(FeatureKey).count() == 4161
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (448, 3748)
+    assert F_test[0].shape == (448, 4161)
+    assert F_test[1].shape == (1144, 4161)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
     assert session.query(GoldLabel).count() == 4204
+    load_hardware_labels(session, PartVolt, gold_file, ATTRIBUTE, annotator_name="gold")
+    assert session.query(GoldLabel).count() == 8486
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -417,17 +445,26 @@ def test_e2e(caplog):
         LF_negative_number_left,
     ]
 
-    labeler = Labeler(session, [PartTemp])
+    ce_v_max_lfs = [
+        LF_bad_keywords_in_row,
+        LF_current_in_row,
+        LF_non_ce_voltages_in_row,
+    ]
+
+    labeler = Labeler(session, [PartTemp, PartVolt])
 
     with pytest.raises(ValueError):
         labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
 
-    labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
-    assert session.query(Label).count() == 3684
-    assert session.query(LabelKey).count() == 6
+    labeler.apply(
+        split=0, lfs=[stg_temp_lfs, ce_v_max_lfs], train=True, parallelism=PARALLEL
+    )
+    assert session.query(Label).count() == 6669
+    assert session.query(LabelKey).count() == 9
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3684, 6)
-    assert len(labeler.get_keys()) == 6
+    assert L_train[0].shape == (3684, 9)
+    assert L_train[1].shape == (2985, 9)
+    assert len(labeler.get_keys()) == 9
 
     L_train_gold = labeler.get_gold_labels(train_cands)
     assert L_train_gold[0].shape == (3684, 1)
@@ -483,11 +520,11 @@ def test_e2e(caplog):
         LF_temp_outside_table,
         LF_not_temp_relevant,
     ]
-    labeler.update(split=0, lfs=[stg_temp_lfs_2], parallelism=PARALLEL)
-    assert session.query(Label).count() == 3684
-    assert session.query(LabelKey).count() == 13
+    labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
+    assert session.query(Label).count() == 6669
+    assert session.query(LabelKey).count() == 16
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3684, 13)
+    assert L_train[0].shape == (6669, 16)
 
     gen_model = LabelModel(k=2)
     gen_model.train(L_train[0], n_epochs=500, print_every=100)
