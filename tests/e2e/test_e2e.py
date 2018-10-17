@@ -67,7 +67,7 @@ def test_incremental(caplog):
 
     max_docs = 1
 
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/dtc114w.html"
     pdf_path = "tests/data/pdf/dtc114w.pdf"
@@ -219,7 +219,7 @@ def test_e2e(caplog):
 
     max_docs = 12
 
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -598,7 +598,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.9)
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(

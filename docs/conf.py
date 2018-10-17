@@ -25,7 +25,6 @@ autodoc_mock_imports = [
     "nltk",
     "numpy",
     "pandas",
-    "psycopg2",
     "scipy",
     "metal",
     "spacy",

@@ -1,5 +1,9 @@
 [Unreleased]
 ------------
+Changed
+^^^^^^^
+* `@senwu`_: Use ``sqlalchemy`` to check connection string. Use ``postgresql``
+  instead of ``postgres`` in connection string.
 
 Fixed
 ^^^^^
