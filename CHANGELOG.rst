@@ -1,9 +1,9 @@
 [Unreleased]
 ------------
-Removed
+Changed
 ^^^^^^^
-* `@senwu`_: Remove ``psycopg2`` from dependencies. Use ``postgresql`` instead
-  of ``postgres`` in connection string.
+* `@senwu`_: Use ``sqlalchemy`` to check connection string. Use ``postgresql``
+  instead of ``postgres`` in connection string.
 
 Fixed
 ^^^^^
