@@ -1,6 +1,6 @@
 [Unreleased]
 ------------
-Changed
+Removed
 ^^^^^^^
 * `@senwu`_: Remove ``psycopg2`` from dependencies. Use ``postgresql`` instead
   of ``postgres`` in connection string.
