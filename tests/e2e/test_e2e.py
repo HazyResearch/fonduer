@@ -598,7 +598,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.9)
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
 
     (TP, FP, FN) = entity_level_f1(
