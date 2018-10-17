@@ -10,15 +10,15 @@ def test_meta_connection_strings(caplog):
     """Simple sanity checks for validating postgres connection strings."""
 
     with pytest.raises(ValueError):
-        Meta.init("postgres" + DB).Session()
+        Meta.init("postgresql" + DB).Session()
 
     with pytest.raises(ValueError):
         Meta.init("sqlite://somethingsilly" + DB).Session()
 
     with pytest.raises(ValueError):
-        Meta.init("postgres://somethingsilly:5432/").Session()
+        Meta.init("postgresql://somethingsilly:5432/").Session()
 
-    Meta.init("postgres://localhost:5432/" + DB).Session()
+    Meta.init("postgresql://localhost:5432/" + DB).Session()
     assert Meta.DBNAME == DB
-    Meta.init("postgres://localhost:5432/" + "cand_test").Session()
+    Meta.init("postgresql://localhost:5432/" + "cand_test").Session()
     assert Meta.DBNAME == "cand_test"

@@ -20,7 +20,6 @@ setup(
         "nltk",
         "numpy>=1.11",
         "pandas",
-        "psycopg2-binary",
         "pyyaml",
         "scipy>=0.18",
         "snorkel-metal>=0.1.7",

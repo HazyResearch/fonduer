@@ -67,7 +67,7 @@ def test_incremental(caplog):
 
     max_docs = 1
 
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/dtc114w.html"
     pdf_path = "tests/data/pdf/dtc114w.pdf"
@@ -219,7 +219,7 @@ def test_e2e(caplog):
 
     max_docs = 12
 
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
