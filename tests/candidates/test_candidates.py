@@ -192,7 +192,7 @@ def test_cand_gen(caplog):
         return True
 
     max_docs = 10
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -337,7 +337,7 @@ def test_ngrams(caplog):
     PARALLEL = 1
 
     max_docs = 1
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
@@ -383,7 +383,7 @@ def test_mention_longest_match(caplog):
     PARALLEL = 1
 
     max_docs = 1
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/pure_html/lincoln_short.html"
 

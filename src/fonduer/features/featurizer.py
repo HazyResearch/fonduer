@@ -6,13 +6,15 @@ from fonduer.features.models import Feature, FeatureKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
-    add_keys,
     batch_upsert_records,
+    drop_all_keys,
+    drop_keys,
     get_cands_list_from_split,
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
     get_sparse_matrix_keys,
+    upsert_keys,
 )
 
 logger = logging.getLogger(__name__)
@@ -122,18 +124,50 @@ class Featurizer(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
-    def drop_keys(self, keys):
+    def drop_keys(self, keys, candidate_classes=None):
         """Drop the specified keys from FeatureKeys.
 
         :param keys: A list of FeatureKey names to delete.
         :type keys: list, tuple
+        :param candidate_classes: A list of the Candidates to drop the key for.
+            If None, drops the keys for all candidate classes associated with
+            this Featurizer.
+        :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
 
-        # Remove the specified keys
+        # Make sure candidate_classes is iterable
+        if candidate_classes:
+            candidate_classes = (
+                candidate_classes
+                if isinstance(candidate_classes, (list, tuple))
+                else [candidate_classes]
+            )
+
+            # Ensure only candidate classes associated with the featurizer
+            # are used.
+            candidate_classes = [
+                _.__tablename__
+                for _ in candidate_classes
+                if _ in self.candidate_classes
+            ]
+
+            if len(candidate_classes) == 0:
+                logger.warning(
+                    "You didn't specify valid candidate classes for this featurizer."
+                )
+                return
+        # If unspecified, just use all candidate classes
+        else:
+            candidate_classes = [_.__tablename__ for _ in self.candidate_classes]
+
+        # build dict for use by utils
+        key_map = dict()
         for key in keys:
-            self.session.query(FeatureKey).filter(FeatureKey.name == key).delete()
+            key_map[key] = set(candidate_classes)
+
+        drop_keys(self.session, FeatureKey, key_map)
 
     def get_keys(self):
         """Return a list of keys for the Features.
@@ -162,9 +196,10 @@ class Featurizer(UDFRunner):
 
         # Delete all old annotation keys
         if train:
-            logger.debug("Clearing all FeatureKey...")
-            query = self.session.query(FeatureKey)
-            query.delete(synchronize_session="fetch")
+            logger.debug(
+                "Clearing all FeatureKeys from {}...".format(self.candidate_classes)
+            )
+            drop_all_keys(self.session, FeatureKey, self.candidate_classes)
 
     def clear_all(self):
         """Delete all Features."""
@@ -210,16 +245,16 @@ class FeaturizerUDF(UDF):
             self.session, self.candidate_classes, doc, split
         )
 
-        feature_keys = set()
+        feature_map = dict()
         for cands in cands_list:
             records = list(
-                get_mapping(self.session, Feature, cands, get_all_feats, feature_keys)
+                get_mapping(self.session, Feature, cands, get_all_feats, feature_map)
             )
             batch_upsert_records(self.session, Feature, records)
 
         # Insert all Feature Keys
         if train:
-            add_keys(self.session, FeatureKey, feature_keys)
+            upsert_keys(self.session, FeatureKey, feature_map)
 
         # This return + yield makes a completely empty generator
         return

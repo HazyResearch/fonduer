@@ -1,5 +1,19 @@
 [Unreleased]
 ------------
+Changed
+^^^^^^^
+* `@senwu`_: Use ``sqlalchemy`` to check connection string. Use ``postgresql``
+  instead of ``postgres`` in connection string.
+
+Fixed
+^^^^^
+* `@lukehsiao`_: The features/labels/gold_label key tables were not properly
+  designed for multiple relations in that they indistinguishably shared the
+  global index of keys. This fixes this issue by including the names of the
+  relations associated with each key. In addition, this ensures that clearing a
+  single relation, or relabeling a single training relation does not
+  inadvertently corrupt the global index of keys.
+  (`#167 <https://github.com/HazyResearch/fonduer/pull/167>`_)
 
 [0.3.3] - 2018-09-27
 --------------------

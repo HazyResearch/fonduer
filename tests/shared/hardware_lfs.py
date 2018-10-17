@@ -135,3 +135,49 @@ def LF_not_temp_relevant(c):
         )
         else ABSTAIN
     )
+
+
+# Voltage LFS
+
+
+def LF_bad_keywords_in_row(c):
+    return (
+        FALSE
+        if overlap(
+            ["continuous", "cut-off", "gain", "breakdown"], get_row_ngrams(c.volt)
+        )
+        else ABSTAIN
+    )
+
+
+def LF_current_in_row(c):
+    return FALSE if overlap(["i", "ic", "mA"], get_row_ngrams(c.volt)) else ABSTAIN
+
+
+non_ce_voltage_keywords = set(
+    [
+        "collector-base",
+        "collector - base",
+        "collector base",
+        "vcbo",
+        "cbo",
+        "vces",
+        "emitter-base",
+        "emitter - base",
+        "emitter base",
+        "vebo",
+        "ebo",
+        "breakdown voltage",
+        "emitter breakdown",
+        "emitter breakdown voltage",
+        "current",
+    ]
+)
+
+
+def LF_non_ce_voltages_in_row(c):
+    return (
+        FALSE
+        if overlap(non_ce_voltage_keywords, get_row_ngrams(c.volt, n_max=3))
+        else ABSTAIN
+    )

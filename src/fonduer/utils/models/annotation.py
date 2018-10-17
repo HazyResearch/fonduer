@@ -27,6 +27,11 @@ class AnnotationKeyMixin(object):
         return Column(String, primary_key=True)
 
     @declared_attr
+    def candidate_classes(cls):
+        """The name of the Key."""
+        return Column(postgresql.ARRAY(String), nullable=False)
+
+    @declared_attr
     def __table_args__(cls):
         return (UniqueConstraint("name"),)
 

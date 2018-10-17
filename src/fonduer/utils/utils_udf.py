@@ -1,8 +1,10 @@
 import logging
 
 from scipy.sparse import csr_matrix
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import String
+from sqlalchemy.dialects.postgresql import ARRAY, insert
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import cast
 
 from fonduer.candidates.models import Candidate
 
@@ -78,7 +80,7 @@ def _batch_postgres_query(table, records):
 
 
 def get_sparse_matrix_keys(session, key_table):
-    """Return a generator of keys for the sparse matrix."""
+    """Return a list of keys for the sparse matrix."""
     return session.query(key_table).order_by(key_table.name).all()
 
 
@@ -104,16 +106,23 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
     result = []
     cand_lists = cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
 
-    # Keys are used as a global index
-    if key:
-        keys_map = {key: 0}
-    else:
-        keys_map = {
-            key.name: idx
-            for (idx, key) in enumerate(get_sparse_matrix_keys(session, key_table))
-        }
-
     for cand_list in cand_lists:
+        if len(cand_list) == 0:
+            raise ValueError("cand_lists contain empty cand_list.")
+        candidate_class = cand_list[0].__tablename__
+
+        # Keys are used as a global index
+        if key:
+            keys_map = {key: 0}
+            key_size = len(keys_map)
+        else:
+            all_keys = get_sparse_matrix_keys(session, key_table)
+            key_size = len(all_keys)
+            keys_map = {}
+            for (i, k) in enumerate(all_keys):
+                if candidate_class in k.candidate_classes:
+                    keys_map[k.name] = i
+
         indptr = [0]
         indices = []
         data = []
@@ -128,7 +137,7 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
             indptr.append(len(indices))
 
         result.append(
-            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys_map)))
+            csr_matrix((data, indices, indptr), shape=(len(cand_list), key_size))
         )
 
     return result
@@ -149,16 +158,18 @@ def get_docs_from_split(session, candidate_classes, split):
     return split_docs
 
 
-def get_mapping(session, table, candidates, generator, key_set):
+def get_mapping(session, table, candidates, generator, key_map):
     """Generate map of keys and values for the candidate from the generator.
 
     :param session: The database session.
     :param table: The table we will be inserting into (i.e. Feature or Label).
     :param candidates: The candidates to get mappings for.
     :param generator: A generator yielding (candidate_id, key, value) tuples.
-    :param key_set: A mutable set which keys will be added to.
-    :return: Dictionary of {"candidate_id": _, "keys": _, "values": _}
-    :rtype: dict
+    :param key_map: A mutable dict which values will be added to as {key:
+        [relations]}.
+    :type key_map: Dict
+    :return: Generator of dictionaries of {"candidate_id": _, "keys": _, "values": _}
+    :rtype: generator of dict
     """
     for cand in candidates:
         # Grab the old values currently in the DB
@@ -178,8 +189,12 @@ def get_mapping(session, table, candidates, generator, key_set):
         map_args["keys"] = [*cand_map.keys()]
         map_args["values"] = [*cand_map.values()]
 
-        # mutate the passed in key_set
-        key_set.update(map_args["keys"])
+        # Update key_map by adding the candidate class for each key
+        for key in map_args["keys"]:
+            try:
+                key_map[key].add(cand.__class__.__tablename__)
+            except KeyError:
+                key_map[key] = {cand.__class__.__tablename__}
         yield map_args
 
 
@@ -206,19 +221,149 @@ def get_cands_list_from_split(session, candidate_classes, doc, split):
     return cands
 
 
-def add_keys(session, key_table, keys):
-    """Bulk add annotation keys to the specified table.
+def drop_all_keys(session, key_table, candidate_classes):
+    """Bulk drop annotation keys for all the candidate_classes in the table.
 
-    :param table: The sqlalchemy class to insert into.
-    :param keys: A list of strings to insert into the table.
+    Rather than directly dropping the keys, this removes the candidate_classes
+    specified for the given keys only. If all candidate_classes are removed for
+    a key, the key is dropped.
+
+    :param key_table: The sqlalchemy class to insert into.
+    :param candidate_classes: A list of candidate classes to drop.
+    """
+    if not candidate_classes:
+        return
+
+    candidate_classes = set([c.__tablename__ for c in candidate_classes])
+
+    # Select all rows that contain ANY of the candidate_classes
+    all_rows = (
+        session.query(key_table)
+        .filter(
+            key_table.candidate_classes.overlap(cast(candidate_classes, ARRAY(String)))
+        )
+        .all()
+    )
+    to_delete = set()
+    to_update = []
+
+    # All candidate classes will be the same for all keys, so just look at one
+    for row in all_rows:
+        # Remove the selected candidate_classes. If empty, mark for deletion.
+        row.candidate_classes = list(
+            set(row.candidate_classes) - set(candidate_classes)
+        )
+        if len(row.candidate_classes) == 0:
+            to_delete.add(row.name)
+        else:
+            to_update.append(
+                {"name": row.name, "candidate_classes": row.candidate_classes}
+            )
+
+    # Perform all deletes
+    if to_delete:
+        query = session.query(key_table).filter(key_table.name.in_(to_delete))
+        query.delete(synchronize_session="fetch")
+
+    # Perform all updates
+    if to_update:
+        for batch in _batch_postgres_query(key_table, to_update):
+            stmt = insert(key_table.__table__)
+            stmt = stmt.on_conflict_do_update(
+                constraint=key_table.__table__.primary_key,
+                set_={
+                    "name": stmt.excluded.get("name"),
+                    "candidate_classes": stmt.excluded.get("candidate_classes"),
+                },
+            )
+            session.execute(stmt, batch)
+            session.commit()
+
+
+def drop_keys(session, key_table, keys):
+    """Bulk drop annotation keys to the specified table.
+
+    Rather than directly dropping the keys, this removes the candidate_classes
+    specified for the given keys only. If all candidate_classes are removed for
+    a key, the key is dropped.
+
+    :param key_table: The sqlalchemy class to insert into.
+    :param keys: A map of {name: [candidate_classes]}.
     """
     # Do nothing if empty
     if not keys:
         return
 
-    for key_batch in _batch_postgres_query(key_table, [{"name": key} for key in keys]):
-        # Rather than deal with concurrency of querying first then inserting only
-        # new keys, insert with on_conflict_do_nothing.
+    for key_batch in _batch_postgres_query(
+        key_table, [{"name": k[0], "candidate_classes": k[1]} for k in keys.items()]
+    ):
+        all_rows = (
+            session.query(key_table)
+            .filter(key_table.name.in_([key["name"] for key in key_batch]))
+            .all()
+        )
+
+        to_delete = set()
+        to_update = []
+
+        # All candidate classes will be the same for all keys, so just look at one
+        candidate_classes = key_batch[0]["candidate_classes"]
+        for row in all_rows:
+            # Remove the selected candidate_classes. If empty, mark for deletion.
+            row.candidate_classes = list(
+                set(row.candidate_classes) - set(candidate_classes)
+            )
+            if len(row.candidate_classes) == 0:
+                to_delete.add(row.name)
+            else:
+                to_update.append(
+                    {"name": row.name, "candidate_classes": row.candidate_classes}
+                )
+
+        # Perform all deletes
+        if to_delete:
+            query = session.query(key_table).filter(key_table.name.in_(to_delete))
+            query.delete(synchronize_session="fetch")
+
+        # Perform all updates
+        if to_update:
+            stmt = insert(key_table.__table__)
+            stmt = stmt.on_conflict_do_update(
+                constraint=key_table.__table__.primary_key,
+                set_={
+                    "name": stmt.excluded.get("name"),
+                    "candidate_classes": stmt.excluded.get("candidate_classes"),
+                },
+            )
+            session.execute(stmt, to_update)
+            session.commit()
+
+
+def upsert_keys(session, key_table, keys):
+    """Bulk add annotation keys to the specified table.
+
+    :param key_table: The sqlalchemy class to insert into.
+    :param keys: A map of {name: [candidate_classes]}.
+    """
+    # Do nothing if empty
+    if not keys:
+        return
+
+    for key_batch in _batch_postgres_query(
+        key_table, [{"name": k[0], "candidate_classes": k[1]} for k in keys.items()]
+    ):
         stmt = insert(key_table.__table__)
-        stmt = stmt.on_conflict_do_nothing(constraint=key_table.__table__.primary_key)
-        session.execute(stmt, key_batch)
+        stmt = stmt.on_conflict_do_update(
+            constraint=key_table.__table__.primary_key,
+            set_={
+                "name": stmt.excluded.get("name"),
+                "candidate_classes": stmt.excluded.get("candidate_classes"),
+            },
+        )
+        while True:
+            try:
+                session.execute(stmt, key_batch)
+                session.commit()
+                break
+            except Exception as e:
+                logger.debug("{}".format(e))
