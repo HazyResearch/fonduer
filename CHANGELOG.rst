@@ -1,5 +1,9 @@
 [Unreleased]
 ------------
+
+[0.3.4] - 2018-10-17
+--------------------
+
 Changed
 ^^^^^^^
 * `@senwu`_: Use ``sqlalchemy`` to check connection string. Use ``postgresql``
