@@ -483,7 +483,7 @@ def test_e2e(caplog):
     assert L_train_gold[0].shape == (3684, 1)
 
     gen_model = LabelModel(k=2)
-    gen_model.train(L_train[0], n_epochs=500, print_every=100)
+    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
 
     train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
 
@@ -537,7 +537,7 @@ def test_e2e(caplog):
     assert L_train[0].shape == (3684, 16)
 
     gen_model = LabelModel(k=2)
-    gen_model.train(L_train[0], n_epochs=500, print_every=100)
+    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
 
     train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
 
