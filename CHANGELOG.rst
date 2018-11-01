@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@senwu`_: Use the latest MeTaL syntax and fix flake8 issues.
+  (`#173 <https://github.com/HazyResearch/fonduer/pull/173>`_)
+
+
 [0.3.4] - 2018-10-17
 --------------------
 
