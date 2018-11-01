@@ -11,7 +11,7 @@ try:
     from spacy.cli import download
     from spacy import util
     from spacy.tokens import Doc
-except Exception as e:
+except Exception:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 
