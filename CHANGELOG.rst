@@ -1,6 +1,11 @@
 [Unreleased]
 ------------
 
+Changed
+^^^^^^^
+* `@senwu`_: Add ``SparseLSTM`` support to save LSTM memory for large application.
+  (`#175 <https://github.com/HazyResearch/fonduer/pull/175>`_)
+
 Fixed
 ^^^^^
 * `@senwu`_: Use the latest MeTaL syntax and fix flake8 issues.

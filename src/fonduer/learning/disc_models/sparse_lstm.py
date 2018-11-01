@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from scipy.sparse import issparse
 
 from fonduer.learning.disc_learning import NoiseAwareModel
 from fonduer.learning.disc_models.layers.rnn import RNN
+from fonduer.learning.disc_models.layers.sparse_linear import SparseLinear
 from fonduer.learning.disc_models.utils import (
     SymbolTable,
     mark_sentence,
@@ -14,7 +14,7 @@ from fonduer.learning.disc_models.utils import (
 from fonduer.utils.config import get_config
 
 
-class LSTM(NoiseAwareModel):
+class SparseLSTM(NoiseAwareModel):
     """
     LSTM model.
 
@@ -22,13 +22,17 @@ class LSTM(NoiseAwareModel):
     :type name: str
     """
 
-    def forward(self, x, f):
+    def forward(self, x, x_idx, f, w):
         """Forward function.
 
         :param x: The sequence input (batch) of the model.
         :type x: list of torch.Tensor of shape (sequence_len * batch_size)
+        :param x_idx: The feature indices for lstm output (batch) of the model.
+        :type x_idx: torch.Tensor of shape (lstm_out_size * batch_size)
         :param f: The feature input of the model.
         :type f: torch.Tensor of shape (batch_size * feature_size)
+        :param w: The input feature weight (batch) of the model.
+        :type w: torch.Tensor of shape (batch_size, num_classes)
         :return: The output of LSTM layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
@@ -48,9 +52,10 @@ class LSTM(NoiseAwareModel):
             outputs = torch.cat((outputs, output), 1)
 
         # Concatenate textual features with multi-modal features
-        outputs = torch.cat((outputs, f), 1)
+        feaures = torch.cat((x_idx, f), 1)
+        weights = torch.cat((outputs, w), 1)
 
-        return self.linear(outputs)
+        return self.sparse_linear(feaures, weights)
 
     def _check_input(self, X):
         """Check input format.
@@ -65,9 +70,8 @@ class LSTM(NoiseAwareModel):
     def _preprocess_data(self, X, Y=None, idxs=None, train=False):
         """
         Preprocess the data:
-        1. Convert sparse feature matrix to dense matrix for pytorch operation.
-        2. Make sentence with mention into sequence data for LSTM.
-        3. Select subset of the input if idxs exists.
+        1. Make sentence with mention into sequence data for LSTM.
+        2. Select subset of the input if idxs exists.
 
         :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
@@ -83,12 +87,6 @@ class LSTM(NoiseAwareModel):
         """
 
         C, F = X
-
-        # Covert sparse feature matrix to dense matrix
-        # TODO: the pytorch implementation is taking dense vector as input,
-        # should optimize later
-        if issparse(F):
-            F = F.todense()
 
         # Create word dictionary for LSTM
         if not hasattr(self, "word_dict"):
@@ -120,13 +118,47 @@ class LSTM(NoiseAwareModel):
         # Generate proprcessed the input
         if idxs is None:
             if Y is not None:
-                return [(seq_data[i], F[i]) for i in range(len(seq_data))], Y
+                return (
+                    [
+                        (
+                            seq_data[i],
+                            F.indices[F.indptr[i] : F.indptr[i + 1]],
+                            F.data[F.indptr[i] : F.indptr[i + 1]],
+                        )
+                        for i in range(len(C))
+                    ],
+                    Y,
+                )
             else:
-                return [(seq_data[i], F[i]) for i in range(len(seq_data))]
+                return [
+                    (
+                        seq_data[i],
+                        F.indices[F.indptr[i] : F.indptr[i + 1]],
+                        F.data[F.indptr[i] : F.indptr[i + 1]],
+                    )
+                    for i in range(len(C))
+                ]
         if Y is not None:
-            return [(seq_data[i], F[i]) for i in idxs], Y[idxs]
+            return (
+                [
+                    (
+                        seq_data[i],
+                        F.indices[F.indptr[i] : F.indptr[i + 1]],
+                        F.data[F.indptr[i] : F.indptr[i + 1]],
+                    )
+                    for i in idxs
+                ],
+                Y[idxs],
+            )
         else:
-            return [(seq_data[i], F[i]) for i in idxs]
+            return [
+                (
+                    seq_data[i],
+                    F.indices[F.indptr[i] : F.indptr[i + 1]],
+                    F.data[F.indptr[i] : F.indptr[i + 1]],
+                )
+                for i in idxs
+            ]
 
     def _update_settings(self, X):
         """
@@ -136,17 +168,28 @@ class LSTM(NoiseAwareModel):
         :type X: list of (candidate, features) pairs
         """
 
-        self.logger.info("Load defalut parameters for LSTM")
-        config = get_config()["learning"]["LSTM"]
+        self.logger.info("Load defalut parameters for Sparse LSTM")
+        config = get_config()["learning"]["SparseLSTM"]
 
         for key in config.keys():
             if key not in self.settings:
                 self.settings[key] = config[key]
 
         self.settings["relation_arity"] = len(X[0][0])
-        self.settings["input_dim"] = X[1].shape[1] + len(X[0][0]) * self.settings[
-            "hidden_dim"
-        ] * (2 if self.settings["bidirectional"] else 1)
+        self.settings["lstm_dim"] = (
+            len(X[0][0])
+            * self.settings["hidden_dim"]
+            * (2 if self.settings["bidirectional"] else 1)
+        )
+
+        # Add one feature for padding vector (all 0s)
+        self.settings["input_dim"] = (
+            X[1].shape[1]
+            + len(X[0][0])
+            * self.settings["hidden_dim"]
+            * (2 if self.settings["bidirectional"] else 1)
+            + 1
+        )
 
     def _build_model(self):
         """
@@ -172,9 +215,11 @@ class LSTM(NoiseAwareModel):
         if "input_dim" not in self.settings:
             raise ValueError("Model parameter input_dim cannot be None.")
 
+        cardinality = self.cardinality if self.cardinality > 2 else 1
+
         # Set up final linear layer
-        self.linear = nn.Linear(
-            self.settings["input_dim"], self.cardinality if self.cardinality > 2 else 1
+        self.sparse_linear = SparseLinear(
+            self.settings["input_dim"], cardinality, self.settings["bias"]
         )
 
     def _calc_logits(self, X, batch_size=None):
@@ -196,9 +241,11 @@ class LSTM(NoiseAwareModel):
         # Check LSTM input dimension size matches the number of lstms in the model
         assert len(C[0]) == len(self.lstms)
 
-        # Generate multi-modal feature input
-        F = np.array(list(zip(*X))[1])
-        F = torch.Tensor(F).squeeze(1)
+        # Generate sparse multi-modal feature input
+        F = (
+            np.array(list(zip(*X))[1]) + self.settings["lstm_dim"] + 1
+        )  # Correct the index since 0 is the padding and placeholder for lstm feature
+        V = np.array(list(zip(*X))[2])
 
         outputs = (
             torch.Tensor([]).cuda()
@@ -226,13 +273,19 @@ class LSTM(NoiseAwareModel):
                     x_mask = x_mask.cuda()
                 sequences.append((x, x_mask))
 
-            features = (
-                F[batch_st:batch_ed].cuda()
-                if self.settings["host_device"] in self._gpu
-                else F[batch_st:batch_ed]
-            )
+            lstm_weight_indices = torch.as_tensor(
+                np.arange(1, self.settings["lstm_dim"] + 1)
+            ).repeat(batch_ed - batch_st, 1)
 
-            output = self.forward(sequences, features)
+            features, _ = pad_batch(F[batch_st:batch_ed], 0)
+            values, _ = pad_batch(V[batch_st:batch_ed], 0, type="float")
+
+            if self.settings["host_device"] in self._gpu:
+                lstm_weight_indices = lstm_weight_indices.cuda()
+                features = features.cuda()
+                values = values.cuda()
+
+            output = self.forward(sequences, lstm_weight_indices, features, values)
             if self.cardinality == 2:
                 outputs = torch.cat((outputs, output.view(-1)), 0)
             else:
