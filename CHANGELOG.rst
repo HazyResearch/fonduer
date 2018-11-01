@@ -8,9 +8,11 @@ Added
 
 .. note::
     With the SparseLSTM discriminative model, we save memory for the origin LSTM
-    model. In Fonduer v0.3.5, SparseLSTM is as follows:
+    model while sacrificing runtime. In Fonduer v0.3.5, SparseLSTM is as follows:
 
     .. code:: python
+
+        from fonduer.learning import SparseLSTM
 
         disc_model = SparseLSTM()
         disc_model.train(
