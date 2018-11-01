@@ -29,7 +29,7 @@ def save_marginals(session, X, marginals, training=True):
     # Make sure that we are working with a numpy array
     try:
         shape = marginals.shape
-    except Exception as e:
+    except Exception:
         marginals = np.array(marginals)
         shape = marginals.shape
 
@@ -82,7 +82,7 @@ def reshape_marginals(marginals):
     # Make sure training marginals are a numpy array first
     try:
         shape = marginals.shape
-    except Exception as e:
+    except Exception:
         marginals = np.array(marginals)
         shape = marginals.shape
 

@@ -67,7 +67,7 @@ def part_file_name_conditions(attr):
     )
 
 
-add_rgx = "^[A-Z0-9\-]{5,15}$"
+add_rgx = r"^[A-Z0-9\-]{5,15}$"
 
 part_file_name_lambda_matcher = LambdaFunctionMatcher(func=part_file_name_conditions)
 part_file_name_matcher = Intersect(

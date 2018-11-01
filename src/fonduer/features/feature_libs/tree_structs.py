@@ -42,7 +42,7 @@ def corenlp_to_xmltree(s, prune_root=True):
     if not isinstance(s, dict):
         try:
             s = s.__dict__ if hasattr(s, "__dict__") else dict(s)
-        except Exception as e:
+        except Exception:
             raise ValueError("Cannot convert input object to dict")
 
     # Use the dep_parents array as a guide: ensure it is present and a list of
@@ -53,7 +53,7 @@ def corenlp_to_xmltree(s, prune_root=True):
         )
     try:
         dep_parents = list(map(int, s["dep_parents"]))
-    except Exception as e:
+    except Exception:
         raise ValueError("'dep_parents' attribute must be a list of ints")
 
     # Also ensure that we are using CoreNLP-native indexing

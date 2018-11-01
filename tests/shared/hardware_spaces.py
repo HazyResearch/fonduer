@@ -236,7 +236,7 @@ class MentionNgramsTemp(MentionNgrams):
     def apply(self, session, context):
         for ts in MentionNgrams.apply(self, session, context):
             m = re.match(
-                u"^([\+\-\u2010\u2011\u2012\u2013\u2014\u2212\uf02d])?(\s*)(\d+)$",
+                r"^([\+\-\u2010\u2011\u2012\u2013\u2014\u2212\uf02d])?(\s*)(\d+)$",
                 ts.get_span(),
                 re.U,
             )

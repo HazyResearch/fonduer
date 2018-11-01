@@ -484,7 +484,7 @@ class ParserUDF(UDF):
                 if styles is not None:
                     for x in list(context_node.attrib.items()):
                         if x[0] == "class":
-                            exp = r"(." + x[1] + ")([\n\s\r]*)\{(.*?)\}"
+                            exp = r"(." + x[1] + r")([\n\s\r]*)\{(.*?)\}"
                             r = re.compile(exp, re.DOTALL)
                             if r.search(styles.text) is not None:
                                 if cur_style_index is not None:

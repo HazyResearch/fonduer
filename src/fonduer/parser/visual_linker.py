@@ -24,7 +24,7 @@ class VisualLinker(object):
         self.links = None
         self.pdf_dim = None
         delimiters = (
-            u"([\(\)\,\?\u2212\u201C\u201D\u2018\u2019\u00B0\*']|(?<!http):|\.$|\.\.\.)"
+            r"([\(\)\,\?\u2212\u201C\u201D\u2018\u2019\u00B0\*']|(?<!http):|\.$|\.\.\.)"
         )
         self.separators = re.compile(delimiters)
 
@@ -289,7 +289,7 @@ class VisualLinker(object):
         for i in range(seedSize):
             try:
                 offsets.append(wordsB.index(wordsA[i]) - i)
-            except Exception as e:
+            except Exception:
                 pass
         return int(np.median(offsets))
 
