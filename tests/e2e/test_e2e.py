@@ -12,7 +12,12 @@ from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
-from fonduer.learning import LSTM, LogisticRegression, SparseLogisticRegression
+from fonduer.learning import (
+    LSTM,
+    LogisticRegression,
+    SparseLogisticRegression,
+    SparseLSTM,
+)
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
@@ -596,6 +601,32 @@ def test_e2e(caplog):
     disc_model = SparseLogisticRegression()
     disc_model.train(
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+    )
+
+    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+
+    (TP, FP, FN) = entity_level_f1(
+        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+    )
+
+    tp_len = len(TP)
+    fp_len = len(FP)
+    fn_len = len(FN)
+    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
+    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+
+    logger.info("prec: {}".format(prec))
+    logger.info("rec: {}".format(rec))
+    logger.info("f1: {}".format(f1))
+
+    assert f1 > 0.7
+
+    # Testing Sparse LSTM
+    disc_model = SparseLSTM()
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
     test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)

@@ -1,6 +1,25 @@
 [Unreleased]
 ------------
 
+Added
+^^^^^^^
+* `@senwu`_: Add ``SparseLSTM`` support to save LSTM memory for large application.
+  (`#175 <https://github.com/HazyResearch/fonduer/pull/175>`_)
+
+.. note::
+    With the SparseLSTM discriminative model, we save memory for the origin LSTM
+    model while sacrificing runtime. In Fonduer v0.3.5, SparseLSTM is as follows:
+
+    .. code:: python
+
+        from fonduer.learning import SparseLSTM
+
+        disc_model = SparseLSTM()
+        disc_model.train(
+            (train_cands, train_feature), train_marginals, n_epochs=5, lr=0.001
+        )
+
+
 Fixed
 ^^^^^
 * `@senwu`_: Use the latest MeTaL syntax and fix flake8 issues.

@@ -54,6 +54,24 @@ The learning parameters of different models are described below::
       LogisticRegression:
         # bias term
         bias: False
+      # Sparse LSTM model
+      SparseLSTM:
+        # Word embedding dimension size
+        emb_dim: 100
+        # The number of features in the LSTM hidden state
+        hidden_dim: 100
+        # Use attention or not (Options: True or False)
+        attention: True
+        # Dropout parameter
+        dropout: 0.1
+        # Use bidirectional LSTM or not (Options: True or False)
+        bidirectional: True
+        # Prefered host device (Options: CPU or GPU)
+        host_device: "CPU"
+        # Maximum sentence length of LSTM input
+        max_sentence_length: 100
+        # bias term
+        bias: False
       # Sparse Logistic Regression model
       SparseLogisticRegression:
         # bias term

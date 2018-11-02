@@ -19,8 +19,10 @@ class SparseLogisticRegression(NoiseAwareModel):
         """
         Run forward pass.
 
-        :param x: The input (batch) of the model.
+        :param x: The input feature (batch) of the model.
         :type x: torch.Tensor of shape (batch_size, num_classes)
+        :param w: The input feature weight (batch) of the model.
+        :type w: torch.Tensor of shape (batch_size, num_classes)
         :return: The output of sparse Logistic Regression layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
@@ -41,8 +43,7 @@ class SparseLogisticRegression(NoiseAwareModel):
     def _preprocess_data(self, X, Y=None, idxs=None, train=False):
         """
         Preprocess the data:
-        1. Convert sparse matrix to dense matrix.
-        2. Select subset of the input if idxs exists.
+        1. Select subset of the input if idxs exists.
 
         :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
