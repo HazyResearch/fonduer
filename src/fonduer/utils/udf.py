@@ -109,7 +109,6 @@ class UDFRunner(object):
 
         def fill_input_queue(in_queue, doc_loader, terminal_signal):
             for doc in doc_loader:
-                self.last_docs.add(doc)
                 in_queue.put(doc)
             in_queue.put(terminal_signal)
 
@@ -120,6 +119,9 @@ class UDFRunner(object):
         out_queue = JoinableQueue()
 
         total_count = len(doc_loader)
+
+        for doc in doc_loader:
+            self.last_docs.add(doc)
 
         # Start UDF Processes
         for i in range(parallelism):
