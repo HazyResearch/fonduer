@@ -64,7 +64,7 @@ def test_incremental(caplog):
     """Run an end-to-end test on incremental additions."""
     caplog.set_level(logging.INFO)
 
-    PARALLEL = 4
+    PARALLEL = 1
 
     max_docs = 1
 
