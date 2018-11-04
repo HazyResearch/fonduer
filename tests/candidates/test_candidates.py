@@ -335,7 +335,8 @@ def test_cand_gen(caplog):
 def test_ngrams(caplog):
     """Test ngram limits in mention extraction"""
     caplog.set_level(logging.INFO)
-    PARALLEL = 1
+
+    PARALLEL = 4
 
     max_docs = 1
     session = Meta.init("postgresql://localhost:5432/" + DB).Session()

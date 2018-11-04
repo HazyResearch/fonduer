@@ -212,7 +212,7 @@ def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
 
-    PARALLEL = 1
+    PARALLEL = 4
 
     max_docs = 12
 
