@@ -2,7 +2,6 @@
 import logging
 import os
 import pickle
-from sys import platform
 
 import numpy as np
 import pytest
@@ -65,12 +64,7 @@ def test_incremental(caplog):
     """Run an end-to-end test on incremental additions."""
     caplog.set_level(logging.INFO)
 
-    if platform == "darwin":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        logger.info("Using two cores.")
-        PARALLEL = 2  # Travis only gives 2 cores
+    PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 1
 
@@ -218,7 +212,7 @@ def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
 
-    PARALLEL = 4
+    PARALLEL = 2
 
     max_docs = 12
 
