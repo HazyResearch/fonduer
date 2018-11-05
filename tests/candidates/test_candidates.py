@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import logging
-import os
+from sys import platform
 
 import pytest
 
@@ -181,11 +181,12 @@ def test_span_char_start_and_char_end(caplog):
 def test_cand_gen(caplog):
     """Test extracting candidates from mentions from documents."""
     caplog.set_level(logging.INFO)
-    # SpaCy on mac has issue on parallel parsing
-    if os.name == "posix":
+
+    if platform == "darwin":
         logger.info("Using single core.")
         PARALLEL = 1
     else:
+        logger.info("Using two cores.")
         PARALLEL = 2  # Travis only gives 2 cores
 
     def do_nothing_matcher(fig):
@@ -334,7 +335,8 @@ def test_cand_gen(caplog):
 def test_ngrams(caplog):
     """Test ngram limits in mention extraction"""
     caplog.set_level(logging.INFO)
-    PARALLEL = 1
+
+    PARALLEL = 4
 
     max_docs = 1
     session = Meta.init("postgresql://localhost:5432/" + DB).Session()

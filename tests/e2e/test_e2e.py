@@ -63,12 +63,8 @@ DB = "e2e_test"
 def test_incremental(caplog):
     """Run an end-to-end test on incremental additions."""
     caplog.set_level(logging.INFO)
-    # SpaCy on mac has issue on parallel parsing
-    if os.name == "posix":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        PARALLEL = 4
+
+    PARALLEL = 1
 
     max_docs = 1
 
@@ -215,12 +211,8 @@ def test_incremental(caplog):
 def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
-    # SpaCy on mac has issue on parallel parsing
-    if os.name == "posix":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        PARALLEL = 4
+
+    PARALLEL = 4
 
     max_docs = 12
 
