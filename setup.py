@@ -22,7 +22,7 @@ setup(
         "pandas",
         "pyyaml",
         "scipy>=0.18",
-        "snorkel-metal>=0.1.7",
+        "snorkel-metal>=0.3.2",
         "spacy>=2.0.12",
         "sqlalchemy[postgresql_psycopg2binary]>=1.0.14",
         "torch>=0.4.1",

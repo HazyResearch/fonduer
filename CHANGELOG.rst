@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@lukehsiao`_: Updated snorkel-metal version requirement to ensure new syntax
+  works when a user upgrades Fonduer.
+
+
 [0.3.5] - 2018-11-04
 --------------------
 
@@ -26,7 +32,6 @@ Added
 
 Fixed
 ^^^^^
-
 * `@senwu`_: Fix issue with ``get_last_documents`` returning the incorrect
   number of docs and update the tests.
   (`#176 <https://github.com/HazyResearch/fonduer/pull/176>`_)
