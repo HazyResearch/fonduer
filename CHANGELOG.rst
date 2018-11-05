@@ -1,9 +1,13 @@
 [Unreleased]
 ------------
 
+[0.3.5] - 2018-11-04
+--------------------
+
 Added
 ^^^^^^^
-* `@senwu`_: Add ``SparseLSTM`` support to save LSTM memory for large application.
+* `@senwu`_: Add ``SparseLSTM`` support reducing the memory used by the LSTM
+  for large applications.
   (`#175 <https://github.com/HazyResearch/fonduer/pull/175>`_)
 
 .. note::
@@ -23,8 +27,8 @@ Added
 Fixed
 ^^^^^
 
-* `@senwu`_: Fix get_last_documents cannot get the correct docs issue and update
-  the tests.
+* `@senwu`_: Fix issue with ``get_last_documents`` returning the incorrect
+  number of docs and update the tests.
   (`#176 <https://github.com/HazyResearch/fonduer/pull/176>`_)
 
 * `@senwu`_: Use the latest MeTaL syntax and fix flake8 issues.
