@@ -1,5 +1,5 @@
 language: generic
-dist: trusty
+dist: xenial
 cache: pip
 
 matrix:
@@ -31,7 +31,7 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y libmecab-dev swig mecab mecab-ipadic-utf8; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install mecab mecab-ipadic freetype; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install swig mecab mecab-ipadic freetype; fi
 - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
@@ -71,19 +71,22 @@ install:
 - pip install -q coveralls
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    wget poppler.freedesktop.org/poppler-0.53.0.tar.xz
-    tar -xf ./poppler-0.53.0.tar.xz
-    cd poppler-0.53.0
-    "./configure"
-    make
-    sudo make install > /dev/null 2>&1
-    cd ..
-    rm -rf poppler-0.53.0
+    sudo apt install cmake checkinstall libopenjp2-7-dev
+    wget https://poppler.freedesktop.org/poppler-0.62.0.tar.xz
+    tar -xf poppler-0.62.0.tar.xz
+    cd poppler-0.62.0
+    mkdir build
+    cd build
+    cmake ..
+    sudo checkinstall -y make install > /dev/null 2>&1
+    cd ../..
+    rm -rf poppler-0.62.0
     export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
     echo "Using LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
   else
     brew install poppler
   fi
+- pdfinfo -v
 - python -m spacy download en
 
 before_script:
