@@ -32,7 +32,7 @@ your PostgreSQL database:
     $ sudo -u postgres psql -c "SHOW hba_file;"
 
 4. Put the username and password in the connection URI:
-   ``postgres://user:pw@localhost:5432/...``
+   ``postgresql://<user>:<pw>@<host>:<port>/<database_name>``
 
 .. _.pgpass file to store the password: http://www.postgresql.org/docs/current/static/libpq-pgpass.html
 .. _four main ways: https://dba.stackexchange.com/questions/14740/how-to-use-psql-with-no-password-prompt
@@ -65,7 +65,7 @@ testing on 14.04 or older.
 How can I use use Fonduer for documents in Languages other than English?
 ------------------------------------------------------------------------
 
-If available, Fonduer uses languages supported by spaCy for tokenization and 
+If available, Fonduer uses languages supported by spaCy for tokenization and
 its NLP pipeline (`see spacy language support`_).
 We also started adding languages with spaCy alpha support for tokenization
 (`see spacy alpha languages`_). Currently, only Japanese is supported.
