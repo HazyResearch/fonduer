@@ -145,7 +145,7 @@ def test_parse_md_details(caplog):
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run spacy non English test on Travis"
 )
-def test_spacy_non_english_languages(caplog):
+def test_spacy_german(caplog):
     """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
 
@@ -200,8 +200,17 @@ def test_spacy_non_english_languages(caplog):
         "punct",
     ]
 
+
+@pytest.mark.skipif(
+    "CI" not in os.environ, reason="Only run spacy non English test on Travis"
+)
+def test_spacy_japanese(caplog):
+    """Test the parser with the md document."""
+    caplog.set_level(logging.INFO)
+
     # Test japanese alpha tokenization
     docs_path = "tests/data/pure_html/japan.html"
+    preprocessor = HTMLDocPreprocessor(docs_path)
     doc = next(preprocessor._parse_file(docs_path, "md"))
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="ja"
