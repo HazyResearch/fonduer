@@ -1,6 +1,9 @@
 [Unreleased]
 ------------
 
+[0.3.6] - 2018-11-15
+--------------------
+
 Fixed
 ^^^^^
 * `@lukehsiao`_: Updated snorkel-metal version requirement to ensure new syntax
