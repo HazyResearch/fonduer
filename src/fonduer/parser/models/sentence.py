@@ -261,6 +261,9 @@ class Sentence(
     #: The position of the ``Sentence`` in the ``Document``.
     position = Column(Integer, nullable=False)  # unique sentence number per document
 
+    #: The name of a ``Sentence``.
+    name = Column(String, unique=False, nullable=True)
+
     #: The id of the parent ``Document``.
     document_id = Column(Integer, ForeignKey("document.id"))
 

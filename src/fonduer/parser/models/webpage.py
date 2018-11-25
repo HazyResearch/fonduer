@@ -12,6 +12,10 @@ class Webpage(Document):
     id = Column(
         Integer, ForeignKey("document.id", ondelete="CASCADE"), primary_key=True
     )
+
+    #: The name of a ``Webpage``.
+    name = Column(String, unique=False, nullable=True)
+
     #: The URL of the ``Webpage``.
     url = Column(String)
     #: The host of the ``Webpage``.

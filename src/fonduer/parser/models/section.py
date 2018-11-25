@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context
@@ -16,6 +16,9 @@ class Section(Context):
 
     #: The unique id of the ``Section``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
+
+    #: The name of a ``Section``.
+    name = Column(String, unique=False, nullable=True)
 
     #: The position of the ``Section`` in a ``Document``.
     position = Column(Integer, nullable=False)

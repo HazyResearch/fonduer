@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context
@@ -17,6 +17,9 @@ class Caption(Context):
 
     #: The position of the ``Caption`` in the ``Document``.
     position = Column(Integer, nullable=False)
+
+    #: The name of a ``Caption``.
+    name = Column(String, unique=False, nullable=True)
 
     #: The id of the parent ``Document``.
     document_id = Column(Integer, ForeignKey("document.id"))

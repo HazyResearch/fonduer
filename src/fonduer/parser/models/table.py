@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context
@@ -17,6 +17,9 @@ class Table(Context):
 
     #: The position of the ``Table`` in the ``Document``.
     position = Column(Integer, nullable=False)
+
+    #: The name of a ``Table``.
+    name = Column(String, unique=False, nullable=True)
 
     #: The id of the parent ``Document``.
     document_id = Column(Integer, ForeignKey("document.id"))
@@ -63,6 +66,9 @@ class Cell(Context):
 
     #: The position of the ``Cell`` in the ``Table``.
     position = Column(Integer, nullable=False)
+
+    #: The name of a ``Cell``.
+    name = Column(String, unique=False, nullable=True)
 
     #: The id of the parent ``Table``.
     table_id = Column(Integer, ForeignKey("table.id"))
