@@ -603,14 +603,14 @@ class ParserUDF(UDF):
     def _parse_section(self, node, state):
         """Parse a Section of the node.
 
-        Note that this implementation currently just creates a single Section
-        for a document.
+        Note that this implementation currently creates a Section at the
+        beginning of the document and creates Section based on tag of node.
 
         :param node: The lxml node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-        if node.tag != "html":
+        if node.tag not in ["html", "section"]:
             return state
 
         # Add a Section
