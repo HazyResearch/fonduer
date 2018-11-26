@@ -539,3 +539,33 @@ def test_parse_error_doc_skipping(caplog):
     parser_udf = get_parser_udf(structural=True, lingual=True)
     sentence_lists = [x for x in parser_udf.apply(doc)]
     assert len(sentence_lists) == 37
+
+
+def test_parse_multi_sections(caplog):
+    """Test the parser with the radiology document."""
+    caplog.set_level(logging.INFO)
+
+    # Test multi-section html
+    docs_path = "tests/data/pure_html/radiology.html"
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "radiology"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False
+    )
+    for _ in parser_udf.apply(doc):
+        pass
+
+    assert len(doc.sections) == 4
+    assert len(doc.paragraphs) == 5
+    assert len(doc.sentences) == 9
+    assert len(doc.figures) == 2
+
+    assert doc.sections[0].name is None
+    assert doc.sections[1].name == "label"
+    assert doc.sections[2].name == "content"
+    assert doc.sections[3].name == "image"
+
+    assert doc.sections[2].paragraphs[0].name == "COMPARISON"
+    assert doc.sections[2].paragraphs[1].name == "INDICATION"
+    assert doc.sections[2].paragraphs[2].name == "FINDINGS"
+    assert doc.sections[2].paragraphs[3].name == "IMPRESSION"
