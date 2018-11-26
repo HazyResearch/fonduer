@@ -1,10 +1,14 @@
 [Unreleased]
 ------------
 
+[0.3.6] - 2018-11-15
+--------------------
+
 Fixed
 ^^^^^
 * `@lukehsiao`_: Updated snorkel-metal version requirement to ensure new syntax
   works when a user upgrades Fonduer.
+* `@lukehsiao`_: Improve error messages on PostgreSQL connection and update FAQ.
 
 
 [0.3.5] - 2018-11-04

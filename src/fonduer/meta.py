@@ -2,6 +2,7 @@ import logging
 from builtins import object
 from urllib.parse import urlparse
 
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -23,12 +24,23 @@ def new_sessionmaker():
             isolation_level="AUTOCOMMIT",
         )
         engine.connect()
-    except Exception:
+    except sqlalchemy.exc.OperationalError as e:
         raise ValueError(
-            "Meta variables have not been initialized with "
-            "a valid postgres connection string."
-            "Use the form: "
-            "postgresql://<user>:<pw>@<host>:<port>/<database_name>"
+            "{}\n{}".format(
+                e,
+                "To resolve this error, check our FAQs at: "
+                + "https://fonduer.readthedocs.io/en/latest/user/faqs.html",
+            )
+        )
+    except Exception as e:
+        raise ValueError(
+            "{}\n{}".format(
+                e,
+                "Meta variables have not been initialized with "
+                + "a valid postgres connection string.\n"
+                + "Use the form: "
+                + "postgresql://<user>:<pw>@<host>:<port>/<database_name>",
+            )
         )
     # New sessionmaker
     return sessionmaker(bind=engine)

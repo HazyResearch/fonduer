@@ -60,25 +60,21 @@ class Spacy(object):
         # self.model = self.load_lang_model()
 
     def has_tokenizer_support(self):
-        if self.lang and (self.has_NLP_support() or self.lang in self.alpha_languages):
-            return True
-        else:
-            return False
+        return self.lang and (
+            self.has_NLP_support() or self.lang in self.alpha_languages
+        )
 
     def has_NLP_support(self):
-        if self.lang and (self.lang in self.languages):
-            return True
-        else:
-            return False
+        return self.lang and (self.lang in self.languages)
 
     @staticmethod
     def is_package(name):
         """Check if string maps to a package installed via pip.
+
         name (unicode): Name of package.
         RETURNS (bool): True if installed package, False if not.
 
         From https://github.com/explosion/spaCy/blob/master/spacy/util.py
-
         """
         name = name.lower()  # compare package name against lowercase name
         packages = pkg_resources.working_set.by_key.keys()
@@ -89,8 +85,7 @@ class Spacy(object):
 
     @staticmethod
     def model_installed(name):
-        """
-        Check if spaCy language model is installed
+        """Check if spaCy language model is installed.
 
         From https://github.com/explosion/spaCy/blob/master/spacy/util.py
 
@@ -110,8 +105,8 @@ class Spacy(object):
 
     def load_lang_model(self):
         """
-        Load spaCy language model or download if
-        model is available and not installed
+        Load spaCy language model or download if model is available and not
+        installed.
 
         Currenty supported spaCy languages
 
@@ -172,8 +167,9 @@ class Spacy(object):
 
     def enrich_sentences_with_NLP(self, all_sentences):
         """
-        Enrich a list of fonduer Sentence objects with NLP features.
-        We merge and process the text of all Sentences for higher efficiency
+        Enrich a list of fonduer Sentence objects with NLP features. We merge
+        and process the text of all Sentences for higher efficiency.
+
         :param all_sentences: List of fonduer Sentence objects for one document
         :return:
         """
@@ -276,8 +272,9 @@ class Spacy(object):
 
     def split_sentences(self, document, text):
         """
-        Split input text into sentences that match CoreNLP's
-         default format, but are not yet processed
+        Split input text into sentences that match CoreNLP's default format,
+        but are not yet processed.
+
         :param document: The Document context
         :param text: The text of the parent paragraph of the sentences
         :return:
@@ -339,13 +336,14 @@ class Spacy(object):
 
 class TokenPreservingTokenizer(object):
     """
-    This custom tokenizer simply preserves the
-    tokenization that was already performed during sentence splitting.
-    It will output a list of space separated tokens, whereas each token
-    is a single word from the list of sentences.
+    This custom tokenizer simply preserves the tokenization that was already
+    performed during sentence splitting. It will output a list of space
+    separated tokens, whereas each token is a single word from the list of
+    sentences.
+
     :param vocab: The vocab attribute of the respective spacy language object
-    :param tokenized_sentences: A list of sentences that
-    was previously tokenized/split by spacy
+    :param tokenized_sentences: A list of sentences that was previously
+        tokenized/split by spacy
     :return:
     """
 
