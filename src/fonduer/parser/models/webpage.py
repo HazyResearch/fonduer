@@ -1,17 +1,19 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 
-from fonduer.parser.models.document import Document
+from fonduer.parser.models.context import Context
 
 
-class Webpage(Document):
-    """A Webpage document context enhanced with additional metadata."""
+class Webpage(Context):
+    """A Webpage Context enhanced with additional metadata."""
 
     __tablename__ = "webpage"
 
     #: The unique id of the ``Webpage``.
-    id = Column(
-        Integer, ForeignKey("document.id", ondelete="CASCADE"), primary_key=True
-    )
+    id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
+
+    #: The name of a ``Webpage``.
+    name = Column(String, unique=False, nullable=True)
+
     #: The URL of the ``Webpage``.
     url = Column(String)
     #: The host of the ``Webpage``.

@@ -276,10 +276,15 @@ class ParserUDF(UDF):
             stable_id = "{}::{}:{}".format(
                 state["document"].name, "table", state["table"]["idx"]
             )
+
+            # Set name for Table
+            name = node.attrib["name"] if "name" in node.attrib else None
+
             # Create the Table in the DB
             parts = {}
             parts["document"] = state["document"]
             parts["stable_id"] = stable_id
+            parts["name"] = name
             parts["position"] = table_idx
             parent = state["parent"][node]
             if isinstance(parent, Cell):
@@ -353,9 +358,13 @@ class ParserUDF(UDF):
             ):
                 state["table"][state["parent"][node].position]["grid"][(r, c)] = 1
 
+            # Set name for Cell
+            name = node.attrib["name"] if "name" in node.attrib else None
+
             # construct cell
             parts = defaultdict(list)
             parts["document"] = state["document"]
+            parts["name"] = name
             parts["table"] = state["parent"][node]
             parts["row_start"] = row_start
             parts["row_end"] = row_end
@@ -391,10 +400,13 @@ class ParserUDF(UDF):
         if node.tag not in ["img", "figure"]:
             return state
 
-        # Process the figure
+        # Process the Figure
         stable_id = "{}::{}:{}".format(
             state["document"].name, "figure", state["figure"]["idx"]
         )
+
+        # Set name for Figure
+        name = node.attrib["name"] if "name" in node.attrib else None
 
         # img within a Figure get's processed in the parent Figure
         if node.tag == "img" and isinstance(state["parent"][node], Figure):
@@ -414,6 +426,7 @@ class ParserUDF(UDF):
 
         parts["document"] = state["document"]
         parts["stable_id"] = stable_id
+        parts["name"] = name
         parts["position"] = state["figure"]["idx"]
 
         # If processing a raw img
@@ -454,6 +467,10 @@ class ParserUDF(UDF):
         """
         text = state["paragraph"]["text"]
         field = state["paragraph"]["field"]
+
+        # Set name for Sentence
+        name = node.attrib["name"] if "name" in node.attrib else None
+
         # Lingual Parse
         document = state["document"]
         for parts in self.tokenize_and_split_sentences(document, text):
@@ -471,6 +488,7 @@ class ParserUDF(UDF):
                 state["sentence"]["abs_offset"],
                 abs_sentence_offset_end,
             )
+            parts["name"] = name
             state["sentence"]["abs_offset"] = abs_sentence_offset_end
             if self.structural:
                 context_node = node.getparent() if field == "tail" else node
@@ -560,6 +578,8 @@ class ParserUDF(UDF):
             if node in state["context"]
             else state["parent"][node]
         )
+        # Set name for Paragraph
+        name = node.attrib["name"] if "name" in node.attrib else None
 
         for field in ["text", "tail"]:
             text = getattr(node, field)
@@ -579,6 +599,7 @@ class ParserUDF(UDF):
             )
             parts = {}
             parts["stable_id"] = stable_id
+            parts["name"] = name
             parts["document"] = state["document"]
             parts["position"] = state["paragraph"]["idx"]
             if isinstance(parent, Caption):
@@ -614,22 +635,27 @@ class ParserUDF(UDF):
     def _parse_section(self, node, state):
         """Parse a Section of the node.
 
-        Note that this implementation currently just creates a single Section
-        for a document.
+        Note that this implementation currently creates a Section at the
+        beginning of the document and creates Section based on tag of node.
 
         :param node: The lxml node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-        if node.tag != "html":
+        if node.tag not in ["html", "section"]:
             return state
 
         # Add a Section
         stable_id = "{}::{}:{}".format(
             state["document"].name, "section", state["section"]["idx"]
         )
+
+        # Set name for Section
+        name = node.attrib["name"] if "name" in node.attrib else None
+
         state["context"][node] = Section(
             document=state["document"],
+            name=name,
             stable_id=stable_id,
             position=state["section"]["idx"],
         )
@@ -652,12 +678,17 @@ class ParserUDF(UDF):
         stable_id = "{}::{}:{}".format(
             state["document"].name, "caption", state["caption"]["idx"]
         )
+
+        # Set name for Section
+        name = node.attrib["name"] if "name" in node.attrib else None
+
         if isinstance(parent, Table):
             state["context"][node] = Caption(
                 document=state["document"],
                 table=parent,
                 figure=None,
                 stable_id=stable_id,
+                name=name,
                 position=state["caption"]["idx"],
             )
         elif isinstance(parent, Figure):
@@ -666,6 +697,7 @@ class ParserUDF(UDF):
                 table=None,
                 figure=parent,
                 stable_id=stable_id,
+                name=name,
                 position=state["caption"]["idx"],
             )
         else:

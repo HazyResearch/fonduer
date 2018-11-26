@@ -19,6 +19,9 @@ class Figure(Context):
     #: The position of the ``Figure`` in the ``Document``.
     position = Column(Integer, nullable=False)
 
+    #: The name of a ``Figure``.
+    name = Column(String, unique=False, nullable=True)
+
     #: The id of the parent ``Document``.
     document_id = Column(Integer, ForeignKey("document.id", ondelete="CASCADE"))
     #: The parent ``Document``.
