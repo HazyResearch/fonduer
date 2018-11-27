@@ -190,8 +190,7 @@ class MentionFigures(MentionSpace):
 
 
 class MentionSentences(MentionSpace):
-    """Defines the space of Mentions as all sentences in a Document *x*.
-    """
+    """Defines the space of Mentions as all sentences in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionSentences."""
@@ -219,8 +218,7 @@ class MentionSentences(MentionSpace):
 
 
 class MentionParagraphs(MentionSpace):
-    """Defines the space of Mentions as all paragraphs in a Document *x*.
-    """
+    """Defines the space of Mentions as all paragraphs in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionParagraphs."""
@@ -246,8 +244,7 @@ class MentionParagraphs(MentionSpace):
 
 
 class MentionCaptions(MentionSpace):
-    """Defines the space of Mentions as all captions in a Document *x*.
-    """
+    """Defines the space of Mentions as all captions in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionCaptions."""
@@ -273,8 +270,7 @@ class MentionCaptions(MentionSpace):
 
 
 class MentionCells(MentionSpace):
-    """Defines the space of Mentions as all cells in a Document *x*.
-    """
+    """Defines the space of Mentions as all cells in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionCells."""
@@ -300,8 +296,7 @@ class MentionCells(MentionSpace):
 
 
 class MentionTables(MentionSpace):
-    """Defines the space of Mentions as all tables in a Document *x*.
-    """
+    """Defines the space of Mentions as all tables in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionTables."""
@@ -327,8 +322,7 @@ class MentionTables(MentionSpace):
 
 
 class MentionSections(MentionSpace):
-    """Defines the space of Mentions as all sections in a Document *x*.
-    """
+    """Defines the space of Mentions as all sections in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionSections."""
@@ -354,8 +348,7 @@ class MentionSections(MentionSpace):
 
 
 class MentionDocuments(MentionSpace):
-    """Defines the space of Mentions as a document in a Document *x*.
-    """
+    """Defines the space of Mentions as a document in a Document *x*."""
 
     def __init__(self):
         """Initialize MentionDocuments."""
