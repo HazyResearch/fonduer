@@ -1,6 +1,9 @@
 [Unreleased]
 ------------
 
+[0.4.0] - 2018-11-27
+--------------------
+
 Added
 ^^^^^
 * `@senwu`_: Rename ``span`` attribute to ``context`` in mention_subclass to
