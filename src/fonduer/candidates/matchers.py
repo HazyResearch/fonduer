@@ -499,3 +499,9 @@ class LambdaFunctionFigureMatcher(_FigureMatcher):
     def _f(self, m):
         """The internal (non-composed) version of filter function f"""
         return self.func(m)
+
+
+class DoNothingMatcher(_Matcher):
+    """Matcher class for doing nothing"""
+
+    pass

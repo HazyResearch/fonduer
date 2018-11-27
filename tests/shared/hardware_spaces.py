@@ -4,7 +4,7 @@ from builtins import chr, range, str
 from difflib import SequenceMatcher
 
 from fonduer.candidates import MentionNgrams
-from fonduer.candidates.models.implicitspan import TemporaryImplicitSpan
+from fonduer.candidates.models.implicit_span_mention import TemporaryImplicitSpanMention
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +197,7 @@ class MentionNgramsPart(MentionNgrams):
                 if part == ts.get_span():
                     yield ts
                 else:
-                    yield TemporaryImplicitSpan(
+                    yield TemporaryImplicitSpanMention(
                         sentence=ts.sentence,
                         char_start=ts.char_start,
                         char_end=ts.char_end,
@@ -254,7 +254,7 @@ class MentionNgramsTemp(MentionNgrams):
                     # keep the implicit '-150'
                     temp = "-"
                 temp += m.group(3)
-                yield TemporaryImplicitSpan(
+                yield TemporaryImplicitSpanMention(
                     sentence=ts.sentence,
                     char_start=ts.char_start,
                     char_end=ts.char_end,
@@ -296,7 +296,7 @@ class MentionNgramsVolt(MentionNgrams):
         for ts in MentionNgrams.apply(self, session, context):
             if ts.get_span().endswith(".0"):
                 value = ts.get_span()[:-2]
-                yield TemporaryImplicitSpan(
+                yield TemporaryImplicitSpanMention(
                     sentence=ts.sentence,
                     char_start=ts.char_start,
                     char_end=ts.char_end,

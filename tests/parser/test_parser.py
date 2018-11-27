@@ -555,9 +555,9 @@ def test_parse_multi_sections(caplog):
     for _ in parser_udf.apply(doc):
         pass
 
-    assert len(doc.sections) == 4
-    assert len(doc.paragraphs) == 5
-    assert len(doc.sentences) == 9
+    assert len(doc.sections) == 5
+    assert len(doc.paragraphs) == 30
+    assert len(doc.sentences) == 35
     assert len(doc.figures) == 2
 
     assert doc.sections[0].name is None

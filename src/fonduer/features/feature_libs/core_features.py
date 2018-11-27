@@ -1,5 +1,5 @@
-from fonduer.candidates.models import ImplicitSpan
-from fonduer.candidates.models.span import TemporarySpan
+from fonduer.candidates.models import ImplicitSpanMention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
 
 FEAT_PRE = "CORE_"
 DEF_VALUE = 1
@@ -11,7 +11,7 @@ def get_core_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.span for m in candidate.get_mentions()])
-        if not (isinstance(args[0], TemporarySpan)):
+        if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
             )
@@ -47,7 +47,7 @@ def get_core_feats(candidates):
 
 def _generate_core_feats(span):
     yield "SPAN_TYPE_[%s]" % (
-        "IMPLICIT" if isinstance(span, ImplicitSpan) else "EXPLICIT"
+        "IMPLICIT" if isinstance(span, ImplicitSpanMention) else "EXPLICIT"
     )
 
     if span.get_span()[0].isupper():

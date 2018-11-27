@@ -1,6 +1,6 @@
 from builtins import str
 
-from fonduer.candidates.models.span import TemporarySpan
+from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.data_model_utils import (
     common_ancestor,
     get_ancestor_class_names,
@@ -25,7 +25,7 @@ def get_structural_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.span for m in candidate.get_mentions()])
-        if not (isinstance(args[0], TemporarySpan)):
+        if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
             )
