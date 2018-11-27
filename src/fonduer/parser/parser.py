@@ -336,10 +336,21 @@ class ParserUDF(UDF):
             # calculate row_end/col_end
             row_end = row_start
             if "rowspan" in node.attrib:
-                row_end += int(node.get("rowspan")) - 1
+                try:
+                    row_end += int(node.get("rowspan")) - 1
+                except ValueError:
+                    logger.error(
+                        "Rowspan has invalid value: '{}'".format(node.get("rowspan"))
+                    )
+
             col_end = col_start
             if "colspan" in node.attrib:
-                col_end += int(node.get("colspan")) - 1
+                try:
+                    col_end += int(node.get("colspan")) - 1
+                except ValueError:
+                    logger.error(
+                        "Colspan has invalid value: '{}'".format(node.get("colspan"))
+                    )
 
             # update grid with occupied cells
             for r, c in itertools.product(

@@ -40,7 +40,7 @@ Data <https://arxiv.org/abs/1703.05028>`__::
 Acknowledgements
 ----------------
 
-Fonduer was inspired by and leverages the work of Snorkel_ and MeTaL_.
+Fonduer leverages the work of Snorkel_ and MeTaL_.
 
 
 .. |CodeClimate| image:: https://img.shields.io/codeclimate/maintainability/HazyResearch/fonduer.svg
