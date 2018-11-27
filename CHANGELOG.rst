@@ -3,6 +3,25 @@
 
 Added
 ^^^^^
+* `@senwu`_: Rename ``span`` attribute to ``context`` in mention_subclass for better
+  support mulitmodal mentions.
+  (`#184 <https://github.com/HazyResearch/fonduer/pull/184>`_)
+
+.. note::
+    The way to retrieve corresponding data model object from mention changed.
+    In Fonduer v0.3.6, it uses ``.span``:
+
+    .. code:: python
+        # sent_mention is a SentenceMention
+        sentence = sent_mention.span.sentence
+
+    With this release, it uses ``.context``:
+
+    .. code:: python
+
+        # sent_mention is a SentenceMention
+        sentence = sent_mention.context.sentence
+
 * `@senwu`_: Add support to extract multimodal candidates and
   add ``DoNothingMatcher`` matcher.
   (`#184 <https://github.com/HazyResearch/fonduer/pull/184>`_)
@@ -40,6 +59,7 @@ Added
 
 Fixed
 ^^^^^
+* `@senwu`_: Remove unnecessary backref in mention generation.
 * `@j-rausch`_: Improve error handling for invalid row spans.
   (`#183 <https://github.com/HazyResearch/fonduer/pull/183>`_)
 
