@@ -6,7 +6,7 @@ from fonduer.parser.models.context import Context
 
 
 class TemporaryParagraphMention(TemporaryContext):
-    """The TemporaryContext version of ParagraphMention"""
+    """The TemporaryContext version of ParagraphMention."""
 
     def __init__(self, paragraph):
         super(TemporaryParagraphMention, self).__init__()
@@ -62,8 +62,7 @@ class TemporaryParagraphMention(TemporaryContext):
 
 
 class ParagraphMention(Context, TemporaryParagraphMention):
-    """A paragraph ``Mention``.
-    """
+    """A paragraph ``Mention``."""
 
     __tablename__ = "paragraph_mention"
 

@@ -6,7 +6,7 @@ from fonduer.parser.models.context import Context
 
 
 class TemporaryDocumentMention(TemporaryContext):
-    """The TemporaryContext version of DocumentMention"""
+    """The TemporaryContext version of DocumentMention."""
 
     def __init__(self, document):
         super(TemporaryDocumentMention, self).__init__()
@@ -54,8 +54,7 @@ class TemporaryDocumentMention(TemporaryContext):
 
 
 class DocumentMention(Context, TemporaryDocumentMention):
-    """A document ``Mention``.
-    """
+    """A document ``Mention``."""
 
     __tablename__ = "document_mention"
 

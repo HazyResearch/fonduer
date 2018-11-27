@@ -137,7 +137,7 @@ class MentionNgrams(Ngrams):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -173,7 +173,7 @@ class MentionFigures(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -203,7 +203,7 @@ class MentionSentences(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -232,7 +232,7 @@ class MentionParagraphs(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -259,7 +259,7 @@ class MentionCaptions(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -286,7 +286,7 @@ class MentionCells(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -313,7 +313,7 @@ class MentionTables(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -340,7 +340,7 @@ class MentionSections(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -354,7 +354,7 @@ class MentionSections(MentionSpace):
 
 
 class MentionDocuments(MentionSpace):
-    """Defines the space of Mentions as document in a Document *x*.
+    """Defines the space of Mentions as a document in a Document *x*.
     """
 
     def __init__(self):
@@ -367,7 +367,7 @@ class MentionDocuments(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):

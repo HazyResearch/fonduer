@@ -10,7 +10,7 @@ from fonduer.parser.models.utils import split_stable_id
 
 
 class TemporaryImplicitSpanMention(TemporarySpanMention):
-    """The TemporaryContext version of ImplicitSpanMention"""
+    """The TemporaryContext version of ImplicitSpanMention."""
 
     def __init__(
         self,
