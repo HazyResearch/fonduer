@@ -2,10 +2,15 @@
 ------------
 
 Added
-^^^^^^^
+^^^^^
 * `@senwu`_: Add support to parse multiple sections in parser, fix webpage context, and
   add name column for each context in data model.
-  (`#175 <https://github.com/HazyResearch/fonduer/pull/175>`_)
+  (`#182 <https://github.com/HazyResearch/fonduer/pull/182>`_)
+
+Fixed
+^^^^^
+* `@j-rausch`_: Improve error handling for invalid row spans.
+  (`#183 <https://github.com/HazyResearch/fonduer/pull/183>`_)
 
 
 [0.3.6] - 2018-11-15
