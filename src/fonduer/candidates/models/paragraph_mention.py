@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models.context import Context
@@ -74,11 +74,7 @@ class ParagraphMention(Context, TemporaryParagraphMention):
     paragraph_id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"))
 
     #: The parent ``Paragraph``.
-    paragraph = relationship(
-        "Context",
-        backref=backref("paragraph_mentions", cascade="all, delete-orphan"),
-        foreign_keys=paragraph_id,
-    )
+    paragraph = relationship("Context", foreign_keys=paragraph_id)
 
     __table_args__ = (UniqueConstraint(paragraph_id),)
 

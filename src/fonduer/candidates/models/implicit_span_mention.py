@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import text
 from sqlalchemy.types import PickleType
 
@@ -242,11 +242,7 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
         Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True
     )
     #: The parent ``Sentence``.
-    sentence = relationship(
-        "Context",
-        backref=backref("implicit_span_mentions", cascade="all, delete-orphan"),
-        foreign_keys=sentence_id,
-    )
+    sentence = relationship("Context", foreign_keys=sentence_id)
 
     #: The starting character-index of the ``ImplicitSpanMention``.
     char_start = Column(Integer, nullable=False)

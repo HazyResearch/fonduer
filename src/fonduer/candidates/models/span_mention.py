@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import PickleType
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
@@ -227,11 +227,7 @@ class SpanMention(Context, TemporarySpanMention):
     sentence_id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"))
 
     #: The parent ``Sentence``.
-    sentence = relationship(
-        "Context",
-        backref=backref("span_mentions", cascade="all, delete-orphan"),
-        foreign_keys=sentence_id,
-    )
+    sentence = relationship("Context", foreign_keys=sentence_id)
 
     #: The starting character-index of the ``SpanMention``.
     char_start = Column(Integer, nullable=False)

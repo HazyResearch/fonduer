@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models.context import Context
@@ -66,11 +66,7 @@ class DocumentMention(Context, TemporaryDocumentMention):
     document_id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"))
 
     #: The parent ``Document``.
-    document = relationship(
-        "Context",
-        backref=backref("document_mentions", cascade="all, delete-orphan"),
-        foreign_keys=document_id,
-    )
+    document = relationship("Context", foreign_keys=document_id)
 
     __table_args__ = (UniqueConstraint(document_id),)
 

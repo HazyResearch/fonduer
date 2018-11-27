@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models.context import Context
@@ -76,11 +76,7 @@ class CellMention(Context, TemporaryCellMention):
     cell_id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"))
 
     #: The parent ``Cell``.
-    cell = relationship(
-        "Context",
-        backref=backref("cell_mention", cascade="all, delete-orphan"),
-        foreign_keys=cell_id,
-    )
+    cell = relationship("Context", foreign_keys=cell_id)
 
     __table_args__ = (UniqueConstraint(cell_id),)
 
