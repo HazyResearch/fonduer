@@ -1,11 +1,11 @@
 from fonduer.candidates.candidates import CandidateExtractor
 from fonduer.candidates.mentions import (
-    MentionExtractor,
-    MentionFigures,
-    MentionNgrams,
     MentionCaptions,
     MentionCells,
     MentionDocuments,
+    MentionExtractor,
+    MentionFigures,
+    MentionNgrams,
     MentionParagraphs,
     MentionSections,
     MentionSentences,
@@ -14,12 +14,12 @@ from fonduer.candidates.mentions import (
 
 __all__ = [
     "CandidateExtractor",
-    "MentionExtractor",
-    "MentionFigures",
-    "MentionNgrams",
     "MentionCaptions",
     "MentionCells",
     "MentionDocuments",
+    "MentionExtractor",
+    "MentionFigures",
+    "MentionNgrams",
     "MentionParagraphs",
     "MentionSections",
     "MentionSentences",

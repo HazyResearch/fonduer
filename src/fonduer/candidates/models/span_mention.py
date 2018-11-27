@@ -8,7 +8,7 @@ from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporarySpanMention(TemporaryContext):
-    """The TemporaryContext version of Span"""
+    """The TemporaryContext version of Span."""
 
     def __init__(self, sentence, char_start, char_end, meta=None):
         super(TemporarySpanMention, self).__init__()

@@ -6,7 +6,7 @@ from fonduer.parser.models.context import Context
 
 
 class TemporarySectionMention(TemporaryContext):
-    """The TemporaryContext version of SectionMention"""
+    """The TemporaryContext version of SectionMention."""
 
     def __init__(self, section):
         super(TemporarySectionMention, self).__init__()
@@ -60,8 +60,7 @@ class TemporarySectionMention(TemporaryContext):
 
 
 class SectionMention(Context, TemporarySectionMention):
-    """A section ``Mention``.
-    """
+    """A section ``Mention``."""
 
     __tablename__ = "section_mention"
 

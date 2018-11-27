@@ -6,7 +6,7 @@ from fonduer.parser.models.context import Context
 
 
 class TemporaryFigureMention(TemporaryContext):
-    """The TemporaryContext version of FigureMention"""
+    """The TemporaryContext version of FigureMention."""
 
     def __init__(self, figure):
         super(TemporaryFigureMention, self).__init__()
@@ -63,8 +63,7 @@ class TemporaryFigureMention(TemporaryContext):
 
 
 class FigureMention(Context, TemporaryFigureMention):
-    """A figure ``Mention``.
-    """
+    """A figure ``Mention``."""
 
     __tablename__ = "figure_mention"
 
