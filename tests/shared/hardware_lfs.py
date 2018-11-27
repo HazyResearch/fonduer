@@ -119,11 +119,11 @@ def LF_too_many_numbers_row(c):
 
 
 def LF_temp_on_high_page_num(c):
-    return FALSE if c.temp.span.get_attrib_tokens("page")[0] > 2 else ABSTAIN
+    return FALSE if c.temp.context.get_attrib_tokens("page")[0] > 2 else ABSTAIN
 
 
 def LF_temp_outside_table(c):
-    return FALSE if not c.temp.span.sentence.is_tabular() is None else ABSTAIN
+    return FALSE if not c.temp.context.sentence.is_tabular() is None else ABSTAIN
 
 
 def LF_not_temp_relevant(c):

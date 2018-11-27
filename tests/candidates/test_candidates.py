@@ -260,9 +260,9 @@ def test_cand_gen(caplog):
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]
-    logger.info("Part: {}".format(part.span))
-    logger.info("Volt: {}".format(volt.span))
-    logger.info("Temp: {}".format(temp.span))
+    logger.info("Part: {}".format(part.context))
+    logger.info("Volt: {}".format(volt.context))
+    logger.info("Temp: {}".format(temp.context))
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
@@ -371,8 +371,8 @@ def test_ngrams(caplog):
 
     assert session.query(Person).count() == 126
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.span.get_num_words() == 1]) == 50
-    assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 50
+    assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
     person_ngrams = MentionNgrams(n_min=2, n_max=3)
@@ -382,8 +382,8 @@ def test_ngrams(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
     assert session.query(Person).count() == 76
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.span.get_num_words() == 1]) == 0
-    assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
+    assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
 
 def test_mention_longest_match(caplog):
@@ -430,7 +430,7 @@ def test_mention_longest_match(caplog):
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
     mentions = session.query(Place).all()
-    mention_spans = [x.span.get_span() for x in mentions]
+    mention_spans = [x.context.get_span() for x in mentions]
     assert "Sinking Spring Farm" in mention_spans
     assert "Farm" in mention_spans
     assert len(mention_spans) == 23
@@ -446,7 +446,7 @@ def test_mention_longest_match(caplog):
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
     mentions = session.query(Place).all()
-    mention_spans = [x.span.get_span() for x in mentions]
+    mention_spans = [x.context.get_span() for x in mentions]
     assert "Sinking Spring Farm" in mention_spans
     assert "Farm" not in mention_spans
     assert len(mention_spans) == 4

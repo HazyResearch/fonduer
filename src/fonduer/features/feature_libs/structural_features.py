@@ -24,7 +24,7 @@ binary_strlib_feats = {}
 def get_structural_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = tuple([m.span for m in candidate.get_mentions()])
+        args = tuple([m.context for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)

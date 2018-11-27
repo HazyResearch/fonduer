@@ -105,8 +105,8 @@ class SparseLSTM(NoiseAwareModel):
                 # Add mark for each mention in the original sentence
                 args = [
                     (
-                        candidate[i].span.get_word_start_index(),
-                        candidate[i].span.get_word_end_index(),
+                        candidate[i].context.get_word_start_index(),
+                        candidate[i].context.get_word_end_index(),
                         i,
                     )
                 ]
