@@ -3,8 +3,37 @@
 
 Added
 ^^^^^
-* `@senwu`_: Add support to extract multimodal candidates.
+* `@senwu`_: Add support to extract multimodal candidates and
+  add ``DoNothingMatcher`` matcher.
   (`#184 <https://github.com/HazyResearch/fonduer/pull/184>`_)
+
+.. note::
+    The Mention extraction support all data types in data model. In Fonduer v0.3.6,
+    Mention extraction only supports ``MentionNgrams`` and ``MentionFigures``:
+
+    .. code:: python
+
+        from fonduer.candidates import (
+            MentionFigures,
+            MentionNgrams,
+        )
+
+    With this release, it supports all data types:
+
+    .. code:: python
+
+        from fonduer.candidates import (
+            MentionCaptions,
+            MentionCells,
+            MentionDocuments,
+            MentionFigures,
+            MentionNgrams,
+            MentionParagraphs,
+            MentionSections,
+            MentionSentences,
+            MentionTables,
+        )
+
 * `@senwu`_: Add support to parse multiple sections in parser, fix webpage context, and
   add name column for each context in data model.
   (`#182 <https://github.com/HazyResearch/fonduer/pull/182>`_)
