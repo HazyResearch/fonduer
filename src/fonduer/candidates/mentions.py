@@ -152,8 +152,7 @@ class MentionNgrams(Ngrams):
 
 
 class MentionFigures(MentionSpace):
-    """Defines the space of Mentions as all figures in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all figures in a Document *x*.
 
     :param types: If specified, only yield TemporaryFigureMentions whose url ends in
         one of the specified types. Example: types=["png", "jpg", "jpeg"].
@@ -191,8 +190,7 @@ class MentionFigures(MentionSpace):
 
 
 class MentionSentences(MentionSpace):
-    """Defines the space of Mentions as all sentences in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all sentences in a Document *x*.
     """
 
     def __init__(self):
@@ -221,8 +219,7 @@ class MentionSentences(MentionSpace):
 
 
 class MentionParagraphs(MentionSpace):
-    """Defines the space of Mentions as all paragraphs in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all paragraphs in a Document *x*.
     """
 
     def __init__(self):
@@ -249,8 +246,7 @@ class MentionParagraphs(MentionSpace):
 
 
 class MentionCaptions(MentionSpace):
-    """Defines the space of Mentions as all captions in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all captions in a Document *x*.
     """
 
     def __init__(self):
@@ -277,8 +273,7 @@ class MentionCaptions(MentionSpace):
 
 
 class MentionCells(MentionSpace):
-    """Defines the space of Mentions as all cells in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all cells in a Document *x*.
     """
 
     def __init__(self):
@@ -305,8 +300,7 @@ class MentionCells(MentionSpace):
 
 
 class MentionTables(MentionSpace):
-    """Defines the space of Mentions as all tables in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all tables in a Document *x*.
     """
 
     def __init__(self):
@@ -333,8 +327,7 @@ class MentionTables(MentionSpace):
 
 
 class MentionSections(MentionSpace):
-    """Defines the space of Mentions as all sections in a Document *x*, indexing
-    by **position offset**.
+    """Defines the space of Mentions as all sections in a Document *x*.
     """
 
     def __init__(self):
@@ -361,8 +354,7 @@ class MentionSections(MentionSpace):
 
 
 class MentionDocuments(MentionSpace):
-    """Defines the space of Mentions as document in a Document *x*, indexing
-    by **document name**.
+    """Defines the space of Mentions as document in a Document *x*.
     """
 
     def __init__(self):
