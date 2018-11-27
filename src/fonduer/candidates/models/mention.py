@@ -103,7 +103,7 @@ def mention_subclass(class_name, cardinality=None, values=None, table_name=None)
     elif cardinality is not None:
         values = list(range(cardinality))
 
-    args = ["span"]
+    args = ["context"]
     class_spec = (args, table_name, cardinality, values)
     if class_name in mention_subclasses:
         if class_spec == mention_subclasses[class_name][1]:
@@ -152,14 +152,7 @@ def mention_subclass(class_name, cardinality=None, values=None, table_name=None)
                 Integer, ForeignKey("context.id", ondelete="CASCADE")
             )
             class_attribs[arg] = relationship(
-                "Context",
-                backref=backref(
-                    table_name + "_" + arg + "s",
-                    cascade_backrefs=False,
-                    cascade="all, delete-orphan",
-                ),
-                cascade_backrefs=False,
-                foreign_keys=class_attribs[arg + "_id"],
+                "Context", foreign_keys=class_attribs[arg + "_id"]
             )
             unique_args.append(class_attribs[arg + "_id"])
 

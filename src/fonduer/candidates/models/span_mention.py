@@ -1,20 +1,20 @@
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import PickleType
 
-from fonduer.candidates.models.temporarycontext import TemporaryContext
+from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models.context import Context
 from fonduer.parser.models.utils import construct_stable_id
 
 
-class TemporarySpan(TemporaryContext):
-    """The TemporaryContext version of Span"""
+class TemporarySpanMention(TemporaryContext):
+    """The TemporaryContext version of Span."""
 
     def __init__(self, sentence, char_start, char_end, meta=None):
-        super(TemporarySpan, self).__init__()
+        super(TemporarySpanMention, self).__init__()
         self.sentence = sentence  # The sentence Context of the Span
-        self.char_end = char_end
         self.char_start = char_start
+        self.char_end = char_end
         self.meta = meta
 
     def __len__(self):
@@ -57,10 +57,10 @@ class TemporarySpan(TemporaryContext):
         )
 
     def _get_table(self):
-        return Span
+        return SpanMention
 
     def _get_polymorphic_identity(self):
-        return "span"
+        return "span_mention"
 
     def _get_insert_args(self):
         return {
@@ -208,50 +208,48 @@ class TemporarySpan(TemporaryContext):
         )
 
     def _get_instance(self, **kwargs):
-        return TemporarySpan(**kwargs)
+        return TemporarySpanMention(**kwargs)
 
 
-class Span(Context, TemporarySpan):
+class SpanMention(Context, TemporarySpanMention):
     """
     A span of chars, identified by Context ID and char-index start, end (inclusive).
 
     char_offsets are **relative to the Context start**
     """
 
-    __tablename__ = "span"
+    __tablename__ = "span_mention"
 
-    #: The unique id of the ``Span``.
+    #: The unique id of the ``SpanMention``.
     id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True)
 
     #: The id of the parent ``Sentence``.
     sentence_id = Column(Integer, ForeignKey("context.id", ondelete="CASCADE"))
-    #: The parent ``Sentence``.
-    sentence = relationship(
-        "Context",
-        backref=backref("spans", cascade="all, delete-orphan"),
-        foreign_keys=sentence_id,
-    )
 
-    #: The starting character-index of the ``Span``.
+    #: The parent ``Sentence``.
+    sentence = relationship("Context", foreign_keys=sentence_id)
+
+    #: The starting character-index of the ``SpanMention``.
     char_start = Column(Integer, nullable=False)
-    #: The ending character-index of the ``Span`` (inclusive).
+
+    #: The ending character-index of the ``SpanMention`` (inclusive).
     char_end = Column(Integer, nullable=False)
 
-    #: Pickled metadata about the ``ImplicitSpan``.
+    #: Pickled metadata about the ``ImplicitSpanMention``.
     meta = Column(PickleType)
 
     __table_args__ = (UniqueConstraint(sentence_id, char_start, char_end),)
 
     __mapper_args__ = {
-        "polymorphic_identity": "span",
+        "polymorphic_identity": "span_mention",
         "inherit_condition": (id == Context.id),
     }
 
     def _get_instance(self, **kwargs):
-        return Span(**kwargs)
+        return SpanMention(**kwargs)
 
     # We redefine these to use default semantics, overriding the operators
-    # inherited from TemporarySpan
+    # inherited from TemporarySpanMention
     def __eq__(self, other):
         return self is other
 

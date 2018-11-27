@@ -1,16 +1,16 @@
 import logging
 
 from fonduer.candidates.models import Candidate, Mention
-from fonduer.candidates.models.span import TemporarySpan
+from fonduer.candidates.models.span_mention import TemporarySpanMention
 
 
 def _to_span(x, idx=0):
     """Convert a Candidate, Mention, or Span to a span."""
     if isinstance(x, Candidate):
-        return x[idx].span
+        return x[idx].context
     elif isinstance(x, Mention):
-        return x.span
-    elif isinstance(x, TemporarySpan):
+        return x.context
+    elif isinstance(x, TemporarySpanMention):
         return x
     else:
         raise ValueError("{} is an invalid argument type".format(type(x)))
@@ -21,8 +21,8 @@ def _to_spans(x):
     if isinstance(x, Candidate):
         return [_to_span(m) for m in x]
     elif isinstance(x, Mention):
-        return [x.span]
-    elif isinstance(x, TemporarySpan):
+        return [x.context]
+    elif isinstance(x, TemporarySpanMention):
         return [x]
     else:
         raise ValueError("{} is an invalid argument type".format(type(x)))

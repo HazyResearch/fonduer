@@ -56,7 +56,7 @@ class Visualizer(object):
         """
         if not pdf_file:
             pdf_file = os.path.join(
-                self.pdf_path, candidates[0][0].span.sentence.document.name
+                self.pdf_path, candidates[0][0].context.sentence.document.name
             )
             if os.path.isfile(pdf_file + ".pdf"):
                 pdf_file += ".pdf"
@@ -65,7 +65,7 @@ class Visualizer(object):
             else:
                 logger.error("display_candidates failed: pdf file missing.")
         boxes = [
-            get_box(mention.span) for c in candidates for mention in c.get_mentions()
+            get_box(mention.context) for c in candidates for mention in c.get_mentions()
         ]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)

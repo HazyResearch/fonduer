@@ -1,13 +1,13 @@
 from collections import namedtuple
 
-from fonduer.candidates.models.span import TemporarySpan
+from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.parser.models import Sentence
 
 Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"])
 
 
 def bbox_from_span(span):
-    if isinstance(span, TemporarySpan) and span.sentence.is_visual():
+    if isinstance(span, TemporarySpanMention) and span.sentence.is_visual():
         return Bbox(
             span.get_attrib_tokens("page")[0],
             min(span.get_attrib_tokens("top")),

@@ -8,8 +8,14 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import select
 
 from fonduer.candidates.models import Mention
-from fonduer.candidates.models.image import TemporaryImage
-from fonduer.candidates.models.span import TemporarySpan
+from fonduer.candidates.models.caption_mention import TemporaryCaptionMention
+from fonduer.candidates.models.cell_mention import TemporaryCellMention
+from fonduer.candidates.models.document_mention import TemporaryDocumentMention
+from fonduer.candidates.models.figure_mention import TemporaryFigureMention
+from fonduer.candidates.models.paragraph_mention import TemporaryParagraphMention
+from fonduer.candidates.models.section_mention import TemporarySectionMention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models.table_mention import TemporaryTableMention
 from fonduer.parser.models import Document
 from fonduer.utils.udf import UDF, UDFRunner
 
@@ -69,7 +75,9 @@ class Ngrams(MentionSpace):
                 w = context.words[i + j - 1]
                 start = offsets[i]
                 end = offsets[i + j - 1] + len(w) - 1
-                ts = TemporarySpan(char_start=start, char_end=end, sentence=context)
+                ts = TemporarySpanMention(
+                    char_start=start, char_end=end, sentence=context
+                )
                 if ts not in seen:
                     seen.add(ts)
                     yield ts
@@ -92,7 +100,7 @@ class Ngrams(MentionSpace):
                     for start_idx in start_idxs:
                         for end_idx in end_idxs:
                             if start_idx < end_idx:
-                                ts = TemporarySpan(
+                                ts = TemporarySpanMention(
                                     char_start=start_idx,
                                     char_end=end_idx - 1,
                                     sentence=context,
@@ -129,7 +137,7 @@ class MentionNgrams(Ngrams):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -147,7 +155,7 @@ class MentionFigures(MentionSpace):
     """Defines the space of Mentions as all figures in a Document *x*, indexing
     by **position offset**.
 
-    :param types: If specified, only yield TemporaryImages whose url ends in
+    :param types: If specified, only yield TemporaryFigureMentions whose url ends in
         one of the specified types. Example: types=["png", "jpg", "jpeg"].
     :type types: list, tuple of str
     """
@@ -166,7 +174,7 @@ class MentionFigures(MentionSpace):
 
         :param session: The database session
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``.
+        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -179,7 +187,204 @@ class MentionFigures(MentionSpace):
             if self.types is None or any(
                 figure.url.lower().endswith(type) for type in self.types
             ):
-                yield TemporaryImage(figure)
+                yield TemporaryFigureMention(figure)
+
+
+class MentionSentences(MentionSpace):
+    """Defines the space of Mentions as all sentences in a Document *x*, indexing
+    by **position offset**.
+    """
+
+    def __init__(self):
+        """Initialize MentionSentences."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionSentences from a Document by parsing all of its Sentences.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionSentences.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        for sentence in doc.sentences:
+            yield TemporarySpanMention(
+                char_start=0, char_end=len(sentence.text) - 1, sentence=sentence
+            )
+
+
+class MentionParagraphs(MentionSpace):
+    """Defines the space of Mentions as all paragraphs in a Document *x*, indexing
+    by **position offset**.
+    """
+
+    def __init__(self):
+        """Initialize MentionParagraphs."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionParagraphs from a Document by parsing all of its Paragraphs.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionParagraphs.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        for paragraph in doc.paragraphs:
+            yield TemporaryParagraphMention(paragraph)
+
+
+class MentionCaptions(MentionSpace):
+    """Defines the space of Mentions as all captions in a Document *x*, indexing
+    by **position offset**.
+    """
+
+    def __init__(self):
+        """Initialize MentionCaptions."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionCaptions from a Document by parsing all of its Captions.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionCaptions.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        for caption in doc.captions:
+            yield TemporaryCaptionMention(caption)
+
+
+class MentionCells(MentionSpace):
+    """Defines the space of Mentions as all cells in a Document *x*, indexing
+    by **position offset**.
+    """
+
+    def __init__(self):
+        """Initialize MentionCells."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionCells from a Document by parsing all of its Cells.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionCells.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        for cell in doc.cells:
+            yield TemporaryCellMention(cell)
+
+
+class MentionTables(MentionSpace):
+    """Defines the space of Mentions as all tables in a Document *x*, indexing
+    by **position offset**.
+    """
+
+    def __init__(self):
+        """Initialize MentionTables."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionTables from a Document by parsing all of its Tables.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionTables.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        for table in doc.tables:
+            yield TemporaryTableMention(table)
+
+
+class MentionSections(MentionSpace):
+    """Defines the space of Mentions as all sections in a Document *x*, indexing
+    by **position offset**.
+    """
+
+    def __init__(self):
+        """Initialize MentionSections."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionSections from a Document by parsing all of its Sections.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionSections.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        for section in doc.sections:
+            yield TemporarySectionMention(section)
+
+
+class MentionDocuments(MentionSpace):
+    """Defines the space of Mentions as a document in a Document *x*, indexing
+    by **document name**.
+    """
+
+    def __init__(self):
+        """Initialize MentionDocuments."""
+        MentionSpace.__init__(self)
+
+    def apply(self, session, doc):
+        """
+        Generate MentionDocuments from a Document by using document.
+
+        :param session: The database session
+        :param doc: The ``Document`` to parse.
+        :type doc: ``Document``
+        :raises TypeError: If the input doc is not of type ``Document``.
+        """
+        if not isinstance(doc, Document):
+            raise TypeError(
+                "Input Contexts to MentionDocuments.apply() must be of type Document"
+            )
+
+        doc = session.query(Document).filter(Document.id == doc.id).one()
+        yield TemporaryDocumentMention(doc)
 
 
 class MentionExtractor(UDFRunner):

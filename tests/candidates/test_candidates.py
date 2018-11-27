@@ -7,11 +7,19 @@ import pytest
 from fonduer import Meta
 from fonduer.candidates import (
     CandidateExtractor,
+    MentionCaptions,
+    MentionCells,
+    MentionDocuments,
     MentionExtractor,
     MentionFigures,
     MentionNgrams,
+    MentionParagraphs,
+    MentionSections,
+    MentionSentences,
+    MentionTables,
 )
 from fonduer.candidates.matchers import (
+    DoNothingMatcher,
     LambdaFunctionFigureMatcher,
     LambdaFunctionMatcher,
     PersonMatcher,
@@ -252,9 +260,9 @@ def test_cand_gen(caplog):
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]
-    logger.info("Part: {}".format(part.span))
-    logger.info("Volt: {}".format(volt.span))
-    logger.info("Temp: {}".format(temp.span))
+    logger.info("Part: {}".format(part.context))
+    logger.info("Volt: {}".format(volt.context))
+    logger.info("Temp: {}".format(temp.context))
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
@@ -363,8 +371,8 @@ def test_ngrams(caplog):
 
     assert session.query(Person).count() == 126
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.span.get_num_words() == 1]) == 50
-    assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 50
+    assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
     person_ngrams = MentionNgrams(n_min=2, n_max=3)
@@ -374,8 +382,8 @@ def test_ngrams(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
     assert session.query(Person).count() == 76
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.span.get_num_words() == 1]) == 0
-    assert len([x for x in mentions if x.span.get_num_words() > 3]) == 0
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
+    assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
 
 def test_mention_longest_match(caplog):
@@ -422,7 +430,7 @@ def test_mention_longest_match(caplog):
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
     mentions = session.query(Place).all()
-    mention_spans = [x.span.get_span() for x in mentions]
+    mention_spans = [x.context.get_span() for x in mentions]
     assert "Sinking Spring Farm" in mention_spans
     assert "Farm" in mention_spans
     assert len(mention_spans) == 23
@@ -438,7 +446,65 @@ def test_mention_longest_match(caplog):
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
     mentions = session.query(Place).all()
-    mention_spans = [x.span.get_span() for x in mentions]
+    mention_spans = [x.context.get_span() for x in mentions]
     assert "Sinking Spring Farm" in mention_spans
     assert "Farm" not in mention_spans
     assert len(mention_spans) == 4
+
+
+def test_multimodal_cand(caplog):
+    """Test multimodal candidate generation"""
+    caplog.set_level(logging.INFO)
+
+    PARALLEL = 4
+
+    max_docs = 1
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+
+    docs_path = "tests/data/pure_html/radiology.html"
+
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(session, structural=True, lingual=True)
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    assert session.query(Document).count() == max_docs
+
+    assert session.query(Sentence).count() == 35
+    docs = session.query(Document).order_by(Document.name).all()
+
+    # Mention Extraction
+
+    ms_doc = mention_subclass("m_doc")
+    ms_sec = mention_subclass("m_sec")
+    ms_tab = mention_subclass("m_tab")
+    ms_fig = mention_subclass("m_fig")
+    ms_cell = mention_subclass("m_cell")
+    ms_para = mention_subclass("m_para")
+    ms_cap = mention_subclass("m_cap")
+    ms_sent = mention_subclass("m_sent")
+
+    m_doc = MentionDocuments()
+    m_sec = MentionSections()
+    m_tab = MentionTables()
+    m_fig = MentionFigures()
+    m_cell = MentionCells()
+    m_para = MentionParagraphs()
+    m_cap = MentionCaptions()
+    m_sent = MentionSentences()
+
+    ms = [ms_doc, ms_cap, ms_sec, ms_tab, ms_fig, ms_para, ms_sent, ms_cell]
+    m = [m_doc, m_cap, m_sec, m_tab, m_fig, m_para, m_sent, m_cell]
+    matchers = [DoNothingMatcher()] * 8
+
+    mention_extractor = MentionExtractor(session, ms, m, matchers, parallelism=PARALLEL)
+
+    mention_extractor.apply(docs)
+
+    assert session.query(ms_doc).count() == 1
+    assert session.query(ms_cap).count() == 2
+    assert session.query(ms_sec).count() == 5
+    assert session.query(ms_tab).count() == 2
+    assert session.query(ms_fig).count() == 2
+    assert session.query(ms_para).count() == 30
+    assert session.query(ms_sent).count() == 35
+    assert session.query(ms_cell).count() == 21

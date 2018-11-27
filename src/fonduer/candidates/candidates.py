@@ -251,11 +251,11 @@ class CandidateExtractorUDF(UDF):
 
                 # TODO: Make this work for higher-order relations
                 if self.arities[i] == 2:
-                    ai, a = (cand[0][0], cand[0][1].span)
-                    bi, b = (cand[1][0], cand[1][1].span)
+                    ai, a = (cand[0][0], cand[0][1].context)
+                    bi, b = (cand[1][0], cand[1][1].context)
 
-                    # Check for self-joins, "nested" joins (joins from span to
-                    # its subspan), and flipped duplicate "symmetric" relations
+                    # Check for self-joins, "nested" joins (joins from context to
+                    # its subcontext), and flipped duplicate "symmetric" relations
                     if not self.self_relations and a == b:
                         logger.debug("Skipping self-joined candidate {}".format(cand))
                         continue

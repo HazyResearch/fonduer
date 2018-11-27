@@ -3,12 +3,65 @@
 
 Added
 ^^^^^
-* `@senwu`_: Add support to parse multiple sections in parser, fix webpage context, and
-  add name column for each context in data model.
+* `@senwu`_: Rename ``span`` attribute to ``context`` in mention_subclass to
+  better support mulitmodal mentions.
+  (`#184 <https://github.com/HazyResearch/fonduer/pull/184>`_)
+
+.. note::
+    The way to retrieve corresponding data model object from mention changed.
+    In Fonduer v0.3.6, we use ``.span``:
+
+    .. code:: python
+
+        # sent_mention is a SentenceMention
+        sentence = sent_mention.span.sentence
+
+    With this release, we use ``.context``:
+
+    .. code:: python
+
+        # sent_mention is a SentenceMention
+        sentence = sent_mention.context.sentence
+
+* `@senwu`_: Add support to extract multimodal candidates and add
+  ``DoNothingMatcher`` matcher.
+  (`#184 <https://github.com/HazyResearch/fonduer/pull/184>`_)
+
+.. note::
+    The Mention extraction support all data types in data model. In Fonduer
+    v0.3.6, Mention extraction only supports ``MentionNgrams`` and
+    ``MentionFigures``:
+
+    .. code:: python
+
+        from fonduer.candidates import (
+            MentionFigures,
+            MentionNgrams,
+        )
+
+    With this release, it supports all data types:
+
+    .. code:: python
+
+        from fonduer.candidates import (
+            MentionCaptions,
+            MentionCells,
+            MentionDocuments,
+            MentionFigures,
+            MentionNgrams,
+            MentionParagraphs,
+            MentionSections,
+            MentionSentences,
+            MentionTables,
+        )
+
+* `@senwu`_: Add support to parse multiple sections in parser, fix webpage
+  context, and add name column for each context in data model.
   (`#182 <https://github.com/HazyResearch/fonduer/pull/182>`_)
 
 Fixed
 ^^^^^
+* `@senwu`_: Remove unnecessary backref in mention generation.
 * `@j-rausch`_: Improve error handling for invalid row spans.
   (`#183 <https://github.com/HazyResearch/fonduer/pull/183>`_)
 
@@ -33,8 +86,9 @@ Added
   (`#175 <https://github.com/HazyResearch/fonduer/pull/175>`_)
 
 .. note::
-    With the SparseLSTM discriminative model, we save memory for the origin LSTM
-    model while sacrificing runtime. In Fonduer v0.3.5, SparseLSTM is as follows:
+    With the SparseLSTM discriminative model, we save memory for the origin
+    LSTM model while sacrificing runtime. In Fonduer v0.3.5, SparseLSTM is as
+    follows:
 
     .. code:: python
 

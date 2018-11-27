@@ -14,7 +14,7 @@ from treedlib import (
     compile_relation_feature_generator,
 )
 
-from fonduer.candidates.models.span import TemporarySpan
+from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.features.feature_libs.tree_structs import corenlp_to_xmltree
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
@@ -32,8 +32,8 @@ settings = get_config()
 def get_content_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
-        args = tuple([m.span for m in candidate.get_mentions()])
-        if not (isinstance(args[0], TemporarySpan)):
+        args = tuple([m.context for m in candidate.get_mentions()])
+        if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
                 "Accepts Span-type arguments, %s-type found." % type(candidate)
             )
