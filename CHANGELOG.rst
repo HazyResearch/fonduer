@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Changed
+^^^^^^^
+* `@lukehsiao`_: Add soft version pinning to avoid failures due to dependency
+  API changes.
+
+
 [0.4.0] - 2018-11-27
 --------------------
 
