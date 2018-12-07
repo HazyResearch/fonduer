@@ -472,7 +472,7 @@ class MentionExtractor(UDFRunner):
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete()
 
-    def get_mentions(self, docs=None):
+    def get_mentions(self, docs=None, sort=True):
         """Return a list of lists of the mentions associated with this extractor.
 
         Each list of the return will contain the Mentions for one of the
@@ -480,6 +480,8 @@ class MentionExtractor(UDFRunner):
 
         :param docs: If provided, return Mentions from these documents. Else,
             return all Mentions.
+        :param sort: If sort is True, then return all Mentions sorted by stable_id.
+        :type sort: bool
         :return: Mentions for each mention_class.
         :rtype: List of lists.
         """
@@ -491,15 +493,16 @@ class MentionExtractor(UDFRunner):
                 mentions = (
                     self.session.query(mention_class)
                     .filter(mention_class.document_id.in_([doc.id for doc in docs]))
-                    .order_by(mention_class.id)
                     .all()
                 )
+                if sort:
+                    mentions = sorted(mentions, key=lambda x: x[0].get_stable_id())
                 result.append(mentions)
         else:
             for mention_class in self.mention_classes:
-                mentions = (
-                    self.session.query(mention_class).order_by(mention_class.id).all()
-                )
+                mentions = self.session.query(mention_class).all()
+                if sort:
+                    mentions = sorted(mentions, key=lambda x: x[0].get_stable_id())
                 result.append(mentions)
         return result
 
