@@ -139,7 +139,7 @@ class CandidateExtractor(UDFRunner):
         logger.info("Clearing ALL Candidates.")
         self.session.query(Candidate).filter(Candidate.split == split).delete()
 
-    def get_candidates(self, docs=None, split=0, sort=True):
+    def get_candidates(self, docs=None, split=0, sort=False):
         """Return a list of lists of the candidates associated with this extractor.
 
         Each list of the return will contain the candidates for one of the

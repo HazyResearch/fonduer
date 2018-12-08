@@ -472,7 +472,7 @@ class MentionExtractor(UDFRunner):
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete()
 
-    def get_mentions(self, docs=None, sort=True):
+    def get_mentions(self, docs=None, sort=False):
         """Return a list of lists of the mentions associated with this extractor.
 
         Each list of the return will contain the Mentions for one of the
