@@ -493,6 +493,7 @@ class MentionExtractor(UDFRunner):
                 mentions = (
                     self.session.query(mention_class)
                     .filter(mention_class.document_id.in_([doc.id for doc in docs]))
+                    .order_by(mention_class.id)
                     .all()
                 )
                 if sort:
@@ -500,7 +501,9 @@ class MentionExtractor(UDFRunner):
                 result.append(mentions)
         else:
             for mention_class in self.mention_classes:
-                mentions = self.session.query(mention_class).all()
+                mentions = (
+                    self.session.query(mention_class).order_by(mention_class.id).all()
+                )
                 if sort:
                     mentions = sorted(mentions, key=lambda x: x[0].get_stable_id())
                 result.append(mentions)

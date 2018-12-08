@@ -164,6 +164,7 @@ class CandidateExtractor(UDFRunner):
                 cands = (
                     self.session.query(candidate_class)
                     .filter(candidate_class.document_id.in_([doc.id for doc in docs]))
+                    .order_by(candidate_class.id)
                     .all()
                 )
                 if sort:
@@ -185,6 +186,7 @@ class CandidateExtractor(UDFRunner):
                 cands = (
                     self.session.query(candidate_class)
                     .filter(candidate_class.id.in_(sub_query))
+                    .order_by(candidate_class.id)
                     .all()
                 )
                 if sort:
