@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Added
+^^^^^
+* `@senwu`_: Added alpha spacy support for Chinese tokenizer.
+
 Fixed
 ^^^^^
 * `@senwu`_: fix non-deterministic issue from get_candidates and get_mentions

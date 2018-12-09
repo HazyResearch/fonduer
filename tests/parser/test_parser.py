@@ -208,7 +208,7 @@ def test_spacy_japanese(caplog):
     """Test the parser with the md document."""
     caplog.set_level(logging.INFO)
 
-    # Test japanese alpha tokenization
+    # Test Japanese alpha tokenization
     docs_path = "tests/data/pure_html/japan.html"
     preprocessor = HTMLDocPreprocessor(docs_path)
     doc = next(preprocessor._parse_file(docs_path, "md"))
@@ -225,6 +225,32 @@ def test_spacy_japanese(caplog):
     # Japanese sentences are only tokenized.
     assert sent.ner_tags == ["", "", ""]
     assert sent.dep_labels == ["", "", ""]
+
+
+@pytest.mark.skipif(
+    "CI" not in os.environ, reason="Only run spacy non English test on Travis"
+)
+def test_spacy_chinese(caplog):
+    """Test the parser with the md document."""
+    caplog.set_level(logging.INFO)
+
+    # Test Chinese alpha tokenization
+    docs_path = "tests/data/pure_html/chinese.html"
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "md"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False, language="zh"
+    )
+    for _ in parser_udf.apply(doc):
+        pass
+    print(doc.sentences)
+    assert len(doc.sentences) == 8
+    sent = doc.sentences[1]
+    assert sent.text == "我们和他对比谁更厉害!"
+    assert sent.words == ["我们", "和", "他", "对比", "谁", "更", "厉害", "!"]
+    # Chinese sentences are only tokenized.
+    assert sent.ner_tags == ["", "", "", "", "", "", "", ""]
+    assert sent.dep_labels == ["", "", "", "", "", "", "", ""]
 
 
 def test_warning_on_missing_pdf(caplog):
