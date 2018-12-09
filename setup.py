@@ -32,7 +32,7 @@ setup(
     ],
     extras_require={
         "spacy_ja": ["mecab-python3>=0.7,<0.8"],
-        "spacy_zh": ["jieba>=0.39, <0.4"],
+        "spacy_zh": ["jieba>=0.39, <0.40"],
     },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
     include_package_data=True,
