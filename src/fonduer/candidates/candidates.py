@@ -139,7 +139,7 @@ class CandidateExtractor(UDFRunner):
         logger.info("Clearing ALL Candidates.")
         self.session.query(Candidate).filter(Candidate.split == split).delete()
 
-    def get_candidates(self, docs=None, split=0):
+    def get_candidates(self, docs=None, split=0, sort=False):
         """Return a list of lists of the candidates associated with this extractor.
 
         Each list of the return will contain the candidates for one of the
@@ -151,6 +151,8 @@ class CandidateExtractor(UDFRunner):
         :param split: If docs is None, then return all the candidates from this
             split.
         :type split: int
+        :param sort: If sort is True, then return all candidates sorted by stable_id.
+        :type sort: bool
         :return: Candidates for each candidate_class.
         :rtype: List of lists of ``Candidates``.
         """
@@ -165,6 +167,13 @@ class CandidateExtractor(UDFRunner):
                     .order_by(candidate_class.id)
                     .all()
                 )
+                if sort:
+                    cands = sorted(
+                        cands,
+                        key=lambda x: " ".join(
+                            [x[i][0].get_stable_id() for i in range(len(x))]
+                        ),
+                    )
                 result.append(cands)
         else:
             for candidate_class in self.candidate_classes:
@@ -180,6 +189,13 @@ class CandidateExtractor(UDFRunner):
                     .order_by(candidate_class.id)
                     .all()
                 )
+                if sort:
+                    cands = sorted(
+                        cands,
+                        key=lambda x: " ".join(
+                            [x[i][0].get_stable_id() for i in range(len(x))]
+                        ),
+                    )
                 result.append(cands)
         return result
 

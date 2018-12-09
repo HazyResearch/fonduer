@@ -370,9 +370,9 @@ def test_e2e(caplog):
     assert session.query(PartVolt).count() == 4282
 
     # Grab candidate lists
-    train_cands = candidate_extractor.get_candidates(split=0)
-    dev_cands = candidate_extractor.get_candidates(split=1)
-    test_cands = candidate_extractor.get_candidates(split=2)
+    train_cands = candidate_extractor.get_candidates(split=0, sort=True)
+    dev_cands = candidate_extractor.get_candidates(split=1, sort=True)
+    test_cands = candidate_extractor.get_candidates(split=2, sort=True)
     assert len(train_cands) == 2
     assert len(train_cands[0]) == 3684
     assert (

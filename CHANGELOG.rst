@@ -1,6 +1,11 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@senwu`_: fix non-deterministic issue from get_candidates and get_mentions
+  by parallel candidate/mention generation.
+
 Changed
 ^^^^^^^
 * `@lukehsiao`_: Add soft version pinning to avoid failures due to dependency
