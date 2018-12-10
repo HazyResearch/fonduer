@@ -90,7 +90,7 @@ If you would like to use Fonduer for Chinese documents, you can use
 ``pip install fonduer[spacy_ja]`` to install Fonduer with Chinese language support.
 
 If you would like to use other languages with spaCy alpha support, which are
-not yet integrated in Fonduer, feel free to submit a `Pull requests`_ or open an Issue_.
+not yet integrated in Fonduer, feel free to submit a `Pull Request`_ or open an Issue_.
 
 .. _see spacy language support: https://spacy.io/usage/models#languages
 .. _see spacy alpha languages: https://spacy.io/usage/models#alpha-support
