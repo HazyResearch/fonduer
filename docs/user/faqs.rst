@@ -87,7 +87,7 @@ Afterwards, you can use ``pip install fonduer[spacy_ja]`` to install Fonduer
 with Japanese language support.
 
 If you would like to use Fonduer for Chinese documents, you can use
-``pip install fonduer[spacy_ja]`` to install Fonduer with Chinese language support.
+``pip install fonduer[spacy_zh]`` to install Fonduer with Chinese language support.
 
 If you would like to use other languages with spaCy alpha support, which are
 not yet integrated in Fonduer, feel free to submit a `Pull Request`_ or open an Issue_.
