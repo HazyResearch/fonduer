@@ -96,5 +96,5 @@ not yet integrated in Fonduer, feel free to submit a `Pull Request`_ or open an 
 .. _see spacy alpha languages: https://spacy.io/usage/models#alpha-support
 .. _see mecab on PyPI: https://pypi.org/project/mecab-python3/
 .. _see jieba on PyPI: https://pypi.org/project/jieba/
-.. _Pull requests: https://github.com/hazyresearch/fonduer/pulls
+.. _Pull Request: https://github.com/hazyresearch/fonduer/pulls
 .. _Issue: https://github.com/hazyresearch/fonduer/issues
