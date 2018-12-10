@@ -29,7 +29,7 @@ from fonduer.candidates.models import Candidate, candidate_subclass, mention_sub
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.utils.data_model_utils import get_row_ngrams
+from fonduer.utils.data_model_utils import get_col_ngrams, get_row_ngrams
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,
@@ -384,6 +384,47 @@ def test_ngrams(caplog):
     mentions = session.query(Person).all()
     assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
+
+
+def test_row_col_ngram_extraction(caplog):
+    """Test whether row/column ngrams list is empty, if mention is not in a table."""
+    caplog.set_level(logging.INFO)
+    PARALLEL = 1
+    max_docs = 1
+    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    docs_path = "tests/data/pure_html/lincoln_short.html"
+
+    # Parsing
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(session, structural=True, lingual=True)
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    docs = session.query(Document).order_by(Document.name).all()
+
+    # Mention Extraction
+    place_ngrams = MentionNgramsTemp(n_max=4)
+    Place = mention_subclass("Place")
+
+    def get_row_and_column_ngrams(mention):
+        row_ngrams = list(get_row_ngrams(mention))
+        col_ngrams = list(get_col_ngrams(mention))
+        if not mention.sentence.is_tabular():
+            assert len(row_ngrams) == 1 and row_ngrams[0] is None
+            assert len(col_ngrams) == 1 and col_ngrams[0] is None
+        else:
+            assert not any(x is None for x in row_ngrams)
+            assert not any(x is None for x in col_ngrams)
+        if "birth_place" in row_ngrams:
+            return True
+        else:
+            return False
+
+    birthplace_matcher = LambdaFunctionMatcher(func=get_row_and_column_ngrams)
+    mention_extractor = MentionExtractor(
+        session, [Place], [place_ngrams], [birthplace_matcher]
+    )
+
+    mention_extractor.apply(docs, parallelism=PARALLEL)
 
 
 def test_mention_longest_match(caplog):

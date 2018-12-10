@@ -135,6 +135,20 @@ def get_min_col_num(mention):
         return None
 
 
+def get_min_row_num(mention):
+    """Return the lowest row number that a Mention occupies.
+
+    :param mention: The Mention to evaluate. If a candidate is given, default
+        to its first Mention.
+    :rtype: integer or None
+    """
+    span = _to_span(mention)
+    if span.sentence.is_tabular():
+        return span.sentence.cell.row_start
+    else:
+        return None
+
+
 def get_sentence_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
     """Get the ngrams that are in the Sentence of the given Mention, not including itself.
 
@@ -425,6 +439,11 @@ def _get_axis_ngrams(
     mention, axis, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
 ):
     span = _to_span(mention)
+
+    if not span.sentence.is_tabular():
+        yield None
+        return
+
     for ngram in get_sentence_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
     ):
