@@ -52,7 +52,7 @@ class Spacy(object):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
         self.languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
-        self.alpha_languages = {"ja": "Japanese"}
+        self.alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
 
         self.lang = lang
         self.model = None
@@ -132,6 +132,11 @@ class Spacy(object):
             if self.lang == "ja":
                 try:
                     model("初期化")
+                except (UnicodeDecodeError, ValueError):
+                    pass
+            if self.lang == "zh":
+                try:
+                    model("初始化")
                 except (UnicodeDecodeError, ValueError):
                     pass
         self.model = model

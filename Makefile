@@ -8,6 +8,7 @@ dev:
 dev_extra:
 	pip install -r requirements-dev.txt
 	pip install -e .[spacy_ja]
+	pip install -e .[spacy_zh]
 	pre-commit install
 
 test: dev check docs
