@@ -10,6 +10,9 @@ Changed
 ^^^^^^^
 * `@lukehsiao`_: Add soft version pinning to avoid failures due to dependency
   API changes.
+* `@j-rausch`_: Change ``get_row_ngrams`` and ``get_col_ngrams`` to return ``None``
+  if the passed ``Mention`` argument is not inside a table.
+  (`#194 <https://github.com/HazyResearch/fonduer/pull/194>`_)
 
 
 [0.4.0] - 2018-11-27
