@@ -132,7 +132,7 @@ class MentionNgrams(Ngrams):
         """
         Ngrams.__init__(self, n_min=n_min, n_max=n_max, split_tokens=split_tokens)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """Generate MentionNgrams from a Document by parsing all of its Sentences.
 
         :param session: The database session
@@ -145,7 +145,6 @@ class MentionNgrams(Ngrams):
                 "Input Contexts to MentionNgrams.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for sentence in doc.sentences:
             for ts in Ngrams.apply(self, sentence):
                 yield ts
@@ -167,7 +166,7 @@ class MentionFigures(MentionSpace):
         else:
             self.types = None
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionFigures from a Document by parsing all of its Figures.
 
@@ -181,7 +180,6 @@ class MentionFigures(MentionSpace):
                 "Input Contexts to MentionFigures.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for figure in doc.figures:
             if self.types is None or any(
                 figure.url.lower().endswith(type) for type in self.types
@@ -196,7 +194,7 @@ class MentionSentences(MentionSpace):
         """Initialize MentionSentences."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionSentences from a Document by parsing all of its Sentences.
 
@@ -210,7 +208,6 @@ class MentionSentences(MentionSpace):
                 "Input Contexts to MentionSentences.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for sentence in doc.sentences:
             yield TemporarySpanMention(
                 char_start=0, char_end=len(sentence.text) - 1, sentence=sentence
@@ -224,7 +221,7 @@ class MentionParagraphs(MentionSpace):
         """Initialize MentionParagraphs."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionParagraphs from a Document by parsing all of its Paragraphs.
 
@@ -238,7 +235,6 @@ class MentionParagraphs(MentionSpace):
                 "Input Contexts to MentionParagraphs.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for paragraph in doc.paragraphs:
             yield TemporaryParagraphMention(paragraph)
 
@@ -250,7 +246,7 @@ class MentionCaptions(MentionSpace):
         """Initialize MentionCaptions."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionCaptions from a Document by parsing all of its Captions.
 
@@ -264,7 +260,6 @@ class MentionCaptions(MentionSpace):
                 "Input Contexts to MentionCaptions.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for caption in doc.captions:
             yield TemporaryCaptionMention(caption)
 
@@ -276,7 +271,7 @@ class MentionCells(MentionSpace):
         """Initialize MentionCells."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionCells from a Document by parsing all of its Cells.
 
@@ -290,7 +285,6 @@ class MentionCells(MentionSpace):
                 "Input Contexts to MentionCells.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for cell in doc.cells:
             yield TemporaryCellMention(cell)
 
@@ -302,7 +296,7 @@ class MentionTables(MentionSpace):
         """Initialize MentionTables."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionTables from a Document by parsing all of its Tables.
 
@@ -316,7 +310,6 @@ class MentionTables(MentionSpace):
                 "Input Contexts to MentionTables.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for table in doc.tables:
             yield TemporaryTableMention(table)
 
@@ -328,7 +321,7 @@ class MentionSections(MentionSpace):
         """Initialize MentionSections."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionSections from a Document by parsing all of its Sections.
 
@@ -342,7 +335,6 @@ class MentionSections(MentionSpace):
                 "Input Contexts to MentionSections.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         for section in doc.sections:
             yield TemporarySectionMention(section)
 
@@ -354,7 +346,7 @@ class MentionDocuments(MentionSpace):
         """Initialize MentionDocuments."""
         MentionSpace.__init__(self)
 
-    def apply(self, session, doc):
+    def apply(self, doc):
         """
         Generate MentionDocuments from a Document by using document.
 
@@ -368,7 +360,6 @@ class MentionDocuments(MentionSpace):
                 "Input Contexts to MentionDocuments.apply() must be of type Document"
             )
 
-        doc = session.query(Document).filter(Document.id == doc.id).one()
         yield TemporaryDocumentMention(doc)
 
 
@@ -535,22 +526,22 @@ class MentionExtractorUDF(UDF):
 
         super(MentionExtractorUDF, self).__init__(**kwargs)
 
-    def apply(self, context, clear, **kwargs):
+    def apply(self, doc, clear, **kwargs):
         """Extract mentions from the given Context.
 
         :param context: A document to process.
         :param clear: Whether or not to clear the existing database entries.
         """
 
+        # Reattach doc with the current session or DetachedInstanceError happens
+        doc = self.session.merge(doc)
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
             tc_to_insert = defaultdict(list)
             # Generate TemporaryContexts that are children of the context using
             # the mention_space and filtered by the Matcher
             self.child_context_set.clear()
-            for tc in self.matchers[i].apply(
-                self.mention_spaces[i].apply(self.session, context)
-            ):
+            for tc in self.matchers[i].apply(self.mention_spaces[i].apply(doc)):
                 rec = tc._load_id_or_insert(self.session)
                 if rec:
                     tc_to_insert[tc._get_table()].append(rec)
@@ -562,7 +553,7 @@ class MentionExtractorUDF(UDF):
                 self.session.execute(stmt)
 
             # Generates and persists mentions
-            mention_args = {"document_id": context.id}
+            mention_args = {"document_id": doc.id}
             for child_context in self.child_context_set:
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
