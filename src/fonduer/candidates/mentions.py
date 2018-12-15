@@ -135,7 +135,6 @@ class MentionNgrams(Ngrams):
     def apply(self, doc):
         """Generate MentionNgrams from a Document by parsing all of its Sentences.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -170,7 +169,6 @@ class MentionFigures(MentionSpace):
         """
         Generate MentionFigures from a Document by parsing all of its Figures.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -198,7 +196,6 @@ class MentionSentences(MentionSpace):
         """
         Generate MentionSentences from a Document by parsing all of its Sentences.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -225,7 +222,6 @@ class MentionParagraphs(MentionSpace):
         """
         Generate MentionParagraphs from a Document by parsing all of its Paragraphs.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -250,7 +246,6 @@ class MentionCaptions(MentionSpace):
         """
         Generate MentionCaptions from a Document by parsing all of its Captions.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -275,7 +270,6 @@ class MentionCells(MentionSpace):
         """
         Generate MentionCells from a Document by parsing all of its Cells.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -300,7 +294,6 @@ class MentionTables(MentionSpace):
         """
         Generate MentionTables from a Document by parsing all of its Tables.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -325,7 +318,6 @@ class MentionSections(MentionSpace):
         """
         Generate MentionSections from a Document by parsing all of its Sections.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -350,7 +342,6 @@ class MentionDocuments(MentionSpace):
         """
         Generate MentionDocuments from a Document by using document.
 
-        :param session: The database session
         :param doc: The ``Document`` to parse.
         :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
@@ -527,9 +518,9 @@ class MentionExtractorUDF(UDF):
         super(MentionExtractorUDF, self).__init__(**kwargs)
 
     def apply(self, doc, clear, **kwargs):
-        """Extract mentions from the given Context.
+        """Extract mentions from the given Document.
 
-        :param context: A document to process.
+        :param doc: A document to process.
         :param clear: Whether or not to clear the existing database entries.
         """
 
