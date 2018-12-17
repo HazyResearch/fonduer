@@ -4,7 +4,7 @@
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Reattach doc with the current session at
-  MentionExtractorUDF#apply to avoid doing so at each MentionSpace
+  MentionExtractorUDF#apply to avoid doing so at each MentionSpace.
 
 [0.4.1] - 2018-12-12
 --------------------
