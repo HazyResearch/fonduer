@@ -179,8 +179,8 @@ class MentionNgramsPart(MentionNgrams):
         self.parts_by_doc = parts_by_doc
         self.expander = expand_part_range if expand else (lambda x: [x])
 
-    def apply(self, session, context):
-        for ts in MentionNgrams.apply(self, session, context):
+    def apply(self, doc):
+        for ts in MentionNgrams.apply(self, doc):
             enumerated_parts = [
                 part.upper() for part in expand_part_range(ts.get_span())
             ]
@@ -233,8 +233,8 @@ class MentionNgramsTemp(MentionNgrams):
     def __init__(self, n_max=2, split_tokens=["-", "/"]):
         super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
 
-    def apply(self, session, context):
-        for ts in MentionNgrams.apply(self, session, context):
+    def apply(self, doc):
+        for ts in MentionNgrams.apply(self, doc):
             m = re.match(
                 r"^([\+\-\u2010\u2011\u2012\u2013\u2014\u2212\uf02d])?(\s*)(\d+)$",
                 ts.get_span(),
@@ -292,8 +292,8 @@ class MentionNgramsVolt(MentionNgrams):
     def __init__(self, n_max=1, split_tokens=["-", "/"]):
         super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
 
-    def apply(self, session, context):
-        for ts in MentionNgrams.apply(self, session, context):
+    def apply(self, doc):
+        for ts in MentionNgrams.apply(self, doc):
             if ts.get_span().endswith(".0"):
                 value = ts.get_span()[:-2]
                 yield TemporaryImplicitSpanMention(
