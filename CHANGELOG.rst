@@ -3,7 +3,45 @@
 
 Added
 ^^^^^
-* `@senwu`_: Support CSV input format.
+* `@senwu`_: Support CSV, TSV, Text input data format.
+  For CSV format, ``CSVDocPreprocessor`` treats each line in the input file as
+  a document. It assumes that each column is one section and content in each column
+  as one paragraph as defalt. However, if the column is complex, an advanced parser
+  may be used by specifying ``parser_rule`` parameter in a dict format where key
+  is the column index and value is the specific parser.
+
+.. note:
+    In Fonduer v0.4.2, you can use ``CSVDocPreprocessor``:
+
+    .. code:: python
+
+        from fonduer.parser import Parser
+        from fonduer.parser.preprocessors import CSVDocPreprocessor
+        from fonduer.utils.utils_parser import column_constructor
+
+        max_docs = 10
+
+        # Define specific parser for the third column (index 2), which takes ``text``, 
+        # ``name=None``, ``type="text"``, and ``delim=None`` as input and generate
+        # ``(content type, content name, content)`` for ``build_node``
+        # in ``fonduer.utils.utils_parser``.
+        parser_rule = {
+            2: partial(column_constructor, type="figure"),
+        }
+
+        doc_preprocessor = CSVDocPreprocessor(
+            PATH_TO_DOCS, max_docs=max_docs, header=True, parser_rule=parser_rule
+        )
+
+        corpus_parser = Parser(session, structural=True, lingual=True, visual=False)
+        corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+
+        all_docs = corpus_parser.get_documents()
+
+  For TSV format, ``TSVDocPreprocessor`` assumes each line in input file as a
+  document which should follow (doc_name <tab> doc_text) format.
+
+  For Text format, ``TextDocPreprocessor`` assumes one document per file.
 
 Changed
 ^^^^^^^
