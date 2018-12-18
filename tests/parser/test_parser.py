@@ -6,7 +6,12 @@ from unittest.mock import patch
 import pytest
 
 from fonduer.parser.parser import ParserUDF
-from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.preprocessors import (
+    CSVDocPreprocessor,
+    HTMLDocPreprocessor,
+    TextDocPreprocessor,
+    TSVDocPreprocessor,
+)
 
 
 def get_parser_udf(
@@ -595,3 +600,61 @@ def test_parse_multi_sections(caplog):
     assert doc.sections[2].paragraphs[1].name == "INDICATION"
     assert doc.sections[2].paragraphs[2].name == "FINDINGS"
     assert doc.sections[2].paragraphs[3].name == "IMPRESSION"
+
+
+def test_text_doc_preprocessor(caplog):
+    """Test ``TextDocPreprocessor`` with text document."""
+    caplog.set_level(logging.INFO)
+
+    # Test text document
+    docs_path = "tests/data/various_format/text_format.txt"
+    preprocessor = TextDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "plain_text_format"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False
+    )
+    for _ in parser_udf.apply(doc):
+        pass
+
+    assert len(doc.sections) == 1
+    assert len(doc.paragraphs) == 1
+    assert len(doc.sentences) == 56
+
+
+def test_tsv_doc_preprocessor(caplog):
+    """Test ``TSVDocPreprocessor`` with tsv document."""
+    caplog.set_level(logging.INFO)
+
+    # Test tsv document
+    docs_path = "tests/data/various_format/tsv_format.tsv"
+    preprocessor = TSVDocPreprocessor(docs_path, max_docs=1)
+    doc = next(preprocessor._parse_file(docs_path, "tsv_format"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False
+    )
+    for _ in parser_udf.apply(doc):
+        pass
+
+    assert doc.name == "9b28e780-ba48-4a53-8682-7c58c141a1b6"
+    assert len(doc.sections) == 1
+    assert len(doc.paragraphs) == 1
+    assert len(doc.sentences) == 33
+
+
+def test_csv_doc_preprocessor(caplog):
+    """Test ``CSVDocPreprocessor`` with csv document."""
+    caplog.set_level(logging.INFO)
+
+    # Test csv document
+    docs_path = "tests/data/various_format/csv_format.csv"
+    preprocessor = CSVDocPreprocessor(docs_path, max_docs=1, header=True)
+    doc = next(preprocessor._parse_file(docs_path, "csv_format"))
+    parser_udf = get_parser_udf(
+        structural=True, tabular=True, lingual=True, visual=False
+    )
+    for _ in parser_udf.apply(doc):
+        pass
+
+    assert len(doc.sections) == 12
+    assert len(doc.paragraphs) == 10
+    assert len(doc.sentences) == 17
