@@ -3,6 +3,7 @@ import os
 
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
+from fonduer.utils.utils_parser import build_node
 
 
 class TextDocPreprocessor(DocPreprocessor):
@@ -24,10 +25,12 @@ class TextDocPreprocessor(DocPreprocessor):
         with codecs.open(fp, encoding=self.encoding) as f:
             name = os.path.basename(fp).rsplit(".", 1)[0]
             stable_id = self._get_stable_id(name)
-            doc = Document(
-                name=name,
-                stable_id=stable_id,
-                meta={"file_name": file_name},
-                text=f.read(),
+            text = build_node("doc", None, build_node("text", None, f.read().strip()))
+            yield Document(
+                name=name, stable_id=stable_id, text=text, meta={"file_name": file_name}
             )
-            yield doc
+
+    def __len__(self):
+        """Provide a len attribute based on max_docs and number of files in folder."""
+        num_docs = min(len(self.all_files), self.max_docs)
+        return num_docs
