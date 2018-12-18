@@ -9,12 +9,12 @@ from fonduer.utils.utils_parser import build_node, column_constructor
 
 class CSVDocPreprocessor(DocPreprocessor):
     """A generator which processes a CSV file or directory of CSV files into
-    a set of Document objects. It treats each line in the input file is a document.
-    This ``DocPreprocessor`` assumes that each column is one section and content in
-    each column as one paragraph as defalt. However, if the column is complex, an
-    advanced parser may be used by specifying ``parser_rule`` parameter, e,g.,
-    specify keywords as delimiters for paragraph in a dict format where key is the
-    column inedx and value is the keyword list.
+    a set of Document objects. It treats each line in the input file as a document.
+    It assumes that each column is one section and content in each column as one
+    paragraph as defalt. However, if the column is complex, an advanced parser
+    may be used by specifying ``parser_rule`` parameter in a dict format where key
+    is the column index and value is the specific parser, e,g., ``column_constructor``
+    in ``fonduer.utils.utils_parser``.
 
     :param path: filesystem path to file or directory to parse.
     :type path: str
