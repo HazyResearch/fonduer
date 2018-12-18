@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Added
+^^^^^
+* `@senwu`_: Support CSV input format.
+
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Reattach doc with the current session at

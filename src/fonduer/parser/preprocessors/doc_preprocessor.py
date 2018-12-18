@@ -7,10 +7,10 @@ class DocPreprocessor(object):
     A generator which processes a file or directory of files into a set of
     Document objects.
 
-    :param encoding: file encoding to use (e.g. "utf-8").
-    :type encoding: str
     :param path: filesystem path to file or directory to parse.
     :type path: str
+    :param encoding: file encoding to use (e.g. "utf-8").
+    :type encoding: str
     :param max_docs: the maximum number of ``Documents`` to produce.
     :type max_docs: int
     :rtype: A generator of ``Documents``.
