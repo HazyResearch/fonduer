@@ -11,7 +11,7 @@ Added
   is the column index and value is the specific parser.
 
 .. note:
-    In Fonduer v0.4.2, you can use ``CSVDocPreprocessor``:
+    In Fonduer v0.5.0, you can use ``CSVDocPreprocessor``:
 
     .. code:: python
 
