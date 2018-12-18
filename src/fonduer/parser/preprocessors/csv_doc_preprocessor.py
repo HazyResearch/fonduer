@@ -47,7 +47,7 @@ class CSVDocPreprocessor(DocPreprocessor):
         self.header = header
         self.delim = delim
         self.parser_rule = parser_rule
-        self.n_parsed = 0
+        self.doc_parsed = 0
 
     def _parse_file(self, fp, file_name):
         name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
@@ -61,7 +61,7 @@ class CSVDocPreprocessor(DocPreprocessor):
 
             # Load document per row
             for i, row in enumerate(reader):
-                if self.n_parsed == self.max_docs:
+                if self.doc_parsed == self.max_docs:
                     break
                 sections = []
                 for j, content in enumerate(row):
@@ -88,7 +88,7 @@ class CSVDocPreprocessor(DocPreprocessor):
                     text=text,
                     meta={"file_name": file_name},
                 )
-                self.n_parsed += 1
+                self.doc_parsed += 1
 
     def __len__(self):
         """Provide a len attribute based on max_docs and number of files in folder."""
