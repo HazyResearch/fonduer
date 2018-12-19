@@ -148,7 +148,7 @@ class UDFRunner(object):
         count_parsed = 0
         while count_parsed < total_count:
             y = out_queue.get()
-            # Update progress bar whenever an item has been  processed
+            # Update progress bar whenever an item has been processed
             if y == UDF.TASK_DONE:
                 count_parsed += 1
                 if self.pb is not None:
