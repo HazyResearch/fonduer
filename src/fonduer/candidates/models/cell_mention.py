@@ -27,6 +27,10 @@ class TemporaryCellMention(TemporaryContext):
         except AttributeError:
             return True
 
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
     def __contains__(self, other_cell):
         return self.__eq__(other_cell)
 
@@ -83,7 +87,3 @@ class CellMention(Context, TemporaryCellMention):
         "polymorphic_identity": "cell_mention",
         "inherit_condition": (id == Context.id),
     }
-
-    def __gt__(self, other):
-        # Allow sorting by comparing the string representations of each
-        return self.__repr__() > other.__repr__()

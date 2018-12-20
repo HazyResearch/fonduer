@@ -51,10 +51,16 @@ class TemporaryContext(object):
             else:
                 self.id = id[0]
 
+    def __repr__(self):
+        raise NotImplementedError()
+
     def __eq__(self, other):
         raise NotImplementedError()
 
     def __ne__(self, other):
+        raise NotImplementedError()
+
+    def __gt__(self, other):
         raise NotImplementedError()
 
     def __hash__(self):
