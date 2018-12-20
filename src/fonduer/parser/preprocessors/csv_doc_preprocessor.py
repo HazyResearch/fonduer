@@ -47,7 +47,6 @@ class CSVDocPreprocessor(DocPreprocessor):
         self.header = header
         self.delim = delim
         self.parser_rule = parser_rule
-        self.doc_parsed = 0
 
     def _parse_file(self, fp, file_name):
         name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
@@ -61,8 +60,6 @@ class CSVDocPreprocessor(DocPreprocessor):
 
             # Load document per row
             for i, row in enumerate(reader):
-                if self.doc_parsed == self.max_docs:
-                    break
                 sections = []
                 for j, content in enumerate(row):
                     rule = (
@@ -88,11 +85,17 @@ class CSVDocPreprocessor(DocPreprocessor):
                     text=text,
                     meta={"file_name": file_name},
                 )
-                self.doc_parsed += 1
 
     def __len__(self):
-        """Provide a len attribute based on max_docs and number of files in folder."""
-        num_docs = min(len(self.all_files), self.max_docs)
+        """Provide a len attribute based on max_docs and number of rows in files."""
+        cnt_docs = 0
+        for fp in self.all_files:
+            with codecs.open(fp, encoding=self.encoding) as csv:
+                num_lines = sum(1 for line in csv)
+                cnt_docs += num_lines - 1 if self.header else num_lines
+            if cnt_docs > self.max_docs:
+                break
+        num_docs = min(cnt_docs, self.max_docs)
         return num_docs
 
     def _can_read(self, fpath):

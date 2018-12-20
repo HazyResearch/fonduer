@@ -25,15 +25,12 @@ class TSVDocPreprocessor(DocPreprocessor):
     def __init__(self, path, encoding="utf-8", max_docs=float("inf"), header=False):
         super(TSVDocPreprocessor, self).__init__(path, encoding, max_docs)
         self.header = header
-        self.doc_parsed = 0
 
     def _parse_file(self, fp, file_name):
         with codecs.open(fp, encoding=self.encoding) as tsv:
             if self.header:
                 tsv.readline()
             for line in tsv:
-                if self.doc_parsed == self.max_docs:
-                    break
                 (doc_name, doc_text) = line.split("\t")
                 stable_id = self._get_stable_id(doc_name)
                 text = build_node("doc", None, build_node("text", None, doc_text))
@@ -43,11 +40,17 @@ class TSVDocPreprocessor(DocPreprocessor):
                     text=text,
                     meta={"file_name": file_name},
                 )
-                self.doc_parsed += 1
 
     def __len__(self):
-        """Provide a len attribute based on max_docs and number of files in folder."""
-        num_docs = min(len(self.all_files), self.max_docs)
+        """Provide a len attribute based on max_docs and number of rows in files."""
+        cnt_docs = 0
+        for fp in self.all_files:
+            with codecs.open(fp, encoding=self.encoding) as tsv:
+                num_lines = sum(1 for line in tsv)
+                cnt_docs += num_lines - 1 if self.header else num_lines
+            if cnt_docs > self.max_docs:
+                break
+        num_docs = min(cnt_docs, self.max_docs)
         return num_docs
 
     def _can_read(self, fpath):
