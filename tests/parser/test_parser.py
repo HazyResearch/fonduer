@@ -616,6 +616,7 @@ def test_text_doc_preprocessor(caplog):
     for _ in parser_udf.apply(doc):
         pass
 
+    assert len(preprocessor) == 1
     assert len(doc.sections) == 1
     assert len(doc.paragraphs) == 1
     assert len(doc.sentences) == 56
@@ -627,7 +628,7 @@ def test_tsv_doc_preprocessor(caplog):
 
     # Test tsv document
     docs_path = "tests/data/various_format/tsv_format.tsv"
-    preprocessor = TSVDocPreprocessor(docs_path, max_docs=1)
+    preprocessor = TSVDocPreprocessor(docs_path)
     doc = next(preprocessor._parse_file(docs_path, "tsv_format"))
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False
@@ -635,6 +636,7 @@ def test_tsv_doc_preprocessor(caplog):
     for _ in parser_udf.apply(doc):
         pass
 
+    assert len(preprocessor) == 2
     assert doc.name == "9b28e780-ba48-4a53-8682-7c58c141a1b6"
     assert len(doc.sections) == 1
     assert len(doc.paragraphs) == 1
@@ -655,6 +657,7 @@ def test_csv_doc_preprocessor(caplog):
     for _ in parser_udf.apply(doc):
         pass
 
+    assert len(preprocessor) == 1
     assert len(doc.sections) == 12
     assert len(doc.paragraphs) == 10
     assert len(doc.sentences) == 17
