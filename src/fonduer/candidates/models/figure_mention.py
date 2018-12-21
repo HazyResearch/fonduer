@@ -27,6 +27,10 @@ class TemporaryFigureMention(TemporaryContext):
         except AttributeError:
             return True
 
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
     def __contains__(self, other_span):
         return self.__eq__(other_span)
 
@@ -82,7 +86,3 @@ class FigureMention(Context, TemporaryFigureMention):
         "polymorphic_identity": "figure_mention",
         "inherit_condition": (id == Context.id),
     }
-
-    def __gt__(self, other):
-        # Allow sorting by comparing the string representations of each
-        return self.__repr__() > other.__repr__()

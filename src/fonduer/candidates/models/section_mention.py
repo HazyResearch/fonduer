@@ -27,6 +27,10 @@ class TemporarySectionMention(TemporaryContext):
         except AttributeError:
             return True
 
+    def __gt__(self, other):
+        # Allow sorting by comparing the string representations of each
+        return self.__repr__() > other.__repr__()
+
     def __contains__(self, other_section):
         return self.__eq__(other_section)
 
@@ -79,7 +83,3 @@ class SectionMention(Context, TemporarySectionMention):
         "polymorphic_identity": "section_mention",
         "inherit_condition": (id == Context.id),
     }
-
-    def __gt__(self, other):
-        # Allow sorting by comparing the string representations of each
-        return self.__repr__() > other.__repr__()
