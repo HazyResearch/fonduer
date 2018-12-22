@@ -90,6 +90,9 @@ def test_incremental(caplog):
     assert num_docs == max_docs
 
     docs = corpus_parser.get_documents()
+    last_docs = corpus_parser.get_documents()
+
+    assert len(docs[0].sentences) == len(last_docs[0].sentences)
 
     # Mention Extraction
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
@@ -242,9 +245,13 @@ def test_e2e(caplog):
     logger.info("Sentences: {}".format(num_sentences))
 
     # Divide into test and train
-    docs = corpus_parser.get_documents()
+    docs = sorted(corpus_parser.get_documents())
+    last_docs = sorted(corpus_parser.get_last_documents())
+
     ld = len(docs)
-    assert ld == len(corpus_parser.get_last_documents())
+    assert ld == len(last_docs)
+    assert len(docs[0].sentences) == len(last_docs[0].sentences)
+
     assert len(docs[0].sentences) == 799
     assert len(docs[1].sentences) == 663
     assert len(docs[2].sentences) == 784
