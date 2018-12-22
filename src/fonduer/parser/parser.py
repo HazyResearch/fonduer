@@ -117,6 +117,18 @@ class Parser(UDFRunner):
         """
         self.session.query(Context).delete()
 
+    def get_last_documents(self):
+        """Return the most recently parsed list of ``Documents``.
+
+        :rtype: A list of the most recently parsed ``Documents`` ordered by name.
+        """
+        return (
+            self.session.query(Document)
+            .filter(Document.name.in_(self.last_docs))
+            .order_by(Document.name)
+            .all()
+        )
+
     def get_documents(self):
         """Return all the parsed ``Documents`` in the database.
 

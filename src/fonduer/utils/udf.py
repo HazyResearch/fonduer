@@ -50,8 +50,8 @@ class UDFRunner(object):
         if clear:
             self.clear(**kwargs)
 
-        # Clear the last operated documents
-        self.last_docs.clear()
+        # Track the last documents parsed by apply
+        self.last_docs = set(doc.name for doc in doc_loader)
 
         # Execute the UDF
         self.logger.info("Running UDF...")
@@ -80,20 +80,12 @@ class UDFRunner(object):
         """Clear the associated data from the database."""
         raise NotImplementedError()
 
-    def get_last_documents(self):
-        """Return the last set of documents that was operated on with apply().
-
-        :rtype: list of ``Documents`` operated on in the last call to ``apply()``.
-        """
-        return list(self.last_docs)
-
     def _apply_st(self, doc_loader, **kwargs):
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
         # Run single-thread
         for doc in doc_loader:
-            self.last_docs.add(doc)
             if self.pb is not None:
                 self.pb.update(1)
 
@@ -120,16 +112,13 @@ class UDFRunner(object):
 
         total_count = len(doc_loader)
 
-        for doc in doc_loader:
-            self.last_docs.add(doc)
-
         # Start UDF Processes
         for i in range(parallelism):
             udf = self.udf_class(
                 in_queue=in_queue,
                 out_queue=out_queue,
                 worker_id=i,
-                **self.udf_init_kwargs
+                **self.udf_init_kwargs,
             )
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
