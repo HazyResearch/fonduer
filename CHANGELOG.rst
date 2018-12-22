@@ -43,6 +43,10 @@ Added
 
   For Text format, ``TextDocPreprocessor`` assumes one document per file.
 
+Fixed
+^^^^^
+* `@HiromuHota`_: Modify docstring of functions that return get_sparse_matrix
+
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Reattach doc with the current session at
