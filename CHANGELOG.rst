@@ -45,7 +45,6 @@ Added
 
 Fixed
 ^^^^^
-* `@senwu`_: Update code to use Python 3.6+'s f-strings
 * `@HiromuHota`_: Modify docstring of functions that return get_sparse_matrix
 * `@lukehsiao`_: Fix the behavior of ``get_last_documents`` to return Documents
   that are correctly linked to the database and can be navigated by the user.
@@ -53,6 +52,7 @@ Fixed
 
 Changed
 ^^^^^^^
+* `@senwu`_: Update code to use Python 3.6+'s f-strings
 * `@HiromuHota`_: Reattach doc with the current session at
   MentionExtractorUDF#apply to avoid doing so at each MentionSpace.
 
