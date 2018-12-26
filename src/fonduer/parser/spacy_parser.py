@@ -181,7 +181,7 @@ class Spacy(object):
         """
         if self.lang in self.alpha_languages:
             raise NotImplementedError(
-                f"Language {self.lang} not available in " f"spacy beyond tokenization"
+                f"Language {self.lang} not available in spacy beyond tokenization"
             )
 
         if len(all_sentences) == 0:

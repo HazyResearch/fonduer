@@ -14,7 +14,7 @@ def construct_stable_id(
     doc_id, _, parent_doc_char_start, _ = split_stable_id(parent_context.stable_id)
     start = parent_doc_char_start + relative_char_offset_start
     end = parent_doc_char_start + relative_char_offset_end
-    return f"{doc_id}" f"::" f"{polymorphic_type}" f":" f"{start}" f":" f"{end}"
+    return f"{doc_id}::{polymorphic_type}:{start}:{end}"
 
 
 def split_stable_id(stable_id):

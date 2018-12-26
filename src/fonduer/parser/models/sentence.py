@@ -31,7 +31,8 @@ class SentenceMixin(object):
             f"Sentence ("
             f"Doc: {self.document.name}, "
             f"Index: {self.sentence_idx}, "
-            f"Text: {self.text})"
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -162,7 +163,8 @@ class TabularMixin(object):
             f"Row: {rows}, "
             f"Col: {cols}, "
             f"Index: {self.sentence_idx}, "
-            f"Text: {self.text})"
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -206,10 +208,12 @@ class VisualMixin(object):
 
     def __repr__(self):
         return (
-            f"VisualSentence (Doc: {self.document.name}, "
+            f"VisualSentence ("
+            f"Doc: {self.document.name}, "
             f"Page: {self.page}, "
             f"(T,B,L,R): ({self.top},{self.bottom},{self.left},{self.right}), "
-            f"Text: {self.text})"
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -241,8 +245,11 @@ class StructuralMixin(object):
 
     def __repr__(self):
         return (
-            f"StructuralSentence (Doc: {self.document.name}, "
-            f"Tag: {self.html_tag}, Text: {self.text})"
+            f"StructuralSentence ("
+            f"Doc: {self.document.name}, "
+            f"Tag: {self.html_tag}, "
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -323,20 +330,25 @@ class Sentence(
                 else self.col_start
             )
             return (
-                f"Sentence (Doc: '{self.document.name}', "
+                f"Sentence ("
+                f"Doc: '{self.document.name}', "
                 f"Table: {self.table.position}, "
                 f"Row: {rows}, "
                 f"Col: {cols}, "
-                f"Index: {self.position}, Text: '{self.text}')"
+                f"Index: {self.position}, "
+                f"Text: '{self.text}'"
+                f")"
             )
 
         else:
             return (
-                f"Sentence (Doc: '{self.document.name}', "
+                f"Sentence ("
+                f"Doc: '{self.document.name}', "
                 f"Sec: {self.section.position}, "
                 f"Par: {self.paragraph.position}, "
                 f"Idx: {self.position}, "
-                f"Text: '{self.text}')"
+                f"Text: '{self.text}'"
+                f")"
             )
 
     def _asdict(self):
