@@ -21,7 +21,7 @@ Added
 
         max_docs = 10
 
-        # Define specific parser for the third column (index 2), which takes ``text``, 
+        # Define specific parser for the third column (index 2), which takes ``text``,
         # ``name=None``, ``type="text"``, and ``delim=None`` as input and generate
         # ``(content type, content name, content)`` for ``build_node``
         # in ``fonduer.utils.utils_parser``.
@@ -42,6 +42,13 @@ Added
   document which should follow (doc_name <tab> doc_text) format.
 
   For Text format, ``TextDocPreprocessor`` assumes one document per file.
+
+Fixed
+^^^^^
+* `@HiromuHota`_: Modify docstring of functions that return get_sparse_matrix
+* `@lukehsiao`_: Fix the behavior of ``get_last_documents`` to return Documents
+  that are correctly linked to the database and can be navigated by the user.
+  (`#201 <https://github.com/HazyResearch/fonduer/pull/201>`_)
 
 Changed
 ^^^^^^^

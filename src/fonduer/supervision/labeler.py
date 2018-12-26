@@ -256,9 +256,9 @@ class Labeler(UDFRunner):
         :param annotator: A specific annotator key to get labels for. Default
             None.
         :type annotator: str
-        :return: An MxN sparse matrix where M are the candidates and N is the
-            annotators. If annotator is provided, return an Mx1 matrix.
-        :rtype: csr_matrix
+        :return: A list of MxN sparse matrix where M are the candidates and N is the
+            annotators. If annotator is provided, return a list of Mx1 matrix.
+        :rtype: list[csr_matrix]
         """
         return get_sparse_matrix(self.session, GoldLabelKey, cand_lists, key=annotator)
 
@@ -267,9 +267,9 @@ class Labeler(UDFRunner):
 
         :param cand_lists: The candidates to get labels for.
         :type cand_lists: List of list of candidates.
-        :return: An MxN sparse matrix where M are the candidates and N is the
+        :return: A list of MxN sparse matrix where M are the candidates and N is the
             labeling functions.
-        :rtype: csr_matrix
+        :rtype: list[csr_matrix]
         """
         return get_sparse_matrix(self.session, LabelKey, cand_lists)
 
