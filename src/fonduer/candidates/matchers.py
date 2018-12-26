@@ -37,7 +37,7 @@ class _Matcher(object):
         """
         for opt in self.opts.keys():
             if opt not in self.__dict__:
-                raise Exception("Unsupported option: %s" % opt)
+                raise Exception(f"Unsupported option: {opt}")
 
     def _f(self, m):
         """The internal (non-composed) version of filter function f"""
@@ -55,7 +55,7 @@ class _Matcher(object):
             return self._f(m) and self.children[0].f(m)
         else:
             raise Exception(
-                "%s does not support more than one child Matcher" % self.__name__
+                f"{self.__name__} does not support more than one child Matcher"
             )
 
     def _is_subspan(self, m, span):

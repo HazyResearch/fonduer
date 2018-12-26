@@ -57,8 +57,11 @@ class TemporaryCaptionMention(TemporaryContext):
         return {"caption_id": self.caption.id}
 
     def __repr__(self):
-        return "{}(document={}, position={})".format(
-            self.__class__.__name__, self.caption.document.name, self.caption.position
+        return (
+            f"{self.__class__.__name__}("
+            f"document={self.caption.document.name}, "
+            f"position={self.caption.position}"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

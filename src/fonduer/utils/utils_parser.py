@@ -11,17 +11,13 @@ def build_node(type, name, content):
     :return: new String with content in html format
     """
     if type == "doc":
-        pattern = "<{}>{}</{}>"
-        return pattern.format("html", content, "html")
+        return f"<html>{content}</html>"
     if type == "section":
-        pattern = "<{} name='{}'>{}</{}>"
-        return pattern.format("section", name, content, "section")
+        return f"<section name='{name}'>{content}</section>"
     if type == "text":
-        pattern = "<{} name='{}'>{}</{}>"
-        return pattern.format("p", name, content, "p")
+        return f"<p name='{name}'>{content}</p>"
     if type == "figure":
-        pattern = "<{} name='{}' src='{}'/>"
-        return pattern.format("img", name, content)
+        return f"<img name='{name}' src='{content}'/>"
 
 
 def column_constructor(text, name=None, type="text", delim=None):
