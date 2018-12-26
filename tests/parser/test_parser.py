@@ -21,7 +21,7 @@ def get_parser_udf(
     language="en",
     lingual=True,  # lingual information
     strip=True,
-    replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
+    replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
     pdf_path=None,
@@ -117,9 +117,9 @@ def test_parse_md_details(caplog):
     assert sent.cell.row_start == 0
     assert sent.cell.col_start == 2
 
-    logger.info("Doc: {}".format(doc))
+    logger.info(f"Doc: {doc}")
     for i, sentence in enumerate(doc.sentences):
-        logger.info("    Sentence[{}]: {}".format(i, sentence.text))
+        logger.info(f"    Sentence[{i}]: {sentence.text}")
 
     header = sorted(doc.sentences, key=lambda x: x.position)[0]
     # Test structural attributes
@@ -411,9 +411,9 @@ def test_simple_tokenizer(caplog):
     for _ in parser_udf.apply(doc):
         pass
 
-    logger.info("Doc: {}".format(doc))
+    logger.info(f"Doc: {doc}")
     for i, sentence in enumerate(doc.sentences):
-        logger.info("    Sentence[{}]: {}".format(i, sentence.text))
+        logger.info(f"    Sentence[{i}]: {sentence.text}")
 
     header = sorted(doc.sentences, key=lambda x: x.position)[0]
     # Test structural attributes
@@ -456,9 +456,9 @@ def test_parse_document_diseases(caplog):
     for _ in parser_udf.apply(doc):
         pass
 
-    logger.info("Doc: {}".format(doc))
+    logger.info(f"Doc: {doc}")
     for sentence in doc.sentences:
-        logger.info("    Sentence: {}".format(sentence.text))
+        logger.info(f"    Sentence: {sentence.text}")
 
     # Check captions
     assert len(doc.captions) == 2
@@ -480,7 +480,7 @@ def test_parse_document_diseases(caplog):
     assert len(doc.cells) == 25
 
     sentence = sorted(doc.sentences, key=lambda x: x.position)[10]
-    logger.info("  {}".format(sentence))
+    logger.info(f"  {sentence}")
 
     # Check the sentence's cell
     assert sentence.table.position == 0
@@ -527,9 +527,9 @@ def test_parse_style(caplog):
     # Grab the sentences parsed by the Parser
     sentences = doc.sentences
 
-    logger.warning("Doc: {}".format(doc))
+    logger.warning(f"Doc: {doc}")
     for i, sentence in enumerate(sentences):
-        logger.warning("    Sentence[{}]: {}".format(i, sentence.html_attrs))
+        logger.warning(f"    Sentence[{i}]: {sentence.html_attrs}")
 
     # sentences for testing
     sub_sentences = [

@@ -26,9 +26,7 @@ class HTMLDocPreprocessor(DocPreprocessor):
             all_html_elements = soup.find_all("html")
             if len(all_html_elements) != 1:
                 raise NotImplementedError(
-                    "Expecting exactly one html element per html file: {}".format(
-                        file_name
-                    )
+                    f"Expecting exactly one html element per html file: {file_name}"
                 )
             text = all_html_elements[0]
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]

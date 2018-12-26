@@ -36,7 +36,7 @@ class AnnotationKeyMixin(object):
         return (UniqueConstraint("name"),)
 
     def __repr__(self):
-        return str(self.__class__.__name__) + " (" + str(self.name) + ")"
+        return f"{self.__class__.__name__} ({self.name})"
 
 
 class AnnotationMixin(object):
@@ -94,10 +94,10 @@ class AnnotationMixin(object):
 
     def __repr__(self):
         return (
-            self.__class__.__name__
-            + " ("
-            + str(self.keys)
-            + " = "
-            + str(self.values)
-            + ")"
+            f"{self.__class__.__name__}"
+            f" ("
+            f"{self.keys}"
+            f" = "
+            f"{self.values}"
+            f")"
         )

@@ -197,14 +197,14 @@ class TemporarySpanMention(TemporaryContext):
             raise NotImplementedError()
 
     def __repr__(self):
-        return '{}("{}", sentence={}, chars=[{},{}], words=[{},{}])'.format(
-            self.__class__.__name__,
-            self.get_span(),
-            self.sentence.id,
-            self.char_start,
-            self.char_end,
-            self.get_word_start_index(),
-            self.get_word_end_index(),
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f'"{self.get_span()}", '
+            f"sentence={self.sentence.id}, "
+            f"chars=[{self.char_start},{self.char_end}], "
+            f"words=[{self.get_word_start_index()},{self.get_word_end_index()}]"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

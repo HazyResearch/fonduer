@@ -39,10 +39,12 @@ class TemporaryFigureMention(TemporaryContext):
 
     def get_stable_id(self):
         """Return a stable id for the ``FigureMention``."""
-        return "%s::%s:%s" % (
-            self.figure.document.name,
-            self._get_polymorphic_identity(),
-            self.figure.position,
+        return (
+            f"{self.figure.document.name}"
+            f"::"
+            f"{self._get_polymorphic_identity()}"
+            f":"
+            f"{self.figure.position}"
         )
 
     def _get_table(self):
@@ -55,11 +57,13 @@ class TemporaryFigureMention(TemporaryContext):
         return {"figure_id": self.figure.id}
 
     def __repr__(self):
-        return "{}(document={}, position={}, url={})".format(
-            self.__class__.__name__,
-            self.figure.document.name,
-            self.figure.position,
-            self.figure.url,
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f"document={self.figure.document.name}, "
+            f"position={self.figure.position}, "
+            f"url={self.figure.url}"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

@@ -70,7 +70,7 @@ def save_marginals(session, X, marginals, training=True):
     # Execute update
     session.execute(q, insert_vals)
     session.commit()
-    logger.info("Saved {%d} marginals".format(len(marginals)))
+    logger.info(f"Saved {len(marginals)} marginals")
 
 
 def reshape_marginals(marginals):

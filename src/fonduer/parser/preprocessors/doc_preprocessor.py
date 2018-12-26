@@ -48,7 +48,7 @@ class DocPreprocessor(object):
                 yield doc
 
     def _get_stable_id(self, doc_id):
-        return "%s::document:0:0" % doc_id
+        return f"{doc_id}::document:0:0"
 
     def _parse_file(self, fp, file_name):
         raise NotImplementedError()
@@ -67,4 +67,4 @@ class DocPreprocessor(object):
         if len(fpaths) > 0:
             return sorted(fpaths)
         else:
-            raise IOError("File or directory not found: {}".format(path))
+            raise IOError(f"File or directory not found: {path}")

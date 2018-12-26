@@ -122,9 +122,7 @@ class CandidateExtractor(UDFRunner):
         """
         for candidate_class in self.candidate_classes:
             logger.info(
-                "Clearing table {} (split {})".format(
-                    candidate_class.__tablename__, split
-                )
+                f"Clearing table {candidate_class.__tablename__} (split {split})"
             )
             self.session.query(Candidate).filter(
                 Candidate.type == candidate_class.__tablename__
@@ -210,7 +208,7 @@ class CandidateExtractorUDF(UDF):
         self_relations,
         nested_relations,
         symmetric_relations,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the CandidateExtractorUDF."""
         self.candidate_classes = (
@@ -235,10 +233,10 @@ class CandidateExtractorUDF(UDF):
         :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
-        logger.debug("Document: {}".format(context))
+        logger.debug(f"Document: {context}")
         # Iterate over each candidate class
         for i, candidate_class in enumerate(self.candidate_classes):
-            logger.debug("  Relation: {}".format(candidate_class.__name__))
+            logger.debug(f"  Relation: {candidate_class.__name__}")
             # Generates and persists candidates
             candidate_args = {"split": split}
             candidate_args["document_id"] = context.id
@@ -273,13 +271,13 @@ class CandidateExtractorUDF(UDF):
                     # Check for self-joins, "nested" joins (joins from context to
                     # its subcontext), and flipped duplicate "symmetric" relations
                     if not self.self_relations and a == b:
-                        logger.debug("Skipping self-joined candidate {}".format(cand))
+                        logger.debug(f"Skipping self-joined candidate {cand}")
                         continue
                     if not self.nested_relations and (a in b or b in a):
-                        logger.debug("Skipping nested candidate {}".format(cand))
+                        logger.debug(f"Skipping nested candidate {cand}")
                         continue
                     if not self.symmetric_relations and ai > bi:
-                        logger.debug("Skipping symmetric candidate {}".format(cand))
+                        logger.debug(f"Skipping symmetric candidate {cand}")
                         continue
 
                 # Assemble candidate arguments

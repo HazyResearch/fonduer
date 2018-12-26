@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 import subprocess
-from builtins import object, range, str, zip
+from builtins import object, range, zip
 from collections import OrderedDict, defaultdict
 
 import numpy as np
@@ -37,8 +37,8 @@ class VisualLinker(object):
         m = re.search(r"\d\.\d{2}\.\d", version)
         if int(m.group(0).replace(".", "")) < 360:
             raise RuntimeError(
-                "Installed poppler-utils's version is %s, but should be 0.36.0 or above"
-                % m.group(0)
+                f"Installed poppler-utils's version is {m.group(0)}, "
+                f"but should be 0.36.0 or above"
             )
 
     def parse_visual(self, document_name, sentences, pdf_path):
@@ -60,25 +60,19 @@ class VisualLinker(object):
 
     def extract_pdf_words(self):
         self.logger.debug(
-            "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file)
+            f"pdfinfo '{self.pdf_file}' | grep -a Pages | sed 's/[^0-9]*//'"
         )
         num_pages = subprocess.check_output(
-            "pdfinfo '{}' | grep -a Pages | sed 's/[^0-9]*//'".format(self.pdf_file),
-            shell=True,
+            f"pdfinfo '{self.pdf_file}' | grep -a Pages | sed 's/[^0-9]*//'", shell=True
         )
         pdf_word_list = []
         coordinate_map = {}
         for i in range(1, int(num_pages) + 1):
             self.logger.debug(
-                "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
-                    str(i), str(i), self.pdf_file
-                )
+                f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -"
             )
             html_content = subprocess.check_output(
-                "pdftotext -f {} -l {} -bbox-layout '{}' -".format(
-                    str(i), str(i), self.pdf_file
-                ),
-                shell=True,
+                f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -", shell=True
             )
             soup = BeautifulSoup(html_content, "html.parser")
             pages = soup.find_all("page")
@@ -90,7 +84,7 @@ class VisualLinker(object):
         self.coordinate_map = coordinate_map
         if len(self.pdf_word_list) == 0:
             raise RuntimeError(
-                "Words could not be extracted from PDF: %s" % self.pdf_file
+                f"Words could not be extracted from PDF: {self.pdf_file}"
             )
         # take last page dimensions
         page_width, page_height = (
@@ -99,7 +93,7 @@ class VisualLinker(object):
         )
         self.pdf_dim = (page_width, page_height)
         if self.verbose:
-            self.logger.info("Extracted {} pdf words".format(len(self.pdf_word_list)))
+            self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
     def _coordinates_from_HTML(self, page, page_num):
         pdf_word_list = []
@@ -146,7 +140,7 @@ class VisualLinker(object):
                 html_word_list.append(((sentence.stable_id, i), word))
         self.html_word_list = html_word_list
         if self.verbose:
-            self.logger.info("Extracted {} html words".format(len(self.html_word_list)))
+            self.logger.info(f"Extracted {len(self.html_word_list)} html words")
 
     def link_lists(self, search_max=100, edit_cost=20, offset_cost=1):
         # NOTE: there are probably some inefficiencies here from rehashing words
@@ -218,9 +212,7 @@ class VisualLinker(object):
                 ]
             )
             total = len(self.html_word_list)
-            self.logger.info(
-                "({:d}/{:d}) = {:.2f}".format(matches, total, matches / total)
-            )
+            self.logger.info(f"({matches}/{total}) = {matches / total:.2f}")
             return matches
 
         N = len(self.html_word_list)
@@ -229,7 +221,7 @@ class VisualLinker(object):
         try:
             assert N > 0 and M > 0
         except Exception:
-            self.logger.exception("N = {} and M = {} are invalid values.".format(N, M))
+            self.logger.exception(f"N = {N} and M = {M} are invalid values.")
 
         html_to_pdf = [None] * N
         pdf_to_html = [None] * M
@@ -273,9 +265,7 @@ class VisualLinker(object):
         total = len(self.html_word_list)
         if self.verbose:
             self.logger.debug(
-                "Linked {:d}/{:d} ({:.2f}) html words exactly".format(
-                    matches, total, matches / total
-                )
+                f"Linked {matches}/{total} ({matches / total:.2f}) html words exactly"
             )
         self.links = OrderedDict(
             (self.html_word_list[i][0], self.pdf_word_list[html_to_pdf[i]][0])

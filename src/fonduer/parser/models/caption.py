@@ -54,12 +54,20 @@ class Caption(Context):
 
     def __repr__(self):
         if self.figure:
-            return "Caption(Doc: {}, Figure: {}, Pos: {})".format(
-                self.document.name, self.figure.position, self.position
+            return (
+                f"Caption("
+                f"Doc: {self.document.name}, "
+                f"Figure: {self.figure.position}, "
+                f"Pos: {self.position}"
+                f")"
             )
         elif self.table:
-            return "Caption(Doc: {}, Table: {}, Pos: {})".format(
-                self.document.name, self.table.position, self.position
+            return (
+                f"Caption("
+                f"Doc: {self.document.name}, "
+                f"Table: {self.table.position}, "
+                f"Pos: {self.position}"
+                f")"
             )
         else:
             raise NotImplementedError(

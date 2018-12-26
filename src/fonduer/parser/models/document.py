@@ -27,7 +27,7 @@ class Document(Context):
     __mapper_args__ = {"polymorphic_identity": "document"}
 
     def __repr__(self):
-        return "Document " + str(self.name)
+        return f"Document {self.name}"
 
     def __gt__(self, other):
         # Allow sorting by comparing the string representations of each

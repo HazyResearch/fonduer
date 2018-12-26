@@ -22,7 +22,7 @@ def get_visual_feats(candidates):
         args = tuple([m.context for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
-                "Accepts Span-type arguments, %s-type found." % type(candidate)
+                f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
 
         # Unary candidates
@@ -73,10 +73,10 @@ def vizlib_unary_features(span):
         return
 
     for f in get_visual_aligned_lemmas(span):
-        yield "ALIGNED_" + f, DEF_VALUE
+        yield f"ALIGNED_{f}", DEF_VALUE
 
     for page in set(span.get_attrib_tokens("page")):
-        yield "PAGE_[%d]" % page, DEF_VALUE
+        yield f"PAGE_[{page}]", DEF_VALUE
 
 
 def vizlib_binary_features(span1, span2):

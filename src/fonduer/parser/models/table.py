@@ -44,8 +44,12 @@ class Table(Context):
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self):
-        return "Table(Doc: {}, Sec: {}, Position: {})".format(
-            self.document.name, self.section.position, self.position
+        return (
+            f"Table("
+            f"Doc: {self.document.name}, "
+            f"Sec: {self.section.position}, "
+            f"Position: {self.position}"
+            f")"
         )
 
     def __gt__(self, other):
@@ -104,12 +108,12 @@ class Cell(Context):
     __table_args__ = (UniqueConstraint(document_id, table_id, position),)
 
     def __repr__(self):
-        return "Cell(Doc: {}, Table: {}, Row: {}, Col: {}, Pos: {})".format(
-            self.document.name,
-            self.table.position,
-            tuple({self.row_start, self.row_end}),
-            tuple({self.col_start, self.col_end}),
-            self.position,
+        return (
+            f"Cell(Doc: {self.document.name}, "
+            f"Table: {self.table.position}, "
+            f"Row: {tuple({self.row_start, self.row_end})}, "
+            f"Col: {tuple({self.col_start, self.col_end})}, "
+            f"Pos: {self.position})"
         )
 
     def __gt__(self, other):

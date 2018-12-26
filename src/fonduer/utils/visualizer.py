@@ -103,7 +103,7 @@ def get_box(span):
 
 def get_pdf_dim(pdf_file):
     html_content = subprocess.check_output(
-        "pdftotext -f {} -l {} -bbox '{}' -".format("1", "1", pdf_file), shell=True
+        f"pdftotext -f {1} -l {1} -bbox '{pdf_file}' -", shell=True
     )
     soup = BeautifulSoup(html_content, "html.parser")
     pages = soup.find_all("page")
@@ -124,6 +124,6 @@ def pdf_to_img(pdf_file, page_num, pdf_dim=None):
     if not pdf_dim:
         pdf_dim = get_pdf_dim(pdf_file)
     page_width, page_height = pdf_dim
-    img = Image(filename="{}[{}]".format(pdf_file, page_num - 1))
+    img = Image(filename=f"{pdf_file}[{page_num - 1}]")
     img.resize(page_width, page_height)
     return img

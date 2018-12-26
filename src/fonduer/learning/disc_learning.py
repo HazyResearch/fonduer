@@ -180,7 +180,7 @@ class NoiseAwareModel(Classifier, nn.Module):
             else:
                 self.logger.info("Using GPU...")
 
-        self.logger.info("Settings: {}".format(self.settings))
+        self.logger.info(f"Settings: {self.settings}")
 
         # Build network
         self._build_model()
@@ -193,16 +193,17 @@ class NoiseAwareModel(Classifier, nn.Module):
         # Run mini-batch SGD
         n = len(_X_train)
         if self.settings["batch_size"] > n:
-            self.logger.info("Switching batch size to {} for training.".format(n))
+            self.logger.info(f"Switching batch size to {n} for training.")
         batch_size = min(self.settings["batch_size"], n)
 
         if verbose:
             st = time()
-            self.logger.info("[{0}] Training model".format(self.name))
+            self.logger.info(f"[{self.name}] Training model")
             self.logger.info(
-                "[{0}] n_train={1}  #epochs={2}  batch size={3}".format(
-                    self.name, n, self.settings["n_epochs"], batch_size
-                )
+                f"[{self.name}] "
+                f"n_train={n} "
+                f"#epochs={self.settings['n_epochs']} "
+                f"batch size={batch_size}"
             )
 
         dev_score_opt = 0.0
@@ -248,11 +249,10 @@ class NoiseAwareModel(Classifier, nn.Module):
                     or epoch in [0, (self.settings["n_epochs"] - 1)]
                 )
             ):
-                msg = "[{0}] Epoch {1} ({2:.2f}s)\tAverage loss={3:.6f}".format(
-                    self.name,
-                    epoch + 1,
-                    time() - st,
-                    torch.stack(iteration_losses).mean(),
+                msg = (
+                    f"[{self.name}] "
+                    f"Epoch {epoch + 1} ({time() - st:.2f}s)\t"
+                    f"Average loss={torch.stack(iteration_losses).mean():.6f}"
                 )
                 if X_dev is not None:
                     scores = self.score(
@@ -260,7 +260,7 @@ class NoiseAwareModel(Classifier, nn.Module):
                     )
                     score = scores if self.cardinality > 2 else scores[-1]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
-                    msg += "\tDev {0}={1:.2f}".format(score_label, 100.0 * score)
+                    msg += f"\tDev {score_label}={100.0 * score:.2f}"
                 self.logger.info(msg)
 
                 # If best score on dev set so far and dev checkpointing is
@@ -277,9 +277,7 @@ class NoiseAwareModel(Classifier, nn.Module):
 
         # Conclude training
         if verbose:
-            self.logger.info(
-                "[{0}] Training done ({1:.2f}s)".format(self.name, time() - st)
-            )
+            self.logger.info(f"[{self.name}] Training done ({time() - st:.2f}s)")
         # If checkpointing on, load last checkpoint (i.e. best on dev set)
         if dev_ckpt and X_dev is not None and verbose and dev_score_opt > 0:
             self.logger.info("Loading best checkpoint")
@@ -342,18 +340,16 @@ class NoiseAwareModel(Classifier, nn.Module):
             "epoch": global_step,
         }
 
-        model_file = "{0}.mdl.ckpt.{1}".format(model_name, global_step)
+        model_file = f"{model_name}.mdl.ckpt.{global_step}"
 
         try:
-            torch.save(params, "{0}/{1}".format(model_dir, model_file))
+            torch.save(params, f"{model_dir}/{model_file}")
         except BaseException:
             self.logger.warning("Saving failed... continuing anyway.")
 
         if verbose:
             self.logger.info(
-                "[{0}] Model saved as {1} in {2}".format(
-                    model_name, model_file, model_dir
-                )
+                f"[{model_name}] Model saved as {model_file} in {model_dir}"
             )
 
     def load(
@@ -377,15 +373,13 @@ class NoiseAwareModel(Classifier, nn.Module):
         if not os.path.exists(model_dir):
             self.logger.error("Loading failed... Directory does not exist.")
 
-        model_file = "{0}.mdl.ckpt.{1}".format(model_name, global_step)
+        model_file = f"{model_name}.mdl.ckpt.{global_step}"
 
         try:
-            checkpoint = torch.load("{0}/{1}".format(model_dir, model_file))
+            checkpoint = torch.load(f"{model_dir}/{model_file}")
         except BaseException:
             self.logger.error(
-                "Loading failed... Cannot load model from {0} in {1}".format(
-                    model_name, model_dir
-                )
+                f"Loading failed... Cannot load model from {model_name} in {model_dir}"
             )
 
         self.load_state_dict(checkpoint["model"])
@@ -395,7 +389,5 @@ class NoiseAwareModel(Classifier, nn.Module):
 
         if verbose:
             self.logger.info(
-                "[{0}] Model loaded as {1} in {2}".format(
-                    model_name, model_file, model_dir
-                )
+                f"[{model_name}] Model loaded as {model_file} in {model_dir}"
             )

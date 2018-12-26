@@ -39,10 +39,12 @@ class TemporaryParagraphMention(TemporaryContext):
 
     def get_stable_id(self):
         """Return a stable id for the ``ParagraphMention``."""
-        return "%s::%s:%s" % (
-            self.paragraph.document.name,
-            self._get_polymorphic_identity(),
-            self.paragraph.position,
+        return (
+            f"{self.paragraph.document.name}"
+            f"::"
+            f"{self._get_polymorphic_identity()}"
+            f":"
+            f"{self.paragraph.position}"
         )
 
     def _get_table(self):
@@ -55,10 +57,12 @@ class TemporaryParagraphMention(TemporaryContext):
         return {"paragraph_id": self.paragraph.id}
 
     def __repr__(self):
-        return "{}(document={}, position={})".format(
-            self.__class__.__name__,
-            self.paragraph.document.name,
-            self.paragraph.position,
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f"document={self.paragraph.document.name}, "
+            f"position={self.paragraph.position}"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

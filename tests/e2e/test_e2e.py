@@ -86,7 +86,7 @@ def test_incremental(caplog):
     corpus_parser.apply(doc_preprocessor)
 
     num_docs = session.query(Document).count()
-    logger.info("Docs: {}".format(num_docs))
+    logger.info(f"Docs: {num_docs}")
     assert num_docs == max_docs
 
     docs = corpus_parser.get_documents()
@@ -235,11 +235,11 @@ def test_e2e(caplog):
     assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
-    logger.info("Docs: {}".format(num_docs))
+    logger.info(f"Docs: {num_docs}")
     assert num_docs == max_docs
 
     num_sentences = session.query(Sentence).count()
-    logger.info("Sentences: {}".format(num_sentences))
+    logger.info(f"Sentences: {num_sentences}")
 
     # Divide into test and train
     docs = corpus_parser.get_documents()
@@ -507,9 +507,9 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 < 0.7 and f1 > 0.3
 
@@ -557,9 +557,9 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
 
@@ -583,9 +583,9 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
 
@@ -609,9 +609,9 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
 
@@ -635,8 +635,8 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 > 0.7

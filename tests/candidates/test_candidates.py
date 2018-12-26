@@ -260,9 +260,9 @@ def test_cand_gen(caplog):
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]
-    logger.info("Part: {}".format(part.context))
-    logger.info("Volt: {}".format(volt.context))
-    logger.info("Temp: {}".format(temp.context))
+    logger.info(f"Part: {part.context}")
+    logger.info(f"Volt: {volt.context}")
+    logger.info(f"Temp: {temp.context}")
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])

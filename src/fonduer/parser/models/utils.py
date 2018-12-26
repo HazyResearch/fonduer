@@ -14,7 +14,7 @@ def construct_stable_id(
     doc_id, _, parent_doc_char_start, _ = split_stable_id(parent_context.stable_id)
     start = parent_doc_char_start + relative_char_offset_start
     end = parent_doc_char_start + relative_char_offset_end
-    return "{}::{}:{}:{}".format(doc_id, polymorphic_type, start, end)
+    return f"{doc_id}" f"::" f"{polymorphic_type}" f":" f"{start}" f":" f"{end}"
 
 
 def split_stable_id(stable_id):
@@ -31,4 +31,4 @@ def split_stable_id(stable_id):
         split2 = split1[1].split(":")
         if len(split2) == 3:
             return split1[0], split2[0], int(split2[1]), int(split2[2])
-    raise ValueError("Malformed stable_id:", stable_id)
+    raise ValueError(f"Malformed stable_id:\t{stable_id}")

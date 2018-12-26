@@ -28,7 +28,7 @@ def _get_cand_values(candidate, key_table):
     elif key_table == GoldLabelKey:
         return candidate.gold_labels
     else:
-        raise ValueError("{} is not a valid key table.".format(key_table))
+        raise ValueError(f"{key_table} is not a valid key table.")
 
 
 def _batch_postgres_query(table, records):
@@ -68,7 +68,7 @@ def _batch_postgres_query(table, records):
         end += 1
 
         if total_len + record_len >= POSTGRESQL_MAX:
-            logger.debug("Splitting query due to length ({} chars).".format(total_len))
+            logger.debug(f"Splitting query due to length ({total_len} chars).")
             yield records[start:end]
             start = end
             # Reset the total query length
@@ -366,4 +366,4 @@ def upsert_keys(session, key_table, keys):
                 session.commit()
                 break
             except Exception as e:
-                logger.debug("{}".format(e))
+                logger.debug(e)

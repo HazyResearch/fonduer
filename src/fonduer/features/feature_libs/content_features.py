@@ -1,4 +1,4 @@
-from builtins import range, str
+from builtins import range
 
 from treedlib import (
     Children,
@@ -35,7 +35,7 @@ def get_content_feats(candidates):
         args = tuple([m.context for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
-                "Accepts Span-type arguments, %s-type found." % type(candidate)
+                f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
 
         # Unary candidates
@@ -51,17 +51,17 @@ def get_content_feats(candidates):
                 if len(sidxs) > 0:
                     # Add DDLIB entity features
                     for f in get_ddlib_feats(span, sent, sidxs):
-                        yield candidate.id, "DDL_" + f, DEF_VALUE
+                        yield candidate.id, f"DDL_{f}", DEF_VALUE
                     # Add TreeDLib entity features
                     if span.stable_id not in unary_tdl_feats:
                         unary_tdl_feats[span.stable_id] = set()
                         for f in get_tdl_feats(xmltree.root, sidxs):
                             unary_tdl_feats[span.stable_id].add(f)
                     for f in unary_tdl_feats[span.stable_id]:
-                        yield candidate.id, "TDL_" + f, DEF_VALUE
+                        yield candidate.id, f"TDL_{f}", DEF_VALUE
             else:
                 for f in get_word_feats(span):
-                    yield candidate.id, "BASIC_" + f, DEF_VALUE
+                    yield candidate.id, f"BASIC_{f}", DEF_VALUE
 
         # Binary candidates
         elif len(args) == 2:
@@ -81,10 +81,10 @@ def get_content_feats(candidates):
 
                     # Add DDLIB entity features for relation
                     for f in get_ddlib_feats(span1, sent1, s1_idxs):
-                        yield candidate.id, "DDL_e1_" + f, DEF_VALUE
+                        yield candidate.id, f"DDL_e1_{f}", DEF_VALUE
 
                     for f in get_ddlib_feats(span2, sent2, s2_idxs):
-                        yield candidate.id, "DDL_e2_" + f, DEF_VALUE
+                        yield candidate.id, f"DDL_e2_{f}", DEF_VALUE
 
                     # Add TreeDLib relation features
                     if candidate.id not in binary_tdl_feats:
@@ -92,13 +92,13 @@ def get_content_feats(candidates):
                         for f in get_tdl_feats(xmltree.root, s1_idxs, s2_idxs):
                             binary_tdl_feats[candidate.id].add(f)
                     for f in binary_tdl_feats[candidate.id]:
-                        yield candidate.id, "TDL_" + f, DEF_VALUE
+                        yield candidate.id, f"TDL_{f}", DEF_VALUE
             else:
                 for f in get_word_feats(span1):
-                    yield candidate.id, "BASIC_e1_" + f, DEF_VALUE
+                    yield candidate.id, f"BASIC_e1_{f}", DEF_VALUE
 
                 for f in get_word_feats(span2):
-                    yield candidate.id, "BASIC_e2_" + f, DEF_VALUE
+                    yield candidate.id, f"BASIC_e2_{f}", DEF_VALUE
 
         else:
             raise NotImplementedError(
@@ -152,10 +152,10 @@ def get_ddlib_feats(span, context, idxs):
 
 
 def _get_seq_features(context, idxs):
-    yield "WORD_SEQ_[" + " ".join(context["words"][i] for i in idxs) + "]"
-    yield "LEMMA_SEQ_[" + " ".join(context["lemmas"][i] for i in idxs) + "]"
-    yield "POS_SEQ_[" + " ".join(context["pos_tags"][i] for i in idxs) + "]"
-    yield "DEP_SEQ_[" + " ".join(context["dep_labels"][i] for i in idxs) + "]"
+    yield f"WORD_SEQ_[{' '.join(context['words'][i] for i in idxs)}]"
+    yield f"LEMMA_SEQ_[{' '.join(context['lemmas'][i] for i in idxs)}]"
+    yield f"POS_SEQ_[{' '.join(context['pos_tags'][i] for i in idxs)}]"
+    yield f"DEP_SEQ_[{' '.join(context['dep_labels'][i] for i in idxs)}]"
 
 
 def _get_window_features(
@@ -197,15 +197,11 @@ def _get_window_features(
         pass
     if isolated:
         for i in range(len(left_lemmas)):
-            yield "W_LEFT_" + str(i + 1) + "_[" + " ".join(left_lemmas[-i - 1 :]) + "]"
-            yield "W_LEFT_POS_" + str(i + 1) + "_[" + " ".join(
-                left_pos_tags[-i - 1 :]
-            ) + "]"
+            yield f"W_LEFT_{i + 1}_[{' '.join(left_lemmas[-i - 1 :])}]"
+            yield f"W_LEFT_POS_{i + 1}_[{' '.join(left_pos_tags[-i - 1 :])}]"
         for i in range(len(right_lemmas)):
-            yield "W_RIGHT_" + str(i + 1) + "_[" + " ".join(right_lemmas[: i + 1]) + "]"
-            yield "W_RIGHT_POS_" + str(i + 1) + "_[" + " ".join(
-                right_pos_tags[: i + 1]
-            ) + "]"
+            yield f"W_RIGHT_{i + 1}_[{' '.join(right_lemmas[: i + 1])}]"
+            yield f"W_RIGHT_POS_{i + 1}_[{' '.join(right_pos_tags[: i + 1])}]"
     if combinations:
         for i in range(len(left_lemmas)):
             curr_left_lemmas = " ".join(left_lemmas[-i - 1 :])
@@ -231,12 +227,14 @@ def _get_window_features(
                             to_add = "None"
                         new_pos_tags.append(to_add)
                     curr_right_pos_tags = " ".join(new_pos_tags)
-                yield "W_LEMMA_L_" + str(i + 1) + "_R_" + str(
-                    j + 1
-                ) + "_[" + curr_left_lemmas + "]_[" + curr_right_lemmas + "]"
-                yield "W_POS_L_" + str(i + 1) + "_R_" + str(
-                    j + 1
-                ) + "_[" + curr_left_pos_tags + "]_[" + curr_right_pos_tags + "]"
+                yield (
+                    f"W_LEMMA_L_{i + 1}_R_{j + 1}_"
+                    f"[{curr_left_lemmas}]_[{curr_right_lemmas}]"
+                )
+                yield (
+                    f"W_POS_L_{i + 1}_R_{j + 1}_"
+                    f"[{curr_left_pos_tags}]_[{curr_right_pos_tags}]"
+                )
 
 
 def get_word_feats(span):
@@ -246,7 +244,7 @@ def get_word_feats(span):
         unary_word_feats[span.stable_id] = set()
 
         for ngram in tokens_to_ngrams(span.get_attrib_tokens(attrib), n_min=1, n_max=2):
-            feature = "CONTAINS_%s_[%s]" % (attrib.upper(), ngram)
+            feature = f"CONTAINS_{attrib.upper()}_[{ngram}]"
             unary_word_feats.add(feature)
 
         for ngram in get_left_ngrams(
@@ -255,7 +253,7 @@ def get_word_feats(span):
             n_max=2,
             attrib=attrib,
         ):
-            feature = "LEFT_%s_[%s]" % (attrib.upper(), ngram)
+            feature = f"LEFT_{attrib.upper()}_[{ngram}]"
             unary_word_feats.add(feature)
 
         for ngram in get_right_ngrams(
@@ -264,7 +262,7 @@ def get_word_feats(span):
             n_max=2,
             attrib=attrib,
         ):
-            feature = "RIGHT_%s_[%s]" % (attrib.upper(), ngram)
+            feature = f"RIGHT_{attrib.upper()}_[{ngram}]"
             unary_word_feats.add(feature)
 
     for f in unary_word_feats[span.stable_id]:

@@ -96,13 +96,18 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         :rtype: string
         """
         doc_id, _, parent_doc_char_start, _ = split_stable_id(self.sentence.stable_id)
-        return "%s::%s:%s:%s:%s:%s" % (
-            self.sentence.document.name,
-            self._get_polymorphic_identity(),
-            parent_doc_char_start + self.char_start,
-            parent_doc_char_start + self.char_end,
-            self.expander_key,
-            self.position,
+        return (
+            f"{self.sentence.document.name}"
+            f"::"
+            f"{self._get_polymorphic_identity()}"
+            f":"
+            f"{parent_doc_char_start + self.char_start}"
+            f":"
+            f"{parent_doc_char_start + self.char_end}"
+            f":"
+            f"{self.expander_key}"
+            f":"
+            f"{self.position}"
         )
 
     def _get_table(self):
@@ -207,13 +212,14 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             raise NotImplementedError()
 
     def __repr__(self):
-        return '{}("{}", sentence={}, words=[{},{}], position=[{}])'.format(
-            self.__class__.__name__,
-            self.get_span(),
-            self.sentence.id,
-            self.get_word_start_index(),
-            self.get_word_end_index(),
-            self.position,
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f'"{self.get_span()}", '
+            f"sentence={self.sentence.id}, "
+            f"words=[{self.get_word_start_index()},{self.get_word_end_index()}], "
+            f"position=[{self.position}]"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

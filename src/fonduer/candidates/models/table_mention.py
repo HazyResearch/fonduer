@@ -39,10 +39,12 @@ class TemporaryTableMention(TemporaryContext):
 
     def get_stable_id(self):
         """Return a stable id for the ``TableMention``."""
-        return "%s::%s:%s" % (
-            self.table.document.name,
-            self._get_polymorphic_identity(),
-            self.table.position,
+        return (
+            f"{self.table.document.name}"
+            f"::"
+            f"{self._get_polymorphic_identity()}"
+            f":"
+            f"{self.table.position}"
         )
 
     def _get_table(self):
@@ -55,8 +57,12 @@ class TemporaryTableMention(TemporaryContext):
         return {"table_id": self.table.id}
 
     def __repr__(self):
-        return "{}(document={}, position={})".format(
-            self.__class__.__name__, self.table.document.name, self.table.position
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f"document={self.table.document.name}, "
+            f"position={self.table.position}"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

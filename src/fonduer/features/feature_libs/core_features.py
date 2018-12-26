@@ -13,7 +13,7 @@ def get_core_feats(candidates):
         args = tuple([m.context for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
-                "Accepts Span-type arguments, %s-type found." % type(candidate)
+                f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
 
         # Unary candidates
@@ -46,11 +46,13 @@ def get_core_feats(candidates):
 
 
 def _generate_core_feats(span):
-    yield "SPAN_TYPE_[%s]" % (
-        "IMPLICIT" if isinstance(span, ImplicitSpanMention) else "EXPLICIT"
+    yield (
+        f"SPAN_TYPE_["
+        f"{'IMPLICIT' if isinstance(span, ImplicitSpanMention) else 'EXPLICIT'}"
+        f"]"
     )
 
     if span.get_span()[0].isupper():
         yield "STARTS_WITH_CAPITAL"
 
-    yield "LENGTH_{}".format(span.get_num_words())
+    yield f"LENGTH_{span.get_num_words()}"

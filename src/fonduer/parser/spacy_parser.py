@@ -122,7 +122,7 @@ class Spacy(object):
                 download(self.lang)
             model = spacy.load(self.lang)
         elif self.lang in self.alpha_languages:
-            language_module = importlib.import_module("spacy.lang.{}".format(self.lang))
+            language_module = importlib.import_module(f"spacy.lang.{self.lang}")
             language_method = getattr(language_module, self.alpha_languages[self.lang])
             model = language_method()
             """ TODO: Depending on OS (Linux/macOS) and on the sentence to be parsed,
@@ -156,8 +156,9 @@ class Spacy(object):
                 assert total_nr_input_words == total_nr_output_words
             except AssertionError:
                 self.logger.error(
-                    "input token number ({}) not same as output token"
-                    " nr ({})".format(total_nr_input_words, total_nr_output_words)
+                    f"input token number ({total_nr_input_words}) "
+                    f"not same as output token "
+                    f"nr ({total_nr_output_words})"
                 )
                 raise
 
@@ -180,8 +181,7 @@ class Spacy(object):
         """
         if self.lang in self.alpha_languages:
             raise NotImplementedError(
-                "Language {} not available in "
-                "spacy beyond tokenization".format(self.lang)
+                f"Language {self.lang} not available in " f"spacy beyond tokenization"
             )
 
         if len(all_sentences) == 0:
@@ -190,9 +190,8 @@ class Spacy(object):
         if self.model.has_pipe("sbd"):
             self.model.remove_pipe("sbd")
             self.logger.debug(
-                "Removed sentencizer ('sbd') from model. Now in pipeline: {}".format(
-                    self.model.pipe_names
-                )
+                f"Removed sentencizer ('sbd') from model. "
+                f"Now in pipeline: {self.model.pipe_names}"
             )
 
         batch_char_limit = self.model.max_length
@@ -235,19 +234,17 @@ class Spacy(object):
             try:
                 assert doc.is_parsed
             except Exception:
-                self.logger.exception("{} was not parsed".format(doc))
+                self.logger.exception(f"{doc} was not parsed")
 
             batch_parsed_sentences = list(doc.sents)
             try:
                 assert len(batch_sentence_strings) == len(batch_parsed_sentences)
             except AssertionError:
                 self.logger.error(
-                    "Number of parsed spacy sentences doesnt match input sentences:"
-                    " input {}, output: {}, document: {}".format(
-                        len(batch_sentence_strings),
-                        len(batch_parsed_sentences),
-                        sentence_batch[0].document,
-                    )
+                    f"Number of parsed spacy sentences doesnt match input sentences: "
+                    f"input {len(batch_sentence_strings)}, "
+                    f"output: {len(batch_parsed_sentences)}, "
+                    f"document: {sentence_batch[0].document}"
                 )
                 raise
 
@@ -297,16 +294,16 @@ class Spacy(object):
             # temporary increase character limit of spacy
             # 'Probably save' according to spacy, as no parser or NER is used
             previous_max_length = self.model.max_length
-            self.model.max_length = 100000000
+            self.model.max_length = 100_000_000
             self.logger.warning(
-                "Temporarily increased spacy maximum "
-                " character limit to split sentences.".format(self.model.max_length)
+                f"Temporarily increased spacy maximum "
+                f"character limit to {self.model.max_length} to split sentences."
             )
             doc = self.model(text, disable=["parser", "tagger", "ner"])
             self.model.max_length = previous_max_length
             self.logger.warning(
-                "Spacy maximum"
-                " character limit set back to.".format(self.model.max_length)
+                f"Spacy maximum "
+                f"character limit set back to {self.model.max_length}."
             )
 
         position = 0

@@ -83,7 +83,7 @@ def load_hardware_labels(
 
     gold_dict = get_gold_dict(filename, attribute=attrib)
     cand_total = len(candidates)
-    logger.info("Loading {} candidate labels".format(cand_total))
+    logger.info(f"Loading {cand_total} candidate labels")
     labels = 0
 
     cands = []
@@ -113,7 +113,7 @@ def load_hardware_labels(
     )
     session.commit()
 
-    logger.info("GoldLabels created: {}".format(labels))
+    logger.info(f"GoldLabels created: {labels}")
 
 
 def entity_confusion_matrix(pred, gold):
@@ -153,7 +153,7 @@ def entity_level_f1(
         attribute=attribute,
     )
     if len(gold_set) == 0:
-        logger.info("Gold File: {}\n Attribute: {}".format(gold_file, attribute))
+        logger.info(f"Gold File: {gold_file}\n Attribute: {attribute}")
         logger.error("Gold set is empty.")
         return
     # Turn CandidateSet into set of tuples
@@ -181,11 +181,11 @@ def entity_level_f1(
     logger.info("========================================")
     logger.info("Scoring on Entity-Level Gold Data")
     logger.info("========================================")
-    logger.info("Corpus Precision {:.3}".format(prec))
-    logger.info("Corpus Recall    {:.3}".format(rec))
-    logger.info("Corpus F1        {:.3}".format(f1))
+    logger.info(f"Corpus Precision {prec:.3}")
+    logger.info(f"Corpus Recall    {rec:.3}")
+    logger.info(f"Corpus F1        {f1:.3}")
     logger.info("----------------------------------------")
-    logger.info("TP: {} | FP: {} | FN: {}".format(TP, FP, FN))
+    logger.info(f"TP: {TP} | FP: {FP} | FN: {FN}")
     logger.info("========================================\n")
     return [sorted(list(x)) for x in [TP_set, FP_set, FN_set]]
 

@@ -13,7 +13,7 @@ def _to_span(x, idx=0):
     elif isinstance(x, TemporarySpanMention):
         return x
     else:
-        raise ValueError("{} is an invalid argument type".format(type(x)))
+        raise ValueError(f"{type(x)} is an invalid argument type")
 
 
 def _to_spans(x):
@@ -25,7 +25,7 @@ def _to_spans(x):
     elif isinstance(x, TemporarySpanMention):
         return [x]
     else:
-        raise ValueError("{} is an invalid argument type".format(type(x)))
+        raise ValueError(f"{type(x)} is an invalid argument type")
 
 
 def is_superset(a, b):
@@ -72,5 +72,5 @@ def get_matches(lf, candidate_set, match_values=[1, -1]):
         label = lf(c)
         if label in match_values:
             matches.append(c)
-    logger.info(("%s matches") % len(matches))
+    logger.info(f"{len(matches)} matches")
     return matches
