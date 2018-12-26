@@ -34,4 +34,4 @@ class Webpage(Context):
 
     # Rest of class definition here
     def __repr__(self):
-        return "Webpage(id: {}..., url: {}...)".format(self.name[:10], self.url[8:23])
+        return f"Webpage(id: {self.name[:10]}..., url: {self.url[8:23]}...)"

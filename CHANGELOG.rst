@@ -52,6 +52,7 @@ Fixed
 
 Changed
 ^^^^^^^
+* `@senwu`_: Update code to use Python 3.6+'s f-strings
 * `@HiromuHota`_: Reattach doc with the current session at
   MentionExtractorUDF#apply to avoid doing so at each MentionSpace.
 

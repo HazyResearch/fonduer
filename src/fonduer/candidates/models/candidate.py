@@ -53,9 +53,11 @@ class Candidate(_meta.Base):
         return self.get_mentions()[key]
 
     def __repr__(self):
-        return "%s(%s)" % (
-            self.__class__.__name__,
-            ", ".join(map(str, self.get_mentions())),
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f"{', '.join(map(str, self.get_mentions()))}"
+            f")"
         )
 
     def __gt__(self, other_cand):
@@ -120,11 +122,9 @@ def candidate_subclass(
             return candidate_subclasses[class_name][0]
         else:
             raise ValueError(
-                "Candidate subclass "
-                + class_name
-                + " already exists in memory with incompatible "
-                + "specification: "
-                + str(candidate_subclasses[class_name][1])
+                f"Candidate subclass {class_name} "
+                f"already exists in memory with incompatible "
+                f"specification: {candidate_subclasses[class_name][1]}"
             )
     else:
         # Set the class attributes == the columns in the database

@@ -229,7 +229,7 @@ class Labeler(UDFRunner):
         :param lfs: This parameter is ignored.
         """
         # Clear Labels for the candidates in the split passed in.
-        logger.info("Clearing Labels (split {})".format(split))
+        logger.info(f"Clearing Labels (split {split})")
 
         sub_query = (
             self.session.query(Candidate.id).filter(Candidate.split == split).subquery()
@@ -239,9 +239,7 @@ class Labeler(UDFRunner):
 
         # Delete all old annotation keys
         if train:
-            logger.debug(
-                "Clearing all LabelKeys from {}...".format(self.candidate_classes)
-            )
+            logger.debug(f"Clearing all LabelKeys from {self.candidate_classes}...")
             drop_all_keys(self.session, LabelKey, self.candidate_classes)
 
     def clear_all(self):
@@ -314,9 +312,7 @@ class LabelerUDF(UDF):
                     yield cid, lf_key, val
             else:
                 raise ValueError(
-                    "Can't parse label value {} for candidate values {}".format(
-                        label, c.values
-                    )
+                    f"Can't parse label value {label} for candidate values {c.values}"
                 )
 
     def apply(self, doc, split, train, lfs, **kwargs):
@@ -327,7 +323,7 @@ class LabelerUDF(UDF):
         :param train: Whether or not to insert new LabelKeys.
         :param lfs: The list of functions to use to generate labels.
         """
-        logger.debug("Document: {}".format(doc))
+        logger.debug(f"Document: {doc}")
 
         if lfs is None:
             raise ValueError("Must provide lfs kwarg.")

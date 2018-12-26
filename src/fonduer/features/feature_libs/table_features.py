@@ -1,5 +1,3 @@
-from builtins import range, str
-
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import (
@@ -25,7 +23,7 @@ def get_table_feats(candidates):
         args = tuple([m.context for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
-                "Accepts Span-type arguments, %s-type found." % type(candidate)
+                f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
 
         # Unary candidates
@@ -80,15 +78,15 @@ def tablelib_unary_features(span):
             ]["max"],
             attrib=attrib,
         ):
-            yield "CELL_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
+            yield f"CELL_{attrib.upper()}_[{ngram}]", DEF_VALUE
         for row_num in range(sentence.row_start, sentence.row_end + 1):
-            yield "ROW_NUM_[%s]" % row_num, DEF_VALUE
+            yield f"ROW_NUM_[{row_num}]", DEF_VALUE
         for col_num in range(sentence.col_start, sentence.col_end + 1):
-            yield "COL_NUM_[%s]" % col_num, DEF_VALUE
+            yield f"COL_NUM_[{col_num}]", DEF_VALUE
         # NOTE: These two features could be accounted for by HTML_ATTR in
         # structural features
-        yield "ROW_SPAN_[%d]" % num_rows(sentence), DEF_VALUE
-        yield "COL_SPAN_[%d]" % num_cols(sentence), DEF_VALUE
+        yield f"ROW_SPAN_[{num_rows(sentence)}]", DEF_VALUE
+        yield f"COL_SPAN_[{num_cols(sentence)}]", DEF_VALUE
         for axis in ["row", "col"]:
             for ngram in get_head_ngrams(
                 span,
@@ -98,7 +96,7 @@ def tablelib_unary_features(span):
                 ]["max"],
                 attrib=attrib,
             ):
-                yield "%s_HEAD_%s_[%s]" % (axis.upper(), attrib.upper(), ngram), 1
+                yield f"{axis.upper()}_HEAD_{attrib.upper()}_[{ngram}]", DEF_VALUE
         for ngram in get_row_ngrams(
             span,
             n_max=settings["featurization"]["table"]["unary_features"][
@@ -106,7 +104,7 @@ def tablelib_unary_features(span):
             ]["max"],
             attrib=attrib,
         ):
-            yield "ROW_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
+            yield f"ROW_{attrib.upper()}_[{ngram}]", DEF_VALUE
         for ngram in get_col_ngrams(
             span,
             n_max=settings["featurization"]["table"]["unary_features"][
@@ -114,7 +112,7 @@ def tablelib_unary_features(span):
             ]["max"],
             attrib=attrib,
         ):
-            yield "COL_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
+            yield f"COL_{attrib.upper()}_[{ngram}]", DEF_VALUE
         # TODO:
         #  for ngram in get_row_ngrams(
         #      span, n_max=2, attrib=attrib, direct=False, infer=True
@@ -133,7 +131,7 @@ def tablelib_binary_features(span1, span2):
     binary_features = settings["featurization"]["table"]["binary_features"]
     if span1.sentence.is_tabular() and span2.sentence.is_tabular():
         if span1.sentence.table == span2.sentence.table:
-            yield u"SAME_TABLE", DEF_VALUE
+            yield "SAME_TABLE", DEF_VALUE
             if span1.sentence.cell is not None and span2.sentence.cell is not None:
                 row_diff = min_row_diff(
                     span1.sentence,
@@ -145,24 +143,26 @@ def tablelib_binary_features(span1, span2):
                     span2.sentence,
                     absolute=binary_features["min_col_diff"]["absolute"],
                 )
-                yield u"SAME_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
-                yield u"SAME_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE
-                yield u"SAME_TABLE_MANHATTAN_DIST_[%s]" % str(
-                    abs(row_diff) + abs(col_diff)
+                yield f"SAME_TABLE_ROW_DIFF_[{row_diff}]", DEF_VALUE
+                yield f"SAME_TABLE_COL_DIFF_[{col_diff}]", DEF_VALUE
+                yield (
+                    f"SAME_TABLE_MANHATTAN_DIST_[{abs(row_diff) + abs(col_diff)}]"
                 ), DEF_VALUE
                 if span1.sentence.cell == span2.sentence.cell:
-                    yield u"SAME_CELL", DEF_VALUE
-                    yield u"WORD_DIFF_[%s]" % (
-                        span1.get_word_start_index() - span2.get_word_start_index()
+                    yield "SAME_CELL", DEF_VALUE
+                    yield (
+                        f"WORD_DIFF_["
+                        f"{span1.get_word_start_index() - span2.get_word_start_index()}"
+                        f"]"
                     ), DEF_VALUE
-                    yield u"CHAR_DIFF_[%s]" % (
-                        span1.char_start - span2.char_start
+                    yield (
+                        f"CHAR_DIFF_[{span1.char_start - span2.char_start}]"
                     ), DEF_VALUE
                     if span1.sentence == span2.sentence:
-                        yield u"SAME_SENTENCE", DEF_VALUE
+                        yield "SAME_SENTENCE", DEF_VALUE
         else:
             if span1.sentence.cell is not None and span2.sentence.cell is not None:
-                yield u"DIFF_TABLE", DEF_VALUE
+                yield "DIFF_TABLE", DEF_VALUE
                 row_diff = min_row_diff(
                     span1.sentence,
                     span2.sentence,
@@ -173,8 +173,8 @@ def tablelib_binary_features(span1, span2):
                     span2.sentence,
                     absolute=binary_features["min_col_diff"]["absolute"],
                 )
-                yield u"DIFF_TABLE_ROW_DIFF_[%s]" % row_diff, DEF_VALUE
-                yield u"DIFF_TABLE_COL_DIFF_[%s]" % col_diff, DEF_VALUE
-                yield u"DIFF_TABLE_MANHATTAN_DIST_[%s]" % str(
-                    abs(row_diff) + abs(col_diff)
+                yield f"DIFF_TABLE_ROW_DIFF_[{row_diff}]", DEF_VALUE
+                yield f"DIFF_TABLE_COL_DIFF_[{col_diff}]", DEF_VALUE
+                yield (
+                    f"DIFF_TABLE_MANHATTAN_DIST_[{abs(row_diff) + abs(col_diff)}]"
                 ), DEF_VALUE

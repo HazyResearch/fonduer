@@ -186,7 +186,7 @@ class Featurizer(UDFRunner):
         :type split: int
         """
         # Clear Features for the candidates in the split passed in.
-        logger.info("Clearing Features (split {})".format(split))
+        logger.info(f"Clearing Features (split {split})")
 
         sub_query = (
             self.session.query(Candidate.id).filter(Candidate.split == split).subquery()
@@ -196,9 +196,7 @@ class Featurizer(UDFRunner):
 
         # Delete all old annotation keys
         if train:
-            logger.debug(
-                "Clearing all FeatureKeys from {}...".format(self.candidate_classes)
-            )
+            logger.debug(f"Clearing all FeatureKeys from {self.candidate_classes}...")
             drop_all_keys(self.session, FeatureKey, self.candidate_classes)
 
     def clear_all(self):
@@ -238,7 +236,7 @@ class FeaturizerUDF(UDF):
         :param split: Which split to use.
         :param train: Whether or not to insert new FeatureKeys.
         """
-        logger.debug("Document: {}".format(doc))
+        logger.debug(f"Document: {doc}")
 
         # Get all the candidates in this doc that will be featurized
         cands_list = get_cands_list_from_split(

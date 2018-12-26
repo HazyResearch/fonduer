@@ -58,16 +58,23 @@ class Figure(Context):
 
     def __repr__(self):
         if self.cell:
-            return "Figure(Doc: {}, Sec: {}, Cell: {}, Pos: {}, Url: {})".format(
-                self.document.name,
-                self.section.position,
-                self.cell.position,
-                self.position,
-                self.url,
+            return (
+                f"Figure("
+                f"Doc: {self.document.name}, "
+                f"Sec: {self.section.position}, "
+                f"Cell: {self.cell.position}, "
+                f"Pos: {self.position}, "
+                f"Url: {self.url}"
+                f")"
             )
         else:
-            return "Figure(Doc: {}, Sec: {}, Pos: {}, Url: {})".format(
-                self.document.name, self.section.position, self.position, self.url
+            return (
+                f"Figure("
+                f"Doc: {self.document.name}, "
+                f"Sec: {self.section.position}, "
+                f"Pos: {self.position}, "
+                f"Url: {self.url}"
+                f")"
             )
 
     def __gt__(self, other):

@@ -39,7 +39,7 @@ class TemporaryDocumentMention(TemporaryContext):
 
     def get_stable_id(self):
         """Return a stable id for the ``DocumentMention``."""
-        return "%s::%s" % (self.document.name, self._get_polymorphic_identity())
+        return f"{self.document.name}::{self._get_polymorphic_identity()}"
 
     def _get_table(self):
         return DocumentMention
@@ -51,7 +51,7 @@ class TemporaryDocumentMention(TemporaryContext):
         return {"document_id": self.document.id}
 
     def __repr__(self):
-        return "{}(document={})".format(self.__class__.__name__, self.document.name)
+        return f"{self.__class__.__name__}(document={self.document.name})"
 
     def _get_instance(self, **kwargs):
         return TemporaryDocumentMention(**kwargs)

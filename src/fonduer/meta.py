@@ -26,21 +26,17 @@ def new_sessionmaker():
         engine.connect()
     except sqlalchemy.exc.OperationalError as e:
         raise ValueError(
-            "{}\n{}".format(
-                e,
-                "To resolve this error, check our FAQs at: "
-                + "https://fonduer.readthedocs.io/en/latest/user/faqs.html",
-            )
+            f"{e}\n"
+            f"To resolve this error, check our FAQs at: "
+            f"https://fonduer.readthedocs.io/en/latest/user/faqs.html"
         )
     except Exception as e:
         raise ValueError(
-            "{}\n{}".format(
-                e,
-                "Meta variables have not been initialized with "
-                + "a valid postgres connection string.\n"
-                + "Use the form: "
-                + "postgresql://<user>:<pw>@<host>:<port>/<database_name>",
-            )
+            f"{e}\n"
+            f"Meta variables have not been initialized with "
+            f"a valid postgres connection string.\n"
+            f"Use the form: "
+            f"postgresql://<user>:<pw>@<host>:<port>/<database_name>"
         )
     # New sessionmaker
     return sessionmaker(bind=engine)
@@ -87,9 +83,8 @@ class Meta(object):
             Meta.Session = new_sessionmaker()
             Meta.engine = Meta.Session.kw["bind"]
             logger.info(
-                "Connecting user:{} to {}:{}/{}".format(
-                    Meta.DBUSER, Meta.DBHOST, Meta.DBPORT, Meta.DBNAME
-                )
+                f"Connecting user:{Meta.DBUSER} "
+                f"to {Meta.DBHOST}:{Meta.DBPORT}/{Meta.DBNAME}"
             )
             Meta._init_db()
 

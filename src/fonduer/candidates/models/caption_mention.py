@@ -39,10 +39,12 @@ class TemporaryCaptionMention(TemporaryContext):
 
     def get_stable_id(self):
         """Return a stable id for the ``CaptionMention``."""
-        return "%s::%s:%s" % (
-            self.caption.document.name,
-            self._get_polymorphic_identity(),
-            self.caption.position,
+        return (
+            f"{self.caption.document.name}"
+            f"::"
+            f"{self._get_polymorphic_identity()}"
+            f":"
+            f"{self.caption.position}"
         )
 
     def _get_table(self):
@@ -55,8 +57,11 @@ class TemporaryCaptionMention(TemporaryContext):
         return {"caption_id": self.caption.id}
 
     def __repr__(self):
-        return "{}(document={}, position={})".format(
-            self.__class__.__name__, self.caption.document.name, self.caption.position
+        return (
+            f"{self.__class__.__name__}("
+            f"document={self.caption.document.name}, "
+            f"position={self.caption.position}"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

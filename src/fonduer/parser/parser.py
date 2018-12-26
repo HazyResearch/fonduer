@@ -61,7 +61,7 @@ class Parser(UDFRunner):
         language="en",
         lingual=True,  # lingual information
         strip=True,
-        replacements=[(u"[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
+        replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
         tabular=True,  # tabular information
         visual=False,  # visual information
         pdf_path=None,
@@ -150,7 +150,7 @@ class ParserUDF(UDF):
         visual,
         pdf_path,
         language,
-        **kwargs
+        **kwargs,
     ):
         """
         :param visual: boolean, if True visual features are used in the model
@@ -191,9 +191,9 @@ class ParserUDF(UDF):
                 )
             else:
                 logger.warning(
-                    "Lingual mode will be turned off, "
-                    "as spacy doesn't provide support for this "
-                    "language ({})".format(self.language)
+                    f"Lingual mode will be turned off, "
+                    f"as spacy doesn't provide support for this "
+                    f"language ({self.language})"
                 )
                 self.lingual = False
 
@@ -227,9 +227,10 @@ class ParserUDF(UDF):
 
                 elif not self._valid_pdf(self.pdf_path, document.name):
                     warnings.warn(
-                        "Visual parse failed. {} not a PDF. {}".format(
-                            self.pdf_path + document.name,
-                            "Proceeding without visual parsing.",
+                        (
+                            f"Visual parse failed. "
+                            f"{self.pdf_path + document.name} not a PDF. "
+                            f"Proceeding without visual parsing."
                         ),
                         RuntimeWarning,
                     )
@@ -252,8 +253,10 @@ class ParserUDF(UDF):
             yield from return_sentences
         except NotImplementedError as e:
             warnings.warn(
-                "Document {} not added to database, "
-                "because of parse error: \n{}".format(document.name, e)
+                (
+                    f"Document {document.name} not added to database, "
+                    f"because of parse error: \n{e}"
+                )
             )
 
     def _valid_pdf(self, path, filename):
@@ -285,9 +288,7 @@ class ParserUDF(UDF):
 
         if node.tag == "table":
             table_idx = state["table"]["idx"]
-            stable_id = "{}::{}:{}".format(
-                state["document"].name, "table", state["table"]["idx"]
-            )
+            stable_id = f"{state['document'].name}::{'table'}:{state['table']['idx']}"
 
             # Set name for Table
             name = node.attrib["name"] if "name" in node.attrib else None
@@ -351,18 +352,14 @@ class ParserUDF(UDF):
                 try:
                     row_end += int(node.get("rowspan")) - 1
                 except ValueError:
-                    logger.error(
-                        "Rowspan has invalid value: '{}'".format(node.get("rowspan"))
-                    )
+                    logger.error(f"Rowspan has invalid value: '{node.get('rowspan')}'")
 
             col_end = col_start
             if "colspan" in node.attrib:
                 try:
                     col_end += int(node.get("colspan")) - 1
                 except ValueError:
-                    logger.error(
-                        "Colspan has invalid value: '{}'".format(node.get("colspan"))
-                    )
+                    logger.error(f"Colspan has invalid value: '{node.get('colspan')}'")
 
             # update grid with occupied cells
             for r, c in itertools.product(
@@ -385,12 +382,16 @@ class ParserUDF(UDF):
             parts["position"] = state["table"][state["parent"][node].position][
                 "cell_pos"
             ]
-            stable_id = "{}::{}:{}:{}:{}".format(
-                parts["document"].name,
-                "cell",
-                parts["table"].position,
-                row_start,
-                col_start,
+            stable_id = (
+                f"{parts['document'].name}"
+                f"::"
+                f"{'cell'}"
+                f":"
+                f"{parts['table'].position}"
+                f":"
+                f"{row_start}"
+                f":"
+                f"{col_start}"
             )
             parts["stable_id"] = stable_id
             # Create the Cell in the DB
@@ -413,8 +414,12 @@ class ParserUDF(UDF):
             return state
 
         # Process the Figure
-        stable_id = "{}::{}:{}".format(
-            state["document"].name, "figure", state["figure"]["idx"]
+        stable_id = (
+            f"{state['document'].name}"
+            f"::"
+            f"{'figure'}"
+            f":"
+            f"{state['figure']['idx']}"
         )
 
         # Set name for Figure
@@ -433,7 +438,7 @@ class ParserUDF(UDF):
             parts["section"] = parent.table.section
             parts["cell"] = parent
         else:
-            logger.warning("Figure is nested within {}".format(state["parent"][node]))
+            logger.warning(f"Figure is nested within {state['parent'][node]}")
             return state
 
         parts["document"] = state["document"]
@@ -606,8 +611,12 @@ class ParserUDF(UDF):
                 text = rgx.sub(replace, text)
 
             # Process the Paragraph
-            stable_id = "{}::{}:{}".format(
-                state["document"].name, "paragraph", state["paragraph"]["idx"]
+            stable_id = (
+                f"{state['document'].name}"
+                f"::"
+                f"{'paragraph'}"
+                f":"
+                f"{state['paragraph']['idx']}"
             )
             parts = {}
             parts["stable_id"] = stable_id
@@ -629,9 +638,8 @@ class ParserUDF(UDF):
                 parts["section"] = parent.section
             else:
                 raise NotImplementedError(
-                    (
-                        'Para "{}" parent must be Section, Caption, or Cell, not {}'
-                    ).format(text, parent)
+                    f"Para '{text}' parent must be Section, Caption, or Cell, "
+                    f"not {parent}"
                 )
 
             # Create the Figure entry in the DB
@@ -658,8 +666,12 @@ class ParserUDF(UDF):
             return state
 
         # Add a Section
-        stable_id = "{}::{}:{}".format(
-            state["document"].name, "section", state["section"]["idx"]
+        stable_id = (
+            f"{state['document'].name}"
+            f"::"
+            f"{'section'}"
+            f":"
+            f"{state['section']['idx']}"
         )
 
         # Set name for Section
@@ -687,8 +699,12 @@ class ParserUDF(UDF):
 
         # Add a Caption
         parent = state["parent"][node]
-        stable_id = "{}::{}:{}".format(
-            state["document"].name, "caption", state["caption"]["idx"]
+        stable_id = (
+            f"{state['document'].name}"
+            f"::"
+            f"{'caption'}"
+            f":"
+            f"{state['caption']['idx']}"
         )
 
         # Set name for Section

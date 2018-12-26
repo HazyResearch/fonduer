@@ -27,9 +27,9 @@ class Marginal(_meta.Base):
 
     def __repr__(self):
         label = "Training" if self.training else "Predicted"
-        return "<%s Marginal: P(%s == %s) = %s>" % (
-            label,
-            self.candidate_id,
-            self.value,
-            self.probability,
+        return (
+            f"<"
+            f"{label} "
+            f"Marginal: P({self.candidate_id} == {self.value}) = {self.probability}"
+            f">"
         )

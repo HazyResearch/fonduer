@@ -39,11 +39,14 @@ class TemporaryCellMention(TemporaryContext):
 
     def get_stable_id(self):
         """Return a stable id for the ``CellMention``."""
-        return "%s::%s:%s:%s" % (
-            self.cell.document.name,
-            self._get_polymorphic_identity(),
-            self.cell.table.position,
-            self.cell.position,
+        return (
+            f"{self.cell.document.name}"
+            f"::"
+            f"{self._get_polymorphic_identity()}"
+            f":"
+            f"{self.cell.table.position}"
+            f":"
+            f"{self.cell.position}"
         )
 
     def _get_table(self):
@@ -56,11 +59,13 @@ class TemporaryCellMention(TemporaryContext):
         return {"cell_id": self.cell.id}
 
     def __repr__(self):
-        return "{}(document={}, table_position={}, position={})".format(
-            self.__class__.__name__,
-            self.cell.document.name,
-            self.cell.table.position,
-            self.cell.position,
+        return (
+            f"{self.__class__.__name__}"
+            f"("
+            f"document={self.cell.document.name}, "
+            f"table_position={self.cell.table.position}, "
+            f"position={self.cell.position}"
+            f")"
         )
 
     def _get_instance(self, **kwargs):

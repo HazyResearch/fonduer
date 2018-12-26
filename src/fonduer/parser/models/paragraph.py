@@ -63,22 +63,30 @@ class Paragraph(Context):
 
     def __repr__(self):
         if self.cell:
-            return "Paragraph(Doc: {}, Sec: {}, Cell: {}, Pos: {})".format(
-                self.document.name,
-                self.section.position,
-                self.cell.position,
-                self.position,
+            return (
+                f"Paragraph("
+                f"Doc: {self.document.name}, "
+                f"Sec: {self.section.position}, "
+                f"Cell: {self.cell.position}, "
+                f"Pos: {self.position}"
+                f")"
             )
         elif self.caption:
-            return "Paragraph(Doc: {}, Sec: {}, Caption: {}, Pos: {})".format(
-                self.document.name,
-                self.section.position,
-                self.caption.position,
-                self.position,
+            return (
+                f"Paragraph("
+                f"Doc: {self.document.name}, "
+                f"Sec: {self.section.position}, "
+                f"Caption: {self.caption.position}, "
+                f"Pos: {self.position}"
+                ")"
             )
         else:
-            return "Paragraph(Doc: {}, Sec: {}, Pos: {})".format(
-                self.document.name, self.section.position, self.position
+            return (
+                f"Paragraph("
+                f"Doc: {self.document.name}, "
+                f"Sec: {self.section.position}, "
+                f"Pos: {self.position}"
+                f")"
             )
 
     def __gt__(self, other):

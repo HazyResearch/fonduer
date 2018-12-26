@@ -65,7 +65,7 @@ def mark(l, h, idx):
     :return: markers.
     :rtype: list of markers
     """
-    return [(l, "{}{}".format("~~[[", idx)), (h + 1, "{}{}".format(idx, "]]~~"))]
+    return [(l, f"~~[[{idx}"), (h + 1, f"{idx}]]~~")]
 
 
 def mark_sentence(s, args):

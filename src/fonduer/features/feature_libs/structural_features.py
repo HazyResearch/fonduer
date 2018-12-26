@@ -1,5 +1,3 @@
-from builtins import str
-
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.data_model_utils import (
     common_ancestor,
@@ -27,7 +25,7 @@ def get_structural_feats(candidates):
         args = tuple([m.context for m in candidate.get_mentions()])
         if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
-                "Accepts Span-type arguments, %s-type found." % type(candidate)
+                f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
 
         # Unary candidates
@@ -75,39 +73,39 @@ def strlib_unary_features(span):
     if not span.sentence.is_structural():
         return
 
-    yield "TAG_" + get_tag(span), DEF_VALUE
+    yield f"TAG_{get_tag(span)}", DEF_VALUE
 
     for attr in get_attributes(span):
-        yield "HTML_ATTR_" + attr, DEF_VALUE
+        yield f"HTML_ATTR_{attr}", DEF_VALUE
 
-    yield "PARENT_TAG_" + get_parent_tag(span), DEF_VALUE
+    yield f"PARENT_TAG_{get_parent_tag(span)}", DEF_VALUE
 
     prev_tags = get_prev_sibling_tags(span)
     if len(prev_tags):
-        yield "PREV_SIB_TAG_" + prev_tags[-1], DEF_VALUE
-        yield "NODE_POS_" + str(len(prev_tags) + 1), DEF_VALUE
+        yield f"PREV_SIB_TAG_{prev_tags[-1]}", DEF_VALUE
+        yield f"NODE_POS_{len(prev_tags) + 1}", DEF_VALUE
     else:
         yield "FIRST_NODE", DEF_VALUE
 
     next_tags = get_next_sibling_tags(span)
     if len(next_tags):
-        yield "NEXT_SIB_TAG_" + next_tags[0], DEF_VALUE
+        yield f"NEXT_SIB_TAG_{next_tags[0]}", DEF_VALUE
     else:
         yield "LAST_NODE", DEF_VALUE
 
-    yield "ANCESTOR_CLASS_[%s]" % " ".join(get_ancestor_class_names(span)), DEF_VALUE
+    yield f"ANCESTOR_CLASS_[{' '.join(get_ancestor_class_names(span))}]", DEF_VALUE
 
-    yield "ANCESTOR_TAG_[%s]" % " ".join(get_ancestor_tag_names(span)), DEF_VALUE
+    yield f"ANCESTOR_TAG_[{' '.join(get_ancestor_tag_names(span))}]", DEF_VALUE
 
-    yield "ANCESTOR_ID_[%s]" % " ".join(get_ancestor_id_names(span)), DEF_VALUE
+    yield f"ANCESTOR_ID_[{' '.join(get_ancestor_id_names(span))}]", DEF_VALUE
 
 
 def strlib_binary_features(span1, span2):
     """
     Structural-related features for a pair of spans
     """
-    yield "COMMON_ANCESTOR_[%s]" % " ".join(common_ancestor((span1, span2))), DEF_VALUE
+    yield f"COMMON_ANCESTOR_[{' '.join(common_ancestor((span1, span2)))}]", DEF_VALUE
 
-    yield "LOWEST_ANCESTOR_DEPTH_[%d]" % lowest_common_ancestor_depth(
-        (span1, span2)
+    yield (
+        f"LOWEST_ANCESTOR_DEPTH_[" f"{lowest_common_ancestor_depth((span1, span2))}]"
     ), DEF_VALUE

@@ -27,8 +27,12 @@ class SentenceMixin(object):
         return False
 
     def __repr__(self):
-        return "Sentence (Doc: {}, Index: {}, Text: {})".format(
-            self.document.name, self.sentence_idx, self.text
+        return (
+            f"Sentence ("
+            f"Doc: {self.document.name}, "
+            f"Index: {self.sentence_idx}, "
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -68,8 +72,12 @@ class LingualMixin(object):
         return self.lemmas is not None
 
     def __repr__(self):
-        return "LingualSentence (Doc: {}, Index: {}, Text: {})".format(
-            self.document.name, self.sentence_idx, self.text
+        return (
+            f"LingualSentence ("
+            f"Doc: {self.document.name}, "
+            f"Index: {self.sentence_idx}, "
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -150,15 +158,13 @@ class TabularMixin(object):
             else self.col_start
         )
         return (
-            "TabularSentence (Doc: {}, "
-            + "Table: {}, Row: {}, Col: {}, Index: {}, Text: {})"
-        ).format(
-            self.document.name,
-            (lambda: self.table).position,
-            rows,
-            cols,
-            self.sentence_idx,
-            self.text,
+            f"TabularSentence (Doc: {self.document.name}, "
+            f"Table: {(lambda: self.table).position}, "
+            f"Row: {rows}, "
+            f"Col: {cols}, "
+            f"Index: {self.sentence_idx}, "
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -202,15 +208,12 @@ class VisualMixin(object):
 
     def __repr__(self):
         return (
-            "VisualSentence (Doc: {}, Page: {}, (T,B,L,R): ({},{},{},{}), Text: {})"
-        ).format(
-            self.document.name,
-            self.page,
-            self.top,
-            self.bottom,
-            self.left,
-            self.right,
-            self.text,
+            f"VisualSentence ("
+            f"Doc: {self.document.name}, "
+            f"Page: {self.page}, "
+            f"(T,B,L,R): ({self.top},{self.bottom},{self.left},{self.right}), "
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -241,8 +244,12 @@ class StructuralMixin(object):
         return self.html_tag is not None
 
     def __repr__(self):
-        return "StructuralSentence (Doc: {}, Tag: {}, Text: {})".format(
-            self.document.name, self.html_tag, self.text
+        return (
+            f"StructuralSentence ("
+            f"Doc: {self.document.name}, "
+            f"Tag: {self.html_tag}, "
+            f"Text: {self.text}"
+            f")"
         )
 
 
@@ -323,26 +330,25 @@ class Sentence(
                 else self.col_start
             )
             return (
-                "Sentence (Doc: '{}', "
-                + "Table: {}, Row: {}, Col: {}, Index: {}, Text: '{}')"
-            ).format(
-                self.document.name,
-                self.table.position,
-                rows,
-                cols,
-                self.position,
-                self.text,
+                f"Sentence ("
+                f"Doc: '{self.document.name}', "
+                f"Table: {self.table.position}, "
+                f"Row: {rows}, "
+                f"Col: {cols}, "
+                f"Index: {self.position}, "
+                f"Text: '{self.text}'"
+                f")"
             )
 
         else:
             return (
-                "Sentence (Doc: '{}', Sec: {}, Par: {}, Idx: {}, Text: '{}')"
-            ).format(
-                self.document.name,
-                self.section.position,
-                self.paragraph.position,
-                self.position,
-                self.text,
+                f"Sentence ("
+                f"Doc: '{self.document.name}', "
+                f"Sec: {self.section.position}, "
+                f"Par: {self.paragraph.position}, "
+                f"Idx: {self.position}, "
+                f"Text: '{self.text}'"
+                f")"
             )
 
     def _asdict(self):
