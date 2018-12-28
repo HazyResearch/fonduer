@@ -1,8 +1,6 @@
 import logging
 
 import numpy as np
-import torch
-import torch.nn.functional as F
 
 from fonduer.learning.models.marginal import Marginal
 
@@ -151,24 +149,3 @@ class LabelBalancer(object):
         idxs = np.concatenate([pos, neg])
         rs.shuffle(idxs)
         return idxs
-
-
-# ##########################################################
-# # Loss functions
-# ##########################################################
-
-
-def SoftCrossEntropyLoss(input, target):
-    """
-    Calculate the CrossEntropyLoss with soft targets
-
-    :param input: prediction logits
-    :param target: target probabilities
-    :return: loss
-    """
-    total_loss = torch.tensor(0.0)
-    for i in range(input.size(1)):
-        cls_idx = torch.full((input.size(0),), i, dtype=torch.long)
-        loss = F.cross_entropy(input, cls_idx, reduce=False)
-        total_loss += target[:, i].dot(loss)
-    return total_loss / input.shape[0]
