@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from fonduer.learning.disc_learning import NoiseAwareModel
-from fonduer.learning.disc_models.layers.sparse_linear import SparseLinear
+from fonduer.learning.disc_models.modules.sparse_linear import SparseLinear
 from fonduer.learning.disc_models.utils import pad_batch
 from fonduer.utils.config import get_config
 

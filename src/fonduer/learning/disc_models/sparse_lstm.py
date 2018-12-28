@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 
 from fonduer.learning.disc_learning import NoiseAwareModel
-from fonduer.learning.disc_models.layers.rnn import RNN
-from fonduer.learning.disc_models.layers.sparse_linear import SparseLinear
+from fonduer.learning.disc_models.modules.rnn import RNN
+from fonduer.learning.disc_models.modules.sparse_linear import SparseLinear
 from fonduer.learning.disc_models.utils import (
     SymbolTable,
     mark_sentence,

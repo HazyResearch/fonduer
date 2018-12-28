@@ -8,11 +8,8 @@ import torch.nn as nn
 import torch.optim as optim
 
 from fonduer.learning.classifier import Classifier
-from fonduer.learning.utils import (
-    LabelBalancer,
-    SoftCrossEntropyLoss,
-    reshape_marginals,
-)
+from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
+from fonduer.learning.utils import LabelBalancer, reshape_marginals
 
 
 class NoiseAwareModel(Classifier, nn.Module):
