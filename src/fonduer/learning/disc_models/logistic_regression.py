@@ -96,9 +96,7 @@ class LogisticRegression(NoiseAwareModel):
             raise ValueError("Model parameter input_dim cannot be None.")
 
         self.linear = nn.Linear(
-            self.settings["input_dim"],
-            self.cardinality if self.cardinality > 2 else 1,
-            self.settings["bias"],
+            self.settings["input_dim"], self.cardinality, self.settings["bias"]
         )
 
     def _calc_logits(self, X, batch_size=None):
@@ -137,9 +135,6 @@ class LogisticRegression(NoiseAwareModel):
             )
 
             output = self.forward(features)
-            if self.cardinality == 2:
-                outputs = torch.cat((outputs, output.view(-1)), 0)
-            else:
-                outputs = torch.cat((outputs, output), 0)
+            outputs = torch.cat((outputs, output), 0)
 
         return outputs

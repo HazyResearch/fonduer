@@ -24,6 +24,7 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision import Labeler
 from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
+    TRUE,
     LF_bad_keywords_in_row,
     LF_collector_aligned,
     LF_complement_left_row,
@@ -489,15 +490,17 @@ def test_e2e(caplog):
     gen_model = LabelModel(k=2)
     gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
 
-    train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
+    train_marginals = gen_model.predict_proba(L_train[0])
 
     disc_model = LogisticRegression()
     disc_model.train(
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions(
+        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
+    )
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
@@ -543,15 +546,17 @@ def test_e2e(caplog):
     gen_model = LabelModel(k=2)
     gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
 
-    train_marginals = gen_model.predict_proba(L_train[0])[:, 1]
+    train_marginals = gen_model.predict_proba(L_train[0])
 
     disc_model = LogisticRegression()
     disc_model.train(
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions(
+        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
+    )
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -576,8 +581,10 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions(
+        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
+    )
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -602,8 +609,10 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions(
+        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
+    )
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -628,8 +637,10 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
-    test_score = disc_model.predictions((test_cands[0], F_test[0]), b=0.6)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predictions(
+        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
+    )
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc

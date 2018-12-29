@@ -215,11 +215,9 @@ class SparseLSTM(NoiseAwareModel):
         if "input_dim" not in self.settings:
             raise ValueError("Model parameter input_dim cannot be None.")
 
-        cardinality = self.cardinality if self.cardinality > 2 else 1
-
         # Set up final linear layer
         self.sparse_linear = SparseLinear(
-            self.settings["input_dim"], cardinality, self.settings["bias"]
+            self.settings["input_dim"], self.cardinality, self.settings["bias"]
         )
 
     def _calc_logits(self, X, batch_size=None):
@@ -286,9 +284,6 @@ class SparseLSTM(NoiseAwareModel):
                 values = values.cuda()
 
             output = self.forward(sequences, lstm_weight_indices, features, values)
-            if self.cardinality == 2:
-                outputs = torch.cat((outputs, output.view(-1)), 0)
-            else:
-                outputs = torch.cat((outputs, output), 0)
+            outputs = torch.cat((outputs, output), 0)
 
         return outputs

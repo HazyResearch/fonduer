@@ -173,9 +173,7 @@ class LSTM(NoiseAwareModel):
             raise ValueError("Model parameter input_dim cannot be None.")
 
         # Set up final linear layer
-        self.linear = nn.Linear(
-            self.settings["input_dim"], self.cardinality if self.cardinality > 2 else 1
-        )
+        self.linear = nn.Linear(self.settings["input_dim"], self.cardinality)
 
     def _calc_logits(self, X, batch_size=None):
         """
@@ -233,9 +231,6 @@ class LSTM(NoiseAwareModel):
             )
 
             output = self.forward(sequences, features)
-            if self.cardinality == 2:
-                outputs = torch.cat((outputs, output.view(-1)), 0)
-            else:
-                outputs = torch.cat((outputs, output), 0)
+            outputs = torch.cat((outputs, output), 0)
 
         return outputs
