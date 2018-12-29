@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from fonduer.learning.disc_learning import NoiseAwareModel
+from fonduer.learning.classifier import Classifier
 from fonduer.learning.disc_models.modules.rnn import RNN
 from fonduer.learning.disc_models.modules.sparse_linear import SparseLinear
 from fonduer.learning.disc_models.utils import (
@@ -14,7 +14,7 @@ from fonduer.learning.disc_models.utils import (
 from fonduer.utils.config import get_config
 
 
-class SparseLSTM(NoiseAwareModel):
+class SparseLSTM(Classifier):
     """
     LSTM model.
 

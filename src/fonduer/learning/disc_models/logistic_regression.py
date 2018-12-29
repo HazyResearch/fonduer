@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 from scipy.sparse import issparse
 
-from fonduer.learning.disc_learning import NoiseAwareModel
+from fonduer.learning.classifier import Classifier
 from fonduer.utils.config import get_config
 
 
-class LogisticRegression(NoiseAwareModel):
+class LogisticRegression(Classifier):
     """
     Logistic Regression model.
 
