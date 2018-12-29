@@ -497,9 +497,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions(
-        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
-    )
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
@@ -553,9 +551,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions(
-        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
-    )
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
@@ -581,9 +577,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
-    test_score = disc_model.predictions(
-        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
-    )
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
@@ -609,9 +603,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
     )
 
-    test_score = disc_model.predictions(
-        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
-    )
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
@@ -637,9 +629,7 @@ def test_e2e(caplog):
         (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
-    test_score = disc_model.predictions(
-        (test_cands[0], F_test[0]), b=0.6, pos_label=TRUE
-    )
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
@@ -658,3 +648,13 @@ def test_e2e(caplog):
     logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
+
+    # Evaluate mention level scores
+    L_test_gold = labeler.get_gold_labels(test_cands, annotator="gold")
+    Y_test = np.array(L_test_gold[0].todense()).reshape(-1)
+
+    scores = disc_model.score((test_cands[0], F_test[0]), Y_test, b=0.6, pos_label=TRUE)
+
+    logger.info(scores)
+
+    assert scores["f1"] > 0.6

@@ -319,7 +319,10 @@ class Classifier(nn.Module):
 
         if self.cardinality > 2:
             Y_pred = Y_prob.argmax(axis=1) + 1
-            return Y_pred, Y_prob if return_probs else Y_pred
+            if return_probs:
+                return Y_pred, Y_prob
+            else:
+                return Y_pred
 
         if pos_label not in [1, 2]:
             raise ValueError("pos_label must have values in {1,2}.")
@@ -328,8 +331,10 @@ class Classifier(nn.Module):
         Y_pred = np.array(
             [pos_label if p[pos_label - 1] > b else 3 - pos_label for p in Y_prob]
         )
-
-        return Y_pred, Y_prob if return_probs else Y_pred
+        if return_probs:
+            return Y_pred, Y_prob
+        else:
+            return Y_pred
 
     def score(
         self,
