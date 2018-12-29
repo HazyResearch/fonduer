@@ -375,12 +375,10 @@ class Classifier(nn.Module):
         except Exception:
             Y_test = np.array(Y_test)
 
-        # Compute accuracy for categorical, or P/R/F1 for binary settings
-        if self.cardinality > 2:
-            # Compute and return accuracy
-            acc = np.where([predictions == Y_test])[0].shape[0] / float(Y_test.shape[0])
-            return {"accuracy": acc}
-        else:
+        scores = {}
+
+        # Compute P/R/F1 for binary settings
+        if self.cardinality == 2:
             # Either remap or filter out unlabeled (0-valued) test labels
             if set_unlabeled_as_neg:
                 Y_test[Y_test == 0] = 3 - pos_label
@@ -404,14 +402,15 @@ class Classifier(nn.Module):
                 else 0.0
             )
 
-            acc = np.where([predictions == Y_test])[0].shape[0] / float(Y_test.shape[0])
+            scores["precision"] = prec
+            scores["recall"] = rec
+            scores[f"f{beta}"] = fbeta
 
-            return {
-                "precision": prec,
-                "recall": rec,
-                f"f{beta}": fbeta,
-                "accuracy": acc,
-            }
+        # Compute accuracy for all settings
+        acc = np.where([predictions == Y_test])[0].shape[0] / float(Y_test.shape[0])
+        scores["accuracy"] = acc
+
+        return scores
 
     def save(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
