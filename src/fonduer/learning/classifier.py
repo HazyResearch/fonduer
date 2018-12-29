@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from sklearn.metrics import roc_auc_score
 
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
 from fonduer.learning.utils import save_marginals
@@ -299,7 +300,7 @@ class Classifier(nn.Module):
 
         save_marginals(session, X, self.marginals(X), training=training)
 
-    def predictions(self, X, b=0.5, pos_label=1, batch_size=None):
+    def predict(self, X, b=0.5, pos_label=1, batch_size=None, return_probs=False):
         """Return numpy array of class predictions for X
         based on predicted marginal probabilities.
 
@@ -314,21 +315,21 @@ class Classifier(nn.Module):
         if self._check_input(X):
             X = self._preprocess_data(X)
 
-        predict_proba = self.marginals(X, batch_size=batch_size)
+        Y_prob = self.marginals(X, batch_size=batch_size)
 
         if self.cardinality > 2:
-            return predict_proba.argmax(axis=1) + 1
+            Y_pred = Y_prob.argmax(axis=1) + 1
+            return Y_pred, Y_prob if return_probs else Y_pred
 
         if pos_label not in [1, 2]:
             raise ValueError("pos_label must have values in {1,2}.")
         self.logger.info(f"Using positive label class {pos_label} with threshold {b}")
 
-        return np.array(
-            [
-                pos_label if p[pos_label - 1] > b else 3 - pos_label
-                for p in predict_proba
-            ]
+        Y_pred = np.array(
+            [pos_label if p[pos_label - 1] > b else 3 - pos_label for p in Y_prob]
         )
+
+        return Y_pred, Y_prob if return_probs else Y_pred
 
     def score(
         self,
@@ -365,8 +366,8 @@ class Classifier(nn.Module):
         if self._check_input(X_test):
             X_test, Y_test = self._preprocess_data(X_test, Y_test)
 
-        predictions = self.predictions(
-            X_test, b=b, pos_label=pos_label, batch_size=batch_size
+        Y_pred, Y_prob = self.predict(
+            X_test, b=b, pos_label=pos_label, batch_size=batch_size, return_probs=True
         )
 
         # Convert Y_test to dense numpy array
@@ -383,12 +384,12 @@ class Classifier(nn.Module):
             if set_unlabeled_as_neg:
                 Y_test[Y_test == 0] = 3 - pos_label
             else:
-                predictions = predictions[Y_test != 0]
+                Y_pred = Y_pred[Y_test != 0]
                 Y_test = Y_test[Y_test != 0]
 
             # Compute and return precision, recall, and F1 score
 
-            pred_pos = np.where(predictions == pos_label, True, False)
+            pred_pos = np.where(Y_pred == pos_label, True, False)
             gt_pos = np.where(Y_test == pos_label, True, False)
             TP = np.sum(pred_pos * gt_pos)
             FP = np.sum(pred_pos * np.logical_not(gt_pos))
@@ -401,13 +402,15 @@ class Classifier(nn.Module):
                 if (beta ** 2 * prec) + rec > 0
                 else 0.0
             )
-
             scores["precision"] = prec
             scores["recall"] = rec
             scores[f"f{beta}"] = fbeta
 
+            roc_auc = roc_auc_score(Y_test, Y_prob[:, pos_label - 1])
+            scores["roc_auc"] = roc_auc
+
         # Compute accuracy for all settings
-        acc = np.where([predictions == Y_test])[0].shape[0] / float(Y_test.shape[0])
+        acc = np.where([Y_pred == Y_test])[0].shape[0] / float(Y_test.shape[0])
         scores["accuracy"] = acc
 
         return scores
