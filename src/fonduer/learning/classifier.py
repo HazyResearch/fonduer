@@ -21,12 +21,11 @@ class Classifier(nn.Module):
 
     _gpu = ["gpu", "GPU"]
 
-    def __init__(self, name=None, seed=1234):
+    def __init__(self, name=None):
         nn.Module.__init__(self)
         self.logger = logging.getLogger(__name__)
         self.name = name or self.__class__.__name__
         self.settings = None
-        self._set_random_seed(seed)
 
     def _set_random_seed(self, seed):
         self.seed = seed
@@ -301,12 +300,14 @@ class Classifier(nn.Module):
         save_marginals(session, X, self.marginals(X), training=training)
 
     def predictions(self, X, b=0.5, pos_label=1, batch_size=None):
-        """Return numpy array of elements in {-1,0,1}
+        """Return numpy array of class predictions for X
         based on predicted marginal probabilities.
 
         :param X: Input data.
-        :param b: Prediction threshold.
+        :param b: Decision boundary *for binary setting only*.
         :type b: float
+        :param pos_label: Positive class index *for binary setting only*. Default: 1
+        :type pos_label: int
         :param batch_size: Batch size.
         :type batch_size: int
         """
@@ -319,8 +320,8 @@ class Classifier(nn.Module):
             return predict_proba.argmax(axis=1) + 1
 
         if pos_label not in [1, 2]:
-            raise ValueError("pos_label must have values in {0,1}.")
-        self.logger.info(f"Use positive label class {pos_label} with threshold {b}")
+            raise ValueError("pos_label must have values in {1,2}.")
+        self.logger.info(f"Using positive label class {pos_label} with threshold {b}")
 
         return np.array(
             [
@@ -350,8 +351,10 @@ class Classifier(nn.Module):
         :type Y_test: list of labels
         :param b: Decision boundary *for binary setting only*.
         :type b: float
+        :param pos_label: Positive class index *for binary setting only*. Default: 1
+        :type pos_label: int
         :param set_unlabeled_as_neg: Whether to map 0 labels -> -1,
-            *binary setting.*
+            *for binary setting only*
         :type set_unlabeled_as_neg: bool
         :param beta: For F-beta score; by default beta = 1 => F-1 score.
         :type beta: int
@@ -395,11 +398,20 @@ class Classifier(nn.Module):
 
             prec = TP / (TP + FP) if TP + FP > 0 else 0.0
             rec = TP / (TP + FN) if TP + FN > 0 else 0.0
-            f1 = 2 * prec * rec / (prec + rec) if prec + rec > 0 else 0.0
+            fbeta = (
+                (1 + beta ** 2) * (prec * rec) / ((beta ** 2 * prec) + rec)
+                if (beta ** 2 * prec) + rec > 0
+                else 0.0
+            )
 
             acc = np.where([predictions == Y_test])[0].shape[0] / float(Y_test.shape[0])
 
-            return {"precision": prec, "recall": rec, "f1": f1, "accuracy": acc}
+            return {
+                "precision": prec,
+                "recall": rec,
+                f"f{beta}": fbeta,
+                "accuracy": acc,
+            }
 
     def save(
         self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0

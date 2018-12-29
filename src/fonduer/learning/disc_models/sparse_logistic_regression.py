@@ -112,7 +112,7 @@ class SparseLogisticRegression(NoiseAwareModel):
         :type X: list of (candidate, features) pair
         """
 
-        self.logger.info("Load defalut parameters for Sparse Logistic Regression")
+        self.logger.info("Loading defalut parameters for Sparse Logistic Regression")
         config = get_config()["learning"]["SparseLogisticRegression"]
 
         for key in config.keys():

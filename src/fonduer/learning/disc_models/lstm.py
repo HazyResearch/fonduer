@@ -136,7 +136,7 @@ class LSTM(NoiseAwareModel):
         :type X: list of (candidate, features) pairs
         """
 
-        self.logger.info("Load defalut parameters for LSTM")
+        self.logger.info("Loading defalut parameters for LSTM")
         config = get_config()["learning"]["LSTM"]
 
         for key in config.keys():
