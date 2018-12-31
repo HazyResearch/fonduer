@@ -39,11 +39,7 @@ class SparseLSTM(Classifier):
 
         batch_size = len(f)
 
-        outputs = (
-            torch.Tensor([]).cuda()
-            if self.settings["host_device"] in self._gpu
-            else torch.Tensor([])
-        )
+        outputs = self._cuda(torch.Tensor([]))
 
         # Calculate textual features from LSTMs
         for i in range(len(x)):
@@ -76,17 +72,19 @@ class SparseLSTM(Classifier):
         :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
         :param Y: The labels of input data (optional).
-        :type Y: list of floats if num_classes = 2
-            otherwise num_classes-length numpy array
+        :type Y: list or numpy.array
         :param idxs: The selected indexs of input data.
         :type idxs: list or numpy.array
         :param train: An indicator for word dictionary to extend new words.
         :type train: bool
         :return: Preprocessed data.
-        :rtype: list of (candidate, features) pairs
+        :rtype: list of list of (word sequences, features, feature_weights) tuples
         """
 
         C, F = X
+
+        if Y is not None:
+            Y = np.array(Y).astype(np.float32)
 
         # Create word dictionary for LSTM
         if not hasattr(self, "word_dict"):
@@ -94,7 +92,6 @@ class SparseLSTM(Classifier):
             arity = len(C[0])
             # Add paddings into word dictionary
             for i in range(arity):
-                # TODO: optimize this
                 list(map(self.word_dict.get, ["~~[[" + str(i), str(i) + "]]~~"]))
 
         # Make sequence input for LSTM from candidates
@@ -120,45 +117,80 @@ class SparseLSTM(Classifier):
             if Y is not None:
                 return (
                     [
-                        (
+                        [
                             seq_data[i],
                             F.indices[F.indptr[i] : F.indptr[i + 1]],
                             F.data[F.indptr[i] : F.indptr[i + 1]],
-                        )
+                        ]
                         for i in range(len(C))
                     ],
                     Y,
                 )
             else:
                 return [
-                    (
+                    [
                         seq_data[i],
                         F.indices[F.indptr[i] : F.indptr[i + 1]],
                         F.data[F.indptr[i] : F.indptr[i + 1]],
-                    )
+                    ]
                     for i in range(len(C))
                 ]
         if Y is not None:
             return (
                 [
-                    (
+                    [
                         seq_data[i],
                         F.indices[F.indptr[i] : F.indptr[i + 1]],
                         F.data[F.indptr[i] : F.indptr[i + 1]],
-                    )
+                    ]
                     for i in idxs
                 ],
                 Y[idxs],
             )
         else:
             return [
-                (
+                [
                     seq_data[i],
                     F.indices[F.indptr[i] : F.indptr[i + 1]],
                     F.data[F.indptr[i] : F.indptr[i + 1]],
-                )
+                ]
                 for i in idxs
             ]
+
+    def _collate(self, batch):
+        """
+        Puts each data field into a tensor.
+
+        :param batch: The input data batch.
+        :type batch: list of (word sequences, features, feature_weights) tuples
+        :return: Preprocessed data.
+        :rtype: list of torch.Tensor with torch.Tensor (Optional)
+        """
+
+        Y_batch = None
+        if isinstance(batch[0], tuple):
+            batch, Y_batch = list(zip(*batch))
+            Y_batch = self._cuda(torch.Tensor(Y_batch))
+
+        batch, f_batch, v_batch = list(zip(*batch))
+
+        f_batch, _ = pad_batch(f_batch, 0)
+        v_batch, _ = pad_batch(v_batch, 0, type="float")
+
+        f_batch = self._cuda(f_batch)
+        v_batch = self._cuda(v_batch)
+
+        X_batch = []
+
+        for samples in list(zip(*batch)):
+            x, x_mask = pad_batch(samples, max_len=self.settings["max_sentence_length"])
+            X_batch.append((self._cuda(x), self._cuda(x_mask)))
+        X_batch.extend([f_batch, v_batch])
+
+        if Y_batch is not None:
+            return X_batch, Y_batch
+        else:
+            return X_batch
 
     def _update_settings(self, X):
         """
@@ -220,70 +252,20 @@ class SparseLSTM(Classifier):
             self.settings["input_dim"], self.cardinality, self.settings["bias"]
         )
 
-    def _calc_logits(self, X, batch_size=None):
+    def _calc_logits(self, X):
         """
         Calculate the logits.
 
-        :param X: The input data of the model.
-        :type X: list of (candidate, features) pairs
-        :param batch_size: The batch size.
-        :type batch_size: int
+        :param X: The input data batch of the model from dataloader.
+        :type X: torch.Tensor tuple of (word sequences, features, feature_weights)
         :return: The output logits of model.
-        :rtype: torch.Tensor of shape (batch_size, num_classes) if num_classes > 2
-            otherwise shape (batch_size, 1)
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
-        # Generate LSTM input
-        C = np.array(list(zip(*X))[0])
-
-        # Check LSTM input dimension size matches the number of lstms in the model
-        assert len(C[0]) == len(self.lstms)
-
-        # Generate sparse multi-modal feature input
-        F = (
-            np.array(list(zip(*X))[1]) + self.settings["lstm_dim"] + 1
-        )  # Correct the index since 0 is the padding and placeholder for lstm feature
-        V = np.array(list(zip(*X))[2])
-
-        outputs = (
-            torch.Tensor([]).cuda()
-            if self.settings["host_device"] in self._gpu
-            else torch.Tensor([])
+        lstm_weight_indices = self._cuda(
+            torch.as_tensor(np.arange(1, self.settings["lstm_dim"] + 1)).repeat(
+                X[-1].size(0), 1
+            )
         )
 
-        n = len(F)
-        if batch_size is None:
-            batch_size = n
-        for batch_st in range(0, n, batch_size):
-            batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
-
-            # TODO: optimize this
-            sequences = []
-            # For loop each relation arity
-            for i in range(len(C[0])):
-                sequence = []
-                # Generate sequence for the batch
-                for j in range(batch_st, batch_ed):
-                    sequence.append(C[j][i])
-                x, x_mask = pad_batch(sequence, self.settings["max_sentence_length"])
-                if self.settings["host_device"] in self._gpu:
-                    x = x.cuda()
-                    x_mask = x_mask.cuda()
-                sequences.append((x, x_mask))
-
-            lstm_weight_indices = torch.as_tensor(
-                np.arange(1, self.settings["lstm_dim"] + 1)
-            ).repeat(batch_ed - batch_st, 1)
-
-            features, _ = pad_batch(F[batch_st:batch_ed], 0)
-            values, _ = pad_batch(V[batch_st:batch_ed], 0, type="float")
-
-            if self.settings["host_device"] in self._gpu:
-                lstm_weight_indices = lstm_weight_indices.cuda()
-                features = features.cuda()
-                values = values.cuda()
-
-            output = self.forward(sequences, lstm_weight_indices, features, values)
-            outputs = torch.cat((outputs, output), 0)
-
-        return outputs
+        return self.forward(X[:-2], lstm_weight_indices, X[-2], X[-1])

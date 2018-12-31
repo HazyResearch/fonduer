@@ -8,9 +8,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.metrics import roc_auc_score
+from torch.utils.data import DataLoader
+from torch.utils.data.dataloader import default_collate
 
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
-from fonduer.learning.utils import save_marginals
+from fonduer.learning.utils import MultiModalDataset, save_marginals
 
 
 class Classifier(nn.Module):
@@ -21,6 +23,8 @@ class Classifier(nn.Module):
     """
 
     _gpu = ["gpu", "GPU"]
+
+    _collate = default_collate
 
     def __init__(self, name=None):
         nn.Module.__init__(self)
@@ -49,6 +53,9 @@ class Classifier(nn.Module):
     def _preprocess_data(self, X, Y, idxs=None, train=False):
         return X, Y
 
+    def _collate_fn(self):
+        return self._collate
+
     def _setup_model_loss(self, lr):
         """
         Setup loss and optimizer for PyTorch model.
@@ -65,7 +72,19 @@ class Classifier(nn.Module):
         """Checks correctness of input; optional to implement."""
         pass
 
-    def _calc_logits(self, X, batch_size):
+    def _cuda(self, X):
+        if self.settings["host_device"] in self._gpu:
+            return X.cuda()
+        else:
+            return X
+
+    def _non_cuda(self, X):
+        try:
+            return X.cpu()
+        except Exception:
+            return X
+
+    def _calc_logits(self, X):
         """Calculate the logits of input."""
         raise NotImplementedError()
 
@@ -76,6 +95,7 @@ class Classifier(nn.Module):
         n_epochs=25,
         lr=0.01,
         batch_size=256,
+        shuffle=True,
         X_dev=None,
         Y_dev=None,
         print_freq=5,
@@ -99,6 +119,8 @@ class Classifier(nn.Module):
         :type lr: float
         :param batch_size: Batch size for learning model.
         :type batch_size: int
+        :param shuffle: If True, shuffle training data every epoch.
+        :type shuffle: bool
         :param X_dev: Candidates for evaluation, same format as X_train.
         :param Y_dev: Labels for evaluation, same format as Y_train.
         :param print_freq: number of epochs at which to print status, and if present,
@@ -123,6 +145,7 @@ class Classifier(nn.Module):
             "n_epochs": n_epochs,
             "lr": lr,
             "batch_size": batch_size,
+            "shuffle": shuffle,
             "seed": 1234,
             "host_device": host_device,
         }
@@ -151,6 +174,14 @@ class Classifier(nn.Module):
         _X_train, _Y_train = self._preprocess_data(
             X_train, Y_train, idxs=train_idxs, train=True
         )
+
+        train_dataloader = DataLoader(
+            MultiModalDataset(_X_train, _Y_train),
+            batch_size=self.settings["batch_size"],
+            collate_fn=self._collate_fn(),
+            shuffle=self.settings["shuffle"],
+        )
+
         if X_dev is not None:
             _X_dev, _Y_dev = self._preprocess_data(X_dev, Y_dev)
 
@@ -192,25 +223,15 @@ class Classifier(nn.Module):
         for epoch in range(self.settings["n_epochs"]):
             iteration_losses = []
 
-            # Shuffle the training data
-            idxs = self.rand_state.permutation(n)
-
             nn.Module.train(self, True)
-            for batch_st in range(0, n, batch_size):
+
+            for X_batch, Y_batch in train_dataloader:
                 # zero gradients for each batch
                 self.optimizer.zero_grad()
 
-                batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
+                output = self._calc_logits(X_batch)
 
-                output = self._calc_logits(
-                    [_X_train[idx] for idx in idxs[batch_st:batch_ed]], batch_size
-                )
-
-                # Calculate loss for current batch
-                y = torch.Tensor(_Y_train[idxs[batch_st:batch_ed]])
-                if self.settings["host_device"] in self._gpu:
-                    y = y.cuda()
-                loss = self.loss(output, y)
+                loss = self.loss(output, Y_batch)
 
                 # Compute gradient
                 loss.backward()
@@ -218,10 +239,7 @@ class Classifier(nn.Module):
                 # Update the parameters
                 self.optimizer.step()
 
-                if self.settings["host_device"] in self._gpu:
-                    iteration_losses.append(loss.cpu())
-                else:
-                    iteration_losses.append(loss)
+                iteration_losses.append(self._non_cuda(loss))
 
             # Print training stats and optionally checkpoint model
             if verbose and (
@@ -236,10 +254,9 @@ class Classifier(nn.Module):
                     f"Average loss={torch.stack(iteration_losses).mean():.6f}"
                 )
                 if X_dev is not None:
-                    scores = self.score(
-                        _X_dev, Y_dev, batch_size=self.settings["batch_size"]
-                    )
-                    score = scores if self.cardinality > 2 else scores[-1]
+                    scores = self.score(_X_dev, _Y_dev)
+
+                    score = scores["accuracy"] if self.cardinality > 2 else scores["f1"]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
                     msg += f"\tDev {score_label}={100.0 * score:.2f}"
                 self.logger.info(msg)
@@ -264,7 +281,7 @@ class Classifier(nn.Module):
             self.logger.info("Loading best checkpoint")
             self.load(save_dir=save_dir, global_step=dev_score_epo)
 
-    def marginals(self, X, batch_size=None):
+    def marginals(self, X):
         """
         Compute the marginals for the given candidates X.
         Note: split into batches to avoid OOM errors.
@@ -281,12 +298,20 @@ class Classifier(nn.Module):
         if self._check_input(X):
             X = self._preprocess_data(X)
 
-        marginal = self._calc_logits(X, batch_size)
+        dataloader = DataLoader(
+            MultiModalDataset(X),
+            batch_size=self.settings["batch_size"],
+            collate_fn=self._collate_fn(),
+            shuffle=False,
+        )
 
-        if self.settings["host_device"] in self._gpu:
-            marginal = marginal.cpu()
+        marginals = torch.Tensor([])
 
-        return F.softmax(marginal, dim=-1).detach().numpy()
+        for X_batch in dataloader:
+            marginal = self._non_cuda(self._calc_logits(X_batch))
+            marginals = torch.cat((marginals, marginal), 0)
+
+        return F.softmax(marginals, dim=-1).detach().numpy()
 
     def save_marginals(self, session, X, training=False):
         """Save the predicted marginal probabilities for the Candidates X.
@@ -300,7 +325,7 @@ class Classifier(nn.Module):
 
         save_marginals(session, X, self.marginals(X), training=training)
 
-    def predict(self, X, b=0.5, pos_label=1, batch_size=None, return_probs=False):
+    def predict(self, X, b=0.5, pos_label=1, return_probs=False):
         """Return numpy array of class predictions for X
         based on predicted marginal probabilities.
 
@@ -315,7 +340,7 @@ class Classifier(nn.Module):
         if self._check_input(X):
             X = self._preprocess_data(X)
 
-        Y_prob = self.marginals(X, batch_size=batch_size)
+        Y_prob = self.marginals(X)
 
         if self.cardinality > 2:
             Y_pred = Y_prob.argmax(axis=1) + 1
@@ -337,18 +362,11 @@ class Classifier(nn.Module):
             return Y_pred
 
     def score(
-        self,
-        X_test,
-        Y_test,
-        b=0.5,
-        pos_label=1,
-        set_unlabeled_as_neg=True,
-        beta=1,
-        batch_size=None,
+        self, X_test, Y_test, b=0.5, pos_label=1, set_unlabeled_as_neg=True, beta=1
     ):
         """
         Returns the summary scores:
-            * For binary: precision, recall, F-beta score
+            * For binary: precision, recall, F-beta score, ROC-AUC score
             * For categorical: accuracy
 
         :param X_test: The input test candidates.
@@ -372,7 +390,7 @@ class Classifier(nn.Module):
             X_test, Y_test = self._preprocess_data(X_test, Y_test)
 
         Y_pred, Y_prob = self.predict(
-            X_test, b=b, pos_label=pos_label, batch_size=batch_size, return_probs=True
+            X_test, b=b, pos_label=pos_label, return_probs=True
         )
 
         # Convert Y_test to dense numpy array

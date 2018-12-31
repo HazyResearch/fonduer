@@ -32,14 +32,9 @@ class LSTM(Classifier):
         :return: The output of LSTM layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
-
         batch_size = len(f)
 
-        outputs = (
-            torch.Tensor([]).cuda()
-            if self.settings["host_device"] in self._gpu
-            else torch.Tensor([])
-        )
+        outputs = self._cuda(torch.Tensor([]))
 
         # Calculate textual features from LSTMs
         for i in range(len(x)):
@@ -72,8 +67,7 @@ class LSTM(Classifier):
         :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
         :param Y: The labels of input data (optional).
-        :type Y: list of floats if num_classes = 2
-            otherwise num_classes-length numpy array
+        :type Y: list or numpy.array
         :param idxs: The selected indexs of input data.
         :type idxs: list or numpy.array
         :param train: An indicator for word dictionary to extend new words.
@@ -85,10 +79,11 @@ class LSTM(Classifier):
         C, F = X
 
         # Covert sparse feature matrix to dense matrix
-        # TODO: the pytorch implementation is taking dense vector as input,
-        # should optimize later
         if issparse(F):
-            F = F.todense()
+            F = np.array(F.todense(), dtype=np.float32)
+
+        if Y is not None:
+            Y = np.array(Y).astype(np.float32)
 
         # Create word dictionary for LSTM
         if not hasattr(self, "word_dict"):
@@ -96,7 +91,6 @@ class LSTM(Classifier):
             arity = len(C[0])
             # Add paddings into word dictionary
             for i in range(arity):
-                # TODO: optimize this
                 list(map(self.word_dict.get, ["~~[[" + str(i), str(i) + "]]~~"]))
 
         # Make sequence input for LSTM from candidates
@@ -120,13 +114,42 @@ class LSTM(Classifier):
         # Generate proprcessed the input
         if idxs is None:
             if Y is not None:
-                return [(seq_data[i], F[i]) for i in range(len(seq_data))], Y
+                return [[seq_data[i], F[i]] for i in range(len(seq_data))], Y
             else:
-                return [(seq_data[i], F[i]) for i in range(len(seq_data))]
+                return [[seq_data[i], F[i]] for i in range(len(seq_data))]
         if Y is not None:
-            return [(seq_data[i], F[i]) for i in idxs], Y[idxs]
+            return [[seq_data[i], F[i]] for i in idxs], Y[idxs]
         else:
-            return [(seq_data[i], F[i]) for i in idxs]
+            return [[seq_data[i], F[i]] for i in idxs]
+
+    def _collate(self, batch):
+        """
+        Puts each data field into a tensor.
+
+        :param batch: The input data batch.
+        :type batch: list of (candidate, features) pairs
+        :return: Preprocessed data.
+        :rtype: list of torch.Tensor with torch.Tensor (Optional)
+        """
+
+        Y_batch = None
+        if isinstance(batch[0], tuple):
+            batch, Y_batch = list(zip(*batch))
+            Y_batch = self._cuda(torch.Tensor(Y_batch))
+
+        batch, f_batch = list(zip(*batch))
+
+        X_batch = []
+
+        for samples in list(zip(*batch)):
+            x, x_mask = pad_batch(samples, max_len=self.settings["max_sentence_length"])
+            X_batch.append((self._cuda(x), self._cuda(x_mask)))
+        X_batch.append(self._cuda(torch.Tensor(f_batch)))
+
+        if Y_batch is not None:
+            return X_batch, Y_batch
+        else:
+            return X_batch
 
     def _update_settings(self, X):
         """
@@ -175,62 +198,13 @@ class LSTM(Classifier):
         # Set up final linear layer
         self.linear = nn.Linear(self.settings["input_dim"], self.cardinality)
 
-    def _calc_logits(self, X, batch_size=None):
+    def _calc_logits(self, X):
         """
         Calculate the logits.
 
-        :param X: The input data of the model.
-        :type X: list of (candidate, features) pairs
-        :param batch_size: The batch size.
-        :type batch_size: int
+        :param X: The input data batch of the model from dataloader.
+        :type X: torch.Tensor pair of (word sequences, features)
         :return: The output logits of model.
-        :rtype: torch.Tensor of shape (batch_size, num_classes) if num_classes > 2
-            otherwise shape (batch_size, 1)
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
-
-        # Generate LSTM input
-        C = np.array(list(zip(*X))[0])
-
-        # Check LSTM input dimension size matches the number of lstms in the model
-        assert len(C[0]) == len(self.lstms)
-
-        # Generate multi-modal feature input
-        F = np.array(list(zip(*X))[1])
-        F = torch.Tensor(F).squeeze(1)
-
-        outputs = (
-            torch.Tensor([]).cuda()
-            if self.settings["host_device"] in self._gpu
-            else torch.Tensor([])
-        )
-
-        n = len(F)
-        if batch_size is None:
-            batch_size = n
-        for batch_st in range(0, n, batch_size):
-            batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
-
-            # TODO: optimize this
-            sequences = []
-            # For loop each relation arity
-            for i in range(len(C[0])):
-                sequence = []
-                # Generate sequence for the batch
-                for j in range(batch_st, batch_ed):
-                    sequence.append(C[j][i])
-                x, x_mask = pad_batch(sequence, self.settings["max_sentence_length"])
-                if self.settings["host_device"] in self._gpu:
-                    x = x.cuda()
-                    x_mask = x_mask.cuda()
-                sequences.append((x, x_mask))
-
-            features = (
-                F[batch_st:batch_ed].cuda()
-                if self.settings["host_device"] in self._gpu
-                else F[batch_st:batch_ed]
-            )
-
-            output = self.forward(sequences, features)
-            outputs = torch.cat((outputs, output), 0)
-
-        return outputs
+        return self.forward(X[:-1], X[-1])

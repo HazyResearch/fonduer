@@ -1,14 +1,11 @@
 import logging
 
 import numpy as np
+from torch.utils.data import Dataset
 
 from fonduer.learning.models.marginal import Marginal
 
 logger = logging.getLogger(__name__)
-
-# ###########################################################
-# # General Learning Utilities
-# ###########################################################
 
 
 def save_marginals(session, X, marginals, training=True):
@@ -69,3 +66,20 @@ def save_marginals(session, X, marginals, training=True):
     session.execute(q, insert_vals)
     session.commit()
     logger.info(f"Saved {len(marginals)} marginals")
+
+
+class MultiModalDataset(Dataset):
+    """A dataset contains all multimodal features in X and coressponding label Y.
+    """
+
+    def __init__(self, X, Y=None):
+        self.X = X
+        self.Y = Y
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        if self.Y is not None:
+            return self.X[idx], self.Y[idx]
+        return self.X[idx]

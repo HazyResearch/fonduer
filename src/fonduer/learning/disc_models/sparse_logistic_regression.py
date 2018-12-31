@@ -48,61 +48,86 @@ class SparseLogisticRegression(Classifier):
         :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
         :param Y: The labels of input data.
-        :type Y: list of float if num_classes = 2
-            otherwise num_classes-length numpy array
+        :type Y: list or numpy.array
         :param idxs: The selected indices of input data.
         :type idxs: list or numpy.array
         :param train: Indicator of training set.
         :type train: bool
         :return: Preprocessed data.
-        :rtype: list of (candidate, fetures) pair
+        :rtype: list of (features, feature_weights) pair
         """
 
         C, F = X
+
+        if Y is not None:
+            Y = np.array(Y).astype(np.float32)
 
         if idxs is None:
             if Y is not None:
                 return (
                     [
-                        (
-                            C[i],
+                        [
                             F.indices[F.indptr[i] : F.indptr[i + 1]],
                             F.data[F.indptr[i] : F.indptr[i + 1]],
-                        )
+                        ]
                         for i in range(len(C))
                     ],
                     Y,
                 )
             else:
                 return [
-                    (
-                        C[i],
+                    [
                         F.indices[F.indptr[i] : F.indptr[i + 1]],
                         F.data[F.indptr[i] : F.indptr[i + 1]],
-                    )
+                    ]
                     for i in range(len(C))
                 ]
         if Y is not None:
             return (
                 [
-                    (
-                        C[i],
+                    [
                         F.indices[F.indptr[i] : F.indptr[i + 1]],
                         F.data[F.indptr[i] : F.indptr[i + 1]],
-                    )
+                    ]
                     for i in idxs
                 ],
                 Y[idxs],
             )
         else:
             return [
-                (
-                    C[i],
+                [
                     F.indices[F.indptr[i] : F.indptr[i + 1]],
                     F.data[F.indptr[i] : F.indptr[i + 1]],
-                )
+                ]
                 for i in idxs
             ]
+
+    def _collate(self, batch):
+        """
+        Puts each data field into a tensor.
+
+        :param batch: The input data batch.
+        :type batch: list of (features, feature_weights) pair
+        :return: Preprocessed data.
+        :rtype: list of torch.Tensor with torch.Tensor (Optional)
+        """
+        Y_batch = None
+        if isinstance(batch[0], tuple):
+            batch, Y_batch = list(zip(*batch))
+            Y_batch = self._cuda(torch.Tensor(Y_batch))
+
+        f_batch, v_batch = list(zip(*batch))
+
+        f_batch, _ = pad_batch(f_batch, 0)
+        v_batch, _ = pad_batch(v_batch, 0, type="float")
+
+        f_batch = self._cuda(f_batch)
+        v_batch = self._cuda(v_batch)
+
+        if Y_batch is not None:
+            return [f_batch, v_batch], Y_batch
+        else:
+            return [f_batch, v_batch]
 
     def _update_settings(self, X):
         """
@@ -134,43 +159,13 @@ class SparseLogisticRegression(Classifier):
             self.settings["input_dim"], self.cardinality, self.settings["bias"]
         )
 
-    def _calc_logits(self, X, batch_size=None):
+    def _calc_logits(self, X):
         """
         Calculate the logits.
 
-        :param X: The input data of the model.
-        :type X: list of (candidate, fetures) pair
-        :param batch_size: The batch size.
-        :type batch_size: int
+        :param X: The input data batch of the model from dataloader.
+        :type X: (features, feature_weights) torch.Tensor pair
         :return: The output logits of model.
-        :rtype: torch.Tensor of shape (batch_size, num_classes) if num_classes > 2
-            otherwise shape (batch_size, 1)
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
-
-        # Generate sparse multi-modal feature input
-        F = np.array(list(zip(*X))[1]) + 1  # Correct the index since 0 is the padding
-        V = np.array(list(zip(*X))[2])
-
-        outputs = (
-            torch.Tensor([]).cuda()
-            if self.settings["host_device"] in self._gpu
-            else torch.Tensor([])
-        )
-
-        n = len(F)
-        if batch_size is None:
-            batch_size = n
-        for batch_st in range(0, n, batch_size):
-            batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
-
-            features, _ = pad_batch(F[batch_st:batch_ed], 0)
-            values, _ = pad_batch(V[batch_st:batch_ed], 0, type="float")
-
-            if self.settings["host_device"] in self._gpu:
-                features = features.cuda()
-                values = values.cuda()
-
-            output = self.forward(features, values)
-            outputs = torch.cat((outputs, output), 0)
-
-        return outputs
+        return self.forward(X[0], X[1])
