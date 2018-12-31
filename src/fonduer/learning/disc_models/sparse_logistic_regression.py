@@ -112,6 +112,7 @@ class SparseLogisticRegression(Classifier):
         :return: Preprocessed data.
         :rtype: list of torch.Tensor with torch.Tensor (Optional)
         """
+
         Y_batch = None
         if isinstance(batch[0], tuple):
             batch, Y_batch = list(zip(*batch))

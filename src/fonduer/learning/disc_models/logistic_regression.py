@@ -81,6 +81,7 @@ class LogisticRegression(Classifier):
         :return: Preprocessed data.
         :rtype: torch.Tensor or pair of torch.Tensor
         """
+
         if isinstance(batch[0], tuple):
             return [self._cuda(torch.Tensor(samples)) for samples in list(zip(*batch))]
         else:

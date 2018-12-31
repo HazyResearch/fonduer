@@ -237,6 +237,7 @@ class SparseLSTM(Classifier):
         """
         Build the model.
         """
+
         # Set up LSTM modules
         self.lstms = nn.ModuleList(
             [
