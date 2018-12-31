@@ -56,7 +56,7 @@ Changed
   ``MultiModalDataset`` to better handle multimodal information, and simplify 
   the code
 * `@senwu`_: Remove ``batch_size`` input argument from ``_calc_logits``, 
-  ``marginals``, ``predict``, ``score`` in ``Classifier``
+  ``marginals``, ``predict``, and ``score`` in ``Classifier``
 * `@senwu`_: Rename ``predictions`` to ``predict`` in ``Classifier`` and update
   the input arguments to have ``pos_label`` (assign positive label for binary class
   prediction) and ``return_probs`` (If True, return predict probablities as well)
