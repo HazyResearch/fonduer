@@ -138,7 +138,7 @@ class SparseLogisticRegression(Classifier):
         :type X: list of (candidate, features) pair
         """
 
-        self.logger.info("Loading defalut parameters for Sparse Logistic Regression")
+        self.logger.info("Loading default parameters for Sparse Logistic Regression")
         config = get_config()["learning"]["SparseLogisticRegression"]
 
         for key in config.keys():
