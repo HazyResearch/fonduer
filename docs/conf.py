@@ -20,7 +20,6 @@ sys.path.insert(0, os.path.abspath("../src/"))
 autodoc_mock_imports = [
     "bs4",
     "editdistance",
-    "fonduer.learning.classifier",
     "lxml",
     "nltk",
     "numpy",
@@ -28,6 +27,7 @@ autodoc_mock_imports = [
     "scipy",
     "metal",
     "spacy",
+    "sklearn",
     "torch",
     "tqdm",
     "treedlib",
