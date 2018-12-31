@@ -26,6 +26,14 @@ class SoftCrossEntropyLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, input, target):
+        """
+        Calculate the loss
+
+        :param input: prediction logits
+        :param target: target probabilities
+        :return: loss
+        """
+
         n, k = input.shape
         losses = input.new_zeros(n)
 

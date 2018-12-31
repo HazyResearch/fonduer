@@ -290,8 +290,6 @@ class Classifier(nn.Module):
             matrix of corresponding features) pair or a list of
             (Candidate, features) pairs.
         :type X: pair or list
-        :param batch_size: Batch size.
-        :type batch_size: int
         """
         nn.Module.train(self, False)
 
@@ -334,9 +332,10 @@ class Classifier(nn.Module):
         :type b: float
         :param pos_label: Positive class index *for binary setting only*. Default: 1
         :type pos_label: int
-        :param batch_size: Batch size.
-        :type batch_size: int
+        :param return_probs: If True, return predict probability. Default: False
+        :type return_probs: bool
         """
+
         if self._check_input(X):
             X = self._preprocess_data(X)
 
@@ -382,8 +381,6 @@ class Classifier(nn.Module):
         :type set_unlabeled_as_neg: bool
         :param beta: For F-beta score; by default beta = 1 => F-1 score.
         :type beta: int
-        :param batch_size: Batch size.
-        :type batch_size: int
         """
 
         if self._check_input(X_test):
