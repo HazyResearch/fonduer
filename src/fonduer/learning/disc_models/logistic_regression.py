@@ -94,7 +94,7 @@ class LogisticRegression(Classifier):
         :type X: list of (candidate, features) pair
         """
 
-        self.logger.info("Loading defalut parameters for Logistic Regression")
+        self.logger.info("Loading default parameters for Logistic Regression")
         config = get_config()["learning"]["LogisticRegression"]
 
         for key in config.keys():
