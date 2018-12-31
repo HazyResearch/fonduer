@@ -291,6 +291,7 @@ class Classifier(nn.Module):
             (Candidate, features) pairs.
         :type X: pair or list
         """
+
         nn.Module.train(self, False)
 
         if self._check_input(X):

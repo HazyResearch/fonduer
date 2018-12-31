@@ -20,6 +20,7 @@ def save_marginals(session, X, marginals, training=True):
 
     Note: The marginals for k=0 are not stored, only for k = 1,...,K
     """
+
     logger = logging.getLogger(__name__)
     # Make sure that we are working with a numpy array
     try:
