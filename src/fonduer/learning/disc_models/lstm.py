@@ -22,24 +22,29 @@ class LSTM(Classifier):
     :type name: str
     """
 
-    def forward(self, x, f):
+    def forward(self, X):
         """Forward function.
 
-        :param x: The sequence input (batch) of the model.
-        :type x: list of torch.Tensor of shape (sequence_len * batch_size)
-        :param f: The feature input of the model.
-        :type f: torch.Tensor of shape (batch_size * feature_size)
+        :param X: The input (batch) of the model contains word sequences for lstm
+            and features.
+        :type X: For word sequences: a list of torch.Tensor pair (word sequence
+            and word mask) of shape (batch_size, sequence_length).
+            For features: torch.Tensor of shape (batch_size, feature_size).
         :return: The output of LSTM layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
+
+        s = X[:-1]
+        f = X[-1]
+
         batch_size = len(f)
 
         outputs = self._cuda(torch.Tensor([]))
 
         # Calculate textual features from LSTMs
-        for i in range(len(x)):
+        for i in range(len(s)):
             state_word = self.lstms[0].init_hidden(batch_size)
-            output = self.lstms[0].forward(x[i][0], x[i][1], state_word)
+            output = self.lstms[0].forward(s[i][0], s[i][1], state_word)
             outputs = torch.cat((outputs, output), 1)
 
         # Concatenate textual features with multi-modal features
@@ -55,6 +60,7 @@ class LSTM(Classifier):
         :return: True if valid, otherwise False.
         :rtype: bool
         """
+
         return isinstance(X, tuple)
 
     def _preprocess_data(self, X, Y=None, idxs=None, train=False):
@@ -202,9 +208,13 @@ class LSTM(Classifier):
         """
         Calculate the logits.
 
-        :param X: The input data batch of the model from dataloader.
-        :type X: torch.Tensor pair of (word sequences, features)
+        :param X: The input (batch) of the model contains word sequences for lstm
+            and features.
+        :type X: For word sequences: a list of torch.Tensor pair (word sequence
+            and word mask) of shape (batch_size, sequence_length).
+            For features: torch.Tensor of shape (batch_size, feature_size).
         :return: The output logits of model.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
-        return self.forward(X[:-1], X[-1])
+
+        return self.forward(X)

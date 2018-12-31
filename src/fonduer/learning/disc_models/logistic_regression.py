@@ -15,16 +15,16 @@ class LogisticRegression(Classifier):
     :type name: str
     """
 
-    def forward(self, x):
+    def forward(self, X):
         """Forward function.
 
-        :param x: The input (batch) of the model.
-        :type x: torch.Tensor of shape (batch_size, num_classes)
+        :param X: The input (batch) of the model contains features.
+        :type X: torch.Tensor of shape (batch_size, feature_size).
         :return: The output of Logistic Regression layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
-        return self.linear(x)
+        return self.linear(X)
 
     def _check_input(self, X):
         """Check input format.
@@ -119,8 +119,8 @@ class LogisticRegression(Classifier):
         """
         Calculate the logits.
 
-        :param X: The input data batch of the model from dataloader.
-        :type X: torch.Tensor of features
+        :param x: The input (batch) of the model.
+        :type x: torch.Tensor of shape (batch_size, num_classes)
         :return: The output logits of model.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """

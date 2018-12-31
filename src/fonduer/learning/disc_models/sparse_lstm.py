@@ -22,29 +22,39 @@ class SparseLSTM(Classifier):
     :type name: str
     """
 
-    def forward(self, x, x_idx, f, w):
+    def forward(self, X):
         """Forward function.
 
-        :param x: The sequence input (batch) of the model.
-        :type x: list of torch.Tensor of shape (sequence_len * batch_size)
-        :param x_idx: The feature indices for lstm output (batch) of the model.
-        :type x_idx: torch.Tensor of shape (lstm_out_size * batch_size)
-        :param f: The feature input of the model.
-        :type f: torch.Tensor of shape (batch_size * feature_size)
-        :param w: The input feature weight (batch) of the model.
-        :type w: torch.Tensor of shape (batch_size, num_classes)
+        :param X: The input (batch) of the model contains word sequences for lstm,
+            features and feature weights.
+        :type X: For word sequences: a list of torch.Tensor pair (word sequence
+            and word mask) of shape (batch_size, sequence_length).
+            For features: torch.Tensor of shape (batch_size, sparse_feature_size).
+            For feature weights: torch.Tensor of shape
+            (batch_size, sparse_feature_size).
         :return: The output of LSTM layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
+        s = X[:-2]
+        f = X[-2]
+        w = X[-1]
+
         batch_size = len(f)
+
+        # Generate lstm weight indices
+        x_idx = self._cuda(
+            torch.as_tensor(np.arange(1, self.settings["lstm_dim"] + 1)).repeat(
+                batch_size, 1
+            )
+        )
 
         outputs = self._cuda(torch.Tensor([]))
 
         # Calculate textual features from LSTMs
-        for i in range(len(x)):
+        for i in range(len(s)):
             state_word = self.lstms[0].init_hidden(batch_size)
-            output = self.lstms[0].forward(x[i][0], x[i][1], state_word)
+            output = self.lstms[0].forward(s[i][0], s[i][1], state_word)
             outputs = torch.cat((outputs, output), 1)
 
         # Concatenate textual features with multi-modal features
@@ -256,16 +266,15 @@ class SparseLSTM(Classifier):
         """
         Calculate the logits.
 
-        :param X: The input data batch of the model from dataloader.
-        :type X: torch.Tensor tuple of (word sequences, features, feature_weights)
+        :param X: The input (batch) of the model contains word sequences for lstm,
+            features and feature weights.
+        :type X: For word sequences: a list of torch.Tensor pair (word sequence
+            and word mask) of shape (batch_size, sequence_length).
+            For features: torch.Tensor of shape (batch_size, sparse_feature_size).
+            For feature weights: torch.Tensor of shape
+            (batch_size, sparse_feature_size).
         :return: The output logits of model.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
-        lstm_weight_indices = self._cuda(
-            torch.as_tensor(np.arange(1, self.settings["lstm_dim"] + 1)).repeat(
-                X[-1].size(0), 1
-            )
-        )
-
-        return self.forward(X[:-2], lstm_weight_indices, X[-2], X[-1])
+        return self.forward(X)

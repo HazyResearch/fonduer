@@ -15,18 +15,19 @@ class SparseLogisticRegression(Classifier):
     :type name: str
     """
 
-    def forward(self, x, w):
+    def forward(self, X):
         """
         Run forward pass.
 
-        :param x: The input feature (batch) of the model.
-        :type x: torch.Tensor of shape (batch_size, num_classes)
-        :param w: The input feature weight (batch) of the model.
-        :type w: torch.Tensor of shape (batch_size, num_classes)
+        :param X: The input (batch) of the model contains features and feature weights.
+        :type X: For features: torch.Tensor of shape (batch_size, sparse_feature_size).
+            For feature weights: torch.Tensor of shape
+            (batch_size, sparse_feature_size).
         :return: The output of sparse Logistic Regression layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
-        return self.sparse_linear(x, w)
+
+        return self.sparse_linear(X[0], X[1])
 
     def _check_input(self, X):
         """
@@ -163,9 +164,11 @@ class SparseLogisticRegression(Classifier):
         """
         Calculate the logits.
 
-        :param X: The input data batch of the model from dataloader.
-        :type X: (features, feature_weights) torch.Tensor pair
+        :param X: The input data of the model contains features and feature weights.
+        :type X: For features: torch.Tensor of shape (batch_size, num_classes) and
+            for feature weights: torch.Tensor of shape (batch_size, num_classes)
         :return: The output logits of model.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
-        return self.forward(X[0], X[1])
+
+        return self.forward(X)
