@@ -210,7 +210,7 @@ class SparseLSTM(Classifier):
         :type X: list of (candidate, features) pairs
         """
 
-        self.logger.info("Loading defalut parameters for Sparse LSTM")
+        self.logger.info("Loading default parameters for Sparse LSTM")
         config = get_config()["learning"]["SparseLSTM"]
 
         for key in config.keys():
