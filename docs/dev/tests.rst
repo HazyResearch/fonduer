@@ -12,6 +12,7 @@ by the tests::
     $ createdb e2e_test
     $ createdb cand_test
     $ createdb meta_test
+    $ createdb inc_test
 
 You'll also need to download the external test data::
 

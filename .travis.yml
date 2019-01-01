@@ -92,6 +92,7 @@ install:
 before_script:
 - psql -c 'create database parser_test;' -U postgres
 - psql -c 'create database e2e_test;' -U postgres
+- psql -c 'create database inc_test;' -U postgres
 - psql -c 'create database cand_test;' -U postgres
 - psql -c 'create database meta_test;' -U postgres
 - cd tests/
