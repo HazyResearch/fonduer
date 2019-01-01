@@ -50,8 +50,7 @@ Fixed
   that are correctly linked to the database and can be navigated by the user.
   (`#201 <https://github.com/HazyResearch/fonduer/pull/201>`_)
 * `@lukehsiao`_: Fix the behavior of MentionExtractor ``clear`` and
-  ``clear_all`` to also delete the ``Candidates`` that correspond to the
-  ``Mention``s.
+  ``clear_all`` to also delete the Candidates that correspond to the Mentions.
 
 Changed
 ^^^^^^^
