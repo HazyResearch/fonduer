@@ -49,13 +49,16 @@ Fixed
 * `@lukehsiao`_: Fix the behavior of ``get_last_documents`` to return Documents
   that are correctly linked to the database and can be navigated by the user.
   (`#201 <https://github.com/HazyResearch/fonduer/pull/201>`_)
+* `@lukehsiao`_: Fix the behavior of MentionExtractor ``clear`` and
+  ``clear_all`` to also delete the ``Candidates`` that correspond to the
+  ``Mention``s.
 
 Changed
 ^^^^^^^
 * `@senwu`_: Reorganize ``learning`` module to use pytorch dataloader, include
-  ``MultiModalDataset`` to better handle multimodal information, and simplify 
+  ``MultiModalDataset`` to better handle multimodal information, and simplify
   the code
-* `@senwu`_: Remove ``batch_size`` input argument from ``_calc_logits``, 
+* `@senwu`_: Remove ``batch_size`` input argument from ``_calc_logits``,
   ``marginals``, ``predict``, and ``score`` in ``Classifier``
 * `@senwu`_: Rename ``predictions`` to ``predict`` in ``Classifier`` and update
   the input arguments to have ``pos_label`` (assign positive label for binary class
