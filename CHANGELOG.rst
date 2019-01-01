@@ -1,6 +1,9 @@
 [Unreleased]
 ------------
 
+[0.5.0] - 2019-01-01
+--------------------
+
 Added
 ^^^^^
 * `@senwu`_: Support CSV, TSV, Text input data format.
