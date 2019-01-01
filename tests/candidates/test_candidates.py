@@ -257,19 +257,11 @@ def test_cand_gen_cascading_delete(caplog):
     assert len(docs[0].parts) == 70
     assert len(docs[0].temps) == 24
 
-    # Test cascading behavior of deletions
-
     # Delete from parent class should cascade to child
     x = session.query(Candidate).first()
     session.query(Candidate).filter_by(id=x.id).delete()
     assert session.query(PartTemp).count() == 3878
     assert session.query(Candidate).count() == 3878
-
-    # Delete single Part should also delete Mention
-    x = session.query(Part).first()
-    session.query(Part).filter_by(id=x.id).delete()
-    assert session.query(Part).count() == 233
-    assert session.query(Mention).count() == 369
 
     # Clearing Mentions should also delete Candidates
     mention_extractor.clear()
