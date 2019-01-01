@@ -65,6 +65,7 @@ def mark(l, h, idx):
     :return: markers.
     :rtype: list of markers
     """
+
     return [(l, f"~~[[{idx}"), (h + 1, f"{idx}]]~~")]
 
 
@@ -82,6 +83,7 @@ def mark_sentence(s, args):
     Example: Then Barack married Michelle.
          ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
     """
+
     marks = sorted([y for m in args for y in mark(*m)], reverse=True)
     x = list(s)
     for k, v in marks:
@@ -101,6 +103,7 @@ def pad_batch(batch, max_len=0, type="int"):
     :return: The padded matrix and correspoing mask matrix.
     :rtype: pair of torch.Tensors with shape (batch_size, max_sent_len)
     """
+
     batch_size = len(batch)
     max_sent_len = int(np.max([len(x) for x in batch]))
     if max_len > 0 and max_len < max_sent_len:

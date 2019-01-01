@@ -49,9 +49,28 @@ Fixed
 * `@lukehsiao`_: Fix the behavior of ``get_last_documents`` to return Documents
   that are correctly linked to the database and can be navigated by the user.
   (`#201 <https://github.com/HazyResearch/fonduer/pull/201>`_)
+* `@lukehsiao`_: Fix the behavior of MentionExtractor ``clear`` and
+  ``clear_all`` to also delete the ``Candidates`` that correspond to the
+  ``Mention``s.
 
 Changed
 ^^^^^^^
+* `@senwu`_: Reorganize ``learning`` module to use pytorch dataloader, include
+  ``MultiModalDataset`` to better handle multimodal information, and simplify
+  the code
+* `@senwu`_: Remove ``batch_size`` input argument from ``_calc_logits``,
+  ``marginals``, ``predict``, and ``score`` in ``Classifier``
+* `@senwu`_: Rename ``predictions`` to ``predict`` in ``Classifier`` and update
+  the input arguments to have ``pos_label`` (assign positive label for binary class
+  prediction) and ``return_probs`` (If True, return predict probablities as well)
+* `@senwu`_: Update ``score`` function in ``Classifier`` to include:
+  (1) For binary: precision, recall, F-beta score, accuracy, ROC-AUC score;
+  (2) For categorical: accuracy;
+* `@senwu`_: Remove ``LabelBalancer``
+* `@senwu`_: Remove original ``Classifier`` class, rename ``NoiseAwareModel`` to
+  ``Classifier`` and use the same setting for both binary and multi-class classifier
+* `@senwu`_: Unify the loss (``SoftCrossEntropyLoss``) for all settings
+* `@senwu`_: Rename ``layers`` in learning module to ``modules``
 * `@senwu`_: Update code to use Python 3.6+'s f-strings
 * `@HiromuHota`_: Reattach doc with the current session at
   MentionExtractorUDF#apply to avoid doing so at each MentionSpace.

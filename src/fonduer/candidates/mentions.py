@@ -7,7 +7,8 @@ from copy import deepcopy
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import select
 
-from fonduer.candidates.models import Mention
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.candidates.models.candidate import candidate_subclasses
 from fonduer.candidates.models.caption_mention import TemporaryCaptionMention
 from fonduer.candidates.models.cell_mention import TemporaryCellMention
 from fonduer.candidates.models.document_mention import TemporaryDocumentMention
@@ -443,16 +444,37 @@ class MentionExtractor(UDFRunner):
 
     def clear(self):
         """Delete Mentions of each class in the extractor from the given split."""
+
+        # Create set of candidate_subclasses associated with each mention_subclass
+        cand_subclasses = set()
+        for mentions, tablename in [
+            (_[1][0], _[1][1]) for _ in candidate_subclasses.values()
+        ]:
+            for mention in mentions:
+                if mention in self.mention_classes:
+                    cand_subclasses.add(tablename)
+
+        # First, clear all the Mentions. This will cascade and remove the
+        # mention_subclasses and corresponding candidate_subclasses.
         for mention_class in self.mention_classes:
             logger.info(f"Clearing table: {mention_class.__tablename__}")
-            self.session.query(Mention).filter(
-                Mention.type == mention_class.__tablename__
+            self.session.query(Mention).filter_by(
+                type=mention_class.__tablename__
             ).delete()
+
+        # Next, clear the Candidates. This is done manually because we have
+        # no cascading relationship from candidate_subclass to Candidate.
+        for cand_subclass in cand_subclasses:
+            logger.info(f"Cascading to clear table: {cand_subclass}")
+            self.session.query(Candidate).filter_by(type=cand_subclass).delete()
 
     def clear_all(self):
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete()
+
+        # With no Mentions, there should be no Candidates also
+        self.session.query(Candidate).delete()
 
     def get_mentions(self, docs=None, sort=False):
         """Return a list of lists of the mentions associated with this extractor.

@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 from scipy.sparse import issparse
 
-from fonduer.learning.disc_learning import NoiseAwareModel
+from fonduer.learning.classifier import Classifier
 from fonduer.utils.config import get_config
 
 
-class LogisticRegression(NoiseAwareModel):
+class LogisticRegression(Classifier):
     """
     Logistic Regression model.
 
@@ -15,16 +15,16 @@ class LogisticRegression(NoiseAwareModel):
     :type name: str
     """
 
-    def forward(self, x):
+    def forward(self, X):
         """Forward function.
 
-        :param x: The input (batch) of the model.
-        :type x: torch.Tensor of shape (batch_size, num_classes)
+        :param X: The input (batch) of the model contains features.
+        :type X: torch.Tensor of shape (batch_size, feature_size).
         :return: The output of Logistic Regression layer.
         :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
-        return self.linear(x)
+        return self.linear(X)
 
     def _check_input(self, X):
         """Check input format.
@@ -46,29 +46,46 @@ class LogisticRegression(NoiseAwareModel):
         :param X: The input data of the model.
         :type X: pair with candidates and corresponding features
         :param Y: The labels of input data.
-        :type Y: list of float if num_classes = 2
-            otherwise num_classes-length numpy array
+        :type Y: list or numpy.array
         :param idxs: The selected indices of input data.
         :type idxs: list or numpy.array
         :param train: Indicator of training set.
         :type train: bool
         :return: Preprocessed data.
-        :rtype: list of (candidate, features) pair
+        :rtype: list of features
         """
 
         C, F = X
         if issparse(F):
-            F = F.todense()
+            F = np.array(F.todense(), dtype=np.float32)
+
+        if Y is not None:
+            Y = np.array(Y).astype(np.float32)
 
         if idxs is None:
             if Y is not None:
-                return [(C[i], F[i]) for i in range(len(C))], Y
+                return F, Y
             else:
-                return [(C[i], F[i]) for i in range(len(C))]
+                return F
         if Y is not None:
-            return [(C[i], F[i]) for i in idxs], Y[idxs]
+            return F[idxs], Y[idxs]
         else:
-            return [(C[i], F[i]) for i in idxs]
+            return F[idxs]
+
+    def _collate(self, batch):
+        """
+        Puts each data field into a tensor.
+
+        :param batch: The input data batch.
+        :type batch: list of features
+        :return: Preprocessed data.
+        :rtype: torch.Tensor or pair of torch.Tensor
+        """
+
+        if isinstance(batch[0], tuple):
+            return [self._cuda(torch.Tensor(samples)) for samples in list(zip(*batch))]
+        else:
+            return self._cuda(torch.Tensor(batch))
 
     def _update_settings(self, X):
         """
@@ -78,7 +95,7 @@ class LogisticRegression(NoiseAwareModel):
         :type X: list of (candidate, features) pair
         """
 
-        self.logger.info("Load defalut parameters for Logistic Regression")
+        self.logger.info("Loading default parameters for Logistic Regression")
         config = get_config()["learning"]["LogisticRegression"]
 
         for key in config.keys():
@@ -96,50 +113,17 @@ class LogisticRegression(NoiseAwareModel):
             raise ValueError("Model parameter input_dim cannot be None.")
 
         self.linear = nn.Linear(
-            self.settings["input_dim"],
-            self.cardinality if self.cardinality > 2 else 1,
-            self.settings["bias"],
+            self.settings["input_dim"], self.cardinality, self.settings["bias"]
         )
 
-    def _calc_logits(self, X, batch_size=None):
+    def _calc_logits(self, X):
         """
         Calculate the logits.
 
-        :param X: The input data of the model.
-        :type X: list of (candidate, fetures) pair
-        :param batch_size: The batch size.
-        :type batch_size: int
+        :param x: The input (batch) of the model.
+        :type x: torch.Tensor of shape (batch_size, num_classes)
         :return: The output logits of model.
-        :rtype: torch.Tensor of shape (batch_size, num_classes) if num_classes > 2
-            otherwise shape (batch_size, 1)
+        :rtype: torch.Tensor of shape (batch_size, num_classes)
         """
 
-        # Generate multi-modal feature input
-        F = np.array(list(zip(*X))[1])
-        F = torch.Tensor(F).squeeze(1)
-
-        outputs = (
-            torch.Tensor([]).cuda()
-            if self.settings["host_device"] in self._gpu
-            else torch.Tensor([])
-        )
-
-        n = len(F)
-        if batch_size is None:
-            batch_size = n
-        for batch_st in range(0, n, batch_size):
-            batch_ed = batch_st + batch_size if batch_st + batch_size <= n else n
-
-            features = (
-                F[batch_st:batch_ed].cuda()
-                if self.settings["host_device"] in self._gpu
-                else F[batch_st:batch_ed]
-            )
-
-            output = self.forward(features)
-            if self.cardinality == 2:
-                outputs = torch.cat((outputs, output.view(-1)), 0)
-            else:
-                outputs = torch.cat((outputs, output), 0)
-
-        return outputs
+        return self.forward(X)

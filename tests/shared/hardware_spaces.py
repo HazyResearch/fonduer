@@ -111,9 +111,6 @@ def expand_part_range(text):
                 all_suffix_lengths = set()
                 # This is a bit inefficient but this first pass just is here
                 # to make sure that the suffixes are the same length
-                # first_suffix = first_match.group("suffix")
-                # if part.startswith('BC547'):
-                #     import pdb; pdb.set_trace()
                 for m in re.finditer(suffix_pattern, part):
                     suffix = m.group("suffix")
                     suffix_len = len(suffix)
