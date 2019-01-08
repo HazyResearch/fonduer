@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@HiromuHota`_: Specify pytorch version as 0.4.1.post2 to safeguard from HazyResearch/metal#101
+
 [0.5.0] - 2019-01-01
 --------------------
 
