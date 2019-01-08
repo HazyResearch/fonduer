@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@lukehsiao`_: Update PyYAML dependency to patch CVE-2017-18342.
+  (`#205 <https://github.com/HazyResearch/fonduer/pull/205>`_)
+
+
 [0.5.0] - 2019-01-01
 --------------------
 
