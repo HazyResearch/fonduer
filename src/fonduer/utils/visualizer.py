@@ -94,8 +94,8 @@ def get_box(span):
     box = (
         min(span.get_attrib_tokens("page")),
         min(span.get_attrib_tokens("top")),
-        max(span.get_attrib_tokens("left")),
-        min(span.get_attrib_tokens("bottom")),
+        min(span.get_attrib_tokens("left")),
+        max(span.get_attrib_tokens("bottom")),
         max(span.get_attrib_tokens("right")),
     )
     return box
