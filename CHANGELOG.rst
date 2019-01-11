@@ -611,3 +611,4 @@ Minor hotfix to the README formatting for PyPi.
 .. _@prabh06: https://github.com/Prabh06
 .. _@HiromuHota: https://github.com/HiromuHota
 .. _@j-rausch: https://github.com/j-rausch
+.. _@KenSugimoto: https://github.com/KenSugimoto
