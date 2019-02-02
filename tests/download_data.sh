@@ -1,16 +1,16 @@
 echo "Downloading fonduer test data..."
 url=http://i.stanford.edu/hazy/share/fonduer/fonduer_test_data_v0.3.0.tar.gz
-data_tar=fonduer_test_data_v0.3.0
+data_tar=fonduer_test_data.tar.gz
 if type curl &>/dev/null; then
-    curl -RLO $url
+    curl -RL --retry 3 -C - $url -o $data_tar
 elif type wget &>/dev/null; then
-    wget -N $url
+    wget -N $url -O $data_tar
 fi
 
 echo "Unpacking fonduer test data..."
-tar -zxvf $data_tar.tar.gz -C data
+tar xvf $data_tar -C data
 
 echo "Deleting tar file..."
-rm $data_tar.tar.gz
+rm $data_tar
 
 echo "Done!"
