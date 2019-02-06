@@ -1,9 +1,17 @@
 [Unreleased]
 ------------
 
+Changed
+^^^^^^^
+* `@lukehsiao`_: improved performance of ``get_row_ngrams`` through caching and
+  simplifying the underlying queries.
+  (`#212 <https://github.com/HazyResearch/fonduer/pull/212>`_)
+* `@senwu`_: upgrade to PyTorch v1.0.0.
+  (`#209 <https://github.com/HazyResearch/fonduer/pull/209>`_)
+
+
 Fixed
 ^^^^^
-* `@HiromuHota`_: Specify pytorch version as 0.4.1.post2 to safeguard from HazyResearch/metal#101
 * `@lukehsiao`_: Update PyYAML dependency to patch CVE-2017-18342.
   (`#205 <https://github.com/HazyResearch/fonduer/pull/205>`_)
 * `@KenSugimoto`_: Fix max/min in ``visualizer.get_box``
@@ -15,10 +23,10 @@ Added
 ^^^^^
 * `@senwu`_: Support CSV, TSV, Text input data format.
   For CSV format, ``CSVDocPreprocessor`` treats each line in the input file as
-  a document. It assumes that each column is one section and content in each column
-  as one paragraph as defalt. However, if the column is complex, an advanced parser
-  may be used by specifying ``parser_rule`` parameter in a dict format where key
-  is the column index and value is the specific parser.
+  a document. It assumes that each column is one section and content in each
+  column as one paragraph as default. However, if the column is complex, an
+  advanced parser may be used by specifying ``parser_rule`` parameter in a dict
+  format where key is the column index and value is the specific parser.
 
 .. note:
     In Fonduer v0.5.0, you can use ``CSVDocPreprocessor``:
