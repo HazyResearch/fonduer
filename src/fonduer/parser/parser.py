@@ -115,7 +115,7 @@ class Parser(UDFRunner):
 
         :param pdf_path: This parameter is ignored.
         """
-        self.session.query(Context).delete()
+        self.session.query(Context).delete(synchronize_session="fetch")
 
     def get_last_documents(self):
         """Return the most recently parsed list of ``Documents``.

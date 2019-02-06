@@ -126,7 +126,7 @@ class CandidateExtractor(UDFRunner):
             )
             self.session.query(Candidate).filter(
                 Candidate.type == candidate_class.__tablename__
-            ).filter(Candidate.split == split).delete()
+            ).filter(Candidate.split == split).delete(synchronize_session="fetch")
 
     def clear_all(self, split):
         """Delete ALL Candidates from given split the database.
@@ -135,7 +135,9 @@ class CandidateExtractor(UDFRunner):
         :type split: int
         """
         logger.info("Clearing ALL Candidates.")
-        self.session.query(Candidate).filter(Candidate.split == split).delete()
+        self.session.query(Candidate).filter(Candidate.split == split).delete(
+            synchronize_session="fetch"
+        )
 
     def get_candidates(self, docs=None, split=0, sort=False):
         """Return a list of lists of the candidates associated with this extractor.

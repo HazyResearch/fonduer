@@ -460,21 +460,24 @@ class MentionExtractor(UDFRunner):
             logger.info(f"Clearing table: {mention_class.__tablename__}")
             self.session.query(Mention).filter_by(
                 type=mention_class.__tablename__
-            ).delete()
+            ).delete(synchronize_session="fetch")
 
         # Next, clear the Candidates. This is done manually because we have
         # no cascading relationship from candidate_subclass to Candidate.
         for cand_subclass in cand_subclasses:
             logger.info(f"Cascading to clear table: {cand_subclass}")
-            self.session.query(Candidate).filter_by(type=cand_subclass).delete()
+            self.session.query(Candidate).filter_by(type=cand_subclass).delete(
+                synchronize_session="fetch"
+            )
 
     def clear_all(self):
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
-        self.session.query(Mention).delete()
+        self.session.query(Mention).delete(synchronize_session="fetch")
 
         # With no Mentions, there should be no Candidates also
-        self.session.query(Candidate).delete()
+        self.session.query(Candidate).delete(synchronize_session="fetch")
+        logger.info("Cleared ALL Mentions (and Candidates).")
 
     def get_mentions(self, docs=None, sort=False):
         """Return a list of lists of the mentions associated with this extractor.

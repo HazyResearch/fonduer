@@ -269,8 +269,8 @@ def test_e2e(caplog):
     # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
     assert session.query(FeatureKey).count() == 1177
-    session.query(Feature).delete()
-    session.query(FeatureKey).delete()
+    session.query(Feature).delete(synchronize_session="fetch")
+    session.query(FeatureKey).delete(synchronize_session="fetch")
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 6669
