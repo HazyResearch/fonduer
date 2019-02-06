@@ -1,8 +1,9 @@
 ############################
 # Tabular modality utilities
 ############################
-
 from builtins import range
+from collections import defaultdict
+from functools import lru_cache
 from itertools import chain
 
 from fonduer.parser.models import Sentence
@@ -435,6 +436,28 @@ def _get_head_cell(root_cell, axis):
     )
 
 
+@lru_cache(maxsize=256)
+def _get_table_cells(table):
+    """Helper function with caching for table cells and the cells' sentences.
+
+    This function significantly improves the speed of `get_row_ngrams`
+    primarily by reducing the number of queries that are made (which were
+    previously the bottleneck. Rather than taking a single mention, then its
+    sentence, then its table, then all the cells in the table, then all the
+    sentences in each cell, and performing operations on that series of
+    queries, this performs a single query for all the sentences in a table and
+    returns all of the cells and the cells sentences directly.
+
+    :param table: the Table object to cache.
+    :return: an iterator of (Cell, [Sentence._asdict(), ...]) tuples.
+    """
+    sent_map = defaultdict(list)
+    for sent in table.sentences:
+        if sent.is_tabular():
+            sent_map[sent.cell].append(sent)
+    return sent_map.items()
+
+
 def _get_axis_ngrams(
     mention, axis, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
 ):
@@ -466,13 +489,15 @@ def _get_aligned_cells(root_cell, axis):
 
 
 def _get_aligned_sentences(root_sentence, axis, spread=[0, 0]):
-    return [
+    cells = _get_table_cells(root_sentence.table)
+    aligned_sentences = [
         sentence
-        for cell in root_sentence.table.cells
+        for (cell, sentences) in cells
         if is_axis_aligned(root_sentence, cell, axis=axis, spread=spread)
-        for sentence in cell.sentences
+        for sentence in sentences
         if sentence != root_sentence
     ]
+    return aligned_sentences
 
 
 def _other_axis(axis):
