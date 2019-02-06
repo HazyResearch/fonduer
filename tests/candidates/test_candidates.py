@@ -259,7 +259,7 @@ def test_cand_gen_cascading_delete(caplog):
 
     # Delete from parent class should cascade to child
     x = session.query(Candidate).first()
-    session.query(Candidate).filter_by(id=x.id).delete()
+    session.query(Candidate).filter_by(id=x.id).delete(synchronize_session="fetch")
     assert session.query(PartTemp).count() == 3878
     assert session.query(Candidate).count() == 3878
 
@@ -415,7 +415,7 @@ def test_cand_gen(caplog):
     assert len(docs[0].temps) == 24
 
     # Test that deletion of a Candidate does not delete the Mention
-    session.query(PartTemp).delete()
+    session.query(PartTemp).delete(synchronize_session="fetch")
     assert session.query(PartTemp).count() == 0
     assert session.query(Temp).count() == 136
     assert session.query(Part).count() == 234
@@ -423,7 +423,7 @@ def test_cand_gen(caplog):
     # Test deletion of Candidate if Mention is deleted
     assert session.query(PartVolt).count() == 3266
     assert session.query(Volt).count() == 107
-    session.query(Volt).delete()
+    session.query(Volt).delete(synchronize_session="fetch")
     assert session.query(Volt).count() == 0
     assert session.query(PartVolt).count() == 0
 

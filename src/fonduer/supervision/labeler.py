@@ -245,8 +245,8 @@ class Labeler(UDFRunner):
     def clear_all(self):
         """Delete all Labels."""
         logger.info("Clearing ALL Labels and LabelKeys.")
-        self.session.query(Label).delete()
-        self.session.query(LabelKey).delete()
+        self.session.query(Label).delete(synchronize_session="fetch")
+        self.session.query(LabelKey).delete(synchronize_session="fetch")
 
     def get_gold_labels(self, cand_lists, annotator=None):
         """Load sparse matrix of GoldLabels for each candidate_class.

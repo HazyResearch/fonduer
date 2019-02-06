@@ -202,8 +202,8 @@ class Featurizer(UDFRunner):
     def clear_all(self):
         """Delete all Features."""
         logger.info("Clearing ALL Features and FeatureKeys.")
-        self.session.query(Feature).delete()
-        self.session.query(FeatureKey).delete()
+        self.session.query(Feature).delete(synchronize_session="fetch")
+        self.session.query(FeatureKey).delete(synchronize_session="fetch")
 
     def get_feature_matrices(self, cand_lists):
         """Load sparse matrix of Features for each candidate_class.
