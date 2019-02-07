@@ -12,6 +12,8 @@ Changed
 
 Fixed
 ^^^^^
+* `@lukehsiao`_: Add session synchronization to sqlalchemy delete queries.
+  (`#214 <https://github.com/HazyResearch/fonduer/pull/214>`_)
 * `@lukehsiao`_: Update PyYAML dependency to patch CVE-2017-18342.
   (`#205 <https://github.com/HazyResearch/fonduer/pull/205>`_)
 * `@KenSugimoto`_: Fix max/min in ``visualizer.get_box``
