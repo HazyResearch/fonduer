@@ -412,9 +412,7 @@ def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=
     spans = _to_spans(mention)
     axes = (axis,) if axis else ("row", "col")
     for span in spans:
-        if not span.sentence.is_tabular():
-            return
-        else:
+        if span.sentence.is_tabular():
             for axis in axes:
                 if getattr(span.sentence, _other_axis(axis) + "_start") == 0:
                     return

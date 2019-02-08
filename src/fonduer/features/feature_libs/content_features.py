@@ -43,14 +43,13 @@ def get_content_feats(candidates):
             span = args[0]
             if span.sentence.is_lingual():
                 get_tdl_feats = compile_entity_feature_generator()
-                sent = get_as_dict(span.sentence)
-                xmltree = corenlp_to_xmltree(sent)
+                xmltree = corenlp_to_xmltree(span.sentence)
                 sidxs = list(
                     range(span.get_word_start_index(), span.get_word_end_index() + 1)
                 )
                 if len(sidxs) > 0:
                     # Add DDLIB entity features
-                    for f in get_ddlib_feats(span, sent, sidxs):
+                    for f in get_ddlib_feats(span, get_as_dict(span.sentence), sidxs):
                         yield candidate.id, f"DDL_{f}", DEF_VALUE
                     # Add TreeDLib entity features
                     if span.stable_id not in unary_tdl_feats:
@@ -70,7 +69,7 @@ def get_content_feats(candidates):
                 get_tdl_feats = compile_relation_feature_generator()
                 sent1 = get_as_dict(span1.sentence)
                 sent2 = get_as_dict(span2.sentence)
-                xmltree = corenlp_to_xmltree(get_as_dict(span1.sentence))
+                xmltree = corenlp_to_xmltree(span1.sentence)
                 s1_idxs = list(
                     range(span1.get_word_start_index(), span1.get_word_end_index() + 1)
                 )
