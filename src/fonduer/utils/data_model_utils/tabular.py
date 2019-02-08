@@ -6,7 +6,6 @@ from collections import defaultdict
 from functools import lru_cache
 from itertools import chain
 
-from fonduer.parser.models import Sentence
 from fonduer.utils.data_model_utils.textual import get_left_ngrams, get_right_ngrams
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
@@ -222,13 +221,15 @@ def get_cell_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
         ):
             yield ngram
-        if isinstance(span.sentence, Sentence) and span.sentence.cell is not None:
+        if span.sentence.is_tabular():
             for ngram in chain.from_iterable(
                 [
                     tokens_to_ngrams(
                         getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
                     )
-                    for sentence in span.sentence.cell.sentences
+                    for sentence in _get_table_cells(span.sentence.table)[
+                        span.sentence.cell
+                    ]
                     if sentence != span.sentence
                 ]
             ):
@@ -264,7 +265,7 @@ def get_neighbor_cell_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
         ):
             yield ngram
-        if isinstance(span.sentence, Sentence) and span.sentence.cell is not None:
+        if span.sentence.is_tabular():
             root_cell = span.sentence.cell
             for sentence in chain.from_iterable(
                 [
@@ -409,9 +410,9 @@ def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=
     :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
-    axes = [axis] if axis else ["row", "col"]
+    axes = (axis,) if axis else ("row", "col")
     for span in spans:
-        if not span.sentence.cell:
+        if not span.sentence.is_tabular():
             return
         else:
             for axis in axes:
@@ -426,6 +427,7 @@ def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=
                         yield ngram
 
 
+@lru_cache(maxsize=256)
 def _get_head_cell(root_cell, axis):
     other_axis = "row" if axis == "col" else "col"
     aligned_cells = _get_aligned_cells(root_cell, axis)
@@ -455,7 +457,7 @@ def _get_table_cells(table):
     for sent in table.sentences:
         if sent.is_tabular():
             sent_map[sent.cell].append(sent)
-    return sent_map.items()
+    return sent_map
 
 
 def _get_axis_ngrams(
@@ -471,7 +473,7 @@ def _get_axis_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
     ):
         yield ngram
-    if span.sentence.cell is not None:
+    if span.sentence.is_tabular():
         for sentence in _get_aligned_sentences(span.sentence, axis, spread=spread):
             for ngram in tokens_to_ngrams(
                 getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
@@ -479,6 +481,7 @@ def _get_axis_ngrams(
                 yield ngram
 
 
+@lru_cache(maxsize=1024)
 def _get_aligned_cells(root_cell, axis):
     aligned_cells = [
         cell
@@ -489,7 +492,7 @@ def _get_aligned_cells(root_cell, axis):
 
 
 def _get_aligned_sentences(root_sentence, axis, spread=[0, 0]):
-    cells = _get_table_cells(root_sentence.table)
+    cells = _get_table_cells(root_sentence.table).items()
     aligned_sentences = [
         sentence
         for (cell, sentences) in cells
