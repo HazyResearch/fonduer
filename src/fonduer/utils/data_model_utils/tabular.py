@@ -427,7 +427,7 @@ def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=
                         yield ngram
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def _get_head_cell(root_cell, axis):
     other_axis = "row" if axis == "col" else "col"
     aligned_cells = _get_aligned_cells(root_cell, axis)
