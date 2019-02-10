@@ -4,6 +4,7 @@
 
 from builtins import range
 from collections import defaultdict
+from functools import lru_cache
 
 from fonduer.candidates.mentions import Ngrams
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
@@ -19,6 +20,7 @@ from fonduer.utils.utils_visual import (
 )
 
 
+@lru_cache(maxsize=1024)
 def get_page(mention):
     """Return the page number of the given mention.
 
@@ -31,6 +33,7 @@ def get_page(mention):
     return span.get_attrib_tokens("page")[0]
 
 
+@lru_cache(maxsize=1024)
 def is_horz_aligned(c):
     """Return True if all the components of c are horizontally aligned.
 
@@ -51,6 +54,7 @@ def is_horz_aligned(c):
     )
 
 
+@lru_cache(maxsize=1024)
 def is_vert_aligned(c):
     """Return true if all the components of c are vertically aligned.
 
@@ -71,6 +75,7 @@ def is_vert_aligned(c):
     )
 
 
+@lru_cache(maxsize=1024)
 def is_vert_aligned_left(c):
     """Return true if all components are vertically aligned on their left border.
 
@@ -93,6 +98,7 @@ def is_vert_aligned_left(c):
     )
 
 
+@lru_cache(maxsize=1024)
 def is_vert_aligned_right(c):
     """Return true if all components vertically aligned on their right border.
 
@@ -115,6 +121,7 @@ def is_vert_aligned_right(c):
     )
 
 
+@lru_cache(maxsize=1024)
 def is_vert_aligned_center(c):
     """Return true if all the components are vertically aligned on their center.
 
@@ -137,6 +144,7 @@ def is_vert_aligned_center(c):
     )
 
 
+@lru_cache(maxsize=1024)
 def same_page(c):
     """Return true if all the components of c are on the same page of the document.
 
@@ -375,6 +383,7 @@ def _assign_alignment_features(sentences_by_key, align_type):
                 context_lemmas.update(align_type + lemma for lemma in new_lemmas)
 
 
+@lru_cache(maxsize=2)
 def _preprocess_visual_features(doc):
     if hasattr(doc, "_visual_features"):
         return

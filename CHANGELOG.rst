@@ -3,9 +3,10 @@
 
 Changed
 ^^^^^^^
-* `@lukehsiao`_: improved performance of ``get_row_ngrams`` through caching and
-  simplifying the underlying queries.
-  (`#212 <https://github.com/HazyResearch/fonduer/pull/212>`_)
+* `@lukehsiao`_: improved performance of ``data_model_utils`` through caching
+  and simplifying the underlying queries.
+  (`#212 <https://github.com/HazyResearch/fonduer/pull/212>`_,
+  `#215 <https://github.com/HazyResearch/fonduer/pull/215>`_)
 * `@senwu`_: upgrade to PyTorch v1.0.0.
   (`#209 <https://github.com/HazyResearch/fonduer/pull/209>`_)
 

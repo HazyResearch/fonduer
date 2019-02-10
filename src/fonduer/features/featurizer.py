@@ -1,3 +1,4 @@
+import itertools
 import logging
 
 from fonduer.candidates.models import Candidate
@@ -244,11 +245,14 @@ class FeaturizerUDF(UDF):
         )
 
         feature_map = dict()
-        for cands in cands_list:
-            records = list(
-                get_mapping(self.session, Feature, cands, get_all_feats, feature_map)
-            )
-            batch_upsert_records(self.session, Feature, records)
+
+        # Make a flat list of all candidates from the list of list of
+        # candidates. This helps reduce the number of queries needed to update.
+        all_cands = itertools.chain.from_iterable(cands_list)
+        records = list(
+            get_mapping(self.session, Feature, all_cands, get_all_feats, feature_map)
+        )
+        batch_upsert_records(self.session, Feature, records)
 
         # Insert all Feature Keys
         if train:

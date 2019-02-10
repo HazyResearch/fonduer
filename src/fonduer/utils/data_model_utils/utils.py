@@ -1,9 +1,11 @@
 import logging
+from functools import lru_cache
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 
 
+@lru_cache(maxsize=1024)
 def _to_span(x, idx=0):
     """Convert a Candidate, Mention, or Span to a span."""
     if isinstance(x, Candidate):
@@ -16,6 +18,7 @@ def _to_span(x, idx=0):
         raise ValueError(f"{type(x)} is an invalid argument type")
 
 
+@lru_cache(maxsize=1024)
 def _to_spans(x):
     """Convert a Candidate, Mention, or Span to a list of spans."""
     if isinstance(x, Candidate):

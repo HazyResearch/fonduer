@@ -1,6 +1,9 @@
 import re
+from functools import lru_cache
 
 import lxml.etree as et
+
+from fonduer.utils.utils import get_as_dict
 
 
 class XMLTree:
@@ -31,6 +34,7 @@ class XMLTree:
         return et.tostring(self.root)
 
 
+@lru_cache(maxsize=1024)
 def corenlp_to_xmltree(s, prune_root=True):
     """
     Transforms an object with CoreNLP dep_path and dep_parent attributes into
@@ -39,11 +43,7 @@ def corenlp_to_xmltree(s, prune_root=True):
     corresponding to original sequence order in sentence.
     """
     # Convert input object to dictionary
-    if not isinstance(s, dict):
-        try:
-            s = s.__dict__ if hasattr(s, "__dict__") else dict(s)
-        except Exception:
-            raise ValueError("Cannot convert input object to dict")
+    s = get_as_dict(s)
 
     # Use the dep_parents array as a guide: ensure it is present and a list of
     # ints
