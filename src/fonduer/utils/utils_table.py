@@ -1,7 +1,9 @@
 import itertools
 from builtins import range
+from functools import lru_cache
 
 
+@lru_cache(maxsize=1024)
 def _min_range_diff(a_start, a_end, b_start, b_end, absolute=True):
     # if absolute=True, return the absolute value of minimum magnitude difference
     # if absolute=False, return the raw value of minimum magnitude difference
