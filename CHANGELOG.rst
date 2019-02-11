@@ -1,6 +1,28 @@
 [Unreleased]
 ------------
 
+Removed
+^^^^^^^
+* `@lukehsiao`_: Removed the redundant ``get_gold_labels`` function.
+
+.. note::
+
+    Rather than calling get_gold_labels directly, call it from the Labeler:
+
+    .. code:: python
+
+        from fonduer.supervision import Labeler
+        labeler = Labeler(session, [relations])
+        L_gold_train = labeler.get_gold_labels(session, train_cands, annotator='gold')
+
+    Rather than:
+
+    .. code:: python
+
+        from fonduer.supervision import Labeler, get_gold_labels
+        labeler = Labeler(session, [relations])
+        L_gold_train = get_gold_labels(session, train_cands, annotator_name='gold')
+
 Changed
 ^^^^^^^
 * `@lukehsiao`_: improved performance of ``data_model_utils`` through caching
@@ -31,7 +53,8 @@ Added
   advanced parser may be used by specifying ``parser_rule`` parameter in a dict
   format where key is the column index and value is the specific parser.
 
-.. note:
+.. note::
+
     In Fonduer v0.5.0, you can use ``CSVDocPreprocessor``:
 
     .. code:: python
