@@ -13,7 +13,7 @@ Removed
 
         from fonduer.supervision import Labeler
         labeler = Labeler(session, [relations])
-        L_gold_train = labeler.get_gold_labels(session, train_cands, annotator='gold')
+        L_gold_train = labeler.get_gold_labels(train_cands, annotator='gold')
 
     Rather than:
 
@@ -35,6 +35,7 @@ Changed
 
 Fixed
 ^^^^^
+* `@lukehsiao`_: Fixed sentence.sentence_num bug in get_neighbor_sentence_ngrams.
 * `@lukehsiao`_: Add session synchronization to sqlalchemy delete queries.
   (`#214 <https://github.com/HazyResearch/fonduer/pull/214>`_)
 * `@lukehsiao`_: Update PyYAML dependency to patch CVE-2017-18342.

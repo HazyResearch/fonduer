@@ -196,7 +196,7 @@ def get_neighbor_sentence_ngrams(
                     getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
                 )
                 for sentence in span.sentence.document.sentences
-                if abs(sentence.sentence_num - span.sentence.sentence_num) <= d
+                if abs(sentence.position - span.sentence.position) <= d
                 and sentence != span.sentence
             ]
         ):
