@@ -320,6 +320,7 @@ def get_row_ngrams(
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
+    :param spread: The number of rows above and below to also consider "aligned".
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
@@ -348,6 +349,7 @@ def get_col_ngrams(
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
+    :param spread: The number of cols left and right to also consider "aligned".
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
@@ -377,6 +379,8 @@ def get_aligned_ngrams(
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
+    :param spread: The number of rows/cols above/below/left/right to also
+        consider "aligned".
     :param lower: If True, all ngrams will be returned in lower case
     :rtype: a *generator* of ngrams
     """
