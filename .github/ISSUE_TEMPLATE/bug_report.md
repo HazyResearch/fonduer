@@ -21,10 +21,10 @@ A clear and concise description of what you expected to happen.
 If applicable, add error logs or screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
- - OS: [e.g. Ubuntu 16.04]
+ - OS: [e.g. Ubuntu 18.04]
  - PostgreSQL Version: [e.g. 9.6]
  - Poppler Utils Version: [e.g. 0.62.0]
- - Fonduer Version: [e.g. 0.2.3]
+ - Fonduer Version: [e.g. 0.6.0]
 
 **Additional context**
 Add any other context about the problem here.
