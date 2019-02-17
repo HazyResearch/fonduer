@@ -1,3 +1,4 @@
+import itertools
 import logging
 
 from fonduer.candidates.models import Candidate
@@ -323,11 +324,13 @@ class LabelerUDF(UDF):
         )
 
         label_map = dict()
-        for cands in cands_list:
-            records = list(
-                get_mapping(self.session, Label, cands, self._f_gen, label_map)
-            )
-            batch_upsert_records(self.session, Label, records)
+        # Make a flat list of all candidates from the list of list of
+        # candidates. This helps reduce the number of queries needed to update.
+        all_cands = itertools.chain.from_iterable(cands_list)
+        records = list(
+            get_mapping(self.session, Label, all_cands, self._f_gen, label_map)
+        )
+        batch_upsert_records(self.session, Label, records)
 
         # Insert all Label Keys
         if train:
