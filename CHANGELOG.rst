@@ -1,6 +1,9 @@
 [Unreleased]
 ------------
 
+[0.6.0] - 2019-02-17
+--------------------
+
 Removed
 ^^^^^^^
 * `@lukehsiao`_: Removed the redundant ``get_gold_labels`` function.
@@ -35,6 +38,7 @@ Changed
 
 Fixed
 ^^^^^
+* `@senwu`_: Improve type checking in featurization.
 * `@lukehsiao`_: Fixed sentence.sentence_num bug in get_neighbor_sentence_ngrams.
 * `@lukehsiao`_: Add session synchronization to sqlalchemy delete queries.
   (`#214 <https://github.com/HazyResearch/fonduer/pull/214>`_)
