@@ -11,9 +11,10 @@ def get_core_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
-        if not (isinstance(args[0], TemporarySpanMention)):
+        if any(not (isinstance(arg, TemporarySpanMention)) for arg in args):
             raise ValueError(
-                f"Accepts Span-type arguments, {type(candidate)}-type found."
+                f"Core feature only accepts Span-type arguments, "
+                f"{type(candidate)}-type found."
             )
 
         # Unary candidates
