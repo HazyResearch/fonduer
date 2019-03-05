@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
+  more than one ``Page``.
+
+
 [0.6.0] - 2019-02-17
 --------------------
 
