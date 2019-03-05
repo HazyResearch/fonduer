@@ -60,10 +60,11 @@ class VisualLinker(object):
 
     def extract_pdf_words(self):
         self.logger.debug(
-            f"pdfinfo '{self.pdf_file}' | grep -a Pages | sed 's/[^0-9]*//'"
+            f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'"
         )
         num_pages = subprocess.check_output(
-            f"pdfinfo '{self.pdf_file}' | grep -a Pages | sed 's/[^0-9]*//'", shell=True
+            f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'",
+            shell=True,
         )
         pdf_word_list = []
         coordinate_map = {}
