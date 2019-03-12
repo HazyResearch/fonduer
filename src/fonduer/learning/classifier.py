@@ -101,6 +101,8 @@ class Classifier(nn.Module):
         print_freq=5,
         dev_ckpt=True,
         dev_ckpt_delay=0.75,
+        b=0.5,
+        pos_label=1,
         save_dir="checkpoints",
         seed=1234,
         host_device="CPU",
@@ -132,6 +134,10 @@ class Classifier(nn.Module):
         :param dev_ckpt_delay: Start dev checkpointing after this portion
             of n_epochs.
         :type dev_ckpt_delay: float
+        :param b: Decision boundary *for binary setting only*.
+        :type b: float
+        :param pos_label: Positive class index *for binary setting only*. Default: 1
+        :type pos_label: int
         :param save_dir: Save dir path for checkpointing.
         :type save_dir: str
         :param seed: Random seed
@@ -254,7 +260,7 @@ class Classifier(nn.Module):
                     f"Average loss={torch.stack(iteration_losses).mean():.6f}"
                 )
                 if X_dev is not None:
-                    scores = self.score(_X_dev, _Y_dev)
+                    scores = self.score(_X_dev, _Y_dev, b=b, pos_label=pos_label)
 
                     score = scores["accuracy"] if self.cardinality > 2 else scores["f1"]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
