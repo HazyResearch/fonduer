@@ -343,7 +343,14 @@ def test_e2e(caplog):
 
     disc_model = LogisticRegression()
     disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+        (train_cands[0], F_train[0]),
+        train_marginals,
+        X_dev=(train_cands[0], F_train[0]),
+        Y_dev=np.array(L_train_gold[0].todense()).reshape(-1),
+        b=0.6,
+        pos_label=TRUE,
+        n_epochs=20,
+        lr=0.001,
     )
 
     test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
