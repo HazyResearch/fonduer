@@ -3,6 +3,7 @@
 
 Fixed
 ^^^^^
+* `@senwu`_: Update the metal version.
 * `@senwu`_: Expose the ``b`` and ``pos_label`` in training.
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
   more than one ``Page``.
