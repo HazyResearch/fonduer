@@ -13,6 +13,7 @@ from torch.utils.data.dataloader import default_collate
 
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
 from fonduer.learning.utils import MultiModalDataset, save_marginals
+from fonduer.utils.logging import TensorBoardLogger
 
 
 class Classifier(nn.Module):
@@ -31,6 +32,7 @@ class Classifier(nn.Module):
         self.logger = logging.getLogger(__name__)
         self.name = name or self.__class__.__name__
         self.settings = None
+        self.tensorboard_logger = None
 
     def _set_random_seed(self, seed):
         self.seed = seed
@@ -106,6 +108,7 @@ class Classifier(nn.Module):
         save_dir="checkpoints",
         seed=1234,
         host_device="CPU",
+        log_dir=None,
     ):
         """
         Generic training procedure for PyTorch model
@@ -144,6 +147,8 @@ class Classifier(nn.Module):
         :type seed: int
         :param host_device: Host device
         :type host_device: str
+        :param log_dir: Logging directory
+        :type log_dir: str
         """
 
         # Set model parameters
@@ -154,7 +159,12 @@ class Classifier(nn.Module):
             "shuffle": shuffle,
             "seed": 1234,
             "host_device": host_device,
+            "log_dir": log_dir,
         }
+
+        # Setup tensorboard
+        if self.settings["log_dir"] is not None:
+            self.tensorboard_logger = TensorBoardLogger(self.settings["log_dir"])
 
         # Set random seed
         self._set_random_seed(self.settings["seed"])
@@ -254,6 +264,9 @@ class Classifier(nn.Module):
                     or epoch in [0, (self.settings["n_epochs"] - 1)]
                 )
             ):
+                # Log the training loss into tensorboard
+                if self.tensorboard_logger is not None:
+                    self.tensorboard_logger.add_scalar("loss", loss.item(), epoch + 1)
                 msg = (
                     f"[{self.name}] "
                     f"Epoch {epoch + 1} ({time() - st:.2f}s)\t"
@@ -265,6 +278,14 @@ class Classifier(nn.Module):
                     score = scores["accuracy"] if self.cardinality > 2 else scores["f1"]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
                     msg += f"\tDev {score_label}={100.0 * score:.2f}"
+
+                    # Log the evaulation score on dev set into tensorboard
+                    if self.tensorboard_logger is not None:
+                        for metric in scores.keys():
+                            self.tensorboard_logger.add_scalar(
+                                metric, scores[metric], epoch + 1
+                            )
+
                 self.logger.info(msg)
 
                 # If best score on dev set so far and dev checkpointing is
