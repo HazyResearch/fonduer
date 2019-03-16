@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 from time import time
 
 import numpy as np
@@ -11,6 +12,7 @@ from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 
+from fonduer import Meta
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
 from fonduer.learning.utils import MultiModalDataset, save_marginals
 from fonduer.utils.logging import TensorBoardLogger
@@ -31,8 +33,15 @@ class Classifier(nn.Module):
         nn.Module.__init__(self)
         self.logger = logging.getLogger(__name__)
         self.name = name or self.__class__.__name__
-        self.settings = None
         self.tensorboard_logger = None
+
+        # Setup logging folder
+        dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_path = os.path.join(Meta.log_path, f"{dt}_{self.name}")
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+
+        self.settings = {"log_dir": log_path}
 
     def _set_random_seed(self, seed):
         self.seed = seed
@@ -108,7 +117,6 @@ class Classifier(nn.Module):
         save_dir="checkpoints",
         seed=1234,
         host_device="CPU",
-        log_dir=None,
     ):
         """
         Generic training procedure for PyTorch model
@@ -147,20 +155,19 @@ class Classifier(nn.Module):
         :type seed: int
         :param host_device: Host device
         :type host_device: str
-        :param log_dir: Logging directory
-        :type log_dir: str
         """
 
-        # Set model parameters
-        self.settings = {
-            "n_epochs": n_epochs,
-            "lr": lr,
-            "batch_size": batch_size,
-            "shuffle": shuffle,
-            "seed": 1234,
-            "host_device": host_device,
-            "log_dir": log_dir,
-        }
+        # Update training parameters
+        self.settings.update(
+            {
+                "n_epochs": n_epochs,
+                "lr": lr,
+                "batch_size": batch_size,
+                "shuffle": shuffle,
+                "seed": 1234,
+                "host_device": host_device,
+            }
+        )
 
         # Setup tensorboard
         if self.settings["log_dir"] is not None:
@@ -298,7 +305,9 @@ class Classifier(nn.Module):
                 ):
                     dev_score_opt = score
                     dev_score_epo = epoch
-                    self.save(save_dir=save_dir, global_step=dev_score_epo)
+                    self.save(
+                        save_dir=self.settings["log_dir"], global_step=dev_score_epo
+                    )
 
         # Conclude training
         if verbose:
@@ -306,7 +315,7 @@ class Classifier(nn.Module):
         # If checkpointing on, load last checkpoint (i.e. best on dev set)
         if dev_ckpt and X_dev is not None and verbose and dev_score_opt > 0:
             self.logger.info("Loading best checkpoint")
-            self.load(save_dir=save_dir, global_step=dev_score_epo)
+            self.load(save_dir=self.settings["log_dir"], global_step=dev_score_epo)
 
     def marginals(self, X):
         """
@@ -481,9 +490,8 @@ class Classifier(nn.Module):
         model_name = model_name or self.name
 
         # Check existence of model saving directory and create if does not exist.
-        model_dir = os.path.join(save_dir, model_name)
-        if not os.path.exists(model_dir):
-            os.makedirs(model_dir)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
         params = {
             "model": self.state_dict(),
@@ -496,13 +504,13 @@ class Classifier(nn.Module):
         model_file = f"{model_name}.mdl.ckpt.{global_step}"
 
         try:
-            torch.save(params, f"{model_dir}/{model_file}")
+            torch.save(params, f"{save_dir}/{model_file}")
         except BaseException:
             self.logger.warning("Saving failed... continuing anyway.")
 
         if verbose:
             self.logger.info(
-                f"[{model_name}] Model saved as {model_file} in {model_dir}"
+                f"[{model_name}] Model saved as {model_file} in {save_dir}"
             )
 
     def load(
@@ -522,17 +530,16 @@ class Classifier(nn.Module):
 
         model_name = model_name or self.name
 
-        model_dir = os.path.join(save_dir, model_name)
-        if not os.path.exists(model_dir):
+        if not os.path.exists(save_dir):
             self.logger.error("Loading failed... Directory does not exist.")
 
         model_file = f"{model_name}.mdl.ckpt.{global_step}"
 
         try:
-            checkpoint = torch.load(f"{model_dir}/{model_file}")
+            checkpoint = torch.load(f"{save_dir}/{model_file}")
         except BaseException:
             self.logger.error(
-                f"Loading failed... Cannot load model from {model_name} in {model_dir}"
+                f"Loading failed... Cannot load model from {model_name} in {save_dir}"
             )
 
         self.load_state_dict(checkpoint["model"])
@@ -542,5 +549,5 @@ class Classifier(nn.Module):
 
         if verbose:
             self.logger.info(
-                f"[{model_name}] Model loaded as {model_file} in {model_dir}"
+                f"[{model_name}] Model loaded as {model_file} in {save_dir}"
             )
