@@ -47,7 +47,7 @@ def init_logging(
 
     # Notify user of log location
     if not Meta.log_path:
-        logger.info(f"Logfile located at {log_path}/fonduer.log.")
+        logger.info(f"Setting logging directory to: {log_path}")
 
     Meta.log_path = log_path
 
