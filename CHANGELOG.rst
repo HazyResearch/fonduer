@@ -6,6 +6,29 @@ Added
 * `@lukehsiao`_: provide ``fonduer.init_logging()`` as a way to configure
   logging to a temp directory by default.
 
+.. note::
+
+    Although you can still configure ``logging`` manually, with this change
+    we also provide a function for initializing logging. For example, you
+    can call:
+
+    .. code:: python
+
+        import logging
+        import fonduer
+
+        # Optionally configure logging
+        fonduer.init_logging(
+          log_dir="log_folder",
+          format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+          level=logging.INFO
+        )
+
+        session = fonduer.Meta.init(conn_string).Session()
+
+    which will create logs within the ``log_filder`` directory. If logging is
+    not explicitly initialized, we will provide a default configuration which
+    will store logs in a temporary directory.
 
 Fixed
 ^^^^^
