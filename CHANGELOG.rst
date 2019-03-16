@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Added
+^^^^^
+* `@lukehsiao`_: provide ``fonduer.init_logging()`` as a way to configure
+  logging to a temp directory by default.
+
+
 Fixed
 ^^^^^
 * `@senwu`_: Update the metal version.

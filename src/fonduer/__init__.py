@@ -1,8 +1,4 @@
-import logging
-
 from fonduer._version import __version__
-from fonduer.meta import Meta
+from fonduer.meta import Meta, init_logging
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
-
-__all__ = ["__version__", "Meta"]
+__all__ = ["__version__", "Meta", "init_logging"]
