@@ -26,9 +26,32 @@ Added
 
         session = fonduer.Meta.init(conn_string).Session()
 
-    which will create logs within the ``log_filder`` directory. If logging is
+    which will create logs within the ``log_folder`` directory. If logging is
     not explicitly initialized, we will provide a default configuration which
     will store logs in a temporary directory.
+
+Changed
+^^^^^^^
+* `@senwu`_: Update the whole logging strategy.
+
+.. note::
+    For the whole logging strategy:
+
+    With this change, the running log is stored ``fonduer.log`` in the 
+    ``{fonduer.Meta.log_path}/{datetime}`` folder. User can specify it
+    using ``fonduer.init_logging()``. It also contains the learning logs init.
+
+    For learning logging strategy:
+
+    Previously, the model checkpoints are stored in the user provided folder
+    by ``save_dir`` and the name for checkpoint is 
+    ``{model_name}.mdl.ckpt.{global_step}``.
+
+    With this change, the model is saved in the subfolder of the same folder 
+    ``fonduer.Meta.log_path`` with log file file. Each learning run creates a
+    subfolder under name ``{datetime}_{model_name}`` with all model checkpoints
+    and tensorboard log file init. To use the tensorboard to check the learning
+    curve, run ``tensorboard --logdir LOG_FOLDER``.
 
 Fixed
 ^^^^^
