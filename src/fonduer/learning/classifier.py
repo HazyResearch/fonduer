@@ -44,6 +44,9 @@ class Classifier(nn.Module):
 
         self.settings = {"log_dir": log_path}
 
+        # Setup tensorboard
+        self.tensorboard_logger = TensorBoardLogger(self.settings["log_dir"])
+
     def _set_random_seed(self, seed):
         self.seed = seed
         # Set random seed for all numpy operations
@@ -115,7 +118,6 @@ class Classifier(nn.Module):
         dev_ckpt_delay=0.75,
         b=0.5,
         pos_label=1,
-        save_dir="checkpoints",
         seed=1234,
         host_device="CPU",
     ):
@@ -150,8 +152,6 @@ class Classifier(nn.Module):
         :type b: float
         :param pos_label: Positive class index *for binary setting only*. Default: 1
         :type pos_label: int
-        :param save_dir: Save dir path for checkpointing.
-        :type save_dir: str
         :param seed: Random seed
         :type seed: int
         :param host_device: Host device
@@ -169,10 +169,6 @@ class Classifier(nn.Module):
                 "host_device": host_device,
             }
         )
-
-        # Setup tensorboard
-        if self.settings["log_dir"] is not None:
-            self.tensorboard_logger = TensorBoardLogger(self.settings["log_dir"])
 
         # Set random seed
         self._set_random_seed(self.settings["seed"])
@@ -266,12 +262,9 @@ class Classifier(nn.Module):
                 iteration_losses.append(self._non_cuda(loss))
 
             # Print training stats and optionally checkpoint model
-            if verbose and (
-                (
-                    (epoch + 1) % print_freq == 0
-                    or epoch + 1 == self.settings["n_epochs"]
-                )
-            ):
+            if (
+                verbose and (epoch + 1) % print_freq == 0
+            ) or epoch + 1 == self.settings["n_epochs"]:
                 # Log the training loss into tensorboard
                 if self.tensorboard_logger is not None:
                     self.tensorboard_logger.add_scalar("loss", loss.item(), epoch + 1)
@@ -318,13 +311,25 @@ class Classifier(nn.Module):
                         f'{self.settings["log_dir"]}/best_model.pt',
                     )
 
+                if (X_dev is None or dev_ckpt is False) and epoch + 1 == self.settings[
+                    "n_epochs"
+                ]:
+                    self.logger.info(
+                        f"Saving final model as best checkpoint "
+                        f'{self.settings["log_dir"]}/{model_file}.'
+                    )
+                    copyfile(
+                        f'{self.settings["log_dir"]}/{model_file}',
+                        f'{self.settings["log_dir"]}/best_model.pt',
+                    )
+
         # Conclude training
         if verbose:
             self.logger.info(f"[{self.name}] Training done ({time() - st:.2f}s)")
-        # If checkpointing on, load last checkpoint (i.e. best on dev set)
-        if dev_ckpt and X_dev is not None and verbose and dev_score_opt > 0:
-            self.logger.info("Loading best checkpoint")
-            self.load(model_file="best_model.pt", save_dir=self.settings["log_dir"])
+
+        # Load the best checkpoint (i.e. best on dev set)
+        self.logger.info("Loading best checkpoint")
+        self.load(model_file="best_model.pt", save_dir=self.settings["log_dir"])
 
     def marginals(self, X):
         """
