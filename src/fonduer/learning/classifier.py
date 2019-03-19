@@ -266,8 +266,8 @@ class Classifier(nn.Module):
                 verbose and (epoch + 1) % print_freq == 0
             ) or epoch + 1 == self.settings["n_epochs"]:
                 # Log the training loss into tensorboard
-                if self.tensorboard_logger is not None:
-                    self.tensorboard_logger.add_scalar("loss", loss.item(), epoch + 1)
+                self.tensorboard_logger.add_scalar("loss", loss.item(), epoch + 1)
+
                 msg = (
                     f"[{self.name}] "
                     f"Epoch {epoch + 1} ({time() - st:.2f}s)\t"
@@ -281,11 +281,10 @@ class Classifier(nn.Module):
                     msg += f"\tDev {score_label}={100.0 * score:.2f}"
 
                     # Log the evaulation score on dev set into tensorboard
-                    if self.tensorboard_logger is not None:
-                        for metric in scores.keys():
-                            self.tensorboard_logger.add_scalar(
-                                metric, scores[metric], epoch + 1
-                            )
+                    for metric in scores.keys():
+                        self.tensorboard_logger.add_scalar(
+                            metric, scores[metric], epoch + 1
+                        )
 
                 self.logger.info(msg)
 
