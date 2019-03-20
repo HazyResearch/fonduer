@@ -349,6 +349,7 @@ def test_e2e(caplog):
         Y_dev=np.array(L_train_gold[0].todense()).reshape(-1),
         b=0.6,
         pos_label=TRUE,
+        print_freq=10,
         n_epochs=20,
         lr=0.001,
     )
