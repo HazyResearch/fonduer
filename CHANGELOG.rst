@@ -56,6 +56,8 @@ Changed
 
 Fixed
 ^^^^^
+* `@HiromuHota`_: Workaround no longer required for Japanese as of spaCy v2.1.0.
+  (`#224 <https://github.com/HazyResearch/fonduer/pull/224>`_)
 * `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
     spaCy only support version 0.7.
 * `@HiromuHota`_: Use black 18.9b0 or higher to be consistent with isort.
