@@ -355,7 +355,7 @@ def test_e2e(caplog):
         Y_dev=np.array(L_train_gold[0].todense()).reshape(-1),
         b=0.6,
         pos_label=TRUE,
-        n_epochs=10,
+        n_epochs=5,
         lr=0.001,
     )
 
@@ -410,7 +410,7 @@ def test_e2e(caplog):
 
     disc_model = LogisticRegression()
     disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=10, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
     test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
@@ -462,7 +462,7 @@ def test_e2e(caplog):
     # Testing Sparse Logistic Regression
     disc_model = SparseLogisticRegression()
     disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=10, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
     test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
