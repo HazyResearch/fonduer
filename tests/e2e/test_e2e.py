@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from metal.label_model import LabelModel
 
-from fonduer import Meta
+import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.features import Featurizer
@@ -69,7 +69,13 @@ def test_e2e(caplog):
 
     max_docs = 12
 
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    fonduer.init_logging(
+        log_dir="log_folder",
+        format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+        level=logging.INFO,
+    )
+
+    session = fonduer.Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
