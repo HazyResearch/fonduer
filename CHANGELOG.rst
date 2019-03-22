@@ -3,6 +3,8 @@
 
 Fixed
 ^^^^^
+* `@HiromuHota`_: Use black 18.9b0 or higher to be consistent with isort.
+  (`#225 <https://github.com/HazyResearch/fonduer/issues/225>`_)
 * `@senwu`_: Update the metal version.
 * `@senwu`_: Expose the ``b`` and ``pos_label`` in training.
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
