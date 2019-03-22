@@ -3,6 +3,7 @@
 
 Fixed
 ^^^^^
+* `@HiromuHota`_: Make sure Fonduer uses v2.0.X of spaCy.
 * `@senwu`_: Update the metal version.
 * `@senwu`_: Expose the ``b`` and ``pos_label`` in training.
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
