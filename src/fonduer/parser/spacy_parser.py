@@ -187,10 +187,10 @@ class Spacy(object):
         if len(all_sentences) == 0:
             return  # Nothing to parse
 
-        if self.model.has_pipe("sbd"):
-            self.model.remove_pipe("sbd")
+        if self.model.has_pipe("sentencizer"):
+            self.model.remove_pipe("sentencizer")
             self.logger.debug(
-                f"Removed sentencizer ('sbd') from model. "
+                f"Removed sentencizer ('sentencizer') from model. "
                 f"Now in pipeline: {self.model.pipe_names}"
             )
 
@@ -285,9 +285,9 @@ class Spacy(object):
         if self.model.has_pipe("sentence_boundary_detector"):
             self.model.remove_pipe(name="sentence_boundary_detector")
 
-        if not self.model.has_pipe("sbd"):
-            sbd = self.model.create_pipe("sbd")  # add sentencizer
-            self.model.add_pipe(sbd)
+        if not self.model.has_pipe("sentencizer"):
+            sentencizer = self.model.create_pipe("sentencizer")  # add sentencizer
+            self.model.add_pipe(sentencizer)
         try:
             doc = self.model(text, disable=["parser", "tagger", "ner"])
         except ValueError:

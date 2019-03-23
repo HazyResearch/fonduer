@@ -23,7 +23,7 @@ setup(
         "pyyaml>=4.2b1, <5.0",
         "scipy>=1.1.0, <2.0.0",
         "snorkel-metal>=0.4.1, <0.5.0",
-        "spacy>=2.0.12, <3.0.0",
+        "spacy>=2.1.2, <2.2.0",
         "sqlalchemy[postgresql_psycopg2binary]>=1.2.12, <2.0.0",
         "tensorboardX>=1.6, <2.0",
         "torch>=1.0, <2.0",

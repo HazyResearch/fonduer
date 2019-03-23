@@ -176,7 +176,7 @@ def test_spacy_german(caplog):
         "LOC",
         "O",
         "O",
-        "LOC",
+        "O",
         "O",
         "O",
         "O",
@@ -191,9 +191,9 @@ def test_spacy_german(caplog):
         "mo",
         "ROOT",
         "sb",
+        "cm",
+        "nk",
         "mo",
-        "nk",
-        "nk",
         "punct",
         "mo",
         "nk",
@@ -619,7 +619,7 @@ def test_text_doc_preprocessor(caplog):
     assert len(preprocessor) == 1
     assert len(doc.sections) == 1
     assert len(doc.paragraphs) == 1
-    assert len(doc.sentences) == 56
+    assert len(doc.sentences) == 57
 
 
 def test_tsv_doc_preprocessor(caplog):
