@@ -3,6 +3,7 @@
 
 Added
 ^^^^^
+* `@senwu`_: update the spacy version to v2.1.x.
 * `@lukehsiao`_: provide ``fonduer.init_logging()`` as a way to configure
   logging to a temp directory by default.
 
@@ -55,6 +56,8 @@ Changed
 
 Fixed
 ^^^^^
+* `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
+    spaCy only support version 0.7.
 * `@senwu`_: Update the metal version.
 * `@senwu`_: Expose the ``b`` and ``pos_label`` in training.
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
