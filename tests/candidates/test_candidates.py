@@ -234,9 +234,9 @@ def test_cand_gen_cascading_delete(caplog):
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
-    assert session.query(Mention).count() == 370
+    assert session.query(Mention).count() == 362
     assert session.query(Part).count() == 234
-    assert session.query(Temp).count() == 136
+    assert session.query(Temp).count() == 128
     part = session.query(Part).order_by(Part.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]
     logger.info(f"Part: {part.context}")
@@ -251,17 +251,17 @@ def test_cand_gen_cascading_delete(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3879
-    assert session.query(Candidate).count() == 3879
+    assert session.query(PartTemp).count() == 3664
+    assert session.query(Candidate).count() == 3664
     assert docs[0].name == "112823"
     assert len(docs[0].parts) == 70
-    assert len(docs[0].temps) == 24
+    assert len(docs[0].temps) == 23
 
     # Delete from parent class should cascade to child
     x = session.query(Candidate).first()
     session.query(Candidate).filter_by(id=x.id).delete(synchronize_session="fetch")
-    assert session.query(PartTemp).count() == 3878
-    assert session.query(Candidate).count() == 3878
+    assert session.query(PartTemp).count() == 3663
+    assert session.query(Candidate).count() == 3663
 
     # Clearing Mentions should also delete Candidates
     mention_extractor.clear()
@@ -341,7 +341,7 @@ def test_cand_gen(caplog):
 
     assert session.query(Part).count() == 234
     assert session.query(Volt).count() == 107
-    assert session.query(Temp).count() == 136
+    assert session.query(Temp).count() == 128
     assert session.query(Fig).count() == 223
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
@@ -379,9 +379,9 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 4141
+    assert session.query(PartTemp).count() == 3916
     assert session.query(PartVolt).count() == 3610
-    assert session.query(Candidate).count() == 7751
+    assert session.query(Candidate).count() == 7526
     candidate_extractor.clear_all(split=0)
     assert session.query(Candidate).count() == 0
     assert session.query(PartTemp).count() == 0
@@ -393,10 +393,9 @@ def test_cand_gen(caplog):
     )
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
-
-    assert session.query(PartTemp).count() == 3879
+    assert session.query(PartTemp).count() == 3664
     assert session.query(PartVolt).count() == 3610
-    assert session.query(Candidate).count() == 7489
+    assert session.query(Candidate).count() == 7274
     candidate_extractor.clear_all(split=0)
     assert session.query(Candidate).count() == 0
 
@@ -406,18 +405,18 @@ def test_cand_gen(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 3879
+    assert session.query(PartTemp).count() == 3664
     assert session.query(PartVolt).count() == 3266
-    assert session.query(Candidate).count() == 7145
+    assert session.query(Candidate).count() == 6930
     assert docs[0].name == "112823"
     assert len(docs[0].parts) == 70
     assert len(docs[0].volts) == 33
-    assert len(docs[0].temps) == 24
+    assert len(docs[0].temps) == 23
 
     # Test that deletion of a Candidate does not delete the Mention
     session.query(PartTemp).delete(synchronize_session="fetch")
     assert session.query(PartTemp).count() == 0
-    assert session.query(Temp).count() == 136
+    assert session.query(Temp).count() == 128
     assert session.query(Part).count() == 234
 
     # Test deletion of Candidate if Mention is deleted
@@ -457,9 +456,9 @@ def test_ngrams(caplog):
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
-    assert session.query(Person).count() == 126
+    assert session.query(Person).count() == 118
     mentions = session.query(Person).all()
-    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 50
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 49
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
@@ -468,7 +467,7 @@ def test_ngrams(caplog):
         session, [Person], [person_ngrams], [person_matcher]
     )
     mention_extractor.apply(docs, parallelism=PARALLEL)
-    assert session.query(Person).count() == 76
+    assert session.query(Person).count() == 69
     mentions = session.query(Person).all()
     assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
