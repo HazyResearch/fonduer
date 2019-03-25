@@ -1,4 +1,4 @@
-black
+black>=18.9b0
 flake8
 isort
 pre-commit
