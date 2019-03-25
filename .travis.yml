@@ -22,7 +22,7 @@ services:
 - postgresql
 
 addons:
-  postgresql: '9.6'
+  postgresql: '10'
 
 notifications:
   email: false
