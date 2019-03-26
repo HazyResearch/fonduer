@@ -1,5 +1,7 @@
 import logging
 import os
+from datetime import datetime
+from shutil import copyfile
 from time import time
 
 import numpy as np
@@ -11,8 +13,10 @@ from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 
+from fonduer import Meta
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
 from fonduer.learning.utils import MultiModalDataset, save_marginals
+from fonduer.utils.logging import TensorBoardLogger
 
 
 class Classifier(nn.Module):
@@ -30,7 +34,18 @@ class Classifier(nn.Module):
         nn.Module.__init__(self)
         self.logger = logging.getLogger(__name__)
         self.name = name or self.__class__.__name__
-        self.settings = None
+        self.tensorboard_logger = None
+
+        # Setup logging folder
+        dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_path = os.path.join(Meta.log_path, f"{dt}_{self.name}")
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+
+        self.settings = {"log_dir": log_path}
+
+        # Setup tensorboard
+        self.tensorboard_logger = TensorBoardLogger(self.settings["log_dir"])
 
     def _set_random_seed(self, seed):
         self.seed = seed
@@ -103,7 +118,6 @@ class Classifier(nn.Module):
         dev_ckpt_delay=0.75,
         b=0.5,
         pos_label=1,
-        save_dir="checkpoints",
         seed=1234,
         host_device="CPU",
     ):
@@ -138,23 +152,23 @@ class Classifier(nn.Module):
         :type b: float
         :param pos_label: Positive class index *for binary setting only*. Default: 1
         :type pos_label: int
-        :param save_dir: Save dir path for checkpointing.
-        :type save_dir: str
         :param seed: Random seed
         :type seed: int
         :param host_device: Host device
         :type host_device: str
         """
 
-        # Set model parameters
-        self.settings = {
-            "n_epochs": n_epochs,
-            "lr": lr,
-            "batch_size": batch_size,
-            "shuffle": shuffle,
-            "seed": 1234,
-            "host_device": host_device,
-        }
+        # Update training parameters
+        self.settings.update(
+            {
+                "n_epochs": n_epochs,
+                "lr": lr,
+                "batch_size": batch_size,
+                "shuffle": shuffle,
+                "seed": 1234,
+                "host_device": host_device,
+            }
+        )
 
         # Set random seed
         self._set_random_seed(self.settings["seed"])
@@ -225,7 +239,7 @@ class Classifier(nn.Module):
             )
 
         dev_score_opt = 0.0
-        dev_score_epo = -1
+
         for epoch in range(self.settings["n_epochs"]):
             iteration_losses = []
 
@@ -248,12 +262,12 @@ class Classifier(nn.Module):
                 iteration_losses.append(self._non_cuda(loss))
 
             # Print training stats and optionally checkpoint model
-            if verbose and (
-                (
-                    (epoch + 1) % print_freq == 0
-                    or epoch in [0, (self.settings["n_epochs"] - 1)]
-                )
-            ):
+            if (
+                verbose and (epoch + 1) % print_freq == 0
+            ) or epoch + 1 == self.settings["n_epochs"]:
+                # Log the training loss into tensorboard
+                self.tensorboard_logger.add_scalar("loss", loss.item(), epoch + 1)
+
                 msg = (
                     f"[{self.name}] "
                     f"Epoch {epoch + 1} ({time() - st:.2f}s)\t"
@@ -265,10 +279,21 @@ class Classifier(nn.Module):
                     score = scores["accuracy"] if self.cardinality > 2 else scores["f1"]
                     score_label = "Acc." if self.cardinality > 2 else "F1"
                     msg += f"\tDev {score_label}={100.0 * score:.2f}"
+
+                    # Log the evaulation score on dev set into tensorboard
+                    for metric in scores.keys():
+                        self.tensorboard_logger.add_scalar(
+                            metric, scores[metric], epoch + 1
+                        )
+
                 self.logger.info(msg)
 
+                # Save checkpoint
+                model_file = f"checkpoint_epoch_{epoch + 1}.pt"
+                self.save(model_file=model_file, save_dir=self.settings["log_dir"])
+
                 # If best score on dev set so far and dev checkpointing is
-                # active, save checkpoint
+                # active, save best checkpoint
                 if (
                     X_dev is not None
                     and dev_ckpt
@@ -276,16 +301,34 @@ class Classifier(nn.Module):
                     and score > dev_score_opt
                 ):
                     dev_score_opt = score
-                    dev_score_epo = epoch
-                    self.save(save_dir=save_dir, global_step=dev_score_epo)
+                    self.logger.info(
+                        f"Saving best checkpoint "
+                        f'{self.settings["log_dir"]}/{model_file}.'
+                    )
+                    copyfile(
+                        f'{self.settings["log_dir"]}/{model_file}',
+                        f'{self.settings["log_dir"]}/best_model.pt',
+                    )
+
+                if (X_dev is None or dev_ckpt is False) and epoch + 1 == self.settings[
+                    "n_epochs"
+                ]:
+                    self.logger.info(
+                        f"Saving final model as best checkpoint "
+                        f'{self.settings["log_dir"]}/{model_file}.'
+                    )
+                    copyfile(
+                        f'{self.settings["log_dir"]}/{model_file}',
+                        f'{self.settings["log_dir"]}/best_model.pt',
+                    )
 
         # Conclude training
         if verbose:
             self.logger.info(f"[{self.name}] Training done ({time() - st:.2f}s)")
-        # If checkpointing on, load last checkpoint (i.e. best on dev set)
-        if dev_ckpt and X_dev is not None and verbose and dev_score_opt > 0:
-            self.logger.info("Loading best checkpoint")
-            self.load(save_dir=save_dir, global_step=dev_score_epo)
+
+        # Load the best checkpoint (i.e. best on dev set)
+        self.logger.info("Loading best checkpoint")
+        self.load(model_file="best_model.pt", save_dir=self.settings["log_dir"])
 
     def marginals(self, X):
         """
@@ -442,76 +485,55 @@ class Classifier(nn.Module):
 
         return scores
 
-    def save(
-        self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
-    ):
+    def save(self, model_file, save_dir, verbose=True):
         """Save current model.
 
-        :param model_name: Saved model name.
-        :type model_name: str
+        :param model_file: Saved model file name.
+        :type model_file: str
         :param save_dir: Saved model directory.
         :type save_dir: str
         :param verbose: Print log or not
         :type verbose: bool
-        :param global_step: learned epoch of saved model
-        :type global_step: int
         """
 
-        model_name = model_name or self.name
-
         # Check existence of model saving directory and create if does not exist.
-        model_dir = os.path.join(save_dir, model_name)
-        if not os.path.exists(model_dir):
-            os.makedirs(model_dir)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
         params = {
             "model": self.state_dict(),
             "cardinality": self.cardinality,
-            "name": model_name,
+            "name": self.name,
             "config": self.settings,
-            "epoch": global_step,
         }
 
-        model_file = f"{model_name}.mdl.ckpt.{global_step}"
-
         try:
-            torch.save(params, f"{model_dir}/{model_file}")
+            torch.save(params, f"{save_dir}/{model_file}")
         except BaseException:
             self.logger.warning("Saving failed... continuing anyway.")
 
         if verbose:
-            self.logger.info(
-                f"[{model_name}] Model saved as {model_file} in {model_dir}"
-            )
+            self.logger.info(f"[{self.name}] Model saved as {model_file} in {save_dir}")
 
-    def load(
-        self, model_name=None, save_dir="checkpoints", verbose=True, global_step=0
-    ):
+    def load(self, model_file, save_dir, verbose=True):
         """Load model from file and rebuild the model.
 
-        :param model_name: Saved model name.
-        :type model_name: str
+        :param model_file: Saved model file name.
+        :type model_file: str
         :param save_dir: Saved model directory.
         :type save_dir: str
         :param verbose: Print log or not
         :type verbose: bool
-        :param global_step: learned epoch of saved model
-        :type global_step: int
         """
 
-        model_name = model_name or self.name
-
-        model_dir = os.path.join(save_dir, model_name)
-        if not os.path.exists(model_dir):
+        if not os.path.exists(save_dir):
             self.logger.error("Loading failed... Directory does not exist.")
 
-        model_file = f"{model_name}.mdl.ckpt.{global_step}"
-
         try:
-            checkpoint = torch.load(f"{model_dir}/{model_file}")
+            checkpoint = torch.load(f"{save_dir}/{model_file}")
         except BaseException:
             self.logger.error(
-                f"Loading failed... Cannot load model from {model_name} in {model_dir}"
+                f"Loading failed... Cannot load model from {save_dir}/{model_file}"
             )
 
         self.load_state_dict(checkpoint["model"])
@@ -521,5 +543,5 @@ class Classifier(nn.Module):
 
         if verbose:
             self.logger.info(
-                f"[{model_name}] Model loaded as {model_file} in {model_dir}"
+                f"[{self.name}] Model loaded as {model_file} in {save_dir}"
             )

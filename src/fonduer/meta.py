@@ -1,5 +1,8 @@
 import logging
+import os
+import tempfile
 from builtins import object
+from datetime import datetime
 from urllib.parse import urlparse
 
 import sqlalchemy
@@ -8,6 +11,45 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger(__name__)
+
+
+def init_logging(
+    log_dir=tempfile.gettempdir(),
+    format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+    level=logging.INFO,
+):
+    """Configures logging to output to the provided log_dir.
+
+    Will use a nested directory whose name is the current timestamp.
+
+    :param log_dir: The directory to store logs in.
+    :type log_dir: str
+    :param format: The logging format string to use.
+    :type format: str
+    :param level: The logging level to use, e.g., logging.INFO.
+    """
+
+    # Generate a new directory using the log_dir, if it doesn't exist
+    dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    log_path = os.path.join(log_dir, dt)
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+
+    # Configure the logger using the provided path
+    logging.basicConfig(
+        format=format,
+        level=level,
+        handlers=[
+            logging.FileHandler(os.path.join(log_path, "fonduer.log")),
+            logging.StreamHandler(),
+        ],
+    )
+
+    # Notify user of log location
+    if not Meta.log_path:
+        logger.info(f"Setting logging directory to: {log_path}")
+
+    Meta.log_path = log_path
 
 
 # Defines procedure for setting up a sessionmaker
@@ -72,6 +114,7 @@ class Meta(object):
     engine = None
     Base = declarative_base(name="Base", cls=object)
     postgres = False
+    log_path = None
 
     @classmethod
     def init(cls, conn_string=None):
@@ -87,6 +130,9 @@ class Meta(object):
                 f"to {Meta.DBHOST}:{Meta.DBPORT}/{Meta.DBNAME}"
             )
             Meta._init_db()
+
+        if not Meta.log_path:
+            init_logging()
 
         return cls
 

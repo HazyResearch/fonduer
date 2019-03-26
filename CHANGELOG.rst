@@ -1,8 +1,63 @@
 [Unreleased]
 ------------
 
+Added
+^^^^^
+* `@senwu`_: update the spacy version to v2.1.x.
+* `@lukehsiao`_: provide ``fonduer.init_logging()`` as a way to configure
+  logging to a temp directory by default.
+
+.. note::
+
+    Although you can still configure ``logging`` manually, with this change
+    we also provide a function for initializing logging. For example, you
+    can call:
+
+    .. code:: python
+
+        import logging
+        import fonduer
+
+        # Optionally configure logging
+        fonduer.init_logging(
+          log_dir="log_folder",
+          format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+          level=logging.INFO
+        )
+
+        session = fonduer.Meta.init(conn_string).Session()
+
+    which will create logs within the ``log_folder`` directory. If logging is
+    not explicitly initialized, we will provide a default configuration which
+    will store logs in a temporary directory.
+
+Changed
+^^^^^^^
+* `@senwu`_: Update the whole logging strategy.
+
+.. note::
+    For the whole logging strategy:
+
+    With this change, the running log is stored ``fonduer.log`` in the 
+    ``{fonduer.Meta.log_path}/{datetime}`` folder. User can specify it
+    using ``fonduer.init_logging()``. It also contains the learning logs init.
+
+    For learning logging strategy:
+
+    Previously, the model checkpoints are stored in the user provided folder
+    by ``save_dir`` and the name for checkpoint is 
+    ``{model_name}.mdl.ckpt.{global_step}``.
+
+    With this change, the model is saved in the subfolder of the same folder 
+    ``fonduer.Meta.log_path`` with log file file. Each learning run creates a
+    subfolder under name ``{datetime}_{model_name}`` with all model checkpoints
+    and tensorboard log file init. To use the tensorboard to check the learning
+    curve, run ``tensorboard --logdir LOG_FOLDER``.
+
 Fixed
 ^^^^^
+* `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
+    spaCy only support version 0.7.
 * `@HiromuHota`_: Use black 18.9b0 or higher to be consistent with isort.
   (`#225 <https://github.com/HazyResearch/fonduer/issues/225>`_)
 * `@senwu`_: Update the metal version.

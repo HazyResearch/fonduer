@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from metal.label_model import LabelModel
 
-from fonduer import Meta
+import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.features import Featurizer
@@ -69,7 +69,13 @@ def test_e2e(caplog):
 
     max_docs = 12
 
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    fonduer.init_logging(
+        log_dir="log_folder",
+        format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+        level=logging.INFO,
+    )
+
+    session = fonduer.Meta.init("postgresql://localhost:5432/" + DB).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -197,7 +203,7 @@ def test_e2e(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 299
-    assert session.query(Temp).count() == 147
+    assert session.query(Temp).count() == 138
     assert session.query(Volt).count() == 140
     assert len(mention_extractor.get_mentions()) == 3
     assert len(mention_extractor.get_mentions()[0]) == 299
@@ -221,9 +227,9 @@ def test_e2e(caplog):
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3684
-    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 72
-    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 448
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3493
+    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
+    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 416
     assert session.query(PartVolt).count() == 4282
 
     # Grab candidate lists
@@ -231,14 +237,14 @@ def test_e2e(caplog):
     dev_cands = candidate_extractor.get_candidates(split=1, sort=True)
     test_cands = candidate_extractor.get_candidates(split=2, sort=True)
     assert len(train_cands) == 2
-    assert len(train_cands[0]) == 3684
+    assert len(train_cands[0]) == 3493
     assert (
         len(
             candidate_extractor.get_candidates(
                 docs=[session.query(Document).filter(Document.name == "112823").first()]
             )[0]
         )
-        == 1496
+        == 1432
     )
 
     # Featurization
@@ -246,13 +252,13 @@ def test_e2e(caplog):
 
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 225
-    assert session.query(FeatureKey).count() == 1179
+    assert session.query(Feature).count() == 214
+    assert session.query(FeatureKey).count() == 1128
 
     # Test Dropping FeatureKey
     # Should force a row deletion
-    featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NFP NN NFP]"])
-    assert session.query(FeatureKey).count() == 1178
+    featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NNP NN IN]"])
+    assert session.query(FeatureKey).count() == 1127
 
     # Should only remove the part_volt as a relation and leave part_temp
     assert set(
@@ -265,40 +271,40 @@ def test_e2e(caplog):
     assert session.query(FeatureKey).filter(
         FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
-    assert session.query(FeatureKey).count() == 1178
+    assert session.query(FeatureKey).count() == 1127
     # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
-    assert session.query(FeatureKey).count() == 1177
+    assert session.query(FeatureKey).count() == 1126
     session.query(Feature).delete(synchronize_session="fetch")
     session.query(FeatureKey).delete(synchronize_session="fetch")
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 6669
-    assert session.query(FeatureKey).count() == 4161
+    assert session.query(Feature).count() == 6478
+    assert session.query(FeatureKey).count() == 4122
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3684, 4161)
-    assert F_train[1].shape == (2985, 4161)
-    assert len(featurizer.get_keys()) == 4161
+    assert F_train[0].shape == (3493, 4122)
+    assert F_train[1].shape == (2985, 4122)
+    assert len(featurizer.get_keys()) == 4122
 
     featurizer.apply(split=1, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 6894
-    assert session.query(FeatureKey).count() == 4161
+    assert session.query(Feature).count() == 6692
+    assert session.query(FeatureKey).count() == 4122
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (72, 4161)
-    assert F_dev[1].shape == (153, 4161)
+    assert F_dev[0].shape == (61, 4122)
+    assert F_dev[1].shape == (153, 4122)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 8486
-    assert session.query(FeatureKey).count() == 4161
+    assert session.query(Feature).count() == 8252
+    assert session.query(FeatureKey).count() == 4122
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (448, 4161)
-    assert F_test[1].shape == (1144, 4161)
+    assert F_test[0].shape == (416, 4122)
+    assert F_test[1].shape == (1144, 4122)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
-    assert session.query(GoldLabel).count() == 4204
+    assert session.query(GoldLabel).count() == 3970
     load_hardware_labels(session, PartVolt, gold_file, ATTRIBUTE, annotator_name="gold")
-    assert session.query(GoldLabel).count() == 8486
+    assert session.query(GoldLabel).count() == 8252
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -323,18 +329,18 @@ def test_e2e(caplog):
     labeler.apply(
         split=0, lfs=[stg_temp_lfs, ce_v_max_lfs], train=True, parallelism=PARALLEL
     )
-    assert session.query(Label).count() == 6669
+    assert session.query(Label).count() == 6478
     assert session.query(LabelKey).count() == 9
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3684, 9)
+    assert L_train[0].shape == (3493, 9)
     assert L_train[1].shape == (2985, 9)
     assert len(labeler.get_keys()) == 9
 
     L_train_gold = labeler.get_gold_labels(train_cands)
-    assert L_train_gold[0].shape == (3684, 1)
+    assert L_train_gold[0].shape == (3493, 1)
 
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
-    assert L_train_gold[0].shape == (3684, 1)
+    assert L_train_gold[0].shape == (3493, 1)
 
     gen_model = LabelModel(k=2)
     gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
@@ -349,7 +355,7 @@ def test_e2e(caplog):
         Y_dev=np.array(L_train_gold[0].todense()).reshape(-1),
         b=0.6,
         pos_label=TRUE,
-        n_epochs=20,
+        n_epochs=5,
         lr=0.001,
     )
 
@@ -392,10 +398,10 @@ def test_e2e(caplog):
         LF_not_temp_relevant,
     ]
     labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
-    assert session.query(Label).count() == 6669
+    assert session.query(Label).count() == 6478
     assert session.query(LabelKey).count() == 16
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3684, 16)
+    assert L_train[0].shape == (3493, 16)
 
     gen_model = LabelModel(k=2)
     gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
@@ -404,7 +410,7 @@ def test_e2e(caplog):
 
     disc_model = LogisticRegression()
     disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
     test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
@@ -456,7 +462,7 @@ def test_e2e(caplog):
     # Testing Sparse Logistic Regression
     disc_model = SparseLogisticRegression()
     disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=20, lr=0.001
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
 
     test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)

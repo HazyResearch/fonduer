@@ -2,14 +2,17 @@ language: generic
 dist: xenial
 cache: pip
 
+
 matrix:
   include:
   - os: linux
     env:
       - PYTHON=3.6
+      - CMAKE_BUILD_PARALLEL_LEVEL=2
   - os: linux
     env:
       - PYTHON=3.7
+      - CMAKE_BUILD_PARALLEL_LEVEL=2
   - os: osx
     env:
       - PYTHON=3.6
@@ -22,7 +25,7 @@ services:
 - postgresql
 
 addons:
-  postgresql: '9.6'
+  postgresql: '10'
 
 notifications:
   email: false
@@ -57,10 +60,10 @@ before_install:
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     if [ "${PYTHON}" = "3.6" ]; then
-      pip install https://download.pytorch.org/whl/cpu/torch-1.0.0-cp36-cp36m-linux_x86_64.whl
+      pip install https://download.pytorch.org/whl/cpu/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
     fi
     if [ "${PYTHON}" = "3.7" ]; then
-      pip install https://download.pytorch.org/whl/cpu/torch-1.0.0-cp37-cp37m-linux_x86_64.whl
+      pip install https://download.pytorch.org/whl/cpu/torch-1.0.1.post2-cp37-cp37m-linux_x86_64.whl
     fi
   fi
 

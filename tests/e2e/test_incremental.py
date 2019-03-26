@@ -80,7 +80,7 @@ def test_incremental(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 11
-    assert session.query(Temp).count() == 9
+    assert session.query(Temp).count() == 8
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
@@ -91,28 +91,28 @@ def test_incremental(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 78
-    assert session.query(Candidate).count() == 78
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 70
+    assert session.query(Candidate).count() == 70
 
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0)
     assert len(train_cands) == 1
-    assert len(train_cands[0]) == 78
+    assert len(train_cands[0]) == 70
 
     # Featurization
     featurizer = Featurizer(session, [PartTemp])
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 78
-    assert session.query(FeatureKey).count() == 496
+    assert session.query(Feature).count() == 70
+    assert session.query(FeatureKey).count() == 491
 
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (78, 496)
-    assert len(featurizer.get_keys()) == 496
+    assert F_train[0].shape == (70, 491)
+    assert len(featurizer.get_keys()) == 491
 
     # Test Dropping FeatureKey
     featurizer.drop_keys(["CORE_e1_LENGTH_1"])
-    assert session.query(FeatureKey).count() == 495
+    assert session.query(FeatureKey).count() == 490
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -126,12 +126,12 @@ def test_incremental(caplog):
     labeler = Labeler(session, [PartTemp])
 
     labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
-    assert session.query(Label).count() == 78
+    assert session.query(Label).count() == 70
 
     # Only 5 because LF_operating_row doesn't apply to the first test doc
     assert session.query(LabelKey).count() == 5
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (78, 5)
+    assert L_train[0].shape == (70, 5)
     assert len(labeler.get_keys()) == 5
 
     docs_path = "tests/data/html/112823.html"
@@ -152,7 +152,7 @@ def test_incremental(caplog):
     mention_extractor.apply(new_docs, parallelism=PARALLEL, clear=False)
 
     assert session.query(Part).count() == 81
-    assert session.query(Temp).count() == 33
+    assert session.query(Temp).count() == 31
 
     # Just run candidate extraction and assign to split 0
     candidate_extractor.apply(new_docs, split=0, parallelism=PARALLEL, clear=False)
@@ -160,22 +160,22 @@ def test_incremental(caplog):
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0)
     assert len(train_cands) == 1
-    assert len(train_cands[0]) == 1574
+    assert len(train_cands[0]) == 1502
 
     # Update features
     featurizer.update(new_docs, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 1574
-    assert session.query(FeatureKey).count() == 2425
+    assert session.query(Feature).count() == 1502
+    assert session.query(FeatureKey).count() == 2424
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (1574, 2425)
-    assert len(featurizer.get_keys()) == 2425
+    assert F_train[0].shape == (1502, 2424)
+    assert len(featurizer.get_keys()) == 2424
 
     # Update Labels
     labeler.update(new_docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)
-    assert session.query(Label).count() == 1574
+    assert session.query(Label).count() == 1502
     assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (1574, 6)
+    assert L_train[0].shape == (1502, 6)
 
     # Test clear
     featurizer.clear(train=True)

@@ -23,7 +23,7 @@ setup(
         "pyyaml>=4.2b1, <5.0",
         "scipy>=1.1.0, <2.0.0",
         "snorkel-metal>=0.4.1, <0.5.0",
-        "spacy>=2.0.12, <3.0.0",
+        "spacy>=2.1.3, <2.2.0",
         "sqlalchemy[postgresql_psycopg2binary]>=1.2.12, <2.0.0",
         "tensorboardX>=1.6, <2.0",
         "torch>=1.0, <2.0",
@@ -32,7 +32,7 @@ setup(
         "wand>=0.4.4, <0.5.0",
     ],
     extras_require={
-        "spacy_ja": ["mecab-python3>=0.7, <0.8"],
+        "spacy_ja": ["mecab-python3==0.7"],
         "spacy_zh": ["jieba>=0.39, <0.40"],
     },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
