@@ -306,6 +306,7 @@ class Spacy(object):
                 f"character limit set back to {self.model.max_length}."
             )
 
+        doc.is_parsed = True
         position = 0
         for sent in doc.sents:
             parts = defaultdict(list)
