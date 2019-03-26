@@ -32,9 +32,10 @@ notifications:
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -q -y libmecab-dev swig mecab mecab-ipadic-utf8; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -q -y libmecab-dev swig mecab unidic-mecab; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install poppler swig mecab mecab-ipadic freetype; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install poppler swig mecab mecab-unidic freetype; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew upgrade postgresql; fi
 - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
 - bash miniconda.sh -b -p $HOME/miniconda
@@ -55,6 +56,7 @@ before_install:
 - psql --version
 - python --version
 - pip --version
+- mecab -D || true
 
 # Install PyTorch for Linux with no CUDA support
 - |
