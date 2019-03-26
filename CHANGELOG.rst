@@ -56,7 +56,6 @@ Changed
 
 Fixed
 ^^^^^
-
 * `@HiromuHota`_: Use unidic instead of ipadic for Japanese.
   (`#231 <https://github.com/HazyResearch/fonduer/issues/231>`_)
 * `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
