@@ -76,12 +76,12 @@ to install some additional packages (`see mecab on PyPI`_).
 For Linux::
 
     $ sudo apt-get install swig libmecab-dev
-    $ sudo apt-get install mecab mecab-ipadic-utf8
+    $ sudo apt-get install mecab unidic-mecab
 
 For OS X::
 
     $ brew install swig mecab
-    $ brew install mecab-ipadic
+    $ brew install mecab-unidic
 
 Afterwards, you can use ``pip install fonduer[spacy_ja]`` to install Fonduer
 with Japanese language support.

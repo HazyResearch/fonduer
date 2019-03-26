@@ -56,6 +56,8 @@ Changed
 
 Fixed
 ^^^^^
+* `@HiromuHota`_: Use unidic instead of ipadic for Japanese.
+  (`#231 <https://github.com/HazyResearch/fonduer/issues/231>`_)
 * `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
     spaCy only support version 0.7.
 * `@HiromuHota`_: Use black 18.9b0 or higher to be consistent with isort.
