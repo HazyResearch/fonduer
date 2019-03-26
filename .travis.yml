@@ -55,7 +55,7 @@ before_install:
 - psql --version
 - python --version
 - pip --version
-- mecab -D
+- mecab -D || true
 
 # Install PyTorch for Linux with no CUDA support
 - |
