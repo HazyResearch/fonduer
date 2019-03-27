@@ -74,7 +74,7 @@ install:
 - make -s dev_extra
 - make check
 - make docs
-- pip install -q coveralls
+- pip install -q coveralls ipython
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     sudo apt install cmake checkinstall libopenjp2-7-dev
