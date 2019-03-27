@@ -1,16 +1,14 @@
 |Fonduer|
-=======
+=========
 
 |Travis| |CodeClimate| |Coveralls| |ReadTheDocs| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
-Fonduer is a framework for building knowledge base construction (KBC)
-applications from *richy formatted data* and is implemented as a library on top
-of a modified version of Snorkel_.
+Fonduer is a Python package and framework for building knowledge base
+construction (KBC) applications from **richly formatted data**.
 
 Note that Fonduer is still *actively under development*, so feedback and
 contributions are welcome. Submit bugs in the Issues_ section or feel free to
-submit your contributions as a pull request. If you have questions, please use
-our `Mailing List`_.
+submit your contributions as a pull request.
 
 Getting Started
 ---------------
@@ -39,6 +37,11 @@ Data <https://arxiv.org/abs/1703.05028>`__::
     }
 
 
+Acknowledgements
+----------------
+
+Fonduer leverages the work of Snorkel_ and MeTaL_.
+
 
 .. |CodeClimate| image:: https://img.shields.io/codeclimate/maintainability/HazyResearch/fonduer.svg
    :alt: Code Climate
@@ -62,6 +65,7 @@ Data <https://arxiv.org/abs/1703.05028>`__::
 .. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
 
+.. _MeTaL: https://github.com/HazyResearch/metal/
 .. _Snorkel: https://hazyresearch.github.io/snorkel/
 .. _Issues: https://github.com/HazyResearch/fonduer/issues/
 .. _Getting Started Guide: https://fonduer.readthedocs.io/en/latest/user/getting_started.html

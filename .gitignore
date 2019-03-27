@@ -3,6 +3,8 @@
 # Downloaded Tutorial Data
 pdf/
 html/
+*.csv
+*.pkl
 
 # Dependencies
 phantomjs/

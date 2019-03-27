@@ -1,35 +1,59 @@
 #! /usr/bin/env python
-import csv
 import logging
 import os
 import pickle
-import re
-from builtins import range
 
+import numpy as np
 import pytest
-from hardware_spaces import OmniNgramsPart, OmniNgramsTemp
-from hardware_utils import entity_level_f1, load_hardware_labels
+from metal.label_model import LabelModel
 
-from fonduer import (
-    BatchFeatureAnnotator,
-    BatchLabelAnnotator,
-    CandidateExtractor,
-    DictionaryMatch,
-    Document,
-    GenerativeModel,
-    HTMLDocPreprocessor,
-    Intersect,
-    LambdaFunctionMatcher,
-    Meta,
-    Parser,
-    RegexMatchSpan,
-    Sentence,
+import fonduer
+from fonduer.candidates import CandidateExtractor, MentionExtractor
+from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.features import Featurizer
+from fonduer.features.models import Feature, FeatureKey
+from fonduer.learning import (
+    LSTM,
+    LogisticRegression,
     SparseLogisticRegression,
-    Union,
-    candidate_subclass,
-    load_gold_labels,
+    SparseLSTM,
 )
-from fonduer.supervision.lf_helpers import *
+from fonduer.parser import Parser
+from fonduer.parser.models import Document, Sentence
+from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.supervision import Labeler
+from fonduer.supervision.models import GoldLabel, Label, LabelKey
+from tests.shared.hardware_lfs import (
+    TRUE,
+    LF_bad_keywords_in_row,
+    LF_collector_aligned,
+    LF_complement_left_row,
+    LF_current_aligned,
+    LF_current_in_row,
+    LF_negative_number_left,
+    LF_non_ce_voltages_in_row,
+    LF_not_temp_relevant,
+    LF_operating_row,
+    LF_storage_row,
+    LF_temp_on_high_page_num,
+    LF_temp_outside_table,
+    LF_temperature_row,
+    LF_test_condition_aligned,
+    LF_to_left,
+    LF_too_many_numbers_row,
+    LF_tstg_row,
+    LF_typ_row,
+    LF_voltage_row_part,
+    LF_voltage_row_temp,
+)
+from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
+from tests.shared.hardware_spaces import (
+    MentionNgramsPart,
+    MentionNgramsTemp,
+    MentionNgramsVolt,
+)
+from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
+from tests.shared.hardware_utils import entity_level_f1, load_hardware_labels
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -40,50 +64,62 @@ DB = "e2e_test"
 def test_e2e(caplog):
     """Run an end-to-end test on documents of the hardware domain."""
     caplog.set_level(logging.INFO)
-    # SpaCy on mac has issue on parallel parseing
-    if os.name == "posix":
-        PARALLEL = 1
-    else:
-        PARALLEL = 2  # Travis only gives 2 cores
+
+    PARALLEL = 4
 
     max_docs = 12
 
-    session = Meta.init("postgres://localhost:5432/" + DB).Session()
+    fonduer.init_logging(
+        log_dir="log_folder",
+        format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+        level=logging.INFO,
+    )
 
-    Part_Attr = candidate_subclass("Part_Attr", ["part", "attr"])
+    session = fonduer.Meta.init("postgresql://localhost:5432/" + DB).Session()
 
-    docs_path = "tests/e2e/data/html/"
-    pdf_path = "tests/e2e/data/pdf/"
+    docs_path = "tests/data/html/"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
     corpus_parser = Parser(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        session,
+        parallelism=PARALLEL,
+        structural=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
     )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    corpus_parser.apply(doc_preprocessor)
+    assert session.query(Document).count() == max_docs
 
     num_docs = session.query(Document).count()
-    logger.info("Docs: {}".format(num_docs))
+    logger.info(f"Docs: {num_docs}")
     assert num_docs == max_docs
 
     num_sentences = session.query(Sentence).count()
-    logger.info("Sentences: {}".format(num_sentences))
+    logger.info(f"Sentences: {num_sentences}")
 
     # Divide into test and train
-    docs = session.query(Document).order_by(Document.name).all()
+    docs = sorted(corpus_parser.get_documents())
+    last_docs = sorted(corpus_parser.get_last_documents())
+
     ld = len(docs)
-    assert len(docs[0].sentences) == 828
-    assert len(docs[1].sentences) == 706
-    assert len(docs[2].sentences) == 819
-    assert len(docs[3].sentences) == 684
-    assert len(docs[4].sentences) == 552
-    assert len(docs[5].sentences) == 758
-    assert len(docs[6].sentences) == 597
-    assert len(docs[7].sentences) == 165
-    assert len(docs[8].sentences) == 250
-    assert len(docs[9].sentences) == 533
-    assert len(docs[10].sentences) == 354
-    assert len(docs[11].sentences) == 547
+    assert ld == len(last_docs)
+    assert len(docs[0].sentences) == len(last_docs[0].sentences)
+
+    assert len(docs[0].sentences) == 799
+    assert len(docs[1].sentences) == 663
+    assert len(docs[2].sentences) == 784
+    assert len(docs[3].sentences) == 661
+    assert len(docs[4].sentences) == 513
+    assert len(docs[5].sentences) == 700
+    assert len(docs[6].sentences) == 528
+    assert len(docs[7].sentences) == 161
+    assert len(docs[8].sentences) == 228
+    assert len(docs[9].sentences) == 511
+    assert len(docs[10].sentences) == 331
+    assert len(docs[11].sentences) == 528
 
     # Check table numbers
     assert len(docs[0].tables) == 9
@@ -142,134 +178,133 @@ def test_e2e(caplog):
             test_docs.add(doc)
     logger.info([x.name for x in train_docs])
 
-    attr_matcher = RegexMatchSpan(rgx=r"(?:[1][5-9]|20)[05]", longest_match_only=False)
+    # NOTE: With multi-relation support, return values of getting candidates,
+    # mentions, or sparse matrices are formatted as a list of lists. This means
+    # that with a single relation, we need to index into the list of lists to
+    # get the candidates/mentions/sparse matrix for a particular relation or
+    # mention.
 
-    ### Transistor Naming Conventions as Regular Expressions ###
-    eeca_rgx = r"([ABC][A-Z][WXYZ]?[0-9]{3,5}(?:[A-Z]){0,5}[0-9]?[A-Z]?(?:-[A-Z0-9]{1,7})?(?:[-][A-Z0-9]{1,2})?(?:\/DG)?)"
-    jedec_rgx = r"(2N\d{3,4}[A-Z]{0,5}[0-9]?[A-Z]?)"
-    jis_rgx = r"(2S[ABCDEFGHJKMQRSTVZ]{1}[\d]{2,4})"
-    others_rgx = r"((?:NSVBC|SMBT|MJ|MJE|MPS|MRF|RCA|TIP|ZTX|ZT|ZXT|TIS|TIPL|DTC|MMBT|SMMBT|PZT|FZT|STD|BUV|PBSS|KSC|CXT|FCX|CMPT){1}[\d]{2,4}[A-Z]{0,5}(?:-[A-Z0-9]{0,6})?(?:[-][A-Z0-9]{0,1})?)"
+    # Mention Extraction
+    part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
+    temp_ngrams = MentionNgramsTemp(n_max=2)
+    volt_ngrams = MentionNgramsVolt(n_max=1)
 
-    part_rgx = "|".join([eeca_rgx, jedec_rgx, jis_rgx, others_rgx])
-    part_rgx_matcher = RegexMatchSpan(rgx=part_rgx, longest_match_only=True)
+    Part = mention_subclass("Part")
+    Temp = mention_subclass("Temp")
+    Volt = mention_subclass("Volt")
 
-    def get_digikey_parts_set(path):
-        """
-        Reads in the digikey part dictionary and yeilds each part.
-        """
-        all_parts = set()
-        with open(path, "r") as csvinput:
-            reader = csv.reader(csvinput)
-            for line in reader:
-                (part, url) = line
-                all_parts.add(part)
-        return all_parts
+    mention_extractor = MentionExtractor(
+        session,
+        [Part, Temp, Volt],
+        [part_ngrams, temp_ngrams, volt_ngrams],
+        [part_matcher, temp_matcher, volt_matcher],
+    )
 
-    ### Dictionary of known transistor parts ###
-    dict_path = "tests/e2e/data/digikey_part_dictionary.csv"
-    part_dict_matcher = DictionaryMatch(d=get_digikey_parts_set(dict_path))
+    mention_extractor.apply(docs, parallelism=PARALLEL)
 
-    def common_prefix_length_diff(str1, str2):
-        for i in range(min(len(str1), len(str2))):
-            if str1[i] != str2[i]:
-                return min(len(str1), len(str2)) - i
-        return 0
-
-    def part_file_name_conditions(attr):
-        file_name = attr.sentence.document.name
-        if len(file_name.split("_")) != 2:
-            return False
-        if attr.get_span()[0] == "-":
-            return False
-        name = attr.get_span().replace("-", "")
-        return (
-            any(char.isdigit() for char in name)
-            and any(char.isalpha() for char in name)
-            and common_prefix_length_diff(file_name.split("_")[1], name) <= 2
+    assert session.query(Part).count() == 299
+    assert session.query(Temp).count() == 138
+    assert session.query(Volt).count() == 140
+    assert len(mention_extractor.get_mentions()) == 3
+    assert len(mention_extractor.get_mentions()[0]) == 299
+    assert (
+        len(
+            mention_extractor.get_mentions(
+                docs=[session.query(Document).filter(Document.name == "112823").first()]
+            )[0]
         )
-
-    add_rgx = "^[A-Z0-9\-]{5,15}$"
-
-    part_file_name_lambda_matcher = LambdaFunctionMatcher(
-        func=part_file_name_conditions
-    )
-    part_file_name_matcher = Intersect(
-        RegexMatchSpan(rgx=add_rgx, longest_match_only=True),
-        part_file_name_lambda_matcher,
+        == 70
     )
 
-    part_matcher = Union(part_rgx_matcher, part_dict_matcher, part_file_name_matcher)
-
-    part_ngrams = OmniNgramsPart(parts_by_doc=None, n_max=3)
-    attr_ngrams = OmniNgramsTemp(n_max=2)
-
-    def stg_temp_filter(c):
-        (part, attr) = c
-        if same_table((part, attr)):
-            return is_horz_aligned((part, attr)) or is_vert_aligned((part, attr))
-        return True
-
-    candidate_filter = stg_temp_filter
+    # Candidate Extraction
+    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+    PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
     candidate_extractor = CandidateExtractor(
-        Part_Attr,
-        [part_ngrams, attr_ngrams],
-        [part_matcher, attr_matcher],
-        candidate_filter=candidate_filter,
+        session, [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
     )
 
-    candidate_extractor.apply(train_docs, split=0, parallelism=PARALLEL)
+    for i, docs in enumerate([train_docs, dev_docs, test_docs]):
+        candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
 
-    train_cands = session.query(Part_Attr).filter(Part_Attr.split == 0).all()
-    logger.info("Number of candidates: {}".format(len(train_cands)))
+    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3493
+    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
+    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 416
+    assert session.query(PartVolt).count() == 4282
 
-    for i, docs in enumerate([dev_docs, test_docs]):
-        candidate_extractor.apply(docs, split=i + 1)
-        logger.info(
-            "Number of candidates: {}".format(
-                session.query(Part_Attr).filter(Part_Attr.split == i + 1).count()
-            )
+    # Grab candidate lists
+    train_cands = candidate_extractor.get_candidates(split=0, sort=True)
+    dev_cands = candidate_extractor.get_candidates(split=1, sort=True)
+    test_cands = candidate_extractor.get_candidates(split=2, sort=True)
+    assert len(train_cands) == 2
+    assert len(train_cands[0]) == 3493
+    assert (
+        len(
+            candidate_extractor.get_candidates(
+                docs=[session.query(Document).filter(Document.name == "112823").first()]
+            )[0]
         )
-
-    featurizer = BatchFeatureAnnotator(Part_Attr)
-    F_train = featurizer.apply(split=0, replace_key_set=True, parallelism=PARALLEL)
-    logger.info(F_train.shape)
-    F_dev = featurizer.apply(split=1, replace_key_set=False, parallelism=PARALLEL)
-    logger.info(F_dev.shape)
-    F_test = featurizer.apply(split=2, replace_key_set=False, parallelism=PARALLEL)
-    logger.info(F_test.shape)
-
-    gold_file = "tests/e2e/data/hardware_tutorial_gold.csv"
-    load_hardware_labels(
-        session, Part_Attr, gold_file, ATTRIBUTE, annotator_name="gold"
+        == 1432
     )
 
-    def LF_storage_row(c):
-        return 1 if "storage" in get_row_ngrams(c.attr) else 0
+    # Featurization
+    featurizer = Featurizer(session, [PartTemp, PartVolt])
 
-    def LF_temperature_row(c):
-        return 1 if "temperature" in get_row_ngrams(c.attr) else 0
+    # Test that FeatureKey is properly reset
+    featurizer.apply(split=1, train=True, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 214
+    assert session.query(FeatureKey).count() == 1128
 
-    def LF_operating_row(c):
-        return 1 if "operating" in get_row_ngrams(c.attr) else 0
+    # Test Dropping FeatureKey
+    # Should force a row deletion
+    featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NNP NN IN]"])
+    assert session.query(FeatureKey).count() == 1127
 
-    def LF_tstg_row(c):
-        return 1 if overlap(["tstg", "stg", "ts"], list(get_row_ngrams(c.attr))) else 0
+    # Should only remove the part_volt as a relation and leave part_temp
+    assert set(
+        session.query(FeatureKey)
+        .filter(FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]")
+        .one()
+        .candidate_classes
+    ) == {"part_temp", "part_volt"}
+    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
+    assert session.query(FeatureKey).filter(
+        FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
+    ).one().candidate_classes == ["part_temp"]
+    assert session.query(FeatureKey).count() == 1127
+    # Removing the last relation from a key should delete the row
+    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
+    assert session.query(FeatureKey).count() == 1126
+    session.query(Feature).delete(synchronize_session="fetch")
+    session.query(FeatureKey).delete(synchronize_session="fetch")
 
-    def LF_to_left(c):
-        return 1 if "to" in get_left_ngrams(c.attr, window=2) else 0
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 6478
+    assert session.query(FeatureKey).count() == 4122
+    F_train = featurizer.get_feature_matrices(train_cands)
+    assert F_train[0].shape == (3493, 4122)
+    assert F_train[1].shape == (2985, 4122)
+    assert len(featurizer.get_keys()) == 4122
 
-    def LF_negative_number_left(c):
-        return (
-            1
-            if any(
-                [
-                    re.match(r"-\s*\d+", ngram)
-                    for ngram in get_left_ngrams(c.attr, window=4)
-                ]
-            )
-            else 0
-        )
+    featurizer.apply(split=1, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 6692
+    assert session.query(FeatureKey).count() == 4122
+    F_dev = featurizer.get_feature_matrices(dev_cands)
+    assert F_dev[0].shape == (61, 4122)
+    assert F_dev[1].shape == (153, 4122)
+
+    featurizer.apply(split=2, parallelism=PARALLEL)
+    assert session.query(Feature).count() == 8252
+    assert session.query(FeatureKey).count() == 4122
+    F_test = featurizer.get_feature_matrices(test_cands)
+    assert F_test[0].shape == (416, 4122)
+    assert F_test[1].shape == (1144, 4122)
+
+    gold_file = "tests/data/hardware_tutorial_gold.csv"
+    load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
+    assert session.query(GoldLabel).count() == 3970
+    load_hardware_labels(session, PartVolt, gold_file, ATTRIBUTE, annotator_name="gold")
+    assert session.query(GoldLabel).count() == 8252
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -280,32 +315,54 @@ def test_e2e(caplog):
         LF_negative_number_left,
     ]
 
-    labeler = BatchLabelAnnotator(Part_Attr, lfs=stg_temp_lfs)
-    L_train = labeler.apply(split=0, clear=True, parallelism=PARALLEL)
-    logger.info(L_train.shape)
+    ce_v_max_lfs = [
+        LF_bad_keywords_in_row,
+        LF_current_in_row,
+        LF_non_ce_voltages_in_row,
+    ]
 
-    L_gold_train = load_gold_labels(session, annotator_name="gold", split=0)
+    labeler = Labeler(session, [PartTemp, PartVolt])
 
-    gen_model = GenerativeModel()
-    gen_model.train(
-        L_train, epochs=500, decay=0.9, step_size=0.001 / L_train.shape[0], reg_param=0
+    with pytest.raises(ValueError):
+        labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
+
+    labeler.apply(
+        split=0, lfs=[stg_temp_lfs, ce_v_max_lfs], train=True, parallelism=PARALLEL
     )
-    logger.info("LF Accuracy: {}".format(gen_model.weights.lf_accuracy))
+    assert session.query(Label).count() == 6478
+    assert session.query(LabelKey).count() == 9
+    L_train = labeler.get_label_matrices(train_cands)
+    assert L_train[0].shape == (3493, 9)
+    assert L_train[1].shape == (2985, 9)
+    assert len(labeler.get_keys()) == 9
 
-    L_gold_dev = load_gold_labels(session, annotator_name="gold", split=1)
+    L_train_gold = labeler.get_gold_labels(train_cands)
+    assert L_train_gold[0].shape == (3493, 1)
 
-    train_marginals = gen_model.marginals(L_train)
+    L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
+    assert L_train_gold[0].shape == (3493, 1)
 
-    disc_model = SparseLogisticRegression()
-    disc_model.train(F_train, train_marginals, n_epochs=200, lr=0.001)
+    gen_model = LabelModel(k=2)
+    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
 
-    L_gold_test = load_gold_labels(session, annotator_name="gold", split=2)
+    train_marginals = gen_model.predict_proba(L_train[0])
 
-    test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
-    test_score = disc_model.predictions(F_test)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    disc_model = LogisticRegression()
+    disc_model.train(
+        (train_cands[0], F_train[0]),
+        train_marginals,
+        X_dev=(train_cands[0], F_train[0]),
+        Y_dev=np.array(L_train_gold[0].todense()).reshape(-1),
+        b=0.6,
+        pos_label=TRUE,
+        n_epochs=5,
+        lr=0.001,
+    )
 
-    pickle_file = "tests/e2e/data/parts_by_doc_dict.pkl"
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+
+    pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
         parts_by_doc = pickle.load(f)
 
@@ -320,97 +377,14 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 < 0.7 and f1 > 0.3
 
-    def LF_test_condition_aligned(c):
-        return (
-            -1
-            if overlap(["test", "condition"], list(get_aligned_ngrams(c.attr)))
-            else 0
-        )
-
-    def LF_collector_aligned(c):
-        return (
-            -1
-            if overlap(
-                [
-                    "collector",
-                    "collector-current",
-                    "collector-base",
-                    "collector-emitter",
-                ],
-                list(get_aligned_ngrams(c.attr)),
-            )
-            else 0
-        )
-
-    def LF_current_aligned(c):
-        return (
-            -1
-            if overlap(["current", "dc", "ic"], list(get_aligned_ngrams(c.attr)))
-            else 0
-        )
-
-    def LF_voltage_row_temp(c):
-        return (
-            -1
-            if overlap(
-                ["voltage", "cbo", "ceo", "ebo", "v"], list(get_aligned_ngrams(c.attr))
-            )
-            else 0
-        )
-
-    def LF_voltage_row_part(c):
-        return (
-            -1
-            if overlap(
-                ["voltage", "cbo", "ceo", "ebo", "v"], list(get_aligned_ngrams(c.attr))
-            )
-            else 0
-        )
-
-    def LF_typ_row(c):
-        return -1 if overlap(["typ", "typ."], list(get_row_ngrams(c.attr))) else 0
-
-    def LF_complement_left_row(c):
-        return (
-            -1
-            if (
-                overlap(
-                    ["complement", "complementary"],
-                    chain.from_iterable(
-                        [get_row_ngrams(c.part), get_left_ngrams(c.part, window=10)]
-                    ),
-                )
-            )
-            else 0
-        )
-
-    def LF_too_many_numbers_row(c):
-        num_numbers = list(get_row_ngrams(c.attr, attrib="ner_tags")).count("number")
-        return -1 if num_numbers >= 3 else 0
-
-    def LF_temp_on_high_page_num(c):
-        return -1 if c.attr.get_attrib_tokens("page")[0] > 2 else 0
-
-    def LF_temp_outside_table(c):
-        return -1 if not c.attr.sentence.is_tabular() is None else 0
-
-    def LF_not_temp_relevant(c):
-        return (
-            -1
-            if not overlap(
-                ["storage", "temperature", "tstg", "stg", "ts"],
-                list(get_aligned_ngrams(c.attr)),
-            )
-            else 0
-        )
-
     stg_temp_lfs_2 = [
+        LF_to_left,
         LF_test_condition_aligned,
         LF_collector_aligned,
         LF_current_aligned,
@@ -423,23 +397,24 @@ def test_e2e(caplog):
         LF_temp_outside_table,
         LF_not_temp_relevant,
     ]
+    labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
+    assert session.query(Label).count() == 6478
+    assert session.query(LabelKey).count() == 16
+    L_train = labeler.get_label_matrices(train_cands)
+    assert L_train[0].shape == (3493, 16)
 
-    labeler = BatchLabelAnnotator(Part_Attr, lfs=stg_temp_lfs_2)
-    L_train = labeler.apply(
-        split=0, clear=False, update_keys=True, update_values=True, parallelism=PARALLEL
+    gen_model = LabelModel(k=2)
+    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
+
+    train_marginals = gen_model.predict_proba(L_train[0])
+
+    disc_model = LogisticRegression()
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
     )
-    gen_model = GenerativeModel()
-    gen_model.train(
-        L_train, epochs=500, decay=0.9, step_size=0.001 / L_train.shape[0], reg_param=0
-    )
-    train_marginals = gen_model.marginals(L_train)
 
-    disc_model = SparseLogisticRegression()
-    disc_model.train(F_train, train_marginals, n_epochs=200, lr=0.001)
-
-    test_candidates = [F_test.get_candidate(session, i) for i in range(F_test.shape[0])]
-    test_score = disc_model.predictions(F_test)
-    true_pred = [test_candidates[_] for _ in np.nditer(np.where(test_score > 0))]
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -452,8 +427,96 @@ def test_e2e(caplog):
     rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
     f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
 
-    logger.info("prec: {}".format(prec))
-    logger.info("rec: {}".format(rec))
-    logger.info("f1: {}".format(f1))
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
+
+    # Testing LSTM
+    disc_model = LSTM()
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
+    )
+
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+
+    (TP, FP, FN) = entity_level_f1(
+        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+    )
+
+    tp_len = len(TP)
+    fp_len = len(FP)
+    fn_len = len(FN)
+    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
+    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
+
+    assert f1 > 0.7
+
+    # Testing Sparse Logistic Regression
+    disc_model = SparseLogisticRegression()
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
+    )
+
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+
+    (TP, FP, FN) = entity_level_f1(
+        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+    )
+
+    tp_len = len(TP)
+    fp_len = len(FP)
+    fn_len = len(FN)
+    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
+    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
+
+    assert f1 > 0.7
+
+    # Testing Sparse LSTM
+    disc_model = SparseLSTM()
+    disc_model.train(
+        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
+    )
+
+    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
+    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+
+    (TP, FP, FN) = entity_level_f1(
+        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+    )
+
+    tp_len = len(TP)
+    fp_len = len(FP)
+    fn_len = len(FN)
+    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
+    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
+
+    assert f1 > 0.7
+
+    # Evaluate mention level scores
+    L_test_gold = labeler.get_gold_labels(test_cands, annotator="gold")
+    Y_test = np.array(L_test_gold[0].todense()).reshape(-1)
+
+    scores = disc_model.score((test_cands[0], F_test[0]), Y_test, b=0.6, pos_label=TRUE)
+
+    logger.info(scores)
+
+    assert scores["f1"] > 0.6

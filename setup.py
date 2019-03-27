@@ -1,35 +1,41 @@
 """For pip."""
+from glob import glob
+from os.path import basename, splitext
+
 from setuptools import find_packages, setup
 
-exec(open("fonduer/_version.py").read())
+exec(open("src/fonduer/_version.py").read())
 setup(
     name="fonduer",
     version=__version__,
     description="Knowledge base construction system for richly formatted data.",
     long_description=open("README.rst").read(),
-    packages=find_packages(),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     install_requires=[
-        "bs4",
-        "editdistance",
-        "lxml==3.6.4",
-        "nltk",
-        "numba",
-        "numbskull",
-        "numpy>=1.11",
-        "pandas",
-        "pdftotree",
-        "psycopg2-binary",
-        "pyyaml",
-        "scipy>=0.18",
-        "spacy>=2.0.7",
-        "sqlalchemy>=1.0.14",
-        "tensorflow>=1.0",
-        "treedlib",
-        "wand",
+        "bs4>=0.0.1, <0.1.0",
+        "editdistance>=0.5.2, <0.6.0",
+        "lxml>=4.2.5, <5.0.0",
+        "nltk>=3.3, <4.0",
+        "numpy>=1.11, <2.0",
+        "pandas>=0.23.4, <0.24.0",
+        "pyyaml>=4.2b1, <5.0",
+        "scipy>=1.1.0, <2.0.0",
+        "snorkel-metal>=0.4.1, <0.5.0",
+        "spacy>=2.1.3, <2.2.0",
+        "sqlalchemy[postgresql_psycopg2binary]>=1.2.12, <2.0.0",
+        "tensorboardX>=1.6, <2.0",
+        "torch>=1.0, <2.0",
+        "tqdm>=4.26.0, <5.0.0",
+        "treedlib>=0.1.1, <0.2.0",
+        "wand>=0.4.4, <0.5.0",
     ],
+    extras_require={
+        "spacy_ja": ["mecab-python3==0.7"],
+        "spacy_zh": ["jieba>=0.39, <0.40"],
+    },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest>=3.4.0", "flake8"],
     include_package_data=True,
     url="https://github.com/HazyResearch/fonduer",
     classifiers=[  # https://pypi.python.org/pypi?:action=list_classifiers
@@ -38,6 +44,7 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3 :: Only",
     ],
     project_urls={

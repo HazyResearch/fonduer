@@ -15,16 +15,18 @@ For OS X using homebrew_::
 
     $ brew install poppler
     $ brew install postgresql
+    $ brew install libpng freetype pkg-config
 
 On Debian-based distros::
 
     $ sudo apt update
-    $ sudo apt install libxml2-dev libxslt-dev python3-dev 
+    $ sudo apt install libxml2-dev libxslt-dev python3-dev
+    $ sudo apt build-dep python-matplotlib
     $ sudo apt install poppler-utils
     $ sudo apt install postgresql
 
 .. note::
-    Fonduer requires PostgreSQL version 9.6 or above.     
+    Fonduer requires PostgreSQL version 9.6 or above.
 
 .. note::
     Fonduer requires ``poppler-utils`` to be version 0.36.0 or above.
@@ -47,7 +49,7 @@ Then, install Fonduer by running::
   Python environment. Once you have virtualenv installed, you can create a
   Python 3 virtual environment as follows.::
 
-      $ virtualenv -p python3 .venv
+      $ virtualenv -p python3.6 .venv
 
   Once the virtual environment is created, activate it by running::
 
@@ -55,27 +57,32 @@ Then, install Fonduer by running::
 
   Any Python libraries installed will now be contained within this virtual
   environment. To deactivate the environment, simply run::
-    
+
       $ deactivate
 
 
 The Fonduer Pipeline
 --------------------
 
-The Fonduer pipeline can be broken into three main phases. Each of these phases
-requires input from you as you build your Fonduer application. 
+The Fonduer pipeline can be broken into five phases.
 
-  #. Knowledge Base Initialization 
-      We initialize the target knowledge base. Fonduer requires users to
-      specify a schema, as well as preprocessors_ to be used while parsing your
-      corpus.
-  #. Candidate Extraction 
-      Next, users provide matchers_ to define which each type in the schema
-      looks like. Throttlers can also (optionally) be added to filter out
-      invalid candidates to achieve better class balance.
-  #. Multimodal Featurization, Supervision, and Classification 
-      Finally, users provide labeling functions (which can leverage our
-      `labeling function helpers`_) to provide weak supervision.
+  #. Parsing
+      In this first stage, an input corpus of richly formatted documents is
+      parsed into Fonduer's data model.
+  #. Mention and Candidate Extraction
+      Here, we initialize the knowledge base with the user's target schema.
+      Users define Mentions using Matchers_, and then combine Mentions to
+      create Candidates. Throttlers can also (optionally) be added to filter
+      out invalid Candidates to achieve better class balance.
+  #. Multimodal Featurization
+      Fonduer then featurizes each candidate with features from multiple
+      modalities.
+  #. Supervision
+      Next, users provide labeling functions (which can leverage our
+      `data model utilities`_) to provide weak supervision.
+  #. Classification
+      Finally, Fonduer provides machine learning models which are used to
+      classify each Candidate.
 
 To demonstrate how to set up and use Fonduer in your applications, we walk
 through each of these phases in real-world examples in our Tutorials_.
@@ -84,10 +91,10 @@ Check out the `Fonduer paper`_ for more details about the system.
 
 
 .. _Fonduer paper: https://arxiv.org/abs/1703.05028
-.. _labeling function helpers: lf_helpers.html
-.. _preprocessors: preprocessors.html
-.. _matchers: matchers.html
 .. _Tutorials: https://github.com/HazyResearch/fonduer-tutorials
+.. _data model utilities: data_model_utils.html
 .. _homebrew: https://brew.sh
+.. _Matchers: candidates.html#matchers
+.. _preprocessors: preprocessors.html
 .. _see changelog: https://poppler.freedesktop.org/releases.html
 .. _virtualenv: https://virtualenv.pypa.io/en/stable/
