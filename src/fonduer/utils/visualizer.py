@@ -129,6 +129,8 @@ def pdf_to_img(pdf_file, page_num, pdf_dim=None):
     if not pdf_dim:
         pdf_dim = get_pdf_dim(pdf_file)
     page_width, page_height = pdf_dim
-    img = Image(filename=f"{pdf_file}[{page_num - 1}]")
+    fname = f"{os.path.abspath(pdf_file)}[{page_num-1}]"
+    logger.warning(f"pdf_to_img: {fname}")
+    img = Image(filename=fname)
     img.resize(page_width, page_height)
     return img

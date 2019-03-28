@@ -38,17 +38,17 @@ Changed
 .. note::
     For the whole logging strategy:
 
-    With this change, the running log is stored ``fonduer.log`` in the 
+    With this change, the running log is stored ``fonduer.log`` in the
     ``{fonduer.Meta.log_path}/{datetime}`` folder. User can specify it
     using ``fonduer.init_logging()``. It also contains the learning logs init.
 
     For learning logging strategy:
 
     Previously, the model checkpoints are stored in the user provided folder
-    by ``save_dir`` and the name for checkpoint is 
+    by ``save_dir`` and the name for checkpoint is
     ``{model_name}.mdl.ckpt.{global_step}``.
 
-    With this change, the model is saved in the subfolder of the same folder 
+    With this change, the model is saved in the subfolder of the same folder
     ``fonduer.Meta.log_path`` with log file file. Each learning run creates a
     subfolder under name ``{datetime}_{model_name}`` with all model checkpoints
     and tensorboard log file init. To use the tensorboard to check the learning
@@ -59,10 +59,10 @@ Fixed
 * `@HiromuHota`_: Use unidic instead of ipadic for Japanese.
   (`#231 <https://github.com/HazyResearch/fonduer/issues/231>`_)
 * `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
-    spaCy only support version 0.7.
+  spaCy only support version 0.7.
 * `@HiromuHota`_: Use black 18.9b0 or higher to be consistent with isort.
   (`#225 <https://github.com/HazyResearch/fonduer/issues/225>`_)
-* `@senwu`_: Update the metal version.
+* `@senwu`_: Update the snorkel-metal version.
 * `@senwu`_: Expose the ``b`` and ``pos_label`` in training.
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
   more than one ``Page``.
