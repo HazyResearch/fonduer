@@ -38,17 +38,17 @@ Changed
 .. note::
     For the whole logging strategy:
 
-    With this change, the running log is stored ``fonduer.log`` in the 
+    With this change, the running log is stored ``fonduer.log`` in the
     ``{fonduer.Meta.log_path}/{datetime}`` folder. User can specify it
     using ``fonduer.init_logging()``. It also contains the learning logs init.
 
     For learning logging strategy:
 
     Previously, the model checkpoints are stored in the user provided folder
-    by ``save_dir`` and the name for checkpoint is 
+    by ``save_dir`` and the name for checkpoint is
     ``{model_name}.mdl.ckpt.{global_step}``.
 
-    With this change, the model is saved in the subfolder of the same folder 
+    With this change, the model is saved in the subfolder of the same folder
     ``fonduer.Meta.log_path`` with log file file. Each learning run creates a
     subfolder under name ``{datetime}_{model_name}`` with all model checkpoints
     and tensorboard log file init. To use the tensorboard to check the learning
@@ -56,7 +56,10 @@ Changed
 
 Fixed
 ^^^^^
-* `@HiromuHota`_: Store lemmas and pos_tags in case they are returned from a tokenizer.
+* `@lukehsiao`_: Fix parser error when text was located in the ``tail`` of an
+  LXML table node..
+* `@HiromuHota`_: Store lemmas and pos_tags in case they are returned from a
+  tokenizer.
 * `@HiromuHota`_: Use unidic instead of ipadic for Japanese.
   (`#231 <https://github.com/HazyResearch/fonduer/issues/231>`_)
 * `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
