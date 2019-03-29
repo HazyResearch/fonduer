@@ -474,6 +474,8 @@ def test_parse_table_span(caplog):
         pass
 
     logger.info(f"Doc: {doc}")
+
+    assert len(doc.sentences) == 1
     for sentence in doc.sentences:
         logger.info(f"    Sentence: {sentence.text}")
 
