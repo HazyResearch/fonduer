@@ -224,20 +224,32 @@ def test_spacy_japanese(caplog):
         pass
 
     assert len(doc.sentences) == 289
-    sent = doc.sentences[2]
-    assert sent.text == "出典:フリー百科事典『ウィキペディア（Wikipedia）』"
-    assert sent.words == [
-        "出典",
-        ":",
-        "フリー",
-        "百科",
-        "事典",
-        "『",
-        "ウィキペディア",
-        "（",
-        "Wikipedia",
-        "）",
-        "』",
+    sent = doc.sentences[42]
+    assert sent.text == "当時マルコ・ポーロが辿り着いたと言われる"
+    assert sent.words == ["当時", "マルコ", "・", "ポーロ", "が", "辿り着い", "た", "と", "言わ", "れる"]
+    assert sent.pos_tags == [
+        "NOUN",
+        "PROPN",
+        "SYM",
+        "PROPN",
+        "ADP",
+        "VERB",
+        "AUX",
+        "ADP",
+        "VERB",
+        "AUX",
+    ]
+    assert sent.lemmas == [
+        "当時",
+        "マルコ-Marco",
+        "・",
+        "ポーロ-Polo",
+        "が",
+        "辿り着く",
+        "た",
+        "と",
+        "言う",
+        "れる",
     ]
     # Japanese sentences are only tokenized.
     assert sent.ner_tags == [""] * len(sent.words)

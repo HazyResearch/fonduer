@@ -300,8 +300,8 @@ class Spacy(object):
 
             for i, token in enumerate(sent):
                 parts["words"].append(str(token))
-                parts["lemmas"].append("")  # placeholder for later NLP parsing
-                parts["pos_tags"].append("")  # placeholder for later NLP parsing
+                parts["lemmas"].append(token.lemma_)
+                parts["pos_tags"].append(token.pos_)
                 parts["ner_tags"].append("")  # placeholder for later NLP parsing
                 parts["char_offsets"].append(token.idx)
                 parts["abs_char_offsets"].append(token.idx)
