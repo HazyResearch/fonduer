@@ -455,6 +455,31 @@ def test_simple_tokenizer(caplog):
     assert len(doc.sentences) == 44
 
 
+def test_parse_table_span(caplog):
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    docs_path = "tests/data/html_simple/table_span.html"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "table_span"))
+
+    # Check that doc has a name
+    assert doc.name == "table_span"
+
+    # Create an Parser and parse the document
+    parser_udf = get_parser_udf(structural=True, lingual=True, visual=False)
+    for _ in parser_udf.apply(doc):
+        pass
+
+    logger.info(f"Doc: {doc}")
+
+    assert len(doc.sentences) == 1
+    for sentence in doc.sentences:
+        logger.info(f"    Sentence: {sentence.text}")
+
+
 def test_parse_document_diseases(caplog):
     """Unit test of Parser on a single document.
 

@@ -229,6 +229,7 @@ def test_cand_gen_cascading_delete(caplog):
     mention_extractor = MentionExtractor(
         session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
+    mention_extractor.clear_all()
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Mention).count() == 93

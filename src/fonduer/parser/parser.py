@@ -582,8 +582,6 @@ class ParserUDF(UDF):
     def _parse_paragraph(self, node, state):
         """Parse a Paragraph of the node.
 
-        A Paragraph is defined as
-
         :param node: The lxml node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
@@ -636,13 +634,15 @@ class ParserUDF(UDF):
                 parts["section"] = parent
             elif isinstance(parent, Figure):  # occurs with text in the tail of an img
                 parts["section"] = parent.section
+            elif isinstance(parent, Table):  # occurs with text in the tail of a table
+                parts["section"] = parent.section
             else:
                 raise NotImplementedError(
                     f"Para '{text}' parent must be Section, Caption, or Cell, "
                     f"not {parent}"
                 )
 
-            # Create the Figure entry in the DB
+            # Create the entry in the DB
             paragraph = Paragraph(**parts)
 
             state["paragraph"]["idx"] += 1
