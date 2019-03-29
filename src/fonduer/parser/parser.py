@@ -251,7 +251,7 @@ class ParserUDF(UDF):
                 return_sentences += [y for y in self.parse(document, text)]
 
             yield from return_sentences
-        except NotImplementedError as e:
+        except Exception as e:
             warnings.warn(
                 (
                     f"Document {document.name} not added to database, "
