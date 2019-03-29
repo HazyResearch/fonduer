@@ -56,6 +56,7 @@ Changed
 
 Fixed
 ^^^^^
+* `@senwu`_: Change the exception condition to make sure parser run end to end.
 * `@lukehsiao`_: Fix parser error when text was located in the ``tail`` of an
   LXML table node..
 * `@HiromuHota`_: Store lemmas and pos_tags in case they are returned from a
