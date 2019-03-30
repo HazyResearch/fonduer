@@ -6,7 +6,6 @@ from sqlalchemy.orm import backref, relationship
 from fonduer.meta import Meta
 from fonduer.utils.utils import camel_to_under
 
-_meta = Meta.init()
 logger = logging.getLogger(__name__)
 
 # This global dictionary contains all classes that have been declared in this
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 candidate_subclasses = {}
 
 
-class Candidate(_meta.Base):
+class Candidate(Meta.Base):
     """
     An abstract candidate relation.
 
@@ -182,8 +181,8 @@ def candidate_subclass(
         C = type(class_name, (Candidate,), class_attribs)
 
         # Create table in DB
-        if not _meta.engine.dialect.has_table(_meta.engine, table_name):
-            C.__table__.create(bind=_meta.engine)
+        if not Meta.engine.dialect.has_table(Meta.engine, table_name):
+            C.__table__.create(bind=Meta.engine)
 
         candidate_subclasses[class_name] = C, class_spec
 

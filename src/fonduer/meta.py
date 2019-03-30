@@ -29,27 +29,32 @@ def init_logging(
     :param level: The logging level to use, e.g., logging.INFO.
     """
 
-    # Generate a new directory using the log_dir, if it doesn't exist
-    dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_path = os.path.join(log_dir, dt)
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
-
-    # Configure the logger using the provided path
-    logging.basicConfig(
-        format=format,
-        level=level,
-        handlers=[
-            logging.FileHandler(os.path.join(log_path, "fonduer.log")),
-            logging.StreamHandler(),
-        ],
-    )
-
-    # Notify user of log location
     if not Meta.log_path:
-        logger.info(f"Setting logging directory to: {log_path}")
+        # Generate a new directory using the log_dir, if it doesn't exist
+        dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_path = os.path.join(log_dir, dt)
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
-    Meta.log_path = log_path
+        # Configure the logger using the provided path
+        logging.basicConfig(
+            format=format,
+            level=level,
+            handlers=[
+                logging.FileHandler(os.path.join(log_path, "fonduer.log")),
+                logging.StreamHandler(),
+            ],
+        )
+
+        # Notify user of log location
+        logger.info(f"Setting logging directory to: {log_path}")
+        Meta.log_path = log_path
+    else:
+        logger.info(
+            f"Logging was already initialized to use {Meta.log_path}.  "
+            "To configure logging manually, call fonduer.init_logging before "
+            "initialiting Meta."
+        )
 
 
 # Defines procedure for setting up a sessionmaker
