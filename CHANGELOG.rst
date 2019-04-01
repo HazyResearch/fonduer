@@ -1,3 +1,11 @@
+[Unreleased]
+------------
+
+Fixed
+^^^^^
+* `@lukehsiao`_: Fix Meta initialization bug which would configure logging
+  upon import rather than allowing the user to configure logging themselves.
+
 [0.6.1] - 2019-03-29
 --------------------
 

@@ -2,10 +2,8 @@ from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, UniqueConstr
 
 from fonduer.meta import Meta
 
-_meta = Meta.init()
 
-
-class Marginal(_meta.Base):
+class Marginal(Meta.Base):
     """
     A marginal probability corresponding to a (Candidate, value) pair.
 

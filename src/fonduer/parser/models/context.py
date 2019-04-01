@@ -2,11 +2,8 @@ from sqlalchemy import Column, Integer, String
 
 from fonduer.meta import Meta
 
-# Grab pointer to global metadata
-_meta = Meta.init()
 
-
-class Context(_meta.Base):
+class Context(Meta.Base):
     """A piece of content from which Candidates are composed.
 
     This serves as the base class of the Fonduer document model.

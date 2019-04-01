@@ -4,29 +4,27 @@ from sqlalchemy.dialects import postgresql
 from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
-_meta = Meta.init()
 
-
-class GoldLabelKey(AnnotationKeyMixin, _meta.Base):
+class GoldLabelKey(AnnotationKeyMixin, Meta.Base):
     """A gold label's key that identifies the annotator of the gold label."""
 
     pass
 
 
-class GoldLabel(AnnotationMixin, _meta.Base):
+class GoldLabel(AnnotationMixin, Meta.Base):
     """A separate class for labels from human annotators or other gold standards."""
 
     #: A list of integer values for each Key.
     values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
-class LabelKey(AnnotationKeyMixin, _meta.Base):
+class LabelKey(AnnotationKeyMixin, Meta.Base):
     """A label's key that identifies the labeling function."""
 
     pass
 
 
-class Label(AnnotationMixin, _meta.Base):
+class Label(AnnotationMixin, Meta.Base):
     """
     A discrete label associated with a Candidate, indicating a target prediction value.
 
@@ -38,7 +36,7 @@ class Label(AnnotationMixin, _meta.Base):
     values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
-class StableLabel(_meta.Base):
+class StableLabel(Meta.Base):
     """
     A special secondary table for preserving labels created by *human
     annotators* in a stable format that does not cascade, and is independent of
