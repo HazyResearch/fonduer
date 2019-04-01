@@ -1,6 +1,9 @@
 [Unreleased]
 ------------
 
+[0.6.2] - 2019-04-01
+--------------------
+
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix Meta initialization bug which would configure logging
