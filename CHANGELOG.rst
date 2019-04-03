@@ -3,6 +3,7 @@
 
 Changed
 ^^^^^^^
+* `@HiromuHota`_: Remove a redundant argument, document, from Spacy#split_sentences.
 * `@HiromuHota`_: Refactor TokenPreservingTokenizer for readability.
 
 [0.6.2] - 2019-04-01

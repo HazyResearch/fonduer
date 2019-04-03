@@ -490,7 +490,7 @@ class ParserUDF(UDF):
 
         # Lingual Parse
         document = state["document"]
-        for parts in self.tokenize_and_split_sentences(document, text):
+        for parts in self.tokenize_and_split_sentences(text):
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
