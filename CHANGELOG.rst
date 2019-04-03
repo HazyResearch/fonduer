@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Changed
+^^^^^^^
+* `@HiromuHota`_: Refactor TokenPreservingTokenizer for readability.
+
 [0.6.2] - 2019-04-01
 --------------------
 

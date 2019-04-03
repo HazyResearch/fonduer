@@ -207,13 +207,11 @@ class Spacy(object):
                 name="sentence_boundary_detector",
             )
 
-            custom_tokenizer = TokenPreservingTokenizer(
-                self.model.vocab, sentence_batch
-            )
+            custom_tokenizer = TokenPreservingTokenizer(self.model.vocab)
             # we circumvent redundant tokenization by using a custom
             # tokenizer that directly uses the already separated words
             # of each sentence as tokens
-            doc = custom_tokenizer()
+            doc = custom_tokenizer(sentence_batch)
             for name, proc in self.model.pipeline:  # iterate over components in order
                 doc = proc(doc)
 
@@ -329,22 +327,29 @@ class TokenPreservingTokenizer(object):
     performed during sentence splitting. It will output a list of space
     separated tokens, whereas each token is a single word from the list of
     sentences.
-
-    :param vocab: The vocab attribute of the respective spacy language object
-    :param tokenized_sentences: A list of sentences that was previously
-        tokenized/split by spacy
-    :return:
     """
 
-    def __init__(self, vocab, tokenized_sentences):
+    def __init__(self, vocab):
+        """Initialize a custom tokenizer.
+
+        :param vocab: The vocab attribute of the respective spacy language object.
+        """
         self.logger = logging.getLogger(__name__)
-        self.all_input_tokens = []
         self.vocab = vocab
-        self.all_spaces = []
+
+    def __call__(self, tokenized_sentences):
+        """Apply the custom tokenizer.
+
+        :param tokenized_sentences: A list of sentences that was previously
+        tokenized/split by spacy
+        :return: Doc (a container for accessing linguistic annotations).
+        """
+        all_input_tokens = []
+        all_spaces = []
         for sentence in tokenized_sentences:
             words_in_sentence = sentence.words
             if len(words_in_sentence) > 0:
-                self.all_input_tokens += sentence.words
+                all_input_tokens += sentence.words
                 current_sentence_pos = 0
                 spaces_list = [True] * len(words_in_sentence)
                 # Last word in sentence always assumed to be followed by space
@@ -362,7 +367,5 @@ class TokenPreservingTokenizer(object):
                         for s in whitespace
                     ):
                         spaces_list[i] = False
-                self.all_spaces += spaces_list
-
-    def __call__(self):
-        return Doc(self.vocab, words=self.all_input_tokens, spaces=self.all_spaces)
+                all_spaces += spaces_list
+        return Doc(self.vocab, words=all_input_tokens, spaces=all_spaces)
