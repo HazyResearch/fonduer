@@ -165,7 +165,7 @@ class Spacy(object):
         :param all_sentences: List of fonduer Sentence objects for one document
         :return:
         """
-        if self.lang in self.alpha_languages:
+        if not self.has_NLP_support():
             raise NotImplementedError(
                 f"Language {self.lang} not available in spacy beyond tokenization"
             )
