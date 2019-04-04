@@ -165,7 +165,7 @@ class Spacy(object):
         :param all_sentences: List of fonduer Sentence objects for one document
         :return:
         """
-        if self.lang in self.alpha_languages:
+        if not self.has_NLP_support():
             raise NotImplementedError(
                 f"Language {self.lang} not available in spacy beyond tokenization"
             )
@@ -256,12 +256,11 @@ class Spacy(object):
                 current_sentence_obj.dep_labels = parts["dep_labels"]
                 yield current_sentence_obj
 
-    def split_sentences(self, document, text):
+    def split_sentences(self, text):
         """
         Split input text into sentences that match CoreNLP's default format,
         but are not yet processed.
 
-        :param document: The Document context
         :param text: The text of the parent paragraph of the sentences
         :return:
         """
@@ -311,9 +310,6 @@ class Spacy(object):
                 p - parts["char_offsets"][0] for p in parts["char_offsets"]
             ]
             parts["position"] = position
-
-            # Link the sentence to its parent document object
-            parts["document"] = document
             parts["text"] = text
 
             position += 1
