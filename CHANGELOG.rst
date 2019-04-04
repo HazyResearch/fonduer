@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Added
+^^^^^
+* `@HiromuHota`_: Add test_spacy_parser.py to unit test spacy_parser.
+
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Remove a redundant argument, document, from Spacy#split_sentences.
