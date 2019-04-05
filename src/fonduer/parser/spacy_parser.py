@@ -283,15 +283,20 @@ class Spacy(object):
 
 
 def set_custom_boundary(doc):
+    """Set the sentence boundaries based on the already separated sentences.
+    :param doc: doc.user_data should have a list of Sentence.
+    :return doc:
+    """
     if doc.user_data == {}:
         raise AttributeError("A list of Sentence is not attached to doc.user_data.")
-    start_token_marker = []
-    for sentence in doc.user_data:
-        if len(sentence.words) > 0:
-            start_token_marker += [True] + [False] * (len(sentence.words) - 1)
-
+    # Set every token.is_sent_start False because they are all True by default
     for token_nr, token in enumerate(doc):
-        token.is_sent_start = start_token_marker[token_nr]
+        doc[token_nr].is_sent_start = False
+    # Set token.is_sent_start True when it is the first token of a Sentence
+    token_nr = 0
+    for sentence in doc.user_data:
+        doc[token_nr].is_sent_start = True
+        token_nr += len(sentence.words)
     return doc
 
 
