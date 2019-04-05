@@ -284,15 +284,9 @@ class Spacy(object):
 
 def set_custom_boundary(doc):
     start_token_marker = []
-    total_nr_input_words = 0
     for sentence in doc.user_data:
         if len(sentence.words) > 0:
             start_token_marker += [True] + [False] * (len(sentence.words) - 1)
-            total_nr_input_words += len(sentence.words)
-
-    output_tokens = list(doc)
-    total_nr_output_words = len(output_tokens)
-    assert total_nr_input_words == total_nr_output_words
 
     for token_nr, token in enumerate(doc):
         token.is_sent_start = start_token_marker[token_nr]
