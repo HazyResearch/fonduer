@@ -3,7 +3,12 @@ import logging
 
 import pytest
 
-from fonduer.parser.spacy_parser import Spacy
+from fonduer.parser.models import Sentence
+from fonduer.parser.spacy_parser import (
+    Spacy,
+    TokenPreservingTokenizer,
+    set_custom_boundary,
+)
 
 
 def test_spacy_support(caplog):
@@ -43,3 +48,38 @@ def test_spacy_split_sentences(caplog):
     lingual_parser.load_lang_model()
     iterator = tokenize_and_split_sentences(text)
     assert len(list(iterator)) == 2
+
+
+def test_split_sentences_by_char_limit(caplog):
+    caplog.set_level(logging.INFO)
+
+    lingual_parser = Spacy("en")
+    lingual_parser.load_lang_model()
+
+    text = "This is a text. This is another text."
+    all_sentences = [
+        Sentence(**parts) for parts in lingual_parser.split_sentences(text)
+    ]
+    assert len(all_sentences) == 2
+    assert [len(sentence.text) for sentence in all_sentences] == [15, 21]
+
+    lingual_parser.model.remove_pipe("sentencizer")
+    lingual_parser.model.add_pipe(
+        set_custom_boundary, before="parser", name="sentence_boundary_detector"
+    )
+
+    sentence_batches = lingual_parser._split_sentences_by_char_limit(all_sentences, 20)
+    assert len(sentence_batches) == 2
+    sentence_batches = lingual_parser._split_sentences_by_char_limit(all_sentences, 100)
+    assert len(sentence_batches) == 1
+
+    sentence_batch = sentence_batches[0]
+    custom_tokenizer = TokenPreservingTokenizer(lingual_parser.model.vocab)
+    doc = custom_tokenizer(sentence_batch)
+    doc.user_data = sentence_batch
+    for name, proc in lingual_parser.model.pipeline:  # iterate over components in order
+        doc = proc(doc)
+    assert doc.is_parsed
+
+    # See if the number of parsed spaCy sentences matches that of input sentences
+    assert len(list(doc.sents)) == len(sentence_batch)
