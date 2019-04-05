@@ -283,6 +283,8 @@ class Spacy(object):
 
 
 def set_custom_boundary(doc):
+    if doc.user_data == {}:
+        raise AttributeError("A list of Sentence is not attached to doc.user_data.")
     start_token_marker = []
     for sentence in doc.user_data:
         if len(sentence.words) > 0:
