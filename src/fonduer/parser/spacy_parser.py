@@ -295,10 +295,7 @@ def set_custom_boundary(doc):
     assert total_nr_input_words == total_nr_output_words
 
     for token_nr, token in enumerate(doc):
-        if start_token_marker[token_nr] is True:
-            doc[token.i].is_sent_start = True
-        else:
-            doc[token.i].is_sent_start = False
+        token.is_sent_start = start_token_marker[token_nr]
     return doc
 
 
