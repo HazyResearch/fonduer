@@ -197,9 +197,7 @@ class Spacy(object):
                 )
                 raise
 
-            sentence_nr = -1
-            for sent in batch_parsed_sentences:
-                sentence_nr += 1
+            for sent, current_sentence_obj in zip(doc.sents, sentence_batch):
                 parts = defaultdict(list)
 
                 for i, token in enumerate(sent):
@@ -213,7 +211,6 @@ class Spacy(object):
                     )
                     parts["dep_parents"].append(head_idx)
                     parts["dep_labels"].append(token.dep_)
-                current_sentence_obj = sentence_batch[sentence_nr]
                 current_sentence_obj.pos_tags = parts["pos_tags"]
                 current_sentence_obj.lemmas = parts["lemmas"]
                 current_sentence_obj.ner_tags = parts["ner_tags"]
