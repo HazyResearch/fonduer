@@ -8,6 +8,7 @@ Added
 
 Changed
 ^^^^^^^
+* `@HiromuHota`_: Separate Spacy#_split_sentences_by_char_limit to test itself.
 * `@HiromuHota`_: Refactor the custom sentence_boundary_detector for readability and efficiency.
 * `@HiromuHota`_: Remove a redundant argument, document, from Spacy#split_sentences.
 * `@HiromuHota`_: Refactor TokenPreservingTokenizer for readability.

@@ -156,21 +156,12 @@ class Spacy(object):
             set_custom_boundary, before="parser", name="sentence_boundary_detector"
         )
 
-        batch_char_limit = self.model.max_length
-        sentence_batches = [[]]
-        num_chars = 0
-        for sentence in all_sentences:
-            if num_chars + len(sentence.text) >= batch_char_limit:
-                sentence_batches.append([sentence])
-                num_chars = len(sentence.text)
-            else:
-                sentence_batches[-1].append(sentence)
-                num_chars += len(sentence.text)
+        sentence_batches = self._split_sentences_by_char_limit(
+            all_sentences, self.model.max_length
+        )
 
         # TODO: We could do this in parallel. Test speedup in the future
         for sentence_batch in sentence_batches:
-            batch_sentence_strings = [x.text for x in sentence_batch]
-
             custom_tokenizer = TokenPreservingTokenizer(self.model.vocab)
             # we circumvent redundant tokenization by using a custom
             # tokenizer that directly uses the already separated words
@@ -185,21 +176,7 @@ class Spacy(object):
             except Exception:
                 self.logger.exception(f"{doc} was not parsed")
 
-            batch_parsed_sentences = list(doc.sents)
-            try:
-                assert len(batch_sentence_strings) == len(batch_parsed_sentences)
-            except AssertionError:
-                self.logger.error(
-                    f"Number of parsed spacy sentences doesnt match input sentences: "
-                    f"input {len(batch_sentence_strings)}, "
-                    f"output: {len(batch_parsed_sentences)}, "
-                    f"document: {sentence_batch[0].document}"
-                )
-                raise
-
-            sentence_nr = -1
-            for sent in batch_parsed_sentences:
-                sentence_nr += 1
+            for sent, current_sentence_obj in zip(doc.sents, sentence_batch):
                 parts = defaultdict(list)
 
                 for i, token in enumerate(sent):
@@ -213,13 +190,24 @@ class Spacy(object):
                     )
                     parts["dep_parents"].append(head_idx)
                     parts["dep_labels"].append(token.dep_)
-                current_sentence_obj = sentence_batch[sentence_nr]
                 current_sentence_obj.pos_tags = parts["pos_tags"]
                 current_sentence_obj.lemmas = parts["lemmas"]
                 current_sentence_obj.ner_tags = parts["ner_tags"]
                 current_sentence_obj.dep_parents = parts["dep_parents"]
                 current_sentence_obj.dep_labels = parts["dep_labels"]
                 yield current_sentence_obj
+
+    def _split_sentences_by_char_limit(self, all_sentences, batch_char_limit):
+        sentence_batches = [[]]
+        num_chars = 0
+        for sentence in all_sentences:
+            if num_chars + len(sentence.text) >= batch_char_limit:
+                sentence_batches.append([sentence])
+                num_chars = len(sentence.text)
+            else:
+                sentence_batches[-1].append(sentence)
+                num_chars += len(sentence.text)
+        return sentence_batches
 
     def split_sentences(self, text):
         """
