@@ -26,10 +26,10 @@ On Debian-based distros::
     $ sudo apt install postgresql
 
 .. note::
-    Fonduer requires PostgreSQL version 9.6 or above.
+    Fonduer recommends using PostgreSQL version 9.6 or later.
 
 .. note::
-    Fonduer requires ``poppler-utils`` to be version 0.36.0 or above.
+    Fonduer requires ``poppler-utils`` to be version 0.36.0 or later.
     Otherwise, the ``-bbox-layout`` option is not available for ``pdftotext``
     (`see changelog`_).
 
