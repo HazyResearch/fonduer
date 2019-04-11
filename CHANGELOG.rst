@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@senwu`_: Fix the doc about the PostgreSQL version requirement.
+
 Added
 ^^^^^
 * `@senwu`_: Add test_simple_tokenizer.py to unit test simple_tokenizer.
