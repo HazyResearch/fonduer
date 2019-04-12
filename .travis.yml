@@ -1,6 +1,10 @@
 language: generic
 dist: xenial
-cache: pip
+cache:
+  directories:
+  - $HOME/.cache/pip
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 
 
 matrix:
