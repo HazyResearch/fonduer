@@ -8,11 +8,9 @@ matrix:
   - os: linux
     env:
       - PYTHON=3.6
-      - CMAKE_BUILD_PARALLEL_LEVEL=2
   - os: linux
     env:
       - PYTHON=3.7
-      - CMAKE_BUILD_PARALLEL_LEVEL=2
   - os: osx
     env:
       - PYTHON=3.6
