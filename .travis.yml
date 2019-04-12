@@ -8,11 +8,9 @@ matrix:
   - os: linux
     env:
       - PYTHON=3.6
-      - CMAKE_BUILD_PARALLEL_LEVEL=2
   - os: linux
     env:
       - PYTHON=3.7
-      - CMAKE_BUILD_PARALLEL_LEVEL=2
   - os: osx
     env:
       - PYTHON=3.6
@@ -44,6 +42,7 @@ before_install:
 - conda config --add channels conda-forge
 - conda update -q conda
 - conda install -q conda-build
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then conda install -q poppler; fi
 - if [ -n "$PYTHON" ]; then conda create -q -n test-environment python=${PYTHON}; fi
 - source activate test-environment
 - conda install -q pip
@@ -53,6 +52,7 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pg_ctl -D /usr/local/var/postgres start; sleep 5; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then createuser -s postgres; fi
 
+- pdfinfo -v
 - psql --version
 - python --version
 - pip --version
@@ -75,22 +75,6 @@ install:
 - make check
 - make docs
 - pip install -q coveralls
-- |
-  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    sudo apt install cmake checkinstall libopenjp2-7-dev
-    wget https://poppler.freedesktop.org/poppler-0.62.0.tar.xz
-    tar -xf poppler-0.62.0.tar.xz
-    cd poppler-0.62.0
-    mkdir build
-    cd build
-    cmake ..
-    sudo checkinstall -y make install > /dev/null 2>&1
-    cd ../..
-    rm -rf poppler-0.62.0
-    export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-    echo "Using LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-  fi
-- pdfinfo -v
 - python -m spacy download en
 
 before_script:
