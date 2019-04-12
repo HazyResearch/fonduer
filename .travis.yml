@@ -31,7 +31,6 @@ notifications:
 before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -q -y libmecab-dev swig mecab unidic-mecab; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then conda install -y -q -c conda-forge poppler; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install poppler swig mecab mecab-unidic freetype; fi
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc; fi
@@ -43,6 +42,7 @@ before_install:
 - conda config --add channels conda-forge
 - conda update -q conda
 - conda install -q conda-build
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then conda install -q poppler; fi
 - if [ -n "$PYTHON" ]; then conda create -q -n test-environment python=${PYTHON}; fi
 - source activate test-environment
 - conda install -q pip
