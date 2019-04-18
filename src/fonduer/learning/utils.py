@@ -84,3 +84,23 @@ class MultiModalDataset(Dataset):
         if self.Y is not None:
             return self.X[idx], self.Y[idx]
         return self.X[idx]
+
+
+def entity_confusion_matrix(pred, gold):
+    """Return an entity-level confusion matrix.
+
+    :param pred: a set of predicted entities
+    :type pred: set
+    :param gold: a set of golden entities
+    :type gold: set
+    :return: a tuple of TP, FP, and FN
+    :rtype: (set, set, set)
+    """
+    if not isinstance(pred, set):
+        pred = set(pred)
+    if not isinstance(gold, set):
+        gold = set(gold)
+    TP = pred.intersection(gold)
+    FP = pred.difference(gold)
+    FN = gold.difference(pred)
+    return (TP, FP, FN)
