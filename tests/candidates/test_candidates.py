@@ -27,6 +27,7 @@ from fonduer.candidates.matchers import (
 from fonduer.candidates.mentions import Ngrams
 from fonduer.candidates.models import (
     Candidate,
+    Entity,
     Mention,
     candidate_subclass,
     mention_subclass,
@@ -341,6 +342,11 @@ def test_cand_gen(caplog):
     assert session.query(Volt).count() == 33
     assert session.query(Temp).count() == 23
     assert session.query(Fig).count() == 31
+
+    # Note that the following assertion is not always true
+    # due to the 1-N relationship between entity-mention.
+    assert session.query(Entity).count() == session.query(Mention).count()
+
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]
     temp = session.query(Temp).order_by(Temp.id).all()[0]
