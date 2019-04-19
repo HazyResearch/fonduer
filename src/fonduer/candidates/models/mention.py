@@ -27,6 +27,8 @@ class Mention(Meta.Base):
     #: The unique id of the ``Mention``.
     id = Column(Integer, primary_key=True)
 
+    entity_id = Column(String, ForeignKey("entity.id"), nullable=False)
+
     #: The type for the ``Mention``, which corresponds to the names the user
     #: gives to the mention_subclass.
     type = Column(String, nullable=False)

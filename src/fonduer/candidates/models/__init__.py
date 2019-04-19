@@ -2,6 +2,7 @@ from fonduer.candidates.models.candidate import Candidate, candidate_subclass
 from fonduer.candidates.models.caption_mention import CaptionMention
 from fonduer.candidates.models.cell_mention import CellMention
 from fonduer.candidates.models.document_mention import DocumentMention
+from fonduer.candidates.models.entity import Entity
 from fonduer.candidates.models.figure_mention import FigureMention
 from fonduer.candidates.models.implicit_span_mention import ImplicitSpanMention
 from fonduer.candidates.models.mention import Mention, mention_subclass
@@ -18,6 +19,7 @@ __all__ = [
     "FigureMention",
     "ImplicitSpanMention",
     "Mention",
+    "Entity",
     "ParagraphMention",
     "SectionMention",
     "SpanMention",

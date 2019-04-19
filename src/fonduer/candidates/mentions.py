@@ -12,6 +12,7 @@ from fonduer.candidates.models.candidate import candidate_subclasses
 from fonduer.candidates.models.caption_mention import TemporaryCaptionMention
 from fonduer.candidates.models.cell_mention import TemporaryCellMention
 from fonduer.candidates.models.document_mention import TemporaryDocumentMention
+from fonduer.candidates.models.entity import Entity
 from fonduer.candidates.models.figure_mention import TemporaryFigureMention
 from fonduer.candidates.models.paragraph_mention import TemporaryParagraphMention
 from fonduer.candidates.models.section_mention import TemporarySectionMention
@@ -571,6 +572,7 @@ class MentionExtractorUDF(UDF):
             # Generates and persists mentions
             mention_args = {"document_id": doc.id}
             for child_context in self.child_context_set:
+                mention_args["entity_id"] = str(child_context)
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
                     mention_args[arg_name + "_id"] = child_context.id
@@ -584,5 +586,7 @@ class MentionExtractorUDF(UDF):
                     if mention_id is not None:
                         continue
 
+                # Add Entity
+                yield Entity(id=str(child_context))
                 # Add Mention to session
                 yield mention_class(**mention_args)
