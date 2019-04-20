@@ -586,7 +586,11 @@ class MentionExtractorUDF(UDF):
             # Generates and persists mentions
             mention_args = {"document_id": doc.id}
             for child_context in self.child_context_set:
-                mention_args["entity_id"] = str(child_context)
+                # Add Entity
+                entity = Entity(id=str(child_context), type=mention_class.__tablename__)
+                yield entity
+
+                mention_args["entity_id"] = entity.id
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
                     mention_args[arg_name + "_id"] = child_context.id
@@ -600,7 +604,5 @@ class MentionExtractorUDF(UDF):
                     if mention_id is not None:
                         continue
 
-                # Add Entity
-                yield Entity(id=str(child_context), type=mention_class.__tablename__)
                 # Add Mention to session
                 yield mention_class(**mention_args)
