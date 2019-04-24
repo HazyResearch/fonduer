@@ -4,6 +4,7 @@ import logging
 from builtins import range
 
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
+from fonduer.utils.utils import get_entity
 
 try:
     from IPython import get_ipython
@@ -25,7 +26,7 @@ TRUE = 2
 
 
 def get_gold_dict(
-    filename, doc_on=True, part_on=True, val_on=True, attribute=None, docs=None
+    filename, session, doc_on=True, part_on=True, val_on=True, attribute=None, docs=None
 ):
     with codecs.open(filename, encoding="utf-8") as csvfile:
         gold_reader = csv.reader(csvfile)
@@ -40,11 +41,14 @@ def get_gold_dict(
                 else:
                     key = []
                     if doc_on:
-                        key.append(doc.upper())
+                        entity = get_entity(session, doc.upper())
+                        key.append(entity)
                     if part_on:
-                        key.append(part.upper())
+                        entity = get_entity(session, part.upper())
+                        key.append(entity)
                     if val_on:
-                        key.append(val.upper())
+                        entity = get_entity(session, val.upper())
+                        key.append(entity)
                     gold_dict.add(tuple(key))
     return gold_dict
 
@@ -81,7 +85,7 @@ def load_hardware_labels(
     for candidate_class in candidate_classes:
         candidates.extend(session.query(candidate_class).all())
 
-    gold_dict = get_gold_dict(filename, attribute=attrib)
+    gold_dict = get_gold_dict(filename, session, attribute=attrib)
     cand_total = len(candidates)
     logger.info(f"Loading {cand_total} candidate labels")
     labels = 0
@@ -90,12 +94,15 @@ def load_hardware_labels(
     values = []
     for i, c in enumerate(tqdm(candidates)):
         doc = (c[0].context.sentence.document.name).upper()
+        doc_entity = get_entity(session, doc)
         part = (c[0].context.get_span()).upper()
+        part_entity = get_entity(session, part)
         val = ("".join(c[1].context.get_span().split())).upper()
+        val_entity = get_entity(session, val)
 
         label = session.query(GoldLabel).filter(GoldLabel.candidate == c).first()
         if label is None:
-            if (doc, part, val) in gold_dict:
+            if (doc_entity, part_entity, val_entity) in gold_dict:
                 values.append(TRUE)
             else:
                 values.append(FALSE)
@@ -128,7 +135,7 @@ def entity_confusion_matrix(pred, gold):
 
 
 def entity_level_f1(
-    candidates, gold_file, attribute=None, corpus=None, parts_by_doc=None
+    candidates, gold_file, session, attribute=None, corpus=None, parts_by_doc=None
 ):
     """Checks entity-level recall of candidates compared to gold.
 
@@ -146,6 +153,7 @@ def entity_level_f1(
     val_on = attribute is not None
     gold_set = get_gold_dict(
         gold_file,
+        session,
         docs=docs,
         doc_on=True,
         part_on=True,
@@ -162,13 +170,16 @@ def entity_level_f1(
     for i, c in enumerate(tqdm(candidates)):
         part = c[0].context.get_span()
         doc = c[0].context.sentence.document.name.upper()
+        doc_entity = get_entity(session, doc)
         if attribute:
             val = c[1].context.get_span()
+            val_entity = get_entity(session, val)
         for p in get_implied_parts(part, doc, parts_by_doc):
+            part_entity = get_entity(session, p)
             if attribute:
-                entities.add((doc, p, val))
+                entities.add((doc_entity, part_entity, val_entity))
             else:
-                entities.add((doc, p))
+                entities.add((doc_entity, part_entity))
 
     (TP_set, FP_set, FN_set) = entity_confusion_matrix(entities, gold_set)
     TP = len(TP_set)

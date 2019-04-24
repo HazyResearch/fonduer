@@ -1,6 +1,8 @@
 import re
 from builtins import range
 
+from fonduer.candidates.models.entity import Entity
+
 
 def camel_to_under(name):
     """
@@ -32,3 +34,12 @@ def tokens_to_ngrams(tokens, n_min=1, n_max=3, delim=" ", lower=False):
     for root in range(N):
         for n in range(max(n_min - 1, 0), min(n_max, N - root)):
             yield f(delim.join(tokens[root : root + n + 1]))
+
+
+def get_entity(session, entity_id):
+    entity = session.query(Entity).filter(Entity.id == entity_id).one_or_none()
+    if not entity:
+        entity = Entity(id=entity_id)
+        session.add(entity)
+        session.commit()
+    return entity

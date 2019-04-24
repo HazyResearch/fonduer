@@ -367,7 +367,7 @@ def test_e2e(caplog):
         parts_by_doc = pickle.load(f)
 
     (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+        true_pred, gold_file, session, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
     )
 
     tp_len = len(TP)
@@ -417,7 +417,7 @@ def test_e2e(caplog):
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+        true_pred, gold_file, session, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
     )
 
     tp_len = len(TP)
@@ -443,7 +443,7 @@ def test_e2e(caplog):
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+        true_pred, gold_file, session, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
     )
 
     tp_len = len(TP)
@@ -469,7 +469,7 @@ def test_e2e(caplog):
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+        true_pred, gold_file, session, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
     )
 
     tp_len = len(TP)
@@ -495,7 +495,7 @@ def test_e2e(caplog):
     true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
 
     (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+        true_pred, gold_file, session, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
     )
 
     tp_len = len(TP)
