@@ -458,18 +458,8 @@ class MentionExtractor(UDFRunner):
         # First, clear all the Mentions. This will cascade and remove the
         # mention_subclasses and corresponding candidate_subclasses.
         for mention_class in self.mention_classes:
-            logger.info(
-                f"Clearing Mention table where type={mention_class.__tablename__}"
-            )
+            logger.info(f"Clearing table: {mention_class.__tablename__}")
             self.session.query(Mention).filter_by(
-                type=mention_class.__tablename__
-            ).delete(synchronize_session="fetch")
-            # Next, clear the Entities. This is done manually because we have
-            # no cascading relationship from Mention to Entity.
-            logger.info(
-                f"Clearing Entity table where type={mention_class.__tablename__}"
-            )
-            self.session.query(Entity).filter_by(
                 type=mention_class.__tablename__
             ).delete(synchronize_session="fetch")
 
@@ -485,10 +475,6 @@ class MentionExtractor(UDFRunner):
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete(synchronize_session="fetch")
-
-        # With no Mentions, there should be no Entities also
-        self.session.query(Entity).delete(synchronize_session="fetch")
-        logger.info("Cleared ALL Entities.")
 
         # With no Mentions, there should be no Candidates also
         self.session.query(Candidate).delete(synchronize_session="fetch")
@@ -587,7 +573,7 @@ class MentionExtractorUDF(UDF):
             mention_args = {"document_id": doc.id}
             for child_context in self.child_context_set:
                 # Add Entity
-                entity = Entity(id=str(child_context), type=mention_class.__tablename__)
+                entity = Entity(id=str(child_context))
                 yield entity
 
                 mention_args["entity_id"] = entity.id
