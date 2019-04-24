@@ -476,6 +476,10 @@ class MentionExtractor(UDFRunner):
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete(synchronize_session="fetch")
 
+        """Delete all Entities from given split the database."""
+        logger.info("Clearing ALL Entities.")
+        self.session.query(Entity).delete(synchronize_session="fetch")
+
         # With no Mentions, there should be no Candidates also
         self.session.query(Candidate).delete(synchronize_session="fetch")
         logger.info("Cleared ALL Mentions (and Candidates).")

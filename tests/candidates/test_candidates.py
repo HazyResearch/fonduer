@@ -336,6 +336,7 @@ def test_cand_gen(caplog):
         [part_ngrams, temp_ngrams, volt_ngrams, figs],
         [part_matcher, temp_matcher, volt_matcher, fig_matcher],
     )
+    mention_extractor.clear_all()
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert session.query(Part).count() == 70
