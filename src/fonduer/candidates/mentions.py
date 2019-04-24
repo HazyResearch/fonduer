@@ -577,10 +577,15 @@ class MentionExtractorUDF(UDF):
             mention_args = {"document_id": doc.id}
             for child_context in self.child_context_set:
                 # Add Entity
-                entity = Entity(id=str(child_context))
-                yield entity
+                stmt = (
+                    insert(Entity)
+                    .values(id=child_context.get_mention())
+                    .on_conflict_do_nothing(index_elements=["id"])
+                )
+                self.session.execute(stmt)
+                self.session.commit()
 
-                mention_args["entity_id"] = entity.id
+                mention_args["entity_id"] = child_context.get_mention()
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
                     mention_args[arg_name + "_id"] = child_context.id

@@ -77,3 +77,6 @@ class TemporaryContext(object):
 
     def _get_insert_args(self):
         raise NotImplementedError()
+
+    def get_mention(self):
+        return self.__repr__()

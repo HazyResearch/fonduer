@@ -344,9 +344,7 @@ def test_cand_gen(caplog):
     assert session.query(Temp).count() == 23
     assert session.query(Fig).count() == 31
 
-    # Note that the following assertion is not always true
-    # due to the 1-N relationship between entity-mention.
-    assert session.query(Entity).count() == session.query(Mention).count()
+    assert session.query(Entity).count() <= session.query(Mention).count()
 
     part = session.query(Part).order_by(Part.id).all()[0]
     volt = session.query(Volt).order_by(Volt.id).all()[0]

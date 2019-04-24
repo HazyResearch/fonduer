@@ -210,6 +210,9 @@ class TemporarySpanMention(TemporaryContext):
     def _get_instance(self, **kwargs):
         return TemporarySpanMention(**kwargs)
 
+    def get_mention(self):
+        return self.get_span().upper()
+
 
 class SpanMention(Context, TemporarySpanMention):
     """
