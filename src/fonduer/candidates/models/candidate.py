@@ -45,6 +45,12 @@ class Candidate(Meta.Base):
         """
         return tuple(getattr(self, name) for name in self.__argnames__)
 
+    def get_entities(self):
+        """Return an entity relation of this candidate.
+        :return: a tuple of entities
+        """
+        return tuple(m.entity for m in self.get_mentions())
+
     def __len__(self):
         return len(self.__argnames__)
 
