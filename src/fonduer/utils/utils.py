@@ -37,6 +37,11 @@ def tokens_to_ngrams(tokens, n_min=1, n_max=3, delim=" ", lower=False):
 
 
 def get_entity(session, entity_id):
+    """Return an entity. If not exists yet, create one and return it.
+    :param session:
+    :param entity_id: id for the entity to be returned
+    :return: the entity
+    """
     entity = session.query(Entity).filter(Entity.id == entity_id).one_or_none()
     if not entity:
         entity = Entity(id=entity_id)
