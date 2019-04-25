@@ -172,8 +172,7 @@ def entity_level_f1(
         doc = c[0].context.sentence.document.name.upper()
         doc_entity = get_entity(session, doc)
         if attribute:
-            val = c[1].context.get_span()
-            val_entity = get_entity(session, val)
+            val_entity = c[1].entity
         for p in get_implied_parts(part, doc, parts_by_doc):
             part_entity = get_entity(session, p)
             if attribute:
