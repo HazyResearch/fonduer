@@ -16,3 +16,9 @@ class Entity(Meta.Base):
     id = Column(String, primary_key=True)
 
     mentions = relationship("Mention", backref="entity")
+
+    def __lt__(self, other):
+        return self.id < other.id
+
+    def __gt__(self, other):
+        return self.id > other.id
