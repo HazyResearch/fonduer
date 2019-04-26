@@ -69,9 +69,6 @@ class TemporaryFigureMention(TemporaryContext):
     def _get_instance(self, **kwargs):
         return TemporaryFigureMention(**kwargs)
 
-    def get_mention(self):
-        return self.figure.url
-
 
 class FigureMention(Context, TemporaryFigureMention):
     """A figure ``Mention``."""

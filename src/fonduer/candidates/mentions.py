@@ -576,14 +576,14 @@ class MentionExtractorUDF(UDF):
             # Generates and persists mentions
             mention_args = {"document_id": doc.id}
             for child_context in self.child_context_set:
-                mention_args["entity_id"] = child_context.get_mention()
+                mention_args["entity_id"] = self.get_entity_id(child_context)
                 # Add Entity if not exists
                 if (
                     not self.session.query(Entity)
                     .filter(Entity.id == mention_args["entity_id"])
                     .one_or_none()
                 ):
-                    yield Entity(id=child_context.get_mention())
+                    yield Entity(id=mention_args["entity_id"])
 
                 # Assemble mention arguments
                 for arg_name in mention_class.__argnames__:
@@ -600,3 +600,16 @@ class MentionExtractorUDF(UDF):
 
                 # Add Mention to session
                 yield mention_class(**mention_args)
+
+    def get_entity_id(self, tc):
+        """Return a string representation of a temporary context.
+
+        :param tc: TemporaryContext
+        :return: String
+        """
+        if isinstance(tc, TemporaryFigureMention):
+            return tc.figure.url
+        elif isinstance(tc, TemporarySpanMention):
+            return tc.get_span().upper()
+        else:
+            return str(tc)
