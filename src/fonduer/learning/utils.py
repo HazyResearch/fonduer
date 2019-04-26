@@ -86,12 +86,14 @@ class MultiModalDataset(Dataset):
         return self.X[idx]
 
 
-def entity_confusion_matrix(pred, gold):
-    """Return an entity-level confusion matrix.
+def confusion_matrix(pred, gold):
+    """Return a confusion matrix.
 
-    :param pred: a set of predicted entities
+    This can be used for both entity-level and mention-level
+
+    :param pred: a set of predicted entities/candidates
     :type pred: set
-    :param gold: a set of golden entities
+    :param gold: a set of golden entities/candidates
     :type gold: set
     :return: a tuple of TP, FP, and FN
     :rtype: (set, set, set)

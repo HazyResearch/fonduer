@@ -2,7 +2,7 @@
 import logging
 
 from fonduer.candidates.models import Candidate
-from fonduer.learning.utils import entity_confusion_matrix
+from fonduer.learning.utils import confusion_matrix
 
 
 def test_entity_confusion_matrix(caplog):
@@ -18,7 +18,7 @@ def test_entity_confusion_matrix(caplog):
     # pred and gold as set
     pred = {cand1, cand2, cand3}
     gold = {cand1, cand2, cand4}
-    (TP, FP, FN) = entity_confusion_matrix(pred, gold)
+    (TP, FP, FN) = confusion_matrix(pred, gold)
 
     assert TP == {cand1, cand2}
     assert FP == {cand3}
@@ -26,7 +26,7 @@ def test_entity_confusion_matrix(caplog):
 
     # pred as list
     pred = [cand1, cand2, cand3]
-    (TP, FP, FN) = entity_confusion_matrix(pred, gold)
+    (TP, FP, FN) = confusion_matrix(pred, gold)
 
     assert TP == {cand1, cand2}
     assert FP == {cand3}
@@ -34,7 +34,7 @@ def test_entity_confusion_matrix(caplog):
 
     # test if the order of elements does not affect the output
     pred = [cand3, cand2, cand1]
-    (TP, FP, FN) = entity_confusion_matrix(pred, gold)
+    (TP, FP, FN) = confusion_matrix(pred, gold)
 
     assert TP == {cand1, cand2}
     assert FP == {cand3}
