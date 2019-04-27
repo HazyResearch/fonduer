@@ -10,10 +10,10 @@ def test_entity_confusion_matrix(caplog):
     caplog.set_level(logging.INFO)
 
     # Synthesize candidates
-    cand1 = Candidate(id=1, type="type", split=0)
-    cand2 = Candidate(id=2, type="type", split=0)
-    cand3 = Candidate(id=3, type="type", split=0)
-    cand4 = Candidate(id=4, type="type", split=0)
+    cand1 = Candidate(id=1, type="type")
+    cand2 = Candidate(id=2, type="type")
+    cand3 = Candidate(id=3, type="type")
+    cand4 = Candidate(id=4, type="type")
 
     # pred and gold as set
     pred = {cand1, cand2, cand3}
@@ -39,3 +39,12 @@ def test_entity_confusion_matrix(caplog):
     assert TP == {cand1, cand2}
     assert FP == {cand3}
     assert FN == {cand4}
+
+    # Assume the followings are entities
+    pred = {"1", "2", "3"}
+    gold = {"1", "2", "4"}
+    (TP, FP, FN) = confusion_matrix(pred, gold)
+
+    assert TP == {"1", "2"}
+    assert FP == {"3"}
+    assert FN == {"4"}
