@@ -5,7 +5,7 @@ from fonduer.candidates.models import Candidate
 from fonduer.learning.utils import confusion_matrix
 
 
-def test_entity_confusion_matrix(caplog):
+def test_confusion_matrix(caplog):
     """Test the confusion matrix."""
     caplog.set_level(logging.INFO)
 
