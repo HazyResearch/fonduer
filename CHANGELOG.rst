@@ -7,6 +7,7 @@ Fixed
 
 Added
 ^^^^^
+* `@HiromuHota`_: Add test_classifier.py to unit test Classifier and its subclasses.
 * `@senwu`_: Add test_simple_tokenizer.py to unit test simple_tokenizer.
 * `@HiromuHota`_: Add test_spacy_parser.py to unit test spacy_parser.
 
