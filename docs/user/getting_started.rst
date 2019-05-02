@@ -16,6 +16,7 @@ For OS X using homebrew_::
     $ brew install poppler
     $ brew install postgresql
     $ brew install libpng freetype pkg-config
+    $ brew install libomp #https://github.com/pytorch/pytorch/issues/20030
 
 On Debian-based distros::
 
