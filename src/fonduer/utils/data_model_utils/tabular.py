@@ -18,19 +18,6 @@ from fonduer.utils.utils_table import (
 )
 
 
-def same_document(c):
-    """Return True if all Mentions in the given candidate are from the same Document.
-
-    :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
-    """
-    return all(
-        _to_span(c[i]).sentence.document is not None
-        and _to_span(c[i]).sentence.document == _to_span(c[0]).sentence.document
-        for i in range(len(c))
-    )
-
-
 def same_table(c):
     """Return True if all Mentions in the given candidate are from the same Table.
 

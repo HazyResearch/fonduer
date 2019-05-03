@@ -1,6 +1,12 @@
 [Unreleased]
 ------------
 
+Removed
+^^^^^^^
+* `@HiromuHota`_: Remove ``data_model_utils.tabular.same_document``, which
+  always returns True because a candidate can only have mentions from the same
+  document under the current implemention of ``CandidateExtractorUDF``.
+
 Fixed
 ^^^^^
 * `@senwu`_: Fix the doc about the PostgreSQL version requirement.
