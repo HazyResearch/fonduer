@@ -4,8 +4,7 @@ from builtins import map, range
 from collections import defaultdict
 from copy import deepcopy
 
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.sql import select
+from sqlalchemy.sql import insert, select
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.candidate import candidate_subclasses
