@@ -33,12 +33,22 @@ notifications:
   email: false
 
 before_install:
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -q -y libmecab-dev swig mecab unidic-mecab; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update;fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install swig mecab mecab-unidic; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install libomp; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc; fi
+- |
+  if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    OS=Linux-x86_64
+    sudo apt-get install -q -y libmecab-dev swig mecab unidic-mecab
+  else
+    OS=MacOSX-x86_64
+    brew update
+    brew install swig mecab mecab-unidic
+    brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
+    sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc
+    # Start postgresql for osx
+    rm -rf /usr/local/var/postgres
+    initdb /usr/local/var/postgres
+    pg_ctl -D /usr/local/var/postgres start; sleep 5
+    createuser -s postgres
+  fi
 - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
@@ -47,14 +57,9 @@ before_install:
 - conda update -q conda
 - conda install -q conda-build
 - conda install -q poppler
-- if [ -n "$PYTHON" ]; then conda create -q -n test-environment python=${PYTHON}; fi
+- conda create -q -n test-environment python=${PYTHON}
 - source activate test-environment
 - conda install -q pip
-# Start postgresql for osx
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm -rf /usr/local/var/postgres; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then initdb /usr/local/var/postgres; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pg_ctl -D /usr/local/var/postgres start; sleep 5; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then createuser -s postgres; fi
 
 - pdfinfo -v
 - psql --version
@@ -71,6 +76,9 @@ before_install:
     if [ "${PYTHON}" = "3.7" ]; then
       pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
     fi
+    pip install Wand
+    sudo apt-get install libmagickwand-dev ghostscript
+    sudo rm -rf /etc/ImageMagick-6/policy.xml
   fi
 
 install:
@@ -80,23 +88,15 @@ install:
 - make docs
 - pip install -q coveralls
 - python -m spacy download en
-- |
-  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    pip install Wand
-    sudo apt-get install libmagickwand-dev ghostscript
-    sudo rm -rf /etc/ImageMagick-6/policy.xml
-  fi
 
 before_script:
-- psql -c 'create database parser_test;' -U postgres
-- psql -c 'create database e2e_test;' -U postgres
-- psql -c 'create database visualizer_test;' -U postgres
-- psql -c 'create database inc_test;' -U postgres
-- psql -c 'create database cand_test;' -U postgres
-- psql -c 'create database meta_test;' -U postgres
-- cd tests/
-- "./download_data.sh"
-- cd ..
+- createdb parser_test -U postgres
+- createdb e2e_test -U postgres
+- createdb visualizer_test -U postgres
+- createdb inc_test -U postgres
+- createdb cand_test -U postgres
+- createdb meta_test -U postgres
+- cd tests && ./download_data.sh && cd ..
 
 script:
 - travis_wait 50 coverage run --source=fonduer -m pytest tests
