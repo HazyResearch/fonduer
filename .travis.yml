@@ -80,10 +80,17 @@ install:
 - make docs
 - pip install -q coveralls
 - python -m spacy download en
+- |
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    pip install Wand
+    sudo apt-get install libmagickwand-dev ghostscript
+    sudo rm -rf /etc/ImageMagick-6/policy.xml
+  fi
 
 before_script:
 - psql -c 'create database parser_test;' -U postgres
 - psql -c 'create database e2e_test;' -U postgres
+- psql -c 'create database visualizer_test;' -U postgres
 - psql -c 'create database inc_test;' -U postgres
 - psql -c 'create database cand_test;' -U postgres
 - psql -c 'create database meta_test;' -U postgres

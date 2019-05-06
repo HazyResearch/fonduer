@@ -13,6 +13,7 @@ by the tests::
     $ createdb cand_test
     $ createdb meta_test
     $ createdb inc_test
+    $ createdb visualizer_test
 
 You'll also need to download the external test data::
 
