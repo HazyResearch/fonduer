@@ -30,6 +30,7 @@ setup(
         "tqdm>=4.26.0, <5.0.0",
         "treedlib>=0.1.1, <0.2.0",
         "wand>=0.4.4, <0.5.0",
+        "ipython",
     ],
     extras_require={
         "spacy_ja": ["mecab-python3==0.7"],
