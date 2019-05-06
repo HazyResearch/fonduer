@@ -1,6 +1,42 @@
 [Unreleased]
 ------------
 
+Removed
+^^^^^^^
+* `@HiromuHota`_: Remove ``data_model_utils.tabular.same_document``, which
+  always returns True because a candidate can only have mentions from the same
+  document under the current implemention of ``CandidateExtractorUDF``.
+
+Fixed
+^^^^^
+* `@senwu`_: Fix the doc about the PostgreSQL version requirement.
+
+Added
+^^^^^
+* `@HiromuHota`_: Update the doc for OS X about an external dependency on libomp.
+* `@HiromuHota`_: Add test_classifier.py to unit test Classifier and its subclasses.
+* `@senwu`_: Add test_simple_tokenizer.py to unit test simple_tokenizer.
+* `@HiromuHota`_: Add test_spacy_parser.py to unit test spacy_parser.
+
+Changed
+^^^^^^^
+* `@HiromuHota`_: Incorporate entity_confusion_matrix as a first-class citizen and rename it to confusion_matrix because it can be used both entity-level and mention-level.
+* `@HiromuHota`_: Separate Spacy#_split_sentences_by_char_limit to test itself.
+* `@HiromuHota`_: Refactor the custom sentence_boundary_detector for readability and efficiency.
+* `@HiromuHota`_: Remove a redundant argument, document, from Spacy#split_sentences.
+* `@HiromuHota`_: Refactor TokenPreservingTokenizer for readability.
+
+[0.6.2] - 2019-04-01
+--------------------
+
+Fixed
+^^^^^
+* `@lukehsiao`_: Fix Meta initialization bug which would configure logging
+  upon import rather than allowing the user to configure logging themselves.
+
+[0.6.1] - 2019-03-29
+--------------------
+
 Added
 ^^^^^
 * `@senwu`_: update the spacy version to v2.1.x.
@@ -56,12 +92,19 @@ Changed
 
 Fixed
 ^^^^^
+* `@senwu`_: Change the exception condition to make sure parser run end to end.
+* `@lukehsiao`_: Fix parser error when text was located in the ``tail`` of an
+  LXML table node..
+* `@HiromuHota`_: Store lemmas and pos_tags in case they are returned from a
+  tokenizer.
 * `@HiromuHota`_: Use unidic instead of ipadic for Japanese.
   (`#231 <https://github.com/HazyResearch/fonduer/issues/231>`_)
 * `@senwu`_: Use mecab-python3 version 0.7 for Japanese tokenization since
   spaCy only support version 0.7.
 * `@HiromuHota`_: Use black 18.9b0 or higher to be consistent with isort.
   (`#225 <https://github.com/HazyResearch/fonduer/issues/225>`_)
+* `@HiromuHota`_: Workaround no longer required for Japanese as of spaCy v2.1.0.
+  (`#224 <https://github.com/HazyResearch/fonduer/pull/224>`_)
 * `@senwu`_: Update the snorkel-metal version.
 * `@senwu`_: Expose the ``b`` and ``pos_label`` in training.
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains

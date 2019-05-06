@@ -17,9 +17,6 @@ else:
 
 QUEUE_TIMEOUT = 3
 
-# Grab pointer to global metadata
-_meta = Meta.init()
-
 
 class UDFRunner(object):
     """
@@ -96,7 +93,7 @@ class UDFRunner(object):
 
     def _apply_mt(self, doc_loader, parallelism, **kwargs):
         """Run the UDF multi-threaded using python multiprocessing"""
-        if not _meta.postgres:
+        if not Meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
         def fill_input_queue(in_queue, doc_loader, terminal_signal):

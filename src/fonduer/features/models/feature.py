@@ -4,16 +4,14 @@ from sqlalchemy.dialects import postgresql
 from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
-_meta = Meta.init()
 
-
-class FeatureKey(AnnotationKeyMixin, _meta.Base):
+class FeatureKey(AnnotationKeyMixin, Meta.Base):
     """A feature's key that identifies the definition of the Feature."""
 
     pass
 
 
-class Feature(AnnotationMixin, _meta.Base):
+class Feature(AnnotationMixin, Meta.Base):
     """An element of a representation of a Candidate in a feature space.
 
     A Feature's annotation key identifies the definition of the Feature, e.g.,

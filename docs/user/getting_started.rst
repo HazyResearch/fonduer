@@ -16,6 +16,7 @@ For OS X using homebrew_::
     $ brew install poppler
     $ brew install postgresql
     $ brew install libpng freetype pkg-config
+    $ brew install libomp #https://github.com/pytorch/pytorch/issues/20030
 
 On Debian-based distros::
 
@@ -26,10 +27,10 @@ On Debian-based distros::
     $ sudo apt install postgresql
 
 .. note::
-    Fonduer requires PostgreSQL version 9.6 or above.
+    Fonduer recommends using PostgreSQL version 9.6 or later.
 
 .. note::
-    Fonduer requires ``poppler-utils`` to be version 0.36.0 or above.
+    Fonduer requires ``poppler-utils`` to be version 0.36.0 or later.
     Otherwise, the ``-bbox-layout`` option is not available for ``pdftotext``
     (`see changelog`_).
 

@@ -125,51 +125,7 @@ class Spacy(object):
             language_module = importlib.import_module(f"spacy.lang.{self.lang}")
             language_method = getattr(language_module, self.alpha_languages[self.lang])
             model = language_method()
-            """ TODO: Depending on OS (Linux/macOS) and on the sentence to be parsed,
-            UnicodeDecodeError or ValueError happens at the first use when lang='ja'.
-            As a workaround, the model parses some sentence before actually being used.
-            """
-            if self.lang == "ja":
-                try:
-                    model("初期化")
-                except (UnicodeDecodeError, ValueError):
-                    pass
-            if self.lang == "zh":
-                try:
-                    model("初始化")
-                except (UnicodeDecodeError, ValueError):
-                    pass
         self.model = model
-
-    def sentence_list_separator_function(self, all_sentence_objs):
-        start_token_marker = []
-        total_nr_input_words = 0
-        for sentence in all_sentence_objs:
-            if len(sentence.words) > 0:
-                start_token_marker += [True] + [False] * (len(sentence.words) - 1)
-                total_nr_input_words += len(sentence.words)
-
-        def set_custom_boundary(doc):
-            output_tokens = list(doc)
-            total_nr_output_words = len(output_tokens)
-            try:
-                assert total_nr_input_words == total_nr_output_words
-            except AssertionError:
-                self.logger.error(
-                    f"input token number ({total_nr_input_words}) "
-                    f"not same as output token "
-                    f"nr ({total_nr_output_words})"
-                )
-                raise
-
-            for token_nr, token in enumerate(doc):
-                if start_token_marker[token_nr] is True:
-                    doc[token.i].is_sent_start = True
-                else:
-                    doc[token.i].is_sent_start = False
-            return doc
-
-        return set_custom_boundary
 
     def enrich_sentences_with_NLP(self, all_sentences):
         """
@@ -179,7 +135,7 @@ class Spacy(object):
         :param all_sentences: List of fonduer Sentence objects for one document
         :return:
         """
-        if self.lang in self.alpha_languages:
+        if not self.has_NLP_support():
             raise NotImplementedError(
                 f"Language {self.lang} not available in spacy beyond tokenization"
             )
@@ -194,40 +150,24 @@ class Spacy(object):
                 f"Now in pipeline: {self.model.pipe_names}"
             )
 
-        batch_char_limit = self.model.max_length
-        sentence_batches = [[]]
-        num_chars = 0
-        for sentence in all_sentences:
-            if num_chars + len(sentence.text) >= batch_char_limit:
-                sentence_batches.append([sentence])
-                num_chars = len(sentence.text)
-            else:
-                sentence_batches[-1].append(sentence)
-                num_chars += len(sentence.text)
+        if self.model.has_pipe("sentence_boundary_detector"):
+            self.model.remove_pipe(name="sentence_boundary_detector")
+        self.model.add_pipe(
+            set_custom_boundary, before="parser", name="sentence_boundary_detector"
+        )
+
+        sentence_batches = self._split_sentences_by_char_limit(
+            all_sentences, self.model.max_length
+        )
 
         # TODO: We could do this in parallel. Test speedup in the future
         for sentence_batch in sentence_batches:
-            batch_sentence_strings = [x.text for x in sentence_batch]
-
-            if self.model.has_pipe("sentence_boundary_detector"):
-                self.model.remove_pipe(name="sentence_boundary_detector")
-
-            sentence_separator_fct = self.sentence_list_separator_function(
-                sentence_batch
-            )
-            self.model.add_pipe(
-                sentence_separator_fct,
-                before="parser",
-                name="sentence_boundary_detector",
-            )
-
-            custom_tokenizer = TokenPreservingTokenizer(
-                self.model.vocab, sentence_batch
-            )
+            custom_tokenizer = TokenPreservingTokenizer(self.model.vocab)
             # we circumvent redundant tokenization by using a custom
             # tokenizer that directly uses the already separated words
             # of each sentence as tokens
-            doc = custom_tokenizer()
+            doc = custom_tokenizer(sentence_batch)
+            doc.user_data = sentence_batch
             for name, proc in self.model.pipeline:  # iterate over components in order
                 doc = proc(doc)
 
@@ -236,21 +176,7 @@ class Spacy(object):
             except Exception:
                 self.logger.exception(f"{doc} was not parsed")
 
-            batch_parsed_sentences = list(doc.sents)
-            try:
-                assert len(batch_sentence_strings) == len(batch_parsed_sentences)
-            except AssertionError:
-                self.logger.error(
-                    f"Number of parsed spacy sentences doesnt match input sentences: "
-                    f"input {len(batch_sentence_strings)}, "
-                    f"output: {len(batch_parsed_sentences)}, "
-                    f"document: {sentence_batch[0].document}"
-                )
-                raise
-
-            sentence_nr = -1
-            for sent in batch_parsed_sentences:
-                sentence_nr += 1
+            for sent, current_sentence_obj in zip(doc.sents, sentence_batch):
                 parts = defaultdict(list)
 
                 for i, token in enumerate(sent):
@@ -264,7 +190,6 @@ class Spacy(object):
                     )
                     parts["dep_parents"].append(head_idx)
                     parts["dep_labels"].append(token.dep_)
-                current_sentence_obj = sentence_batch[sentence_nr]
                 current_sentence_obj.pos_tags = parts["pos_tags"]
                 current_sentence_obj.lemmas = parts["lemmas"]
                 current_sentence_obj.ner_tags = parts["ner_tags"]
@@ -272,12 +197,23 @@ class Spacy(object):
                 current_sentence_obj.dep_labels = parts["dep_labels"]
                 yield current_sentence_obj
 
-    def split_sentences(self, document, text):
+    def _split_sentences_by_char_limit(self, all_sentences, batch_char_limit):
+        sentence_batches = [[]]
+        num_chars = 0
+        for sentence in all_sentences:
+            if num_chars + len(sentence.text) >= batch_char_limit:
+                sentence_batches.append([sentence])
+                num_chars = len(sentence.text)
+            else:
+                sentence_batches[-1].append(sentence)
+                num_chars += len(sentence.text)
+        return sentence_batches
+
+    def split_sentences(self, text):
         """
         Split input text into sentences that match CoreNLP's default format,
         but are not yet processed.
 
-        :param document: The Document context
         :param text: The text of the parent paragraph of the sentences
         :return:
         """
@@ -314,8 +250,8 @@ class Spacy(object):
 
             for i, token in enumerate(sent):
                 parts["words"].append(str(token))
-                parts["lemmas"].append("")  # placeholder for later NLP parsing
-                parts["pos_tags"].append("")  # placeholder for later NLP parsing
+                parts["lemmas"].append(token.lemma_)
+                parts["pos_tags"].append(token.pos_)
                 parts["ner_tags"].append("")  # placeholder for later NLP parsing
                 parts["char_offsets"].append(token.idx)
                 parts["abs_char_offsets"].append(token.idx)
@@ -327,14 +263,29 @@ class Spacy(object):
                 p - parts["char_offsets"][0] for p in parts["char_offsets"]
             ]
             parts["position"] = position
-
-            # Link the sentence to its parent document object
-            parts["document"] = document
             parts["text"] = text
 
             position += 1
 
             yield parts
+
+
+def set_custom_boundary(doc):
+    """Set the sentence boundaries based on the already separated sentences.
+    :param doc: doc.user_data should have a list of Sentence.
+    :return doc:
+    """
+    if doc.user_data == {}:
+        raise AttributeError("A list of Sentence is not attached to doc.user_data.")
+    # Set every token.is_sent_start False because they are all True by default
+    for token_nr, token in enumerate(doc):
+        doc[token_nr].is_sent_start = False
+    # Set token.is_sent_start True when it is the first token of a Sentence
+    token_nr = 0
+    for sentence in doc.user_data:
+        doc[token_nr].is_sent_start = True
+        token_nr += len(sentence.words)
+    return doc
 
 
 class TokenPreservingTokenizer(object):
@@ -343,22 +294,29 @@ class TokenPreservingTokenizer(object):
     performed during sentence splitting. It will output a list of space
     separated tokens, whereas each token is a single word from the list of
     sentences.
-
-    :param vocab: The vocab attribute of the respective spacy language object
-    :param tokenized_sentences: A list of sentences that was previously
-        tokenized/split by spacy
-    :return:
     """
 
-    def __init__(self, vocab, tokenized_sentences):
+    def __init__(self, vocab):
+        """Initialize a custom tokenizer.
+
+        :param vocab: The vocab attribute of the respective spacy language object.
+        """
         self.logger = logging.getLogger(__name__)
-        self.all_input_tokens = []
         self.vocab = vocab
-        self.all_spaces = []
+
+    def __call__(self, tokenized_sentences):
+        """Apply the custom tokenizer.
+
+        :param tokenized_sentences: A list of sentences that was previously
+        tokenized/split by spacy
+        :return: Doc (a container for accessing linguistic annotations).
+        """
+        all_input_tokens = []
+        all_spaces = []
         for sentence in tokenized_sentences:
             words_in_sentence = sentence.words
             if len(words_in_sentence) > 0:
-                self.all_input_tokens += sentence.words
+                all_input_tokens += sentence.words
                 current_sentence_pos = 0
                 spaces_list = [True] * len(words_in_sentence)
                 # Last word in sentence always assumed to be followed by space
@@ -376,7 +334,5 @@ class TokenPreservingTokenizer(object):
                         for s in whitespace
                     ):
                         spaces_list[i] = False
-                self.all_spaces += spaces_list
-
-    def __call__(self):
-        return Doc(self.vocab, words=self.all_input_tokens, spaces=self.all_spaces)
+                all_spaces += spaces_list
+        return Doc(self.vocab, words=all_input_tokens, spaces=all_spaces)

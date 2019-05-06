@@ -251,7 +251,7 @@ class ParserUDF(UDF):
                 return_sentences += [y for y in self.parse(document, text)]
 
             yield from return_sentences
-        except NotImplementedError as e:
+        except Exception as e:
             warnings.warn(
                 (
                     f"Document {document.name} not added to database, "
@@ -490,7 +490,7 @@ class ParserUDF(UDF):
 
         # Lingual Parse
         document = state["document"]
-        for parts in self.tokenize_and_split_sentences(document, text):
+        for parts in self.tokenize_and_split_sentences(text):
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
@@ -582,8 +582,6 @@ class ParserUDF(UDF):
     def _parse_paragraph(self, node, state):
         """Parse a Paragraph of the node.
 
-        A Paragraph is defined as
-
         :param node: The lxml node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
@@ -636,13 +634,15 @@ class ParserUDF(UDF):
                 parts["section"] = parent
             elif isinstance(parent, Figure):  # occurs with text in the tail of an img
                 parts["section"] = parent.section
+            elif isinstance(parent, Table):  # occurs with text in the tail of a table
+                parts["section"] = parent.section
             else:
                 raise NotImplementedError(
                     f"Para '{text}' parent must be Section, Caption, or Cell, "
                     f"not {parent}"
                 )
 
-            # Create the Figure entry in the DB
+            # Create the entry in the DB
             paragraph = Paragraph(**parts)
 
             state["paragraph"]["idx"] += 1

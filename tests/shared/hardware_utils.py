@@ -3,6 +3,7 @@ import csv
 import logging
 from builtins import range
 
+from fonduer.learning.utils import confusion_matrix
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
 
 try:
@@ -116,17 +117,6 @@ def load_hardware_labels(
     logger.info(f"GoldLabels created: {labels}")
 
 
-def entity_confusion_matrix(pred, gold):
-    if not isinstance(pred, set):
-        pred = set(pred)
-    if not isinstance(gold, set):
-        gold = set(gold)
-    TP = pred.intersection(gold)
-    FP = pred.difference(gold)
-    FN = gold.difference(pred)
-    return (TP, FP, FN)
-
-
 def entity_level_f1(
     candidates, gold_file, attribute=None, corpus=None, parts_by_doc=None
 ):
@@ -170,7 +160,7 @@ def entity_level_f1(
             else:
                 entities.add((doc, p))
 
-    (TP_set, FP_set, FN_set) = entity_confusion_matrix(entities, gold_set)
+    (TP_set, FP_set, FN_set) = confusion_matrix(entities, gold_set)
     TP = len(TP_set)
     FP = len(FP_set)
     FN = len(FN_set)

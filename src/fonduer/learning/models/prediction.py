@@ -3,14 +3,12 @@ from sqlalchemy import Column, Float
 from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
-_meta = Meta.init()
 
-
-class PredictionKey(AnnotationKeyMixin, _meta.Base):
+class PredictionKey(AnnotationKeyMixin, Meta.Base):
     pass
 
 
-class Prediction(AnnotationMixin, _meta.Base):
+class Prediction(AnnotationMixin, Meta.Base):
     """
     A probability associated with a Candidate, indicating the degree of belief
     that the Candidate is true.

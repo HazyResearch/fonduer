@@ -224,20 +224,32 @@ def test_spacy_japanese(caplog):
         pass
 
     assert len(doc.sentences) == 289
-    sent = doc.sentences[2]
-    assert sent.text == "出典:フリー百科事典『ウィキペディア（Wikipedia）』"
-    assert sent.words == [
-        "出典",
-        ":",
-        "フリー",
-        "百科",
-        "事典",
-        "『",
-        "ウィキペディア",
-        "（",
-        "Wikipedia",
-        "）",
-        "』",
+    sent = doc.sentences[42]
+    assert sent.text == "当時マルコ・ポーロが辿り着いたと言われる"
+    assert sent.words == ["当時", "マルコ", "・", "ポーロ", "が", "辿り着い", "た", "と", "言わ", "れる"]
+    assert sent.pos_tags == [
+        "NOUN",
+        "PROPN",
+        "SYM",
+        "PROPN",
+        "ADP",
+        "VERB",
+        "AUX",
+        "ADP",
+        "VERB",
+        "AUX",
+    ]
+    assert sent.lemmas == [
+        "当時",
+        "マルコ-Marco",
+        "・",
+        "ポーロ-Polo",
+        "が",
+        "辿り着く",
+        "た",
+        "と",
+        "言う",
+        "れる",
     ]
     # Japanese sentences are only tokenized.
     assert sent.ner_tags == [""] * len(sent.words)
@@ -441,6 +453,31 @@ def test_simple_tokenizer(caplog):
     assert header.pos_tags == ["", ""]
 
     assert len(doc.sentences) == 44
+
+
+def test_parse_table_span(caplog):
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    docs_path = "tests/data/html_simple/table_span.html"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "table_span"))
+
+    # Check that doc has a name
+    assert doc.name == "table_span"
+
+    # Create an Parser and parse the document
+    parser_udf = get_parser_udf(structural=True, lingual=True, visual=False)
+    for _ in parser_udf.apply(doc):
+        pass
+
+    logger.info(f"Doc: {doc}")
+
+    assert len(doc.sentences) == 1
+    for sentence in doc.sentences:
+        logger.info(f"    Sentence: {sentence.text}")
 
 
 def test_parse_document_diseases(caplog):
