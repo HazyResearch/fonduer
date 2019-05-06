@@ -93,7 +93,7 @@ install:
 - pdfinfo -v
 - python -m spacy download en
 - pip install Wand
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmagickwand-dev; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmagickwand-dev ghostscript; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype imagemagick; fi
 - sudo rm -rf /etc/ImageMagick-6/policy.xml
 
