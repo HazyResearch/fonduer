@@ -55,18 +55,13 @@ class Visualizer(object):
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         if not pdf_file:
-            if os.path.isfile(self.pdf_path):
-                pdf_file = self.pdf_path
-            elif os.path.isdir(self.pdf_path):
-                pdf_file = os.path.join(
-                    self.pdf_path, candidates[0][0].context.sentence.document.name
-                )
-                if os.path.isfile(pdf_file + ".pdf"):
-                    pdf_file += ".pdf"
-                elif os.path.isfile(pdf_file + ".PDF"):
-                    pdf_file += ".PDF"
-                else:
-                    logger.error("display_candidates failed: pdf file missing.")
+            pdf_file = os.path.join(
+                self.pdf_path, candidates[0][0].context.sentence.document.name
+            )
+            if os.path.isfile(pdf_file + ".pdf"):
+                pdf_file += ".pdf"
+            elif os.path.isfile(pdf_file + ".PDF"):
+                pdf_file += ".PDF"
             else:
                 logger.error("display_candidates failed: pdf file missing.")
         boxes = [
@@ -129,8 +124,6 @@ def pdf_to_img(pdf_file, page_num, pdf_dim=None):
     if not pdf_dim:
         pdf_dim = get_pdf_dim(pdf_file)
     page_width, page_height = pdf_dim
-    fname = f"{os.path.abspath(pdf_file)}[{page_num-1}]"
-    logger.warning(f"pdf_to_img: {fname}")
-    img = Image(filename=fname)
+    img = Image(filename=f"{pdf_file}[{page_num - 1}]")
     img.resize(page_width, page_height)
     return img
