@@ -71,5 +71,6 @@ def test_visualizer(caplog):
     cands = session.query(Organization).filter(Organization.split == 0).all()
 
     # Test visualizer
+    pdf_path = "tests/data/pdf_simple"
     vis = Visualizer(pdf_path)
     vis.display_candidates([cands[0]])
