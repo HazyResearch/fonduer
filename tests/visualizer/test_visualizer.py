@@ -17,7 +17,6 @@ from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.utils.visualizer import Visualizer
 
 ATTRIBUTE = "visualizer_test"
 
@@ -26,6 +25,8 @@ ATTRIBUTE = "visualizer_test"
     sys.platform == "darwin", reason="Only run visualizer test on Linux"
 )
 def test_visualizer(caplog):
+    from fonduer.utils.visualizer import Visualizer  # noqa
+
     """Unit test of visualizer using the md document.
     """
     caplog.set_level(logging.INFO)
