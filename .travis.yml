@@ -80,10 +80,12 @@ install:
 - make docs
 - pip install -q coveralls
 - python -m spacy download en
-- pip install Wand
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmagickwand-dev ghostscript; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype imagemagick; fi
-- sudo rm -rf /etc/ImageMagick-6/policy.xml
+- |
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    pip install Wand
+    sudo apt-get install libmagickwand-dev ghostscript
+    sudo rm -rf /etc/ImageMagick-6/policy.xml
+  fi
 
 before_script:
 - psql -c 'create database parser_test;' -U postgres
@@ -97,7 +99,7 @@ before_script:
 - cd ..
 
 script:
-- travis_wait 50 coverage run --source=fonduer -m pytest tests/visualizer/test_visualizer.py
+- travis_wait 50 coverage run --source=fonduer -m pytest tests
 
 after_success:
 - coveralls
