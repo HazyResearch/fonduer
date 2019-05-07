@@ -13,6 +13,7 @@ Fixed
 
 Added
 ^^^^^
+* `@HiromuHota`_: Add Featurizer#upsert_keys.
 * `@HiromuHota`_: Update the doc for OS X about an external dependency on libomp.
 * `@HiromuHota`_: Add test_classifier.py to unit test Classifier and its subclasses.
 * `@senwu`_: Add test_simple_tokenizer.py to unit test simple_tokenizer.
