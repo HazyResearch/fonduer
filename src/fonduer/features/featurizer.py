@@ -125,6 +125,50 @@ class Featurizer(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
+    def upsert_keys(self, keys, candidate_classes=None):
+        """Upsert the specified keys to FeatureKey.
+
+        :param keys: A list of FeatureKey names to upsert.
+        :type keys: list | tuple
+        :param candidate_classes: A list of the Candidates to upsert the key for.
+            If None, upsert the keys for all candidate classes associated with
+            this Featurizer.
+        :type candidate_classes: list | tuple
+        """
+        # Make sure keys is iterable
+        keys = keys if isinstance(keys, (list, tuple)) else [keys]
+
+        # Make sure candidate_classes is iterable
+        if candidate_classes:
+            candidate_classes = (
+                candidate_classes
+                if isinstance(candidate_classes, (list, tuple))
+                else [candidate_classes]
+            )
+
+            # Ensure only candidate classes associated with the featurizer
+            # are used.
+            candidate_classes = [
+                _.__tablename__
+                for _ in candidate_classes
+                if _ in self.candidate_classes
+            ]
+
+            if len(candidate_classes) == 0:
+                logger.warning(
+                    "You didn't specify valid candidate classes for this featurizer."
+                )
+                return
+        # If unspecified, just use all candidate classes
+        else:
+            candidate_classes = [_.__tablename__ for _ in self.candidate_classes]
+
+        # build dict for use by utils
+        key_map = dict()
+        for key in keys:
+            key_map[key] = set(candidate_classes)
+        upsert_keys(self.session, FeatureKey, key_map)
+
     def drop_keys(self, keys, candidate_classes=None):
         """Drop the specified keys from FeatureKeys.
 

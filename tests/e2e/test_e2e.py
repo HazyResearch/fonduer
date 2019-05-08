@@ -272,6 +272,21 @@ def test_e2e(caplog):
         FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
     assert session.query(FeatureKey).count() == 1127
+
+    # Inserting the removed key
+    featurizer.upsert_keys(
+        ["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp, PartVolt]
+    )
+    assert set(
+        session.query(FeatureKey)
+        .filter(FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]")
+        .one()
+        .candidate_classes
+    ) == {"part_temp", "part_volt"}
+    assert session.query(FeatureKey).count() == 1127
+    # Removing the key again
+    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
+
     # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
     assert session.query(FeatureKey).count() == 1126
