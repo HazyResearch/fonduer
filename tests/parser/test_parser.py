@@ -152,6 +152,45 @@ def test_parse_md_details(caplog):
         assert len(sent.words) == len(sent.dep_labels)
 
 
+def test_parse_wo_tabular(caplog):
+    """Test the parser without extracting tabular information."""
+    caplog.set_level(logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    docs_path = "tests/data/html_simple/md.html"
+    pdf_path = "tests/data/pdf_simple/md.pdf"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "md"))
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=False,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
+        language="en",
+    )
+    for _ in parser_udf.apply(doc):
+        pass
+
+    # Check that doc has neither table nor cell
+    assert len(doc.sections) == 1
+    assert len(doc.paragraphs) == 44
+    assert len(doc.figures) == 1
+    assert len(doc.tables) == 0
+    assert len(doc.cells) == 0
+    assert len(doc.sentences) == 45
+
+    # Check that sentences are associated with both section and paragraph.
+    sent = doc.sentences[0]
+    assert sent.section
+    assert sent.paragraph
+    logger.info(f"  {sent}")
+
+
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run spacy non English test on Travis"
 )
