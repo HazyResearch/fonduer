@@ -8,6 +8,8 @@ class Table(Context):
     """A Table Context in a Document.
 
     Used to represent tables found in a document.
+
+    .. note:: As of v0.6.2, ``<table>`` tags turn into ``Table``.
     """
 
     __tablename__ = "table"
@@ -61,6 +63,8 @@ class Cell(Context):
     """A cell Context in a Document.
 
     Used to represent the cells that comprise a table in a document.
+
+    .. note:: As of v0.6.2, ``<th>`` and ``<td>`` tags turn into ``Cell``.
     """
 
     __tablename__ = "cell"

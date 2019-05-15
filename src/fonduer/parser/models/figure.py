@@ -7,8 +7,9 @@ from fonduer.parser.models.context import Context
 class Figure(Context):
     """A figure Context in a Document.
 
-    Used to represent figures in a document, such as ``<img>`` or ``<figure>``
-    tags in HTML.
+    Used to represent figures in a document.
+
+    .. note:: As of v0.6.2, ``<img>`` and ``<figure>`` tags turn into ``Figure``.
     """
 
     __tablename__ = "figure"

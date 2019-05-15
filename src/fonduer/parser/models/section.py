@@ -7,8 +7,9 @@ from fonduer.parser.models.context import Context
 class Section(Context):
     """A Section Context in a Document.
 
-    .. note:: Currently, each document simply has a single Section. Future
-        parsing improvements can add better section recognition, such as the
+    .. note:: As of v0.6.2, each document simply has a single Section.
+        Specifically, ``<html>`` and ``<section>`` tags turn into ``Section``.
+        Future parsing improvements can add better section recognition, such as the
         sections of an academic paper.
     """
 

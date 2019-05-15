@@ -8,6 +8,11 @@ class Paragraph(Context):
     """A paragraph Context in a Document.
 
     Represents a grouping of adjacent sentences.
+
+    .. note:: As of v0.6.2, a text content in two properties ``.text`` and ``.tail``
+        turn into ``Paragraph``.
+        See https://lxml.de/tutorial.html#elements-contain-text for details about
+        ``.text`` and ``.tail`` properties.
     """
 
     __tablename__ = "paragraph"

@@ -258,7 +258,12 @@ class StructuralMixin(object):
 class Sentence(
     Context, TabularMixin, LingualMixin, VisualMixin, StructuralMixin, SentenceMixin
 ):
-    """A Sentence subclass with Lingual, Tabular, Visual, and HTML attributes."""
+    """A Sentence subclass with Lingual, Tabular, Visual, and HTML attributes.
+
+    .. note:: Unlike other data models, there is no HTML element corresponding to
+        ``Sentence``. One ``Paragraph`` comprises one or more of ``Sentence``, but how a
+        ``Paragraph`` is split depends on which NLP parser (e.g., spaCy) is used.
+    """
 
     __tablename__ = "sentence"
 
