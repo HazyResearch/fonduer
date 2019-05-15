@@ -8,6 +8,11 @@ class Document(Context):
     """A document Context.
 
     Represents all the information of a particular document.
+    What becomes a document depends on which child class of ``DocPreprocessor`` is used.
+
+    .. note:: As of v0.6.2, each file is one document when ``HTMLDocPreprocessor`` or
+        ``TextDocPreprocessor`` is used, each line in the input file is treated as one
+        document when ``CSVDocPreprocessor`` or ``TSVDocPreprocessor`` is used.
     """
 
     __tablename__ = "document"

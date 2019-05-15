@@ -8,6 +8,9 @@ class Caption(Context):
     """A Caption Context in a Document.
 
     Used to represent figure or table captions in a document.
+
+    .. note:: As of v0.6.2, ``<caption>`` and ``<figcaption>`` tags turn into
+        ``Caption``.
     """
 
     __tablename__ = "caption"
