@@ -771,6 +771,10 @@ class ParserUDF(UDF):
         # flattens children of node that are in the 'flatten' list
         if self.flatten:
             lxml.etree.strip_tags(root, self.flatten)
+        # Strip comments and blacklisted elements
+        lxml.etree.strip_tags(root, lxml.etree.Comment)
+        if self.blacklist:
+            lxml.etree.strip_elements(root, self.blacklist)
         # Assign the text, which was stripped of the 'flatten'-tags, to the document
         document.text = lxml.etree.tostring(root, encoding="unicode")
 
@@ -815,12 +819,6 @@ class ParserUDF(UDF):
                 # DFS matches the order that would be produced by a recursive
                 # DFS implementation.
                 for child in reversed(node):
-                    # Skip nodes that are comments or blacklisted
-                    if child.tag is lxml.etree.Comment or (
-                        self.blacklist and child.tag in self.blacklist
-                    ):
-                        continue
-
                     stack.append(child)
 
                     # store the parent of the node, which is either the parent
