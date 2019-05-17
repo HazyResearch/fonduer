@@ -162,7 +162,10 @@ class DictionaryMatch(_NgramMatcher):
 class LambdaFunctionMatcher(_NgramMatcher):
     """Selects Ngrams that return True when fed to a function f.
 
-    :param func: The function to evaluate.
+    :param func: The function to evaluate with a signature of ``f: m -> {True, False}``,
+        where ``m`` denotes a mention. More precisely, ``m`` is an instance of child
+        class of :class:`TemporaryContext`, depending on which :class:`MentionSpace` is
+        used. E.g., :class:`TemporarySpanMention` when :class:`MentionNgrams` is used.
     :type func: function
     :param longest_match_only: Whether to only return the longest span matched,
         rather than all spans. Default False.
@@ -484,7 +487,8 @@ class _FigureMatcher(_Matcher):
 class LambdaFunctionFigureMatcher(_FigureMatcher):
     """Selects Figures that return True when fed to a function f.
 
-    :param func: The function to evaluate.
+    :param func: The function to evaluate. See :class:`LambdaFunctionMatcher` for
+        details.
     :type func: function
     """
 
