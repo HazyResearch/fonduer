@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
+from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
@@ -718,3 +719,64 @@ def test_csv_doc_preprocessor(caplog):
     assert len(doc.sections) == 12
     assert len(doc.paragraphs) == 10
     assert len(doc.sentences) == 17
+
+
+def test_parser_skips_and_flattens(caplog):
+    """Test if ``Parser`` skips/flattens elements."""
+    caplog.set_level(logging.INFO)
+
+    parser_udf = get_parser_udf()
+
+    # Test if a parser skips comments
+    doc = Document(id=1, name="test", stable_id="1::document:0:0")
+    doc.text = "<html><body>Hello!<!-- comment --></body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "Hello!"
+
+    # Test if a parser skips blacklisted elements
+    doc = Document(id=2, name="test2", stable_id="2::document:0:0")
+    doc.text = "<html><body><script>alert('Hello');</script><p>Hello!</p></body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "Hello!"
+
+    # Test if a parser flattens elements
+    doc = Document(id=3, name="test3", stable_id="3::document:0:0")
+    doc.text = "<html><body><span>Hello, <br>world!</span></body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "Hello, world!"
+
+    # Now with different blacklist and flatten
+    parser_udf = get_parser_udf(blacklist=["meta"], flatten=["word"])
+
+    # Test if a parser does not skip non-blacklisted element
+    doc = Document(id=4, name="test4", stable_id="4::document:0:0")
+    doc.text = "<html><body><script>alert('Hello');</script><p>Hello!</p></body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "alert('Hello');"
+    assert doc.sentences[1].text == "Hello!"
+
+    # Test if a parser skips blacklisted elements
+    doc = Document(id=5, name="test5", stable_id="5::document:0:0")
+    doc.text = "<html><head><meta name='keywords'></head><body>Hello!</body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "Hello!"
+
+    # Test if a parser does not flatten elements
+    doc = Document(id=6, name="test6", stable_id="6::document:0:0")
+    doc.text = "<html><body><span>Hello, <br>world!</span></body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "Hello,"
+    assert doc.sentences[1].text == "world!"
+
+    # Test if a parser flattens elements
+    doc = Document(id=7, name="test7", stable_id="7::document:0:0")
+    doc.text = "<html><body><word>Hello, </word><word>world!</word></body></html>"
+    for _ in parser_udf.apply(doc):
+        pass
+    assert doc.sentences[0].text == "Hello, world!"
