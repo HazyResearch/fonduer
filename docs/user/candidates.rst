@@ -19,9 +19,53 @@ Core Objects
 
 These are Fonduer_'s core objects used for Mention and Candidate extraction.
 
-.. automodule:: fonduer.candidates
+.. autoclass:: fonduer.candidates.MentionExtractor
     :members:
     :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.CandidateExtractor
+    :members:
+    :inherited-members:
+    :show-inheritance:
+
+MentionSpaces
+-------------
+
+A *MentionSpace* defines a space where mentions lie on. You can use a pre-defined child
+class of MentionSpace or extend one depending on your needs.
+
+.. autoclass:: fonduer.candidates.mentions.MentionSpace
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.Ngrams
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionNgrams
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionFigures
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionSentences
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionParagraphs
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionCaptions
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionCells
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionTables
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionSections
+    :show-inheritance:
+
+.. autoclass:: fonduer.candidates.mentions.MentionDocuments
     :show-inheritance:
 
 Matchers
