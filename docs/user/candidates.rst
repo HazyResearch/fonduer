@@ -32,8 +32,9 @@ These are Fonduer_'s core objects used for Mention and Candidate extraction.
 MentionSpaces
 -------------
 
-A *MentionSpace* defines a space where mentions lie on. You can use a pre-defined child
-class of MentionSpace or extend one depending on your needs.
+A *MentionSpace* defines the space of mentions, i.e., the set of all possible mentions.
+Depending on your needs, you can use a pre-defined child class of MentionSpace or extend
+one.
 
 .. autoclass:: fonduer.candidates.mentions.MentionSpace
     :show-inheritance:
