@@ -173,5 +173,8 @@ def mention_subclass(
             C.__table__.create(bind=Meta.engine)  # type: ignore
 
         mention_subclasses[class_name] = C, class_spec
+        # Make this dynamically created class picklable
+        # https://stackoverflow.com/a/39529149
+        globals()[class_name] = C
 
         return C

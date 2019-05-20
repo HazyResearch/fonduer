@@ -191,5 +191,8 @@ def candidate_subclass(
             C.__table__.create(bind=Meta.engine)  # type: ignore
 
         candidate_subclasses[class_name] = C, class_spec
+        # Make this dynamically created class picklable
+        # https://stackoverflow.com/a/39529149
+        globals()[class_name] = C
 
         return C
