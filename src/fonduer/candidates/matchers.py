@@ -332,8 +332,8 @@ class RegexMatchSpan(_RegexMatch):
     :param ignore_case: Whether or not to ignore case in the RegEx. Default
         True.
     :type ignore_case: bool
-    :param search: If True, _search_ regex pattern on full concatenated span.
-        Default False.
+    :param search: If True, *search* the regex pattern through the concatenated span.
+        If False, try to *match* the regex patten only at its beginning. Default False.
     :type search: bool
     :param full_match: If True, wrap the provided rgx with ``(<rgx>)$``.
         Default True.
