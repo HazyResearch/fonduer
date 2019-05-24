@@ -7,9 +7,13 @@ from fonduer.parser.lingual_parser.lingual_parser import LingualParser
 
 
 class SimpleParser(LingualParser):
-    """Tokenizes text on whitespace only using split()."""
+    """Tokenizes text on whitespace only using split().
 
-    def __init__(self, delim: str = "<NB>") -> None:
+    :param delim: a delimiter to split text into sentences.
+    :type delim: str
+    """
+
+    def __init__(self, delim: str = ".") -> None:
         self.delim = delim
 
     def split_sentences(self, str: str) -> Iterator[Dict[str, Any]]:

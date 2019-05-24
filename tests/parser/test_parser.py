@@ -5,7 +5,7 @@ import pytest
 
 from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
-from fonduer.parser.parser import ParserUDF
+from fonduer.parser.parser import ParserUDF, SimpleParser
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
     HTMLDocPreprocessor,
@@ -458,7 +458,11 @@ def test_simple_parser():
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, lingual=False, visual=True, pdf_path=pdf_path, language=None
+        structural=True,
+        lingual=False,
+        visual=True,
+        pdf_path=pdf_path,
+        lingual_parser=SimpleParser(delim="NoDelim"),
     )
     for _ in parser_udf.apply(doc):
         pass
