@@ -197,7 +197,11 @@ class LambdaFunctionMatcher(_NgramMatcher):
 
 
 class Union(_NgramMatcher):
-    """Takes the union of mention sets returned by the provided ``Matchers``."""
+    """Takes the union of mention sets returned by the provided ``Matchers``.
+
+    :param longest_match_only: If True, only return the longest match. Default True.
+    :type longest_match_only: bool
+    """
 
     def f(self, m: TemporaryContext) -> bool:
         for child in self.children:
@@ -351,8 +355,8 @@ class RegexMatchSpan(_RegexMatch):
     :param full_match: If True, wrap the provided rgx with ``(<rgx>)$``.
         Default True.
     :type full_match: bool
-    :param longest_match_only: If True, only return the longest match. Default
-        True.
+    :param longest_match_only: If True, only return the longest match. Default True.
+        Ignored when used as a child matcher of :class:`Union`.
     :type longest_match_only: bool
     """
 
