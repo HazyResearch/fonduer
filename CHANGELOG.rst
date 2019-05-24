@@ -102,6 +102,8 @@ Changed
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 * `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
 * `@HiromuHota`_: Depend on psycopg2 instead of psycopg2-binary as the latter is not recommended for production.
+* `@HiromuHota`_: Change the default value for ``delim`` of ``SimpleParser`` from "<NB>" to ".".
+  (`#272 <https://github.com/HazyResearch/fonduer/pull/272>`_)
 
 Deprecated
 ^^^^^^^^^^
