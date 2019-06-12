@@ -1,6 +1,9 @@
 [Unreleased]
 ------------
 
+[0.7.0] - 2019-06-12
+--------------------
+
 Removed
 ^^^^^^^
 * `@HiromuHota`_: Remove ``data_model_utils.tabular.same_document``, which
