@@ -1,6 +1,10 @@
 [Unreleased]
 ------------
 
+Fixed
+^^^^^
+* `@senwu`_: Fix legacy code bug in ``SymbolTable``.
+
 [0.7.0] - 2019-06-12
 --------------------
 
