@@ -5,9 +5,6 @@ visualizer_test has been created for the purpose of testing.
 If you are testing locally, you will need to create this db.
 """
 import logging
-import sys
-
-import pytest
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionNgrams
@@ -20,9 +17,6 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 ATTRIBUTE = "visualizer_test"
 
 
-@pytest.mark.skipif(
-    sys.platform == "darwin", reason="Only run visualizer test on Linux"
-)
 def test_visualizer(caplog):
     from fonduer.utils.visualizer import Visualizer  # noqa
 
@@ -75,10 +69,6 @@ def test_visualizer(caplog):
     vis.display_candidates([cands[0]])
 
 
-# TODO test on MacOSX too
-@pytest.mark.skipif(
-    sys.platform == "darwin", reason="Only run visualizer test on Linux"
-)
 def test_get_pdf_dim(caplog):
     from fonduer.utils.visualizer import get_pdf_dim  # noqa
 

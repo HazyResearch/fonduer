@@ -41,12 +41,19 @@ before_install:
     # No need to adjust it on Mac as it's 100 by default
     sudo sed -i 's/max_connections = 255/max_connections = 100/g' /etc/postgresql/10/main/postgresql.conf
     sudo service postgresql restart
+    # Install ImageMagick library for Wand
+    sudo apt-get install libmagickwand-dev ghostscript
+    sudo rm -rf /etc/ImageMagick-6/policy.xml
   else
     OS=MacOSX-x86_64
     brew update
     brew install swig mecab mecab-unidic
     brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
     sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc
+    # Install ImageMagick library for Wand
+    brew install freetype imagemagick@6 ghostscript
+    # https://stackoverflow.com/a/41772062
+    ln -s `brew info imagemagick@6 | grep ^/usr | awk '{print $1}'`/lib/libMagickWand-6.Q16.dylib /usr/local/lib/libMagickWand.dylib
     # Start postgresql for osx
     rm -rf /usr/local/var/postgres
     initdb /usr/local/var/postgres
@@ -77,9 +84,6 @@ before_install:
     if [ "${PYTHON}" = "3.7" ]; then
       pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
     fi
-    pip install Wand
-    sudo apt-get install libmagickwand-dev ghostscript
-    sudo rm -rf /etc/ImageMagick-6/policy.xml
   fi
 
 install:
