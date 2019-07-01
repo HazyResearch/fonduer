@@ -101,9 +101,16 @@ def get_box(span):
     return box
 
 
-def get_pdf_dim(pdf_file):
+def get_pdf_dim(pdf_file, page=1):
+    """
+    Get the dimension of a pdf
+    :param pdf_file: path to the pdf file
+    :param page: page number (starting from 1) to get a dimension for
+    :return: width, height
+    :rtype: (int, int)
+    """
     html_content = subprocess.check_output(
-        f"pdftotext -f {1} -l {1} -bbox '{pdf_file}' -", shell=True
+        f"pdftotext -f {page} -l {page} -bbox '{pdf_file}' -", shell=True
     )
     soup = BeautifulSoup(html_content, "html.parser")
     pages = soup.find_all("page")
