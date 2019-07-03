@@ -351,6 +351,14 @@ def test_e2e(caplog):
     assert L_train[1].shape == (2985, 9)
     assert len(labeler.get_keys()) == 9
 
+    # Test Dropping LabelerKey
+    labeler.drop_keys(["LF_storage_row"])
+    assert len(labeler.get_keys()) == 8
+
+    # Test Upserting LabelerKey
+    labeler.upsert_keys(["LF_storage_row"])
+    assert "LF_storage_row" in [label.name for label in labeler.get_keys()]
+
     L_train_gold = labeler.get_gold_labels(train_cands)
     assert L_train_gold[0].shape == (3493, 1)
 
