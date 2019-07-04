@@ -19,7 +19,7 @@ binary_vizlib_feats = {}
 def extract_visual_features(candidates):
     """Extract visual features.
 
-    :param candidates: A list of candidates that needs to extract features
+    :param candidates: A list of candidates to extract features from
     :type candidates: list
     """
     candidates = candidates if isinstance(candidates, list) else [candidates]
