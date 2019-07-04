@@ -8,7 +8,7 @@ from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.utils.data_model_utils import same_table
+from fonduer.utils.data_model_utils import is_horz_aligned, is_vert_aligned, same_table
 from tests.shared.hardware_matchers import part_matcher, temp_matcher
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,9 @@ def test_feature_extraction(caplog):
     # Same table
     def same_table_throttler(c):
         (part, attr) = c
-        return same_table((part, attr))
+        if same_table((part, attr)):
+            return is_horz_aligned((part, attr)) or is_vert_aligned((part, attr))
+        return False
 
     candidate_extractor = CandidateExtractor(
         session, [PartTemp], throttlers=[same_table_throttler]
@@ -72,15 +74,15 @@ def test_feature_extraction(caplog):
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 68
+    assert session.query(PartTemp).count() == 12
 
     # Featurization based on default feature library
     featurizer = Featurizer(session, [PartTemp])
 
     # Test that featurization default feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 68
-    assert session.query(FeatureKey).count() == 1249
+    assert session.query(Feature).count() == 12
+    assert session.query(FeatureKey).count() == 1079
     featurizer.clear(train=True)
 
     # Example feature extractor
@@ -95,8 +97,8 @@ def test_feature_extraction(caplog):
 
     # Test that featurization default feature library with one extra feature extractor
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 68
-    assert session.query(FeatureKey).count() == 1317
+    assert session.query(Feature).count() == 12
+    assert session.query(FeatureKey).count() == 1091
     featurizer.clear(train=True)
 
     # Featurization with only textual feature
@@ -105,8 +107,8 @@ def test_feature_extraction(caplog):
 
     # Test that featurization default feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 68
-    assert session.query(FeatureKey).count() == 289
+    assert session.query(Feature).count() == 12
+    assert session.query(FeatureKey).count() == 162
     featurizer.clear(train=True)
 
     # Featurization with only tabular feature
@@ -115,8 +117,8 @@ def test_feature_extraction(caplog):
 
     # Test that featurization default feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 68
-    assert session.query(FeatureKey).count() == 869
+    assert session.query(Feature).count() == 12
+    assert session.query(FeatureKey).count() == 836
     featurizer.clear(train=True)
 
     # Featurization with only structural feature
@@ -125,8 +127,8 @@ def test_feature_extraction(caplog):
 
     # Test that featurization default feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 68
-    assert session.query(FeatureKey).count() == 50
+    assert session.query(Feature).count() == 12
+    assert session.query(FeatureKey).count() == 40
     featurizer.clear(train=True)
 
     # Featurization with only visual feature
@@ -135,7 +137,7 @@ def test_feature_extraction(caplog):
 
     # Test that featurization default feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 68
+    assert session.query(Feature).count() == 12
     assert session.query(FeatureKey).count() == 41
     featurizer.clear(train=True)
 
