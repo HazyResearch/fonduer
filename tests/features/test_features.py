@@ -74,6 +74,7 @@ def test_feature_extraction(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1610
     assert session.query(FeatureKey).count() == 2272
+    featurizer.clear(train=True)
 
     # Example feature extractor
     def feat_ext(candidates):
@@ -89,6 +90,7 @@ def test_feature_extraction(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1610
     assert session.query(FeatureKey).count() == 3882
+    featurizer.clear(train=True)
 
     # Featurization with only textual feature
     feature_extractors = FeatureExtractor(features=["textual"])
@@ -98,6 +100,7 @@ def test_feature_extraction(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1610
     assert session.query(FeatureKey).count() == 706
+    featurizer.clear(train=True)
 
     # Featurization with only tabular feature
     feature_extractors = FeatureExtractor(features=["tabular"])
@@ -107,6 +110,7 @@ def test_feature_extraction(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1610
     assert session.query(FeatureKey).count() == 1360
+    featurizer.clear(train=True)
 
     # Featurization with only structural feature
     feature_extractors = FeatureExtractor(features=["structural"])
@@ -116,6 +120,7 @@ def test_feature_extraction(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1610
     assert session.query(FeatureKey).count() == 116
+    featurizer.clear(train=True)
 
     # Featurization with only visual feature
     feature_extractors = FeatureExtractor(features=["visual"])
@@ -125,3 +130,4 @@ def test_feature_extraction(caplog):
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1610
     assert session.query(FeatureKey).count() == 90
+    featurizer.clear(train=True)
