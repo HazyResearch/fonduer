@@ -17,12 +17,7 @@ binary_tablelib_feats = {}
 settings = get_config()
 
 
-def extract_tabular_features(candidates):
-    """Extract tabular features.
-
-    :param candidates: A list of candidates to extract features from
-    :type candidates: list
-    """
+def get_table_feats(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
@@ -37,7 +32,7 @@ def extract_tabular_features(candidates):
             span = args[0]
             if span.stable_id not in unary_tablelib_feats:
                 unary_tablelib_feats[span.stable_id] = set()
-                for f, v in _tablelib_unary_features(span):
+                for f, v in tablelib_unary_features(span):
                     unary_tablelib_feats[span.stable_id].add((f, v))
 
             for f, v in unary_tablelib_feats[span.stable_id]:
@@ -50,7 +45,7 @@ def extract_tabular_features(candidates):
                 for span, pre in [(span1, "e1_"), (span2, "e2_")]:
                     if span.stable_id not in unary_tablelib_feats:
                         unary_tablelib_feats[span.stable_id] = set()
-                        for f, v in _tablelib_unary_features(span):
+                        for f, v in tablelib_unary_features(span):
                             unary_tablelib_feats[span.stable_id].add((f, v))
 
                     for f, v in unary_tablelib_feats[span.stable_id]:
@@ -58,7 +53,7 @@ def extract_tabular_features(candidates):
 
                 if candidate.id not in binary_tablelib_feats:
                     binary_tablelib_feats[candidate.id] = set()
-                    for f, v in _tablelib_binary_features(span1, span2):
+                    for f, v in tablelib_binary_features(span1, span2):
                         binary_tablelib_feats[candidate.id].add((f, v))
 
                 for f, v in binary_tablelib_feats[candidate.id]:
@@ -69,17 +64,17 @@ def extract_tabular_features(candidates):
             )
 
 
-def _tablelib_unary_features(span):
+def tablelib_unary_features(span):
     """
     Table-/structure-related features for a single span
     """
     if not span.sentence.is_tabular():
         return
     sentence = span.sentence
-    for attrib in settings["featurization"]["tabular"]["unary_features"]["attrib"]:
+    for attrib in settings["featurization"]["table"]["unary_features"]["attrib"]:
         for ngram in get_cell_ngrams(
             span,
-            n_max=settings["featurization"]["tabular"]["unary_features"][
+            n_max=settings["featurization"]["table"]["unary_features"][
                 "get_cell_ngrams"
             ]["max"],
             attrib=attrib,
@@ -97,7 +92,7 @@ def _tablelib_unary_features(span):
             for ngram in get_head_ngrams(
                 span,
                 axis,
-                n_max=settings["featurization"]["tabular"]["unary_features"][
+                n_max=settings["featurization"]["table"]["unary_features"][
                     "get_head_ngrams"
                 ]["max"],
                 attrib=attrib,
@@ -105,7 +100,7 @@ def _tablelib_unary_features(span):
                 yield f"{axis.upper()}_HEAD_{attrib.upper()}_[{ngram}]", DEF_VALUE
         for ngram in get_row_ngrams(
             span,
-            n_max=settings["featurization"]["tabular"]["unary_features"][
+            n_max=settings["featurization"]["table"]["unary_features"][
                 "get_row_ngrams"
             ]["max"],
             attrib=attrib,
@@ -113,7 +108,7 @@ def _tablelib_unary_features(span):
             yield f"ROW_{attrib.upper()}_[{ngram}]", DEF_VALUE
         for ngram in get_col_ngrams(
             span,
-            n_max=settings["featurization"]["tabular"]["unary_features"][
+            n_max=settings["featurization"]["table"]["unary_features"][
                 "get_col_ngrams"
             ]["max"],
             attrib=attrib,
@@ -130,11 +125,11 @@ def _tablelib_unary_features(span):
         #      yield "COL_INFERRED_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
 
 
-def _tablelib_binary_features(span1, span2):
+def tablelib_binary_features(span1, span2):
     """
     Table-/structure-related features for a pair of spans
     """
-    binary_features = settings["featurization"]["tabular"]["binary_features"]
+    binary_features = settings["featurization"]["table"]["binary_features"]
     if span1.sentence.is_tabular() and span2.sentence.is_tabular():
         if span1.sentence.table == span2.sentence.table:
             yield "SAME_TABLE", DEF_VALUE
