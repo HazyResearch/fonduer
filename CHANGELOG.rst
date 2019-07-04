@@ -1,7 +1,7 @@
 [Unreleased]
 ------------
 
-Changed
+Added
 ^^^^^^^
 * `@senwu`_: Refactor `Featurization` to support user defined customized feature
     extractors and rename existing feature extractors' name to match the paper.
