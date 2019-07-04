@@ -6,6 +6,32 @@ Changed
 * `@senwu`_: Refactor `Featurization` to support user defined customized feature
     extractors and rename existing feature extractors' name to match the paper.
 
+.. note::
+
+    Rather than using the fixed multimodal feature library, we expose the interface 
+    for users to provide the customized feature extractors, see readthedoc for
+    more details.
+
+    .. code:: python
+
+        from fonduer.features import Featurizer, FeatureExtractor
+
+        # Example feature extractor
+        def feat_ext(candidates):
+            for candidate in candidates:
+                yield candidate.id, f"{candidate.id}", 1
+
+        feature_extractors=FeatureExtractor(customize_feature_funcs=[feat_ext])
+        featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+
+    Rather than:
+
+    .. code:: python
+
+        from fonduer.features import Featurizer
+
+        featurizer = Featurizer(session, [PartTemp])
+
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.
