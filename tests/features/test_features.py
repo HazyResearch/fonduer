@@ -4,11 +4,10 @@ from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionNgrams
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.features import FeatureExtractor, Featurizer
-from fonduer.features.models import Feature, FeatureKey
+from fonduer.features.models import FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.utils.data_model_utils import is_horz_aligned, is_vert_aligned, same_table
 from tests.shared.hardware_matchers import part_matcher, temp_matcher
 
 logger = logging.getLogger(__name__)
@@ -61,28 +60,18 @@ def test_feature_extraction(caplog):
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    # Same table
-    def same_table_throttler(c):
-        (part, attr) = c
-        if same_table((part, attr)):
-            return is_horz_aligned((part, attr)) or is_vert_aligned((part, attr))
-        return False
-
-    candidate_extractor = CandidateExtractor(
-        session, [PartTemp], throttlers=[same_table_throttler]
-    )
+    candidate_extractor = CandidateExtractor(session, [PartTemp])
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 12
+    n_cands = session.query(PartTemp).count()
 
     # Featurization based on default feature library
     featurizer = Featurizer(session, [PartTemp])
 
     # Test that featurization default feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 12
-    assert session.query(FeatureKey).count() == 1079
+    n_default_feats = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
     # Example feature extractor
@@ -97,48 +86,51 @@ def test_feature_extraction(caplog):
 
     # Test that featurization default feature library with one extra feature extractor
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 12
-    assert session.query(FeatureKey).count() == 1091
+    n_default_w_customized_features = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
     # Featurization with only textual feature
     feature_extractors = FeatureExtractor(features=["textual"])
     featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
 
-    # Test that featurization default feature library
+    # Test that featurization textual feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 12
-    assert session.query(FeatureKey).count() == 162
+    n_textual_features = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
     # Featurization with only tabular feature
     feature_extractors = FeatureExtractor(features=["tabular"])
     featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
 
-    # Test that featurization default feature library
+    # Test that featurization tabular feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 12
-    assert session.query(FeatureKey).count() == 836
+    n_tabular_features = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
     # Featurization with only structural feature
     feature_extractors = FeatureExtractor(features=["structural"])
     featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
 
-    # Test that featurization default feature library
+    # Test that featurization structural feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 12
-    assert session.query(FeatureKey).count() == 40
+    n_structural_features = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
     # Featurization with only visual feature
     feature_extractors = FeatureExtractor(features=["visual"])
     featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
 
-    # Test that featurization default feature library
+    # Test that featurization visual feature library
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 12
-    assert session.query(FeatureKey).count() == 41
+    n_visual_features = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
-    assert session.query(FeatureKey).count() == 0
+    assert (
+        n_default_feats
+        == n_textual_features
+        + n_tabular_features
+        + n_structural_features
+        + n_visual_features
+    )
+
+    assert n_default_w_customized_features == n_default_feats + n_cands
