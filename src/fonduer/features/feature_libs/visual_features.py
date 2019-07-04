@@ -16,7 +16,12 @@ unary_vizlib_feats = {}
 binary_vizlib_feats = {}
 
 
-def get_visual_feats(candidates):
+def extract_visual_features(candidates):
+    """Extract visual features.
+
+    :param candidates: A list of candidates to extract features from
+    :type candidates: list
+    """
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
@@ -33,7 +38,7 @@ def get_visual_feats(candidates):
             if span.sentence.is_visual():
                 if span.stable_id not in unary_vizlib_feats:
                     unary_vizlib_feats[span.stable_id] = set()
-                    for f, v in vizlib_unary_features(span):
+                    for f, v in _vizlib_unary_features(span):
                         unary_vizlib_feats[span.stable_id].add((f, v))
 
                 for f, v in unary_vizlib_feats[span.stable_id]:
@@ -47,7 +52,7 @@ def get_visual_feats(candidates):
                 for span, pre in [(span1, "e1_"), (span2, "e2_")]:
                     if span.stable_id not in unary_vizlib_feats:
                         unary_vizlib_feats[span.stable_id] = set()
-                        for f, v in vizlib_unary_features(span):
+                        for f, v in _vizlib_unary_features(span):
                             unary_vizlib_feats[span.stable_id].add((f, v))
 
                     for f, v in unary_vizlib_feats[span.stable_id]:
@@ -55,7 +60,7 @@ def get_visual_feats(candidates):
 
                 if candidate.id not in binary_vizlib_feats:
                     binary_vizlib_feats[candidate.id] = set()
-                    for f, v in vizlib_binary_features(span1, span2):
+                    for f, v in _vizlib_binary_features(span1, span2):
                         binary_vizlib_feats[candidate.id].add((f, v))
 
                 for f, v in binary_vizlib_feats[candidate.id]:
@@ -66,7 +71,7 @@ def get_visual_feats(candidates):
             )
 
 
-def vizlib_unary_features(span):
+def _vizlib_unary_features(span):
     """
     Visual-related features for a single span
     """
@@ -80,7 +85,7 @@ def vizlib_unary_features(span):
         yield f"PAGE_[{page}]", DEF_VALUE
 
 
-def vizlib_binary_features(span1, span2):
+def _vizlib_binary_features(span1, span2):
     """
     Visual-related features for a pair of spans
     """

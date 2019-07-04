@@ -1,12 +1,12 @@
 featurization:
-  content:
+  textual:
     window_feature:
       size: 8
       combinations: True
       isolated: True
     word_feature:
       window: 7
-  table:
+  tabular:
     unary_features:
       attrib:
         - words

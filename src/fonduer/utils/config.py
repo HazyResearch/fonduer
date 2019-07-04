@@ -8,11 +8,11 @@ logger = logging.getLogger(__name__)
 
 default = {
     "featurization": {
-        "content": {
+        "textual": {
             "window_feature": {"size": 3, "combinations": True, "isolated": True},
             "word_feature": {"window": 7},
         },
-        "table": {
+        "tabular": {
             "unary_features": {
                 "attrib": ["words"],
                 "get_cell_ngrams": {"max": 2},

@@ -23,6 +23,18 @@ These are Fonduer_'s core objects used for featurization.
     :inherited-members:
     :show-inheritance:
 
+Multimodal features
+-------------------
+
+Fonduer_ includes a basic multimodal feature library based on its rich data model.
+In addition, users can provide their own feature extractors to use with their
+applications.
+
+.. automodule:: fonduer.features.feature_libs
+    :members:
+    :inherited-members:
+    :show-inheritance:
+
 Configuration Settings
 ----------------------
 
@@ -32,8 +44,8 @@ parameters to Fonduer_ via ``.fonduer-config.yaml``.
 The different featurization parameters are explained in this section::
 
     featurization:
-      # settings of content-based features
-      content:
+      # settings of textual-based features
+      textual:
         # settings for window features
         window_feature:
           size: 3
@@ -42,8 +54,8 @@ The different featurization parameters are explained in this section::
         # settings for word window usd to extract features from surrounding words
         word_feature:
           window: 7
-      # settings of table-based features
-      table:
+      # settings of tabular-based features
+      tabular:
         # unary feture settings
         unary_features:
           # type of attributes
