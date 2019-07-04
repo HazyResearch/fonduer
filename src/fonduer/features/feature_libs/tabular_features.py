@@ -20,7 +20,7 @@ settings = get_config()
 def extract_tabular_features(candidates):
     """Extract tabular features.
 
-    :param candidates: A list of candidates that needs to extract features
+    :param candidates: A list of candidates to extract features from
     :type candidates: list
     """
     candidates = candidates if isinstance(candidates, list) else [candidates]
