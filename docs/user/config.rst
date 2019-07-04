@@ -13,14 +13,14 @@ files.
 The default ``.fonduer-config.yaml`` configuration file is shown below::
 
     featurization:
-      content:
+      textual:
         window_feature:
           size: 3
           combinations: True
           isolated: True
         word_feature:
           window: 7
-      table:
+      tabular:
         unary_features:
           attrib:
             - words

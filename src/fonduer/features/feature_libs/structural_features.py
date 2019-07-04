@@ -19,7 +19,12 @@ unary_strlib_feats = {}
 binary_strlib_feats = {}
 
 
-def get_structural_feats(candidates):
+def extract_structural_features(candidates):
+    """Extract structural features.
+
+    :param candidates: A list of candidates that needs to extract features
+    :type candidates: list
+    """
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
@@ -35,7 +40,7 @@ def get_structural_feats(candidates):
             if span.sentence.is_structural():
                 if span.stable_id not in unary_strlib_feats:
                     unary_strlib_feats[span.stable_id] = set()
-                    for feature, value in strlib_unary_features(span):
+                    for feature, value in _strlib_unary_features(span):
                         unary_strlib_feats[span.stable_id].add((feature, value))
 
                 for feature, value in unary_strlib_feats[span.stable_id]:
@@ -48,7 +53,7 @@ def get_structural_feats(candidates):
                 for span, prefix in [(span1, "e1_"), (span2, "e2_")]:
                     if span.stable_id not in unary_strlib_feats:
                         unary_strlib_feats[span.stable_id] = set()
-                        for feature, value in strlib_unary_features(span):
+                        for feature, value in _strlib_unary_features(span):
                             unary_strlib_feats[span.stable_id].add((feature, value))
 
                     for feature, value in unary_strlib_feats[span.stable_id]:
@@ -56,7 +61,7 @@ def get_structural_feats(candidates):
 
                 if candidate.id not in binary_strlib_feats:
                     binary_strlib_feats[candidate.id] = set()
-                    for feature, value in strlib_binary_features(span1, span2):
+                    for feature, value in _strlib_binary_features(span1, span2):
                         binary_strlib_feats[candidate.id].add((feature, value))
 
                 for feature, value in binary_strlib_feats[candidate.id]:
@@ -67,7 +72,7 @@ def get_structural_feats(candidates):
             )
 
 
-def strlib_unary_features(span):
+def _strlib_unary_features(span):
     """
     Structural-related features for a single span
     """
@@ -101,7 +106,7 @@ def strlib_unary_features(span):
     yield f"ANCESTOR_ID_[{' '.join(get_ancestor_id_names(span))}]", DEF_VALUE
 
 
-def strlib_binary_features(span1, span2):
+def _strlib_binary_features(span1, span2):
     """
     Structural-related features for a pair of spans
     """

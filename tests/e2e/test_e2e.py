@@ -253,12 +253,12 @@ def test_e2e(caplog):
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 214
-    assert session.query(FeatureKey).count() == 1128
+    assert session.query(FeatureKey).count() == 1260
 
     # Test Dropping FeatureKey
     # Should force a row deletion
     featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NNP NN IN]"])
-    assert session.query(FeatureKey).count() == 1127
+    assert session.query(FeatureKey).count() == 1259
 
     # Should only remove the part_volt as a relation and leave part_temp
     assert set(
@@ -271,7 +271,7 @@ def test_e2e(caplog):
     assert session.query(FeatureKey).filter(
         FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
-    assert session.query(FeatureKey).count() == 1127
+    assert session.query(FeatureKey).count() == 1259
 
     # Inserting the removed key
     featurizer.upsert_keys(
@@ -283,37 +283,37 @@ def test_e2e(caplog):
         .one()
         .candidate_classes
     ) == {"part_temp", "part_volt"}
-    assert session.query(FeatureKey).count() == 1127
+    assert session.query(FeatureKey).count() == 1259
     # Removing the key again
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
 
     # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
-    assert session.query(FeatureKey).count() == 1126
+    assert session.query(FeatureKey).count() == 1258
     session.query(Feature).delete(synchronize_session="fetch")
     session.query(FeatureKey).delete(synchronize_session="fetch")
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 6478
-    assert session.query(FeatureKey).count() == 4122
+    assert session.query(FeatureKey).count() == 4539
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3493, 4122)
-    assert F_train[1].shape == (2985, 4122)
-    assert len(featurizer.get_keys()) == 4122
+    assert F_train[0].shape == (3493, 4539)
+    assert F_train[1].shape == (2985, 4539)
+    assert len(featurizer.get_keys()) == 4539
 
     featurizer.apply(split=1, parallelism=PARALLEL)
     assert session.query(Feature).count() == 6692
-    assert session.query(FeatureKey).count() == 4122
+    assert session.query(FeatureKey).count() == 4539
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (61, 4122)
-    assert F_dev[1].shape == (153, 4122)
+    assert F_dev[0].shape == (61, 4539)
+    assert F_dev[1].shape == (153, 4539)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
     assert session.query(Feature).count() == 8252
-    assert session.query(FeatureKey).count() == 4122
+    assert session.query(FeatureKey).count() == 4539
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (416, 4122)
-    assert F_test[1].shape == (1144, 4122)
+    assert F_test[0].shape == (416, 4539)
+    assert F_test[1].shape == (1144, 4539)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
