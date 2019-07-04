@@ -188,7 +188,7 @@ class MentionNgramsPart(MentionNgrams):
                     for part in possible_parts:
                         if part.startswith(base_part) and len(base_part) >= 4:
                             parts.add(part)
-            for i, part in enumerate(parts):
+            for i, part in enumerate(sorted(list(parts))):
                 if " " in part:
                     continue  # it won't pass the part_matcher
                 if part == ts.get_span():
