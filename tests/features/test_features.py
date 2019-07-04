@@ -1,6 +1,4 @@
-#! /usr/bin/env python
 import logging
-from sys import platform
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
@@ -21,15 +19,7 @@ def test_feature_extraction(caplog):
     """Test extracting candidates from mentions from documents."""
     caplog.set_level(logging.INFO)
 
-    if platform == "darwin":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        logger.info("Using two cores.")
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    def do_nothing_matcher(fig):
-        return True
+    PARALLEL = 1
 
     max_docs = 1
     session = Meta.init("postgresql://localhost:5432/" + DB).Session()

@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 import logging
 
 from fonduer.candidates.models import Candidate
