@@ -26,8 +26,9 @@ These are Fonduer_'s core objects used for featurization.
 Multimodal features
 -------------------
 
-Fonduer_ includes a basic multimodal feature library based on its data
-model and users can also provide external feature extractors for their application.
+Fonduer_ includes a basic multimodal feature library based on its rich data model.
+In addition, users can provide their own feature extractors to use with their
+applications.
 
 .. automodule:: fonduer.features.feature_libs
     :members:

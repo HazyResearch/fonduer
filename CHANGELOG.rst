@@ -8,9 +8,9 @@ Changed
 
 .. note::
 
-    Rather than using the fixed multimodal feature library, we expose the interface 
-    for users to provide the customized feature extractors, see readthedoc for
-    more details.
+    Rather than using a fixed multimodal feature library along, we have added an
+    interface for users to provide customized feature extractors. Please see our
+    full documentation for details.
 
     .. code:: python
 
