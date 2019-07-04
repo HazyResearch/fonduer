@@ -41,7 +41,7 @@ class FeatureExtractor(object):
     def extract(self, candidates):
         """Extract features from candidates.
 
-        :param candidates: A list of candidates that needs to extract features
+        :param candidates: A list of candidates to extract features from
         :type candidates: list
         """
         for feature_extractor in self.feature_extractors:
