@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 """
 These tests expect that postgres is installed and that a database named
 visualizer_test has been created for the purpose of testing.
