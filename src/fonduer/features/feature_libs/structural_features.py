@@ -22,7 +22,7 @@ binary_strlib_feats = {}
 def extract_structural_features(candidates):
     """Extract structural features.
 
-    :param candidates: A list of candidates that needs to extract features
+    :param candidates: A list of candidates to extract features from
     :type candidates: list
     """
     candidates = candidates if isinstance(candidates, list) else [candidates]
