@@ -1,4 +1,3 @@
-from fonduer.features.feature_libs.feature_extractors import FeatureExtractor
 from fonduer.features.feature_libs.structural_features import (
     extract_structural_features,
 )
@@ -7,7 +6,6 @@ from fonduer.features.feature_libs.textual_features import extract_textual_featu
 from fonduer.features.feature_libs.visual_features import extract_visual_features
 
 __all__ = [
-    "FeatureExtractor",
     "extract_textual_features",
     "extract_structural_features",
     "extract_tabular_features",

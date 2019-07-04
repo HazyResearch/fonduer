@@ -30,6 +30,9 @@ class FeatureExtractor(object):
         features=["textual", "structural", "tabular", "visual"],
         customize_feature_funcs=[],
     ):
+        if not isinstance(customize_feature_funcs, list):
+            customize_feature_funcs = [customize_feature_funcs]
+
         self.feature_extractors = []
         for feature in features:
             if feature not in FEATURES:
@@ -44,6 +47,8 @@ class FeatureExtractor(object):
         :param candidates: A list of candidates to extract features from
         :type candidates: list
         """
+        candidates = candidates if isinstance(candidates, list) else [candidates]
+
         for feature_extractor in self.feature_extractors:
             for candidate_id, feature, value in feature_extractor(candidates):
                 yield candidate_id, feature, value

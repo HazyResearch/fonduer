@@ -2,7 +2,7 @@ import itertools
 import logging
 
 from fonduer.candidates.models import Candidate
-from fonduer.features.feature_libs.feature_extractors import FeatureExtractor
+from fonduer.features.feature_extractors import FeatureExtractor
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
