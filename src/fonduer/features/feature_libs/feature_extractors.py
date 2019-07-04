@@ -16,7 +16,7 @@ FEATURES = {
 class FeatureExtractor(object):
     """A class to extract features from candidates.
 
-    :param features: a list of feature types which provides in Fonduer, defaults
+    :param features: a list of which Fonduer feature types to extract, defaults
         to ["textual", "structural", "tabular", "visual"]
     :type features: list, optional
     :param customize_feature_funcs: a list of customized feature extractors where the
