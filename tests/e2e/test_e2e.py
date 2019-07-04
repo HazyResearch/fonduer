@@ -294,25 +294,25 @@ def test_e2e(caplog):
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 6478
-    assert session.query(FeatureKey).count() == 4539
+    assert session.query(FeatureKey).count() == 4538
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3493, 4539)
-    assert F_train[1].shape == (2985, 4539)
-    assert len(featurizer.get_keys()) == 4539
+    assert F_train[0].shape == (3493, 4538)
+    assert F_train[1].shape == (2985, 4538)
+    assert len(featurizer.get_keys()) == 4538
 
     featurizer.apply(split=1, parallelism=PARALLEL)
     assert session.query(Feature).count() == 6692
-    assert session.query(FeatureKey).count() == 4539
+    assert session.query(FeatureKey).count() == 4538
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (61, 4539)
-    assert F_dev[1].shape == (153, 4539)
+    assert F_dev[0].shape == (61, 4538)
+    assert F_dev[1].shape == (153, 4538)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
     assert session.query(Feature).count() == 8252
-    assert session.query(FeatureKey).count() == 4539
+    assert session.query(FeatureKey).count() == 4538
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (416, 4539)
-    assert F_test[1].shape == (1144, 4539)
+    assert F_test[0].shape == (416, 4538)
+    assert F_test[1].shape == (1144, 4538)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
     load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
