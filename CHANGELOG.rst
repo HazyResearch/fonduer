@@ -32,6 +32,8 @@ Added
 
         featurizer = Featurizer(session, [PartTemp])
 
+* `@HiromuHota`_: Add page argument to get_pdf_dim in case pages have different dimensions.
+
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.
