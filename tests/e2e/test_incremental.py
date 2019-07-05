@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 import logging
 import os
 
@@ -104,15 +103,15 @@ def test_incremental(caplog):
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 70
-    assert session.query(FeatureKey).count() == 491
+    assert session.query(FeatureKey).count() == 512
 
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (70, 491)
-    assert len(featurizer.get_keys()) == 491
+    assert F_train[0].shape == (70, 512)
+    assert len(featurizer.get_keys()) == 512
 
     # Test Dropping FeatureKey
     featurizer.drop_keys(["CORE_e1_LENGTH_1"])
-    assert session.query(FeatureKey).count() == 490
+    assert session.query(FeatureKey).count() == 512
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -165,10 +164,10 @@ def test_incremental(caplog):
     # Update features
     featurizer.update(new_docs, parallelism=PARALLEL)
     assert session.query(Feature).count() == 1502
-    assert session.query(FeatureKey).count() == 2424
+    assert session.query(FeatureKey).count() == 2573
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (1502, 2424)
-    assert len(featurizer.get_keys()) == 2424
+    assert F_train[0].shape == (1502, 2573)
+    assert len(featurizer.get_keys()) == 2573
 
     # Update Labels
     labeler.update(new_docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)

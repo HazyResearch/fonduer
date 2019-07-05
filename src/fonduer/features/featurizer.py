@@ -2,7 +2,7 @@ import itertools
 import logging
 
 from fonduer.candidates.models import Candidate
-from fonduer.features.feature_libs import get_all_feats
+from fonduer.features.feature_extractors import FeatureExtractor
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
@@ -31,13 +31,20 @@ class Featurizer(UDFRunner):
     :type parallelism: int
     """
 
-    def __init__(self, session, candidate_classes, parallelism=1):
+    def __init__(
+        self,
+        session,
+        candidate_classes,
+        feature_extractors=FeatureExtractor(),
+        parallelism=1,
+    ):
         """Initialize the Featurizer."""
         super(Featurizer, self).__init__(
             session,
             FeaturizerUDF,
             parallelism=parallelism,
             candidate_classes=candidate_classes,
+            feature_extractors=feature_extractors,
         )
         self.candidate_classes = candidate_classes
 
@@ -265,13 +272,16 @@ class Featurizer(UDFRunner):
 class FeaturizerUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_classes, **kwargs):
+    def __init__(self, candidate_classes, feature_extractors, **kwargs):
         """Initialize the FeaturizerUDF."""
         self.candidate_classes = (
             candidate_classes
             if isinstance(candidate_classes, (list, tuple))
             else [candidate_classes]
         )
+
+        self.feature_extractors = feature_extractors
+
         super(FeaturizerUDF, self).__init__(**kwargs)
 
     def apply(self, doc, split, train, **kwargs):
@@ -294,7 +304,13 @@ class FeaturizerUDF(UDF):
         # candidates. This helps reduce the number of queries needed to update.
         all_cands = itertools.chain.from_iterable(cands_list)
         records = list(
-            get_mapping(self.session, Feature, all_cands, get_all_feats, feature_map)
+            get_mapping(
+                self.session,
+                Feature,
+                all_cands,
+                self.feature_extractors.extract,
+                feature_map,
+            )
         )
         batch_upsert_records(self.session, Feature, records)
 
