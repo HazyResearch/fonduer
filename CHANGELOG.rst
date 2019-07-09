@@ -4,7 +4,7 @@
 Added
 ^^^^^
 * `@senwu`_: Refactor `Featurization` to support user defined customized feature
-    extractors and rename existing feature extractors' name to match the paper.
+  extractors and rename existing feature extractors' name to match the paper.
 
 .. note::
 
@@ -68,11 +68,11 @@ Changed
 ^^^^^^^
 * `@HiromuHota`_: Assign a section for mention spaces.
 * `@HiromuHota`_: Incorporate entity_confusion_matrix as a first-class citizen and
-    rename it to confusion_matrix because it can be used both entity-level
-    and mention-level.
+  rename it to confusion_matrix because it can be used both entity-level
+  and mention-level.
 * `@HiromuHota`_: Separate Spacy#_split_sentences_by_char_limit to test itself.
 * `@HiromuHota`_: Refactor the custom sentence_boundary_detector for readability
-    and efficiency.
+  and efficiency.
 * `@HiromuHota`_: Remove a redundant argument, document, from Spacy#split_sentences.
 * `@HiromuHota`_: Refactor TokenPreservingTokenizer for readability.
 
