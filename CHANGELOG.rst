@@ -33,14 +33,11 @@ Added
         featurizer = Featurizer(session, [PartTemp])
 
 * `@HiromuHota`_: Add page argument to get_pdf_dim in case pages have different dimensions.
+* `@HiromuHota`_: Add Labeler#upsert_keys.
 
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.
-
-Added
-^^^^^
-* `@HiromuHota`_: Add Labeler#upsert_keys.
 
 [0.7.0] - 2019-06-12
 --------------------
