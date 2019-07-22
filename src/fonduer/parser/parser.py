@@ -229,7 +229,7 @@ class ParserUDF(UDF):
             if self.visual:
                 # Use the provided pdf_path if present
                 self.pdf_path = pdf_path if pdf_path else self.pdf_path
-                if not self.vizlink.valid_pdf(document.name):
+                if not self.vizlink.is_linkable(document.name):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
