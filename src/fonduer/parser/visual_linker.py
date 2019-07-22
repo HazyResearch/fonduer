@@ -13,7 +13,8 @@ from editdistance import eval as editdist  # Alternative library: python-levensh
 
 
 class VisualLinker(object):
-    def __init__(self, time=False, verbose=False):
+    def __init__(self, pdf_path, time=False, verbose=False):
+        self.pdf_path = pdf_path
         self.logger = logging.getLogger(__name__)
         self.pdf_file = None
         self.verbose = verbose
@@ -95,6 +96,23 @@ class VisualLinker(object):
         self.pdf_dim = (page_width, page_height)
         if self.verbose:
             self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
+
+    def valid_pdf(self, filename):
+        """Verify that the file exists and has a PDF extension."""
+        path = self.pdf_path
+        # If path is file, but not PDF.
+        if os.path.isfile(path) and path.lower().endswith(".pdf"):
+            return True
+        else:
+            full_path = os.path.join(path, filename)
+            if os.path.isfile(full_path) and full_path.lower().endswith(".pdf"):
+                return True
+            elif os.path.isfile(os.path.join(path, filename + ".pdf")):
+                return True
+            elif os.path.isfile(os.path.join(path, filename + ".PDF")):
+                return True
+
+        return False
 
     def _coordinates_from_HTML(self, page, page_num):
         pdf_word_list = []

@@ -1,6 +1,5 @@
 import itertools
 import logging
-import os
 import re
 import warnings
 from builtins import range
@@ -209,18 +208,7 @@ class ParserUDF(UDF):
         if self.visual:
             self.pdf_path = pdf_path
             if not self.vizlink:
-                self.vizlink = VisualLinker()
-
-    def apply(self, document, pdf_path=None, **kwargs):
-        # The document is the Document model
-        text = document.text
-
-        # Only return sentences, if no exceptions occur during parsing
-        try:
-            return_sentences = []
-            if self.visual:
                 # Use the provided pdf_path if present
-                self.pdf_path = pdf_path if pdf_path else self.pdf_path
                 if not self.pdf_path:
                     warnings.warn(
                         "Visual parsing failed: pdf_path is required. "
@@ -228,9 +216,20 @@ class ParserUDF(UDF):
                         RuntimeWarning,
                     )
                     self.visual = False
-                    return_sentences += [y for y in self.parse(document, text)]
+                else:
+                    self.vizlink = VisualLinker(pdf_path)
 
-                elif not self._valid_pdf(self.pdf_path, document.name):
+    def apply(self, document, pdf_path=None, **kwargs):
+        # The document is the Document model
+        text = document.text
+
+        # Only return sentences, if no exceptions occur during parsing
+        try:
+            return_sentences = [y for y in self.parse(document, text)]
+            if self.visual:
+                # Use the provided pdf_path if present
+                self.pdf_path = pdf_path if pdf_path else self.pdf_path
+                if not self.vizlink.valid_pdf(document.name):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
@@ -239,22 +238,14 @@ class ParserUDF(UDF):
                         ),
                         RuntimeWarning,
                     )
-                    self.visual = False
-                    return_sentences += [y for y in self.parse(document, text)]
                 else:
-                    # Populate document.sentences
-                    for _ in self.parse(document, text):
-                        pass
                     # Add visual attributes
-                    return_sentences += [
+                    return_sentences = [
                         y
                         for y in self.vizlink.parse_visual(
                             document.name, document.sentences, self.pdf_path
                         )
                     ]
-            else:
-                return_sentences += [y for y in self.parse(document, text)]
-
             yield from return_sentences
         except Exception as e:
             warnings.warn(
@@ -263,22 +254,6 @@ class ParserUDF(UDF):
                     f"because of parse error: \n{e}"
                 )
             )
-
-    def _valid_pdf(self, path, filename):
-        """Verify that the file exists and has a PDF extension."""
-        # If path is file, but not PDF.
-        if os.path.isfile(path) and path.lower().endswith(".pdf"):
-            return True
-        else:
-            full_path = os.path.join(path, filename)
-            if os.path.isfile(full_path) and full_path.lower().endswith(".pdf"):
-                return True
-            elif os.path.isfile(os.path.join(path, filename + ".pdf")):
-                return True
-            elif os.path.isfile(os.path.join(path, filename + ".PDF")):
-                return True
-
-        return False
 
     def _parse_table(self, node, state):
         """Parse a table node.
