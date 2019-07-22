@@ -64,6 +64,7 @@ class Parser(UDFRunner):
         replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
         tabular=True,  # tabular information
         visual=False,  # visual information
+        vizlink=None,  # visual linker
         pdf_path=None,
     ):
         super(Parser, self).__init__(
@@ -78,6 +79,7 @@ class Parser(UDFRunner):
             replacements=replacements,
             tabular=tabular,
             visual=visual,
+            vizlink=vizlink,
             pdf_path=pdf_path,
             language=language,
         )
@@ -148,6 +150,7 @@ class ParserUDF(UDF):
         replacements,
         tabular,
         visual,
+        vizlink,
         pdf_path,
         language,
         **kwargs,
@@ -202,9 +205,11 @@ class ParserUDF(UDF):
 
         # visual setup
         self.visual = visual
+        self.vizlink = vizlink
         if self.visual:
             self.pdf_path = pdf_path
-            self.vizlink = VisualLinker()
+            if not self.vizlink:
+                self.vizlink = VisualLinker()
 
     def apply(self, document, pdf_path=None, **kwargs):
         # The document is the Document model
