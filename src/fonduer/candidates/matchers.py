@@ -356,7 +356,8 @@ class RegexMatchSpan(_RegexMatch):
         Default True.
     :type full_match: bool
     :param longest_match_only: If True, only return the longest match. Default True.
-        Ignored when used as a child matcher of :class:`Union`.
+        Ignored when used as a child matcher of :class:`Union`, :class:`Intersect`,
+        or :class:`Inverse`.
     :type longest_match_only: bool
     """
 
