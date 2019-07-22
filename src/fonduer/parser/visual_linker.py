@@ -97,7 +97,7 @@ class VisualLinker(object):
         if self.verbose:
             self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
-    def valid_pdf(self, filename):
+    def is_linkable(self, filename):
         """Verify that the file exists and has a PDF extension."""
         path = self.pdf_path
         # If path is file, but not PDF.
