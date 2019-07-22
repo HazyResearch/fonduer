@@ -24,6 +24,7 @@ def get_parser_udf(
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
+    vizlink=None,
     pdf_path=None,
 ):
     """Return an instance of ParserUDF."""
@@ -41,6 +42,7 @@ def get_parser_udf(
             replacements=replacements,
             tabular=tabular,
             visual=visual,
+            vizlink=vizlink,
             pdf_path=pdf_path,
             language=language,
         )
