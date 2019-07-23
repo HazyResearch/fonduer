@@ -242,7 +242,7 @@ class ParserUDF(UDF):
                     # Add visual attributes
                     return_sentences = [
                         y
-                        for y in self.vizlink.parse_visual(
+                        for y in self.vizlink.link(
                             document.name, document.sentences, self.pdf_path
                         )
                     ]
