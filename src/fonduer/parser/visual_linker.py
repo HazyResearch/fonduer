@@ -50,16 +50,16 @@ class VisualLinker(object):
         if not os.path.isfile(self.pdf_file):
             self.pdf_file = self.pdf_file[:-3] + "PDF"
         try:
-            self.extract_pdf_words()
+            self._extract_pdf_words()
         except RuntimeError as e:
             self.logger.exception(e)
             return
-        self.extract_html_words()
-        self.link_lists(search_max=200)
-        for sentence in self.update_coordinates():
+        self._extract_html_words()
+        self._link_lists(search_max=200)
+        for sentence in self._update_coordinates():
             yield sentence
 
-    def extract_pdf_words(self):
+    def _extract_pdf_words(self):
         self.logger.debug(
             f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'"
         )
@@ -152,7 +152,7 @@ class VisualLinker(object):
         )
         return pdf_word_list, coordinate_map
 
-    def extract_html_words(self):
+    def _extract_html_words(self):
         html_word_list = []
         for sentence in self.sentences:
             for i, word in enumerate(sentence.words):
@@ -161,7 +161,7 @@ class VisualLinker(object):
         if self.verbose:
             self.logger.info(f"Extracted {len(self.html_word_list)} html words")
 
-    def link_lists(self, search_max=100, edit_cost=20, offset_cost=1):
+    def _link_lists(self, search_max=100, edit_cost=20, offset_cost=1):
         # NOTE: there are probably some inefficiencies here from rehashing words
         # multiple times, but we're not going to worry about that for now
 
@@ -302,7 +302,7 @@ class VisualLinker(object):
                 pass
         return int(np.median(offsets))
 
-    def display_links(self, max_rows=100):
+    def _display_links(self, max_rows=100):
         html = []
         pdf = []
         j = []
@@ -336,7 +336,7 @@ class VisualLinker(object):
         self.logger.info(pd.DataFrame(data, columns=["html", "pdf", "j"]))
         pd.reset_option("display.max_rows")
 
-    def update_coordinates(self):
+    def _update_coordinates(self):
         for sentence in self.sentences:
             (page, top, left, bottom, right) = list(
                 zip(
