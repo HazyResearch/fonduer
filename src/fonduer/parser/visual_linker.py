@@ -42,7 +42,7 @@ class VisualLinker(object):
                 f"but should be 0.36.0 or above"
             )
 
-    def parse_visual(self, document_name, sentences, pdf_path):
+    def link(self, document_name, sentences, pdf_path):
         self.sentences = sentences
         self.pdf_file = (
             pdf_path if os.path.isfile(pdf_path) else pdf_path + document_name + ".pdf"
