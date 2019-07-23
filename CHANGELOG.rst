@@ -42,16 +42,6 @@ Fixed
 [0.7.0] - 2019-06-12
 --------------------
 
-Removed
-^^^^^^^
-* `@HiromuHota`_: Remove ``data_model_utils.tabular.same_document``, which
-  always returns True because a candidate can only have mentions from the same
-  document under the current implemention of ``CandidateExtractorUDF``.
-
-Fixed
-^^^^^
-* `@senwu`_: Fix the doc about the PostgreSQL version requirement.
-
 Added
 ^^^^^
 * `@HiromuHota`_: Add notes about the current implementation of data models.
@@ -72,6 +62,16 @@ Changed
   and efficiency.
 * `@HiromuHota`_: Remove a redundant argument, document, from Spacy#split_sentences.
 * `@HiromuHota`_: Refactor TokenPreservingTokenizer for readability.
+
+Removed
+^^^^^^^
+* `@HiromuHota`_: Remove ``data_model_utils.tabular.same_document``, which
+  always returns True because a candidate can only have mentions from the same
+  document under the current implemention of ``CandidateExtractorUDF``.
+
+Fixed
+^^^^^
+* `@senwu`_: Fix the doc about the PostgreSQL version requirement.
 
 [0.6.2] - 2019-04-01
 --------------------
@@ -157,9 +157,17 @@ Fixed
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
   more than one ``Page``.
 
-
 [0.6.0] - 2019-02-17
 --------------------
+
+Changed
+^^^^^^^
+* `@lukehsiao`_: improved performance of ``data_model_utils`` through caching
+  and simplifying the underlying queries.
+  (`#212 <https://github.com/HazyResearch/fonduer/pull/212>`_,
+  `#215 <https://github.com/HazyResearch/fonduer/pull/215>`_)
+* `@senwu`_: upgrade to PyTorch v1.0.0.
+  (`#209 <https://github.com/HazyResearch/fonduer/pull/209>`_)
 
 Removed
 ^^^^^^^
@@ -182,16 +190,6 @@ Removed
         from fonduer.supervision import Labeler, get_gold_labels
         labeler = Labeler(session, [relations])
         L_gold_train = get_gold_labels(session, train_cands, annotator_name='gold')
-
-Changed
-^^^^^^^
-* `@lukehsiao`_: improved performance of ``data_model_utils`` through caching
-  and simplifying the underlying queries.
-  (`#212 <https://github.com/HazyResearch/fonduer/pull/212>`_,
-  `#215 <https://github.com/HazyResearch/fonduer/pull/215>`_)
-* `@senwu`_: upgrade to PyTorch v1.0.0.
-  (`#209 <https://github.com/HazyResearch/fonduer/pull/209>`_)
-
 
 Fixed
 ^^^^^
@@ -249,15 +247,6 @@ Added
 
   For Text format, ``TextDocPreprocessor`` assumes one document per file.
 
-Fixed
-^^^^^
-* `@HiromuHota`_: Modify docstring of functions that return get_sparse_matrix
-* `@lukehsiao`_: Fix the behavior of ``get_last_documents`` to return Documents
-  that are correctly linked to the database and can be navigated by the user.
-  (`#201 <https://github.com/HazyResearch/fonduer/pull/201>`_)
-* `@lukehsiao`_: Fix the behavior of MentionExtractor ``clear`` and
-  ``clear_all`` to also delete the Candidates that correspond to the Mentions.
-
 Changed
 ^^^^^^^
 * `@senwu`_: Reorganize ``learning`` module to use pytorch dataloader, include
@@ -280,17 +269,21 @@ Changed
 * `@HiromuHota`_: Reattach doc with the current session at
   MentionExtractorUDF#apply to avoid doing so at each MentionSpace.
 
+Fixed
+^^^^^
+* `@HiromuHota`_: Modify docstring of functions that return get_sparse_matrix
+* `@lukehsiao`_: Fix the behavior of ``get_last_documents`` to return Documents
+  that are correctly linked to the database and can be navigated by the user.
+  (`#201 <https://github.com/HazyResearch/fonduer/pull/201>`_)
+* `@lukehsiao`_: Fix the behavior of MentionExtractor ``clear`` and
+  ``clear_all`` to also delete the Candidates that correspond to the Mentions.
+
 [0.4.1] - 2018-12-12
 --------------------
 
 Added
 ^^^^^
 * `@senwu`_: Added alpha spacy support for Chinese tokenizer.
-
-Fixed
-^^^^^
-* `@senwu`_: fix non-deterministic issue from get_candidates and get_mentions
-  by parallel candidate/mention generation.
 
 Changed
 ^^^^^^^
@@ -300,6 +293,10 @@ Changed
   ``None`` if the passed ``Mention`` argument is not inside a table.
   (`#194 <https://github.com/HazyResearch/fonduer/pull/194>`_)
 
+Fixed
+^^^^^
+* `@senwu`_: fix non-deterministic issue from get_candidates and get_mentions
+  by parallel candidate/mention generation.
 
 [0.4.0] - 2018-11-27
 --------------------
@@ -368,7 +365,6 @@ Fixed
 * `@j-rausch`_: Improve error handling for invalid row spans.
   (`#183 <https://github.com/HazyResearch/fonduer/pull/183>`_)
 
-
 [0.3.6] - 2018-11-15
 --------------------
 
@@ -378,12 +374,11 @@ Fixed
   works when a user upgrades Fonduer.
 * `@lukehsiao`_: Improve error messages on PostgreSQL connection and update FAQ.
 
-
 [0.3.5] - 2018-11-04
 --------------------
 
 Added
-^^^^^^^
+^^^^^
 * `@senwu`_: Add ``SparseLSTM`` support reducing the memory used by the LSTM
   for large applications.
   (`#175 <https://github.com/HazyResearch/fonduer/pull/175>`_)
@@ -402,7 +397,6 @@ Added
             (train_cands, train_feature), train_marginals, n_epochs=5, lr=0.001
         )
 
-
 Fixed
 ^^^^^
 * `@senwu`_: Fix issue with ``get_last_documents`` returning the incorrect
@@ -411,7 +405,6 @@ Fixed
 
 * `@senwu`_: Use the latest MeTaL syntax and fix flake8 issues.
   (`#173 <https://github.com/HazyResearch/fonduer/pull/173>`_)
-
 
 [0.3.4] - 2018-10-17
 --------------------
@@ -433,6 +426,7 @@ Fixed
 
 [0.3.3] - 2018-09-27
 --------------------
+
 Changed
 ^^^^^^^
 * `@lukehsiao`_: Added ``longest_match_only`` parameter to
@@ -448,9 +442,6 @@ Fixed
 
 [0.3.2] - 2018-09-20
 --------------------
-Fixed
-^^^^^
-* `@lukehsiao`_: Fix attribute error when using MentionFigures.
 
 Changed
 ^^^^^^^
@@ -460,14 +451,20 @@ Changed
 * `@j-rausch`_: Parser will now skip documents with parsing errors rather than
   crashing.
 
+Fixed
+^^^^^
+* `@lukehsiao`_: Fix attribute error when using MentionFigures.
+
 [0.3.1] - 2018-09-18
 --------------------
+
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix the layers module in fonduer.learning.disc_models.layers.
 
 [0.3.0] - 2018-09-18
 --------------------
+
 Added
 ^^^^^
 * `@lukehsiao`_: Add supporting functions for incremental knowledge base
@@ -651,10 +648,11 @@ Fixed
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
         from fonduer.supervision import Labeler, get_gold_labels
 
-
 [0.2.3] - 2018-07-23
 --------------------
 
+Added
+^^^^^
 * `@lukehsiao`_: Support Figures nested in Cell contexts and Paragraphs in
   Figure contexts.
   (`#84 <https://github.com/HazyResearch/fonduer/pull/84>`_)
@@ -673,37 +671,56 @@ Fixed
     of the Fonduer pipeline. Consequently, you may need to adjust the paths
     of your imports from Fonduer.
 
-* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
-  only. Also reorganize the codebase into submodules for each pipeline phase.
-  (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
-* `@lukehsiao`_: Split models and preprocessors into individual files.
-  (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_,
-  `#64 <https://github.com/HazyResearch/fonduer/pull/64>`_)
+Added
+^^^^^
 * `@senwu`_: Add branding, OSX tests.
   (`#61 <https://github.com/HazyResearch/fonduer/pull/61>`_,
   `#62 <https://github.com/HazyResearch/fonduer/pull/62>`_)
-* `@lukehsiao`_: Rename to Phrase to Sentence.
-  (`#72 <https://github.com/HazyResearch/fonduer/pull/72>`_)
 * `@lukehsiao`_: Update the Data Model to include Caption, Section, Paragraph.
   (`#76 <https://github.com/HazyResearch/fonduer/pull/76>`_,
   `#77 <https://github.com/HazyResearch/fonduer/pull/77>`_,
   `#78 <https://github.com/HazyResearch/fonduer/pull/78>`_)
+
+Changed
+^^^^^^^
 * `@senwu`_: Split up lf_helpers into separate files for each modality.
   (`#81 <https://github.com/HazyResearch/fonduer/pull/81>`_)
+* `@lukehsiao`_: Rename to Phrase to Sentence.
+  (`#72 <https://github.com/HazyResearch/fonduer/pull/72>`_)
+* `@lukehsiao`_: Split models and preprocessors into individual files.
+  (`#60 <https://github.com/HazyResearch/fonduer/pull/60>`_,
+  `#64 <https://github.com/HazyResearch/fonduer/pull/64>`_)
+
+Removed
+^^^^^^^
+* `@lukehsiao`_: Remove the futures imports, truly making Fonduer Python 3
+  only. Also reorganize the codebase into submodules for each pipeline phase.
+  (`#59 <https://github.com/HazyResearch/fonduer/pull/59>`_)
+
+Fixed
+^^^^^
 * A variety of small bugfixes and code cleanup.
   (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)
 
 [0.1.8] - 2018-06-01
 --------------------
 
-* `@senwu`_: Remove the Viewer, which is unused in Fonduer
-  (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
-* `@senwu`_: Fix SimpleTokenizer for lingual features are disabled
-  (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
+Added
+^^^^^
 * `@prabh06`_: Extend styles parsing and add regex search
   (`#52 <https://github.com/HazyResearch/fonduer/pull/52>`_)
+
+Removed
+^^^^^^^
+* `@senwu`_: Remove the Viewer, which is unused in Fonduer
+  (`#55 <https://github.com/HazyResearch/fonduer/pull/55>`_)
 * `@lukehsiao`_: Remove unnecessary encoding in __repr__
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
+
+Fixed
+^^^^^
+* `@senwu`_: Fix SimpleTokenizer for lingual features are disabled
+  (`#53 <https://github.com/HazyResearch/fonduer/pull/53>`_)
 * `@lukehsiao`_: Fix LocationMatch NER tags for spaCy
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 
@@ -737,22 +754,31 @@ Fixed
         log = logging.getLogger('fonduer')
         log.setLevel(logging.INFO)
 
+Added
+^^^^^
+* `@lukehsiao`_: Add lf_helpers to ReadTheDocs
+  (`#42 <https://github.com/HazyResearch/fonduer/pull/42>`_)
 
+Removed
+^^^^^^^
 * `@lukehsiao`_: Remove SQLite code, switch to logging, and absorb snorkel
   codebase directly into the fonduer package for simplicity
   (`#44 <https://github.com/HazyResearch/fonduer/pull/44>`_)
-* `@lukehsiao`_: Add lf_helpers to ReadTheDocs
-  (`#42 <https://github.com/HazyResearch/fonduer/pull/42>`_)
 * `@lukehsiao`_: Remove unused package dependencies
   (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
 
 [0.1.6] - 2018-03-31
 --------------------
 
+Changed
+^^^^^^^
+* `@lukehsiao`_: Switch README from Markdown to reStructuredText
+
+Fixed
+^^^^^
 * `@senwu`_: Fix support for providing a PostgreSQL username and password as
   part of the connection string provided to Meta.init()
   (`#40 <https://github.com/HazyResearch/fonduer/pull/40>`_)
-* `@lukehsiao`_: Switch README from Markdown to reStructuredText
 
 [0.1.5] - 2018-03-31
 --------------------
@@ -777,27 +803,37 @@ Fixed
 
     No side-effects occur until ``Meta`` is initialized.
 
+Removed
+^^^^^^^
 * `@lukehsiao`_: Remove reliance on environment vars and remove side-effects of
   importing fonduer (`#36 <https://github.com/HazyResearch/fonduer/pull/36>`_)
+
+Fixed
+^^^^^
 * `@lukehsiao`_: Bring codebase in PEP8 compliance and add automatic code-style
   checks (`#37 <https://github.com/HazyResearch/fonduer/pull/37>`_)
 
 [0.1.4] - 2018-03-30
 --------------------
 
+Changed
+^^^^^^^
 * `@lukehsiao`_: Separate tutorials into their own repo (`#31
   <https://github.com/HazyResearch/fonduer/pull/31>`_)
 
 [0.1.3] - 2018-03-29
 --------------------
 
+Fixed
+^^^^^
 Minor hotfix to the README formatting for PyPi.
 
 [0.1.2] - 2018-03-29
 --------------------
 
+Added
+^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
-
 
 ..
   For convenience, all username links for contributors can be listed here
