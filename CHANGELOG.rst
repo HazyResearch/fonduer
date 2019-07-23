@@ -34,6 +34,28 @@ Added
 
 * `@HiromuHota`_: Add page argument to get_pdf_dim in case pages have different dimensions.
 * `@HiromuHota`_: Add Labeler#upsert_keys.
+* `@HiromuHota`_: Add `vizlink` as an argument to `Parser` to be able to plug a custom visual linker.
+  Unless otherwise specified, `VisualLinker` will be used by default.
+
+.. note::
+
+    Example usage:
+
+    .. code:: python
+
+        from fonduer.parser.visual_linker import VisualLinker
+        class CustomVisualLinker(VisualLinker):
+            def __init__(self):
+                """Your code"""
+
+            def link(self, document_name: str, sentences: Iterable[Sentence], pdf_path: str) -> Iterable[Sentence]:
+                """Your code"""
+
+            def is_linkable(self, filename: str) -> bool:
+                """Your code"""
+
+        from fonduer.parser import Parser
+        parser = Parser(session, vizlink=CustomVisualLinker())
 
 Fixed
 ^^^^^

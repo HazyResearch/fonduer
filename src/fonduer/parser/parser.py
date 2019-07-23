@@ -47,6 +47,8 @@ class Parser(UDFRunner):
     :param tabular: Whether to include tabular information in the parse.
     :param visual: Whether to include visual information in the parse.
         Requires PDFs for each input document.
+    :param vizlink: A custom visual linker that inherits :class:`VisualLinker`.
+        Unless otherwise specified, :class:`VisualLinker` will be used. Default None.
     :param pdf_path: The path to the corresponding PDFs use for visual info.
     """
 
