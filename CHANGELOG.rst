@@ -67,11 +67,15 @@ Changed
 * `@HiromuHota`_: Rename SimpleTokenizer into SimpleParser and let it inherit LingualParser.
 * `@HiromuHota`_: Move all ligual parsers into lingual_parser folder.
 * `@HiromuHota`_: Make load_lang_model private as a model is internally loaded during init.
+* `@HiromuHota`_: Add a unit test for ``Parser`` with tabular=False.
+  (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
 
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.
 * `@HiromuHota`_: Fix the type of max_docs.
+* `@HiromuHota`_: Associate sentence with section and paragraph no matter what tabular is.
+  (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
 
 [0.7.0] - 2019-06-12
 --------------------
