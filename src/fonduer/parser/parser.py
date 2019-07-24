@@ -543,24 +543,23 @@ class ParserUDF(UDF):
                                         ]
                                     )
                             break
-            if self.tabular:
-                parts["position"] = state["sentence"]["idx"]
+            parts["position"] = state["sentence"]["idx"]
 
-                # If tabular, consider own Context first in case a Cell
-                # was just created. Otherwise, defer to the parent.
-                parent = paragraph
-                if isinstance(parent, Paragraph):
-                    parts["section"] = parent.section
-                    parts["paragraph"] = parent
-                    if parent.cell:
-                        parts["table"] = parent.cell.table
-                        parts["cell"] = parent.cell
-                        parts["row_start"] = parent.cell.row_start
-                        parts["row_end"] = parent.cell.row_end
-                        parts["col_start"] = parent.cell.col_start
-                        parts["col_end"] = parent.cell.col_end
-                else:
-                    raise NotImplementedError("Sentence parent must be Paragraph.")
+            # If tabular, consider own Context first in case a Cell
+            # was just created. Otherwise, defer to the parent.
+            parent = paragraph
+            if isinstance(parent, Paragraph):
+                parts["section"] = parent.section
+                parts["paragraph"] = parent
+                if parent.cell:  # if True self.tabular is also always True
+                    parts["table"] = parent.cell.table
+                    parts["cell"] = parent.cell
+                    parts["row_start"] = parent.cell.row_start
+                    parts["row_end"] = parent.cell.row_end
+                    parts["col_start"] = parent.cell.col_start
+                    parts["col_end"] = parent.cell.col_end
+            else:
+                raise NotImplementedError("Sentence parent must be Paragraph.")
             yield Sentence(**parts)
             state["sentence"]["idx"] += 1
 

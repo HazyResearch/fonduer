@@ -155,7 +155,6 @@ def test_parse_md_details(caplog):
 def test_parse_wo_tabular(caplog):
     """Test the parser without extracting tabular information."""
     caplog.set_level(logging.INFO)
-    logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/md.html"
     pdf_path = "tests/data/pdf_simple/md.pdf"
@@ -185,10 +184,11 @@ def test_parse_wo_tabular(caplog):
     assert len(doc.sentences) == 45
 
     # Check that sentences are associated with both section and paragraph.
-    sent = doc.sentences[0]
-    assert sent.section
-    assert sent.paragraph
-    logger.info(f"  {sent}")
+    assert all([sent.section is not None for sent in doc.sentences])
+    assert all([sent.paragraph is not None for sent in doc.sentences])
+
+    # Check that sentences are NOT associated with cell
+    assert all([sent.cell is None for sent in doc.sentences])
 
 
 @pytest.mark.skipif(
