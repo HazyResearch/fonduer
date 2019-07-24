@@ -13,6 +13,8 @@ from editdistance import eval as editdist  # Alternative library: python-levensh
 
 
 class VisualLinker(object):
+    """Link visual information with sentences."""
+
     def __init__(self, pdf_path, time=False, verbose=False):
         self.pdf_path = pdf_path
         self.logger = logging.getLogger(__name__)
@@ -43,6 +45,17 @@ class VisualLinker(object):
             )
 
     def link(self, document_name, sentences, pdf_path):
+        """Link visual information with sentences.
+
+        :param document_name: the document name.
+        :type document_name: str
+        :param sentences: sentences to be linked with visual information.
+        :type sentences: Iterable[Sentence]
+        :param pdf_path: The path to the PDF documents, if any. This path will
+            override the one used in initialization, if provided.
+        :type pdf_path: str
+        :rtype: A generator of ``Sentence``.
+        """
         self.sentences = sentences
         self.pdf_file = (
             pdf_path if os.path.isfile(pdf_path) else pdf_path + document_name + ".pdf"
@@ -98,7 +111,12 @@ class VisualLinker(object):
             self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
     def is_linkable(self, filename):
-        """Verify that the file exists and has a PDF extension."""
+        """Verify that the file exists and has a PDF extension.
+
+        :param filename: The path to the PDF document.
+        :type filename: str
+        :rtype: boolean
+        """
         path = self.pdf_path
         # If path is file, but not PDF.
         if os.path.isfile(path) and path.lower().endswith(".pdf"):
