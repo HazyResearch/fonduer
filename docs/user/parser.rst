@@ -24,6 +24,11 @@ This is Fonduer_'s core Parser object.
     :inherited-members:
     :show-inheritance:
 
+.. automodule:: fonduer.parser.visual_linker
+    :members:
+    :inherited-members:
+    :show-inheritance:
+
 Preprocessors
 -------------
 
