@@ -185,7 +185,6 @@ class ParserUDF(UDF):
         self.lingual_parser = Spacy(self.language)
         if self.lingual_parser.has_tokenizer_support():
             self.tokenize_and_split_sentences = self.lingual_parser.split_sentences
-            self.lingual_parser.load_lang_model()
         else:
             self.tokenize_and_split_sentences = SimpleTokenizer().parse
 

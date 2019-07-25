@@ -56,8 +56,8 @@ class Spacy(object):
 
         self.lang = lang
         self.model = None
-
-        # self.model = self.load_lang_model()
+        if self.has_tokenizer_support():
+            self.load_lang_model()
 
     def has_tokenizer_support(self):
         return self.lang and (
