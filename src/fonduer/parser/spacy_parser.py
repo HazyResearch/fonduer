@@ -241,6 +241,8 @@ class Spacy(object):
                 f"Spacy maximum "
                 f"character limit set back to {self.model.max_length}."
             )
+        except Exception as e:
+            self.logger.exception(e)
 
         doc.is_parsed = True
         position = 0
