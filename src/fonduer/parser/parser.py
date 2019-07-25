@@ -49,7 +49,7 @@ class Parser(UDFRunner):
         Requires PDFs for each input document.
     :param vizlink: A custom visual linker that inherits
         :class:`VisualLinker <fonduer.parser.visual_linker.VisualLinker>`.
-        Unless otherwise specified, :class:`VisualLinker` will be used. Default None.
+        Unless otherwise specified, :class:`VisualLinker` will be used.
     :param pdf_path: The path to the corresponding PDFs use for visual info.
     """
 
