@@ -57,6 +57,9 @@ Added
         from fonduer.parser import Parser
         parser = Parser(session, vizlink=CustomVisualLinker())
 
+* `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
+  and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
+
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.
