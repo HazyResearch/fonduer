@@ -41,11 +41,6 @@ def test_spacy_split_sentences(caplog):
     text = "This is a text. This is another text."
 
     iterator = tokenize_and_split_sentences(text)
-    with pytest.raises(AttributeError):
-        next(iterator)
-
-    lingual_parser.load_lang_model()
-    iterator = tokenize_and_split_sentences(text)
     assert len(list(iterator)) == 2
 
 
