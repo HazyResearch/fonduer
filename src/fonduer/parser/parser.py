@@ -8,6 +8,7 @@ from collections import defaultdict
 import lxml.etree
 import lxml.html
 
+from fonduer.parser.lingual_parser import LingualParser
 from fonduer.parser.models import (
     Caption,
     Cell,
@@ -38,6 +39,10 @@ class Parser(UDFRunner):
     :param flatten: A list of tag types to flatten. Default ["span", "br"]
     :param language: Which spaCy NLP language package. Default "en".
     :param lingual: Whether or not to include NLP information. Default True.
+    :param lingual_parser: A custom lingual parser that inherits
+        :class:`LingualParser <fonduer.parser.lingual_parser.LingualParser>`.
+        When specified, `language` will be ignored.
+        When not, :class:`Spacy` with `language` will be used.
     :param strip: Whether or not to strip whitespace during parsing. Default True.
     :param replacements: A list of tuples where the regex string in the
         first position is replaced by the character in the second position.
@@ -62,6 +67,7 @@ class Parser(UDFRunner):
         flatten=["span", "br"],  # flatten tag types, default: span, br
         language="en",
         lingual=True,  # lingual information
+        lingual_parser: LingualParser = None,
         strip=True,
         replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
         tabular=True,  # tabular information
@@ -77,6 +83,7 @@ class Parser(UDFRunner):
             blacklist=blacklist,
             flatten=flatten,
             lingual=lingual,
+            lingual_parser=lingual_parser,
             strip=strip,
             replacements=replacements,
             tabular=tabular,
@@ -148,6 +155,7 @@ class ParserUDF(UDF):
         blacklist,
         flatten,
         lingual,
+        lingual_parser,
         strip,
         replacements,
         tabular,
@@ -182,7 +190,11 @@ class ParserUDF(UDF):
             self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
 
         self.lingual = lingual
-        self.lingual_parser = Spacy(self.language)
+        if lingual_parser:
+            self.lingual_parser = lingual_parser
+        else:
+            self.lingual_parser = Spacy(self.language)
+
         if self.lingual_parser.has_tokenizer_support():
             self.tokenize_and_split_sentences = self.lingual_parser.split_sentences
         else:

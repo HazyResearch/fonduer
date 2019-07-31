@@ -20,6 +20,7 @@ def get_parser_udf(
     flatten=["span", "br"],  # flatten tag types, default: span, br
     language="en",
     lingual=True,  # lingual information
+    lingual_parser=None,
     strip=True,
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
@@ -38,6 +39,7 @@ def get_parser_udf(
             blacklist=blacklist,
             flatten=flatten,
             lingual=lingual,
+            lingual_parser=lingual_parser,
             strip=strip,
             replacements=replacements,
             tabular=tabular,

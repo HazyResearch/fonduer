@@ -6,6 +6,8 @@ from string import whitespace
 
 import pkg_resources
 
+from fonduer.parser.lingual_parser import LingualParser
+
 try:
     import spacy
     from spacy.cli import download
@@ -15,7 +17,7 @@ except Exception:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 
-class Spacy(object):
+class Spacy(LingualParser):
     """
     spaCy
     https://spacy.io/
