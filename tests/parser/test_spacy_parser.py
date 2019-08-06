@@ -48,7 +48,6 @@ def test_split_sentences_by_char_limit(caplog):
     caplog.set_level(logging.INFO)
 
     lingual_parser = SpacyParser("en")
-    lingual_parser.load_lang_model()
 
     text = "This is a text. This is another text."
     all_sentences = [

@@ -60,7 +60,7 @@ class SpacyParser(LingualParser):
         self.lang = lang
         self.model = None
         if self.has_tokenizer_support():
-            self.load_lang_model()
+            self._load_lang_model()
 
     def has_tokenizer_support(self):
         return self.lang and (
@@ -106,7 +106,7 @@ class SpacyParser(LingualParser):
             return True
         return False
 
-    def load_lang_model(self):
+    def _load_lang_model(self):
         """
         Load spaCy language model or download if model is available and not
         installed.
