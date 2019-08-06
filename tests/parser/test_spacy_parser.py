@@ -2,12 +2,12 @@ import logging
 
 import pytest
 
-from fonduer.parser.models import Sentence
-from fonduer.parser.spacy_parser import (
+from fonduer.parser.lingual_parser.spacy_parser import (
     SpacyParser,
     TokenPreservingTokenizer,
     set_custom_boundary,
 )
+from fonduer.parser.models import Sentence
 
 
 def test_spacy_support(caplog):

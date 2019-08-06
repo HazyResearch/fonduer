@@ -1,6 +1,6 @@
 import logging
 
-from fonduer.parser.simple_parser import SimpleParser
+from fonduer.parser.lingual_parser import SimpleParser
 
 
 def test_simple_split_sentences(caplog):

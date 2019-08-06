@@ -1,7 +1,7 @@
 """A simple alternative tokenizer which parses text by splitting on whitespace."""
 import numpy as np
 
-from fonduer.parser.lingual_parser import LingualParser
+from fonduer.parser.lingual_parser.lingual_parser import LingualParser
 
 
 class SimpleParser(LingualParser):

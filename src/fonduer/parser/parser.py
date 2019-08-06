@@ -8,7 +8,7 @@ from collections import defaultdict
 import lxml.etree
 import lxml.html
 
-from fonduer.parser.lingual_parser import LingualParser
+from fonduer.parser.lingual_parser import LingualParser, SimpleParser, SpacyParser
 from fonduer.parser.models import (
     Caption,
     Cell,
@@ -21,8 +21,6 @@ from fonduer.parser.models import (
     Table,
 )
 from fonduer.parser.models.utils import construct_stable_id
-from fonduer.parser.simple_parser import SimpleParser
-from fonduer.parser.spacy_parser import SpacyParser
 from fonduer.parser.visual_linker import VisualLinker
 from fonduer.utils.udf import UDF, UDFRunner
 

@@ -6,7 +6,7 @@ from string import whitespace
 
 import pkg_resources
 
-from fonduer.parser.lingual_parser import LingualParser
+from fonduer.parser.lingual_parser.lingual_parser import LingualParser
 
 try:
     import spacy
