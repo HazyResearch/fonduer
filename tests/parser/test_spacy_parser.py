@@ -4,7 +4,7 @@ import pytest
 
 from fonduer.parser.models import Sentence
 from fonduer.parser.spacy_parser import (
-    Spacy,
+    SpacyParser,
     TokenPreservingTokenizer,
     set_custom_boundary,
 )
@@ -14,29 +14,29 @@ def test_spacy_support(caplog):
     caplog.set_level(logging.INFO)
 
     # Supported language
-    lingual_parser = Spacy("en")
+    lingual_parser = SpacyParser("en")
     assert lingual_parser.has_tokenizer_support()
     assert lingual_parser.has_NLP_support()
 
     # Alpha-supported language
-    lingual_parser = Spacy("ja")
+    lingual_parser = SpacyParser("ja")
     assert lingual_parser.has_tokenizer_support()
     assert not lingual_parser.has_NLP_support()
 
     # Non supported language
-    lingual_parser = Spacy("non-supported-lang")
+    lingual_parser = SpacyParser("non-supported-lang")
     assert not lingual_parser.has_tokenizer_support()
     assert not lingual_parser.has_NLP_support()
 
     # Language not specified
     with pytest.raises(TypeError):
-        lingual_parser = Spacy()
+        lingual_parser = SpacyParser()
 
 
 def test_spacy_split_sentences(caplog):
     caplog.set_level(logging.INFO)
 
-    lingual_parser = Spacy("en")
+    lingual_parser = SpacyParser("en")
     tokenize_and_split_sentences = lingual_parser.split_sentences
     text = "This is a text. This is another text."
 
@@ -47,7 +47,7 @@ def test_spacy_split_sentences(caplog):
 def test_split_sentences_by_char_limit(caplog):
     caplog.set_level(logging.INFO)
 
-    lingual_parser = Spacy("en")
+    lingual_parser = SpacyParser("en")
     lingual_parser.load_lang_model()
 
     text = "This is a text. This is another text."

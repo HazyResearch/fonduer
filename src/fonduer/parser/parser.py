@@ -22,7 +22,7 @@ from fonduer.parser.models import (
 )
 from fonduer.parser.models.utils import construct_stable_id
 from fonduer.parser.simple_tokenizer import SimpleTokenizer
-from fonduer.parser.spacy_parser import Spacy
+from fonduer.parser.spacy_parser import SpacyParser
 from fonduer.parser.visual_linker import VisualLinker
 from fonduer.utils.udf import UDF, UDFRunner
 
@@ -193,7 +193,7 @@ class ParserUDF(UDF):
         if lingual_parser:
             self.lingual_parser = lingual_parser
         else:
-            self.lingual_parser = Spacy(self.language)
+            self.lingual_parser = SpacyParser(self.language)
 
         if self.lingual_parser.has_tokenizer_support():
             self.tokenize_and_split_sentences = self.lingual_parser.split_sentences

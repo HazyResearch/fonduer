@@ -17,7 +17,7 @@ except Exception:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 
-class Spacy(LingualParser):
+class SpacyParser(LingualParser):
     """
     spaCy
     https://spacy.io/
@@ -99,7 +99,7 @@ class Spacy(LingualParser):
             raise IOError(f"Can't find spaCy data path: {data_path}")
         if name in {d.name for d in data_path.iterdir()}:
             return True
-        if Spacy.is_package(name):  # installed as package
+        if SpacyParser.is_package(name):  # installed as package
             return True
         if Path(name).exists():  # path to model data directory
             return True
@@ -120,7 +120,7 @@ class Spacy(LingualParser):
         :return:
         """
         if self.lang in self.languages:
-            if not Spacy.model_installed(self.lang):
+            if not SpacyParser.model_installed(self.lang):
                 download(self.lang)
             model = spacy.load(self.lang)
         elif self.lang in self.alpha_languages:
