@@ -1,23 +1,23 @@
 """A simple alternative tokenizer which parses text by splitting on whitespace."""
-from builtins import object
-
 import numpy as np
 
+from fonduer.parser.lingual_parser import LingualParser
 
-class SimpleTokenizer(object):
+
+class SimpleTokenizer(LingualParser):
     """Tokenizes text on whitespace only using split()."""
 
     def __init__(self, delim="<NB>"):
         self.delim = delim
 
-    def parse(self, contents):
+    def split_sentences(self, str):
         """Parse the document.
 
-        :param contents: The text contents of the document.
+        :param str: The text contents of the document.
         :rtype: a *generator* of tokenized text.
         """
         i = 0
-        for text in contents.split(self.delim):
+        for text in str.split(self.delim):
             if not len(text.strip()):
                 continue
             words = text.split()

@@ -198,7 +198,7 @@ class ParserUDF(UDF):
         if self.lingual_parser.has_tokenizer_support():
             self.tokenize_and_split_sentences = self.lingual_parser.split_sentences
         else:
-            self.tokenize_and_split_sentences = SimpleTokenizer().parse
+            self.tokenize_and_split_sentences = SimpleTokenizer().split_sentences
 
         if self.lingual:
             if self.lingual_parser.has_NLP_support():
