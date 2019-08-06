@@ -194,24 +194,17 @@ class ParserUDF(UDF):
             self.lingual_parser = lingual_parser
         else:
             self.lingual_parser = SpacyParser(self.language)
+            # Fallback to SimpleParser if a tokenizer is not supported.
+            if not self.lingual_parser.has_tokenizer_support():
+                self.lingual_parser = SimpleParser()
 
-        if self.lingual_parser.has_tokenizer_support():
-            self.tokenize_and_split_sentences = self.lingual_parser.split_sentences
-        else:
-            self.tokenize_and_split_sentences = SimpleParser().split_sentences
-
-        if self.lingual:
-            if self.lingual_parser.has_NLP_support():
-                self.enrich_tokenized_sentences_with_nlp = (
-                    self.lingual_parser.enrich_sentences_with_NLP
-                )
-            else:
-                logger.warning(
-                    f"Lingual mode will be turned off, "
-                    f"as spacy doesn't provide support for this "
-                    f"language ({self.language})"
-                )
-                self.lingual = False
+        if self.lingual and not self.lingual_parser.has_NLP_support():
+            logger.warning(
+                f"Lingual mode will be turned off, "
+                f"as spacy doesn't provide support for this "
+                f"language ({self.language})"
+            )
+            self.lingual = False
 
         # tabular setup
         self.tabular = tabular
@@ -484,7 +477,7 @@ class ParserUDF(UDF):
 
         # Lingual Parse
         document = state["document"]
-        for parts in self.tokenize_and_split_sentences(text):
+        for parts in self.lingual_parser.split_sentences(text):
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
@@ -827,4 +820,6 @@ class ParserUDF(UDF):
                     )
 
         if self.lingual:
-            yield from self.enrich_tokenized_sentences_with_nlp(tokenized_sentences)
+            yield from self.lingual_parser.enrich_sentences_with_NLP(
+                tokenized_sentences
+            )

@@ -37,3 +37,9 @@ class SimpleParser(LingualParser):
                 "abs_char_offsets": char_offsets,
             }
             i += 1
+
+    def has_NLP_support(self):
+        return False
+
+    def has_tokenizer_support(self):
+        return True

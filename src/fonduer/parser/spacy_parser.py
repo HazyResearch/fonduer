@@ -50,11 +50,12 @@ class SpacyParser(LingualParser):
 
     """
 
+    languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
+    alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
+
     def __init__(self, lang):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
-        self.languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
-        self.alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
 
         self.lang = lang
         self.model = None
