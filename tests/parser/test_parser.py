@@ -417,7 +417,7 @@ def test_parse_md_paragraphs(caplog):
     assert len(doc.paragraphs[2].sentences) == 1
 
 
-def test_simple_tokenizer(caplog):
+def test_simple_parser(caplog):
     """Unit test of Parser on a single document with lingual features off."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)

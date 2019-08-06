@@ -4,7 +4,7 @@ import numpy as np
 from fonduer.parser.lingual_parser import LingualParser
 
 
-class SimpleTokenizer(LingualParser):
+class SimpleParser(LingualParser):
     """Tokenizes text on whitespace only using split()."""
 
     def __init__(self, delim="<NB>"):
