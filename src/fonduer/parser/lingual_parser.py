@@ -18,12 +18,12 @@ class LingualParser(object):
         raise NotImplementedError()
 
     def enrich_sentences_with_NLP(
-        self, all_sentences: Iterable[Sentence]
+        self, sentences: Iterable[Sentence]
     ) -> Iterable[Sentence]:
         """
         Add NLP attributes like lemmas, pos_tags, etc. to sentences.
 
-        :param all_sentences: a iterator of
+        :param sentences: a iterator of
             :class:`Sentence <fonduer.parser.models.Sentence>`.
         :return: a generator of :class:`Sentence <fonduer.parser.models.Sentence>`.
         """

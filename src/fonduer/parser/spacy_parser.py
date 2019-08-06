@@ -129,12 +129,12 @@ class Spacy(LingualParser):
             model = language_method()
         self.model = model
 
-    def enrich_sentences_with_NLP(self, all_sentences):
+    def enrich_sentences_with_NLP(self, sentences):
         """
         Enrich a list of fonduer Sentence objects with NLP features. We merge
         and process the text of all Sentences for higher efficiency.
 
-        :param all_sentences: List of fonduer Sentence objects for one document
+        :param sentences: List of fonduer Sentence objects for one document
         :return:
         """
         if not self.has_NLP_support():
@@ -142,7 +142,7 @@ class Spacy(LingualParser):
                 f"Language {self.lang} not available in spacy beyond tokenization"
             )
 
-        if len(all_sentences) == 0:
+        if len(sentences) == 0:
             return  # Nothing to parse
 
         if self.model.has_pipe("sentencizer"):
@@ -159,7 +159,7 @@ class Spacy(LingualParser):
         )
 
         sentence_batches = self._split_sentences_by_char_limit(
-            all_sentences, self.model.max_length
+            sentences, self.model.max_length
         )
 
         # TODO: We could do this in parallel. Test speedup in the future
