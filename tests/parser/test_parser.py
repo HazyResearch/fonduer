@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import (
@@ -457,6 +458,16 @@ def test_simple_parser(caplog):
     assert header.pos_tags == ["", ""]
 
     assert len(doc.sentences) == 44
+
+
+def test_custom_parser(caplog):
+    lingual_parser = SpacyParser("en")
+    parser_udf = get_parser_udf(
+        language="de", lingual=True, lingual_parser=lingual_parser
+    )
+    # The lingual_parser is prioritized over language
+    assert parser_udf.lingual_parser == lingual_parser
+    assert parser_udf.lingual_parser.lang == "en"
 
 
 def test_parse_table_span(caplog):
