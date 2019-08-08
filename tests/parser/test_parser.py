@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import (
@@ -20,6 +21,7 @@ def get_parser_udf(
     flatten=["span", "br"],  # flatten tag types, default: span, br
     language="en",
     lingual=True,  # lingual information
+    lingual_parser=None,
     strip=True,
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
@@ -38,6 +40,7 @@ def get_parser_udf(
             blacklist=blacklist,
             flatten=flatten,
             lingual=lingual,
+            lingual_parser=lingual_parser,
             strip=strip,
             replacements=replacements,
             tabular=tabular,
@@ -415,7 +418,7 @@ def test_parse_md_paragraphs(caplog):
     assert len(doc.paragraphs[2].sentences) == 1
 
 
-def test_simple_tokenizer(caplog):
+def test_simple_parser(caplog):
     """Unit test of Parser on a single document with lingual features off."""
     caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
@@ -455,6 +458,16 @@ def test_simple_tokenizer(caplog):
     assert header.pos_tags == ["", ""]
 
     assert len(doc.sentences) == 44
+
+
+def test_custom_parser(caplog):
+    lingual_parser = SpacyParser("en")
+    parser_udf = get_parser_udf(
+        language="de", lingual=True, lingual_parser=lingual_parser
+    )
+    # The lingual_parser is prioritized over language
+    assert parser_udf.lingual_parser == lingual_parser
+    assert parser_udf.lingual_parser.lang == "en"
 
 
 def test_parse_table_span(caplog):

@@ -57,6 +57,17 @@ Added
         from fonduer.parser import Parser
         parser = Parser(session, vizlink=CustomVisualLinker())
 
+* `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
+  and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
+
+Changed
+^^^^^^^
+* `@HiromuHota`_: Load a spaCy model if possible during `Spacy#__init__`.
+* `@HiromuHota`_: Rename Spacy to SpacyParser.
+* `@HiromuHota`_: Rename SimpleTokenizer into SimpleParser and let it inherit LingualParser.
+* `@HiromuHota`_: Move all ligual parsers into lingual_parser folder.
+* `@HiromuHota`_: Make load_lang_model private as a model is internally loaded during init.
+
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.

@@ -8,6 +8,7 @@ from collections import defaultdict
 import lxml.etree
 import lxml.html
 
+from fonduer.parser.lingual_parser import LingualParser, SimpleParser, SpacyParser
 from fonduer.parser.models import (
     Caption,
     Cell,
@@ -20,8 +21,6 @@ from fonduer.parser.models import (
     Table,
 )
 from fonduer.parser.models.utils import construct_stable_id
-from fonduer.parser.simple_tokenizer import SimpleTokenizer
-from fonduer.parser.spacy_parser import Spacy
 from fonduer.parser.visual_linker import VisualLinker
 from fonduer.utils.udf import UDF, UDFRunner
 
@@ -38,6 +37,10 @@ class Parser(UDFRunner):
     :param flatten: A list of tag types to flatten. Default ["span", "br"]
     :param language: Which spaCy NLP language package. Default "en".
     :param lingual: Whether or not to include NLP information. Default True.
+    :param lingual_parser: A custom lingual parser that inherits
+        :class:`LingualParser <fonduer.parser.lingual_parser.LingualParser>`.
+        When specified, `language` will be ignored.
+        When not, :class:`Spacy` with `language` will be used.
     :param strip: Whether or not to strip whitespace during parsing. Default True.
     :param replacements: A list of tuples where the regex string in the
         first position is replaced by the character in the second position.
@@ -62,6 +65,7 @@ class Parser(UDFRunner):
         flatten=["span", "br"],  # flatten tag types, default: span, br
         language="en",
         lingual=True,  # lingual information
+        lingual_parser: LingualParser = None,
         strip=True,
         replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
         tabular=True,  # tabular information
@@ -77,6 +81,7 @@ class Parser(UDFRunner):
             blacklist=blacklist,
             flatten=flatten,
             lingual=lingual,
+            lingual_parser=lingual_parser,
             strip=strip,
             replacements=replacements,
             tabular=tabular,
@@ -148,6 +153,7 @@ class ParserUDF(UDF):
         blacklist,
         flatten,
         lingual,
+        lingual_parser,
         strip,
         replacements,
         tabular,
@@ -182,25 +188,21 @@ class ParserUDF(UDF):
             self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
 
         self.lingual = lingual
-        self.lingual_parser = Spacy(self.language)
-        if self.lingual_parser.has_tokenizer_support():
-            self.tokenize_and_split_sentences = self.lingual_parser.split_sentences
-            self.lingual_parser.load_lang_model()
+        if lingual_parser:
+            self.lingual_parser = lingual_parser
         else:
-            self.tokenize_and_split_sentences = SimpleTokenizer().parse
+            self.lingual_parser = SpacyParser(self.language)
+            # Fallback to SimpleParser if a tokenizer is not supported.
+            if not self.lingual_parser.has_tokenizer_support():
+                self.lingual_parser = SimpleParser()
 
-        if self.lingual:
-            if self.lingual_parser.has_NLP_support():
-                self.enrich_tokenized_sentences_with_nlp = (
-                    self.lingual_parser.enrich_sentences_with_NLP
-                )
-            else:
-                logger.warning(
-                    f"Lingual mode will be turned off, "
-                    f"as spacy doesn't provide support for this "
-                    f"language ({self.language})"
-                )
-                self.lingual = False
+        if self.lingual and not self.lingual_parser.has_NLP_support():
+            logger.warning(
+                f"Lingual mode will be turned off, "
+                f"as spacy doesn't provide support for this "
+                f"language ({self.language})"
+            )
+            self.lingual = False
 
         # tabular setup
         self.tabular = tabular
@@ -473,7 +475,7 @@ class ParserUDF(UDF):
 
         # Lingual Parse
         document = state["document"]
-        for parts in self.tokenize_and_split_sentences(text):
+        for parts in self.lingual_parser.split_sentences(text):
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]
@@ -816,4 +818,6 @@ class ParserUDF(UDF):
                     )
 
         if self.lingual:
-            yield from self.enrich_tokenized_sentences_with_nlp(tokenized_sentences)
+            yield from self.lingual_parser.enrich_sentences_with_NLP(
+                tokenized_sentences
+            )

@@ -6,6 +6,8 @@ from string import whitespace
 
 import pkg_resources
 
+from fonduer.parser.lingual_parser.lingual_parser import LingualParser
+
 try:
     import spacy
     from spacy.cli import download
@@ -15,7 +17,7 @@ except Exception:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 
-class Spacy(object):
+class SpacyParser(LingualParser):
     """
     spaCy
     https://spacy.io/
@@ -48,16 +50,17 @@ class Spacy(object):
 
     """
 
+    languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
+    alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
+
     def __init__(self, lang):
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
-        self.languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
-        self.alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
 
         self.lang = lang
         self.model = None
-
-        # self.model = self.load_lang_model()
+        if self.has_tokenizer_support():
+            self._load_lang_model()
 
     def has_tokenizer_support(self):
         return self.lang and (
@@ -97,13 +100,13 @@ class Spacy(object):
             raise IOError(f"Can't find spaCy data path: {data_path}")
         if name in {d.name for d in data_path.iterdir()}:
             return True
-        if Spacy.is_package(name):  # installed as package
+        if SpacyParser.is_package(name):  # installed as package
             return True
         if Path(name).exists():  # path to model data directory
             return True
         return False
 
-    def load_lang_model(self):
+    def _load_lang_model(self):
         """
         Load spaCy language model or download if model is available and not
         installed.
@@ -118,7 +121,7 @@ class Spacy(object):
         :return:
         """
         if self.lang in self.languages:
-            if not Spacy.model_installed(self.lang):
+            if not SpacyParser.model_installed(self.lang):
                 download(self.lang)
             model = spacy.load(self.lang)
         elif self.lang in self.alpha_languages:
@@ -127,12 +130,12 @@ class Spacy(object):
             model = language_method()
         self.model = model
 
-    def enrich_sentences_with_NLP(self, all_sentences):
+    def enrich_sentences_with_NLP(self, sentences):
         """
         Enrich a list of fonduer Sentence objects with NLP features. We merge
         and process the text of all Sentences for higher efficiency.
 
-        :param all_sentences: List of fonduer Sentence objects for one document
+        :param sentences: List of fonduer Sentence objects for one document
         :return:
         """
         if not self.has_NLP_support():
@@ -140,7 +143,7 @@ class Spacy(object):
                 f"Language {self.lang} not available in spacy beyond tokenization"
             )
 
-        if len(all_sentences) == 0:
+        if len(sentences) == 0:
             return  # Nothing to parse
 
         if self.model.has_pipe("sentencizer"):
@@ -157,7 +160,7 @@ class Spacy(object):
         )
 
         sentence_batches = self._split_sentences_by_char_limit(
-            all_sentences, self.model.max_length
+            sentences, self.model.max_length
         )
 
         # TODO: We could do this in parallel. Test speedup in the future
