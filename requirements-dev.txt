@@ -1,5 +1,6 @@
 black>=18.9b0
 flake8
+mypy
 isort
 pre-commit
 pytest
