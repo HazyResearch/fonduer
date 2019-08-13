@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, Tuple
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 # This global dictionary contains all classes that have been declared in this
 # Python environment, so that mention_subclass() can return a class if it
 # already exists and is identical in specification to the requested class.
-mention_subclasses = {}
+mention_subclasses: Dict[str, Tuple] = {}
 
 
 class Mention(Meta.Base):  # type: ignore
