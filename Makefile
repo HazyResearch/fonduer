@@ -22,8 +22,8 @@ check:
 	black tests/ --check
 	flake8 src/
 	flake8 tests/
-	mypy --ignore-missing-imports src/
-	mypy --ignore-missing-imports tests/
+	mypy src/
+	mypy tests/
 
 
 docs:
