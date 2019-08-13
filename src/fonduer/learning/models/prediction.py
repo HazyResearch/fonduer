@@ -4,11 +4,11 @@ from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
 
-class PredictionKey(AnnotationKeyMixin, Meta.Base):
+class PredictionKey(AnnotationKeyMixin, Meta.Base):  # type: ignore
     pass
 
 
-class Prediction(AnnotationMixin, Meta.Base):
+class Prediction(AnnotationMixin, Meta.Base):  # type: ignore
     """
     A probability associated with a Candidate, indicating the degree of belief
     that the Candidate is true.

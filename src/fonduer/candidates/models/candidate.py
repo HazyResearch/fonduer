@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 candidate_subclasses = {}
 
 
-class Candidate(Meta.Base):
+class Candidate(Meta.Base):  # type: ignore
     """
     An abstract candidate relation.
 
