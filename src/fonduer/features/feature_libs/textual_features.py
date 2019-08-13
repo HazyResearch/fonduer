@@ -1,4 +1,5 @@
 from builtins import range
+from typing import Dict, Set
 
 from treedlib import (
     Children,
@@ -23,10 +24,10 @@ from fonduer.utils.utils import get_as_dict, tokens_to_ngrams
 
 DEF_VALUE = 1
 
-unary_ddlib_feats = {}
-unary_word_feats = {}
-unary_tdl_feats = {}
-binary_tdl_feats = {}
+unary_ddlib_feats: Dict[str, Set] = {}
+unary_word_feats: Dict[str, Set] = {}
+unary_tdl_feats: Dict[str, Set] = {}
+binary_tdl_feats: Dict[str, Set] = {}
 settings = get_config()
 
 

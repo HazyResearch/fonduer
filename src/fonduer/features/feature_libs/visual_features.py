@@ -1,3 +1,5 @@
+from typing import Dict, Set
+
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.data_model_utils import (
     get_visual_aligned_lemmas,
@@ -12,8 +14,8 @@ from fonduer.utils.data_model_utils import (
 FEAT_PRE = "VIZ_"
 DEF_VALUE = 1
 
-unary_vizlib_feats = {}
-binary_vizlib_feats = {}
+unary_vizlib_feats: Dict[str, Set] = {}
+binary_vizlib_feats: Dict[str, Set] = {}
 
 
 def extract_visual_features(candidates):

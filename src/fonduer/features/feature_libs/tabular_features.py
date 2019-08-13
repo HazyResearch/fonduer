@@ -1,3 +1,5 @@
+from typing import Dict, Set
+
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import (
@@ -11,8 +13,8 @@ from fonduer.utils.utils_table import min_col_diff, min_row_diff, num_cols, num_
 FEAT_PRE = "TAB_"
 DEF_VALUE = 1
 
-unary_tablelib_feats = {}
-binary_tablelib_feats = {}
+unary_tablelib_feats: Dict[str, Set] = {}
+binary_tablelib_feats: Dict[str, Set] = {}
 
 settings = get_config()
 
