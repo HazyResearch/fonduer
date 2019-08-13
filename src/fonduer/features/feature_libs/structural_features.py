@@ -1,3 +1,5 @@
+from typing import Dict, Set
+
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.data_model_utils import (
     common_ancestor,
@@ -15,8 +17,8 @@ from fonduer.utils.data_model_utils import (
 FEATURE_PREFIX = "STR_"
 DEF_VALUE = 1
 
-unary_strlib_feats = {}
-binary_strlib_feats = {}
+unary_strlib_feats: Dict[str, Set] = {}
+binary_strlib_feats: Dict[str, Set] = {}
 
 
 def extract_structural_features(candidates):
