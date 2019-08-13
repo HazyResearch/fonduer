@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 import tempfile
 from builtins import object
 from datetime import datetime
+from typing import Optional, Type
 from urllib.parse import urlparse
 
 import sqlalchemy
@@ -14,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 def init_logging(
-    log_dir=tempfile.gettempdir(),
-    format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
-    level=logging.INFO,
-):
+    log_dir: str = tempfile.gettempdir(),
+    format: str = "[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
+    level: int = logging.INFO,
+) -> None:
     """Configures logging to output to the provided log_dir.
 
     Will use a nested directory whose name is the current timestamp.
@@ -58,7 +61,7 @@ def init_logging(
 
 
 # Defines procedure for setting up a sessionmaker
-def new_sessionmaker():
+def new_sessionmaker() -> sessionmaker:
     # Turning on autocommit for Postgres, see
     # http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/
     # Otherwise any e.g. query starts a transaction, locking tables... very
@@ -89,7 +92,7 @@ def new_sessionmaker():
     return sessionmaker(bind=engine)
 
 
-def _update_meta(conn_string):
+def _update_meta(conn_string: str) -> None:
     """Update Meta class."""
     url = urlparse(conn_string)
     Meta.conn_string = conn_string
@@ -109,20 +112,20 @@ class Meta(object):
     """
 
     # Static class variables
-    conn_string = None
-    DBNAME = None
-    DBUSER = None
-    DBHOST = None
-    DBPORT = None
-    DBPWD = None
+    conn_string: Optional[str] = None
+    DBNAME: Optional[str] = None
+    DBUSER: Optional[str] = None
+    DBHOST: Optional[str] = None
+    DBPORT: Optional[int] = None
+    DBPWD: Optional[str] = None
     Session = None
     engine = None
     Base = declarative_base(name="Base", cls=object)
     postgres = False
-    log_path = None
+    log_path: Optional[str] = None
 
     @classmethod
-    def init(cls, conn_string=None):
+    def init(cls, conn_string: Optional[str] = None) -> Type[Meta]:
         """Return the unique Meta class."""
         if conn_string:
             _update_meta(conn_string)
@@ -142,7 +145,7 @@ class Meta(object):
         return cls
 
     @classmethod
-    def _init_db(cls):
+    def _init_db(cls) -> None:
         """ Initialize the storage schema.
 
         This call must be performed after all classes that extend
