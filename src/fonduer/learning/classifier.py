@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader
-from torch.utils.data.dataloader import default_collate
+from torch.utils.data.dataloader import default_collate  # type: ignore
 
 from fonduer import Meta
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
