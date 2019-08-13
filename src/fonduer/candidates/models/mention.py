@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 mention_subclasses = {}
 
 
-class Mention(Meta.Base):
+class Mention(Meta.Base):  # type: ignore
     """
     An abstract Mention.
 

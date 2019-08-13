@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String
 from fonduer.meta import Meta
 
 
-class Context(Meta.Base):
+class Context(Meta.Base):  # type: ignore
     """A piece of content from which Candidates are composed.
 
     This serves as the base class of the Fonduer document model.

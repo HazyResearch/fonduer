@@ -3,7 +3,7 @@ from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, UniqueConstr
 from fonduer.meta import Meta
 
 
-class Marginal(Meta.Base):
+class Marginal(Meta.Base):  # type: ignore
     """
     A marginal probability corresponding to a (Candidate, value) pair.
 
