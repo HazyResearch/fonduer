@@ -1,5 +1,6 @@
 import glob
 import os
+import sys
 
 
 class DocPreprocessor(object):
@@ -16,7 +17,7 @@ class DocPreprocessor(object):
     :rtype: A generator of ``Documents``.
     """
 
-    def __init__(self, path, encoding="utf-8", max_docs=None):
+    def __init__(self, path, encoding="utf-8", max_docs=sys.maxsize):
         self.path = path
         self.encoding = encoding
         self.max_docs = max_docs
@@ -29,7 +30,7 @@ class DocPreprocessor(object):
             for doc in self._get_docs_for_path(fp):
                 yield doc
                 doc_count += 1
-                if self.max_docs and doc_count >= self.max_docs:
+                if doc_count >= self.max_docs:
                     return
 
     def __len__(self):
