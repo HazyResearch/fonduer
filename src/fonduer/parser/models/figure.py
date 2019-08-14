@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -57,7 +59,7 @@ class Figure(Context):
 
     __table_args__ = (UniqueConstraint(document_id, position),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.cell:
             return (
                 f"Figure("
@@ -78,6 +80,6 @@ class Figure(Context):
                 f")"
             )
 
-    def __gt__(self, other):
+    def __gt__(self, other: Figure) -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

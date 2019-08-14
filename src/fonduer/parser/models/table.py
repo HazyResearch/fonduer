@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -45,7 +47,7 @@ class Table(Context):
 
     __table_args__ = (UniqueConstraint(document_id, position),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"Table("
             f"Doc: {self.document.name}, "
@@ -54,7 +56,7 @@ class Table(Context):
             f")"
         )
 
-    def __gt__(self, other):
+    def __gt__(self, other: Table) -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
@@ -111,7 +113,7 @@ class Cell(Context):
 
     __table_args__ = (UniqueConstraint(document_id, table_id, position),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"Cell(Doc: {self.document.name}, "
             f"Table: {self.table.position}, "
@@ -120,6 +122,6 @@ class Cell(Context):
             f"Pos: {self.position})"
         )
 
-    def __gt__(self, other):
+    def __gt__(self, other: Cell) -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

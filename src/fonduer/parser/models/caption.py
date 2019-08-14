@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -55,7 +57,7 @@ class Caption(Context):
 
     __table_args__ = (UniqueConstraint(document_id, table_id, figure_id, position),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.figure:
             return (
                 f"Caption("
@@ -77,6 +79,6 @@ class Caption(Context):
                 "Caption must be associated with Figure or Table."
             )
 
-    def __gt__(self, other):
+    def __gt__(self, other: Caption) -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

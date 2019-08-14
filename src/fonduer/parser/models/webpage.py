@@ -33,5 +33,5 @@ class Webpage(Context):
     __mapper_args__ = {"polymorphic_identity": "webpage"}
 
     # Rest of class definition here
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Webpage(id: {self.name[:10]}..., url: {self.url[8:23]}...)"
