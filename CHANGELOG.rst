@@ -59,6 +59,7 @@ Added
 
 * `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
   and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
+* `@HiromuHota`_: Annotate types to some of the classes incl. preprocesssors and parser/models.
 
 Changed
 ^^^^^^^
@@ -69,6 +70,11 @@ Changed
 * `@HiromuHota`_: Make load_lang_model private as a model is internally loaded during init.
 * `@HiromuHota`_: Add a unit test for ``Parser`` with tabular=False.
   (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
+
+Removed
+^^^^^^^
+
+* `@HiromuHota`_: Remove __repr__ from each mixin class as the referenced attributes are not available.
 
 Fixed
 ^^^^^
