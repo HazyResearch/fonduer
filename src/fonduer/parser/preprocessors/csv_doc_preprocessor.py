@@ -1,6 +1,8 @@
 import codecs
 import csv
 import os
+import sys
+from typing import Callable, Dict, Iterator, Optional
 
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
@@ -36,19 +38,19 @@ class CSVDocPreprocessor(DocPreprocessor):
 
     def __init__(
         self,
-        path,
-        encoding="utf-8",
-        max_docs=float("inf"),
-        header=False,
-        delim=",",
-        parser_rule=None,
-    ):
+        path: str,
+        encoding: str = "utf-8",
+        max_docs: int = sys.maxsize,
+        header: bool = False,
+        delim: str = ",",
+        parser_rule: Optional[Dict[int, Callable]] = None,
+    ) -> None:
         super(CSVDocPreprocessor, self).__init__(path, encoding, max_docs)
         self.header = header
         self.delim = delim
         self.parser_rule = parser_rule
 
-    def _parse_file(self, fp, file_name):
+    def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
         with codecs.open(fp, encoding=self.encoding) as f:
             reader = csv.reader(f)
@@ -86,7 +88,7 @@ class CSVDocPreprocessor(DocPreprocessor):
                     meta={"file_name": file_name},
                 )
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Provide a len attribute based on max_docs and number of rows in files."""
         cnt_docs = 0
         for fp in self.all_files:
@@ -98,5 +100,5 @@ class CSVDocPreprocessor(DocPreprocessor):
         num_docs = min(cnt_docs, self.max_docs)
         return num_docs
 
-    def _can_read(self, fpath):
+    def _can_read(self, fpath: str) -> bool:
         return fpath.lower().endswith(".csv")

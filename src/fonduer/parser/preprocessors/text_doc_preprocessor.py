@@ -1,5 +1,6 @@
 import codecs
 import os
+from typing import Iterator
 
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
@@ -21,7 +22,7 @@ class TextDocPreprocessor(DocPreprocessor):
     :rtype: A generator of ``Documents``.
     """
 
-    def _parse_file(self, fp, file_name):
+    def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         with codecs.open(fp, encoding=self.encoding) as f:
             name = os.path.basename(fp).rsplit(".", 1)[0]
             stable_id = self._get_stable_id(name)
@@ -30,7 +31,7 @@ class TextDocPreprocessor(DocPreprocessor):
                 name=name, stable_id=stable_id, text=text, meta={"file_name": file_name}
             )
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Provide a len attribute based on max_docs and number of files in folder."""
         num_docs = min(len(self.all_files), self.max_docs)
         return num_docs
