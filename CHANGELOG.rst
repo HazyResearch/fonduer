@@ -59,6 +59,7 @@ Added
 
 * `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
   and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
+* `@HiromuHota`_: Annotate types to some of the classes incl. preprocesssors and parser/models.
 
 Changed
 ^^^^^^^
@@ -67,6 +68,11 @@ Changed
 * `@HiromuHota`_: Rename SimpleTokenizer into SimpleParser and let it inherit LingualParser.
 * `@HiromuHota`_: Move all ligual parsers into lingual_parser folder.
 * `@HiromuHota`_: Make load_lang_model private as a model is internally loaded during init.
+
+Removed
+^^^^^^^
+
+* `@HiromuHota`_: Remove __repr__ from each mixin class as the referenced attributes are not available.
 
 Fixed
 ^^^^^
