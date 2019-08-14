@@ -1,4 +1,6 @@
 import codecs
+import sys
+from typing import Iterator
 
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
@@ -22,11 +24,17 @@ class TSVDocPreprocessor(DocPreprocessor):
     :rtype: A generator of ``Documents``.
     """
 
-    def __init__(self, path, encoding="utf-8", max_docs=float("inf"), header=False):
+    def __init__(
+        self,
+        path: str,
+        encoding: str = "utf-8",
+        max_docs: int = sys.maxsize,
+        header: bool = False,
+    ) -> None:
         super(TSVDocPreprocessor, self).__init__(path, encoding, max_docs)
         self.header = header
 
-    def _parse_file(self, fp, file_name):
+    def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         with codecs.open(fp, encoding=self.encoding) as tsv:
             if self.header:
                 tsv.readline()
@@ -41,7 +49,7 @@ class TSVDocPreprocessor(DocPreprocessor):
                     meta={"file_name": file_name},
                 )
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Provide a len attribute based on max_docs and number of rows in files."""
         cnt_docs = 0
         for fp in self.all_files:
@@ -53,5 +61,5 @@ class TSVDocPreprocessor(DocPreprocessor):
         num_docs = min(cnt_docs, self.max_docs)
         return num_docs
 
-    def _can_read(self, fpath):
+    def _can_read(self, fpath: str) -> bool:
         return fpath.lower().endswith(".tsv")

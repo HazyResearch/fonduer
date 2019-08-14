@@ -1,5 +1,6 @@
 import codecs
 import os
+from typing import Iterator
 
 from bs4 import BeautifulSoup
 
@@ -20,7 +21,7 @@ class HTMLDocPreprocessor(DocPreprocessor):
     :rtype: A generator of ``Documents``.
     """
 
-    def _parse_file(self, fp, file_name):
+    def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         with codecs.open(fp, encoding=self.encoding) as f:
             soup = BeautifulSoup(f, "lxml")
             all_html_elements = soup.find_all("html")
@@ -38,10 +39,10 @@ class HTMLDocPreprocessor(DocPreprocessor):
                 meta={"file_name": file_name},
             )
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Provide a len attribute based on max_docs and number of files in folder."""
         num_docs = min(len(self.all_files), self.max_docs)
         return num_docs
 
-    def _can_read(self, fpath):
+    def _can_read(self, fpath: str) -> bool:
         return fpath.lower().endswith("html")  # includes both .html and .xhtml
