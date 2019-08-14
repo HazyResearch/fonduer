@@ -71,6 +71,7 @@ Changed
 Fixed
 ^^^^^
 * `@senwu`_: Fix legacy code bug in ``SymbolTable``.
+* `@HiromuHota`_: Fix the type of max_docs.
 
 [0.7.0] - 2019-06-12
 --------------------
