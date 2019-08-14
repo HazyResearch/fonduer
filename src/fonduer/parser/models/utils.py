@@ -1,12 +1,16 @@
+from typing import Tuple
+
+from fonduer.parser.models import Context
+
 """Utilities for constructing and splitting stable ids."""
 
 
 def construct_stable_id(
-    parent_context,
-    polymorphic_type,
-    relative_char_offset_start,
-    relative_char_offset_end,
-):
+    parent_context: Context,
+    polymorphic_type: str,
+    relative_char_offset_start: int,
+    relative_char_offset_end: int,
+) -> str:
     """
     Contruct a stable ID for a Context given its parent and its character
     offsets relative to the parent.
@@ -17,7 +21,7 @@ def construct_stable_id(
     return f"{doc_id}::{polymorphic_type}:{start}:{end}"
 
 
-def split_stable_id(stable_id):
+def split_stable_id(stable_id: str) -> Tuple[str, str, int, int]:
     """Split stable id, returning:
 
         * Document (root) stable ID

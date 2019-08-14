@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.types import PickleType
 
@@ -31,9 +33,9 @@ class Document(Context):
 
     __mapper_args__ = {"polymorphic_identity": "document"}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Document {self.name}"
 
-    def __gt__(self, other):
+    def __gt__(self, other: Document) -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

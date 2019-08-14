@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from builtins import object
+from typing import Any, Dict
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects import postgresql
@@ -14,83 +17,65 @@ STR_ARRAY_TYPE = postgresql.ARRAY(String)
 class SentenceMixin(object):
     """A sentence Context in a Document."""
 
-    def is_lingual(self):
+    def is_lingual(self) -> bool:
         return False
 
-    def is_visual(self):
+    def is_visual(self) -> bool:
         return False
 
-    def is_tabular(self):
+    def is_tabular(self) -> bool:
         return False
 
-    def is_structural(self):
+    def is_structural(self) -> bool:
         return False
-
-    def __repr__(self):
-        return (
-            f"Sentence ("
-            f"Doc: {self.document.name}, "
-            f"Index: {self.sentence_idx}, "
-            f"Text: {self.text}"
-            f")"
-        )
 
 
 class LingualMixin(object):
     """A collection of lingual attributes."""
 
     @declared_attr
-    def lemmas(cls):
+    def lemmas(cls) -> Column:
         """A list of the lemmas for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     @declared_attr
-    def pos_tags(cls):
+    def pos_tags(cls) -> Column:
         """A list of POS tags for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     @declared_attr
-    def ner_tags(cls):
+    def ner_tags(cls) -> Column:
         """A list of NER tags for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     @declared_attr
-    def dep_parents(cls):
+    def dep_parents(cls) -> Column:
         """A list of the dependency parents for each word in a ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
-    def dep_labels(cls):
+    def dep_labels(cls) -> Column:
         """A list of dependency labels for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
-    def is_lingual(self):
+    def is_lingual(self) -> bool:
         """Whether or not the ``Sentence`` contains NLP information.
 
         :rtype: bool
         """
         return self.lemmas is not None
 
-    def __repr__(self):
-        return (
-            f"LingualSentence ("
-            f"Doc: {self.document.name}, "
-            f"Index: {self.sentence_idx}, "
-            f"Text: {self.text}"
-            f")"
-        )
-
 
 class TabularMixin(object):
     """A collection of tabular attributes."""
 
     @declared_attr
-    def table_id(cls):
+    def table_id(cls) -> Column:
         """The id of the parent ``Table``, if any."""
         return Column("table_id", ForeignKey("table.id"))
 
     @declared_attr
-    def table(cls):
+    def table(cls) -> relationship:
         """The parent ``Table``, if any."""
         return relationship(
             "Table",
@@ -99,12 +84,12 @@ class TabularMixin(object):
         )
 
     @declared_attr
-    def cell_id(cls):
+    def cell_id(cls) -> Column:
         """The id of the parent ``Cell``, if any."""
         return Column("cell_id", ForeignKey("cell.id"))
 
     @declared_attr
-    def cell(cls):
+    def cell(cls) -> relationship:
         """The parent ``Cell``, if any."""
         return relationship(
             "Cell",
@@ -113,66 +98,45 @@ class TabularMixin(object):
         )
 
     @declared_attr
-    def row_start(cls):
+    def row_start(cls) -> Column:
         """The ``row_start`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     @declared_attr
-    def row_end(cls):
+    def row_end(cls) -> Column:
         """The ``row_end`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     @declared_attr
-    def col_start(cls):
+    def col_start(cls) -> Column:
         """The ``col_start`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     @declared_attr
-    def col_end(cls):
+    def col_end(cls) -> Column:
         """The ``col_end`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
-    def is_tabular(self):
+    def is_tabular(self) -> bool:
         """Whether or not the ``Sentence`` contains tabular information.
 
         :rtype: bool
         """
         return self.table is not None
 
-    def is_cellular(self):
+    def is_cellular(self) -> bool:
         """Whether or not the ``Sentence`` contains information about its table cell.
 
         :rtype: bool
         """
         return self.cell is not None
 
-    def __repr__(self):
-        rows = (
-            tuple([self.row_start, self.row_end])
-            if self.row_start != self.row_end
-            else self.row_start
-        )
-        cols = (
-            tuple([self.col_start, self.col_end])
-            if self.col_start != self.col_end
-            else self.col_start
-        )
-        return (
-            f"TabularSentence (Doc: {self.document.name}, "
-            f"Table: {(lambda: self.table).position}, "
-            f"Row: {rows}, "
-            f"Col: {cols}, "
-            f"Index: {self.sentence_idx}, "
-            f"Text: {self.text}"
-            f")"
-        )
-
 
 class VisualMixin(object):
     """A collection of visual attributes."""
 
     @declared_attr
-    def page(cls):
+    def page(cls) -> Column:
         """A list of the page index of each word in the ``Sentence``.
 
         Page indexes start at 0.
@@ -180,77 +144,58 @@ class VisualMixin(object):
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
-    def top(cls):
+    def top(cls) -> Column:
         """A list of each word's TOP bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
-    def left(cls):
+    def left(cls) -> Column:
         """A list of each word's LEFT bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
-    def bottom(cls):
+    def bottom(cls) -> Column:
         """A list of each word's BOTTOM bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
-    def right(cls):
+    def right(cls) -> Column:
         """A list of each word's RIGHT bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
-    def is_visual(self):
+    def is_visual(self) -> bool:
         """Whether or not the ``Sentence`` contains visual information.
 
         :rtype: bool
         """
         return self.page is not None and self.page[0] is not None
 
-    def __repr__(self):
-        return (
-            f"VisualSentence ("
-            f"Doc: {self.document.name}, "
-            f"Page: {self.page}, "
-            f"(T,B,L,R): ({self.top},{self.bottom},{self.left},{self.right}), "
-            f"Text: {self.text}"
-            f")"
-        )
-
 
 class StructuralMixin(object):
     """A collection of structural attributes."""
 
     @declared_attr
-    def xpath(cls):
+    def xpath(cls) -> Column:
         """The HTML XPATH to the ``Sentence``."""
         return Column(String)
 
     @declared_attr
-    def html_tag(cls):
+    def html_tag(cls) -> Column:
         """The HTML tag of the element containing the ``Sentence``."""
         return Column(String)
 
     #: The HTML attributes of the element the ``Sentence`` is found in.
     @declared_attr
-    def html_attrs(cls):
+    def html_attrs(cls) -> Column:
         """A list of the html attributes of the element containing the ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
-    def is_structural(self):
+    def is_structural(self) -> bool:
         """Whether or not the ``Sentence`` contains structural information.
 
         :rtype: bool
         """
         return self.html_tag is not None
-
-    def __repr__(self):
-        return (
-            f"StructuralSentence ("
-            f"Doc: {self.document.name}, "
-            f"Tag: {self.html_tag}, "
-            f"Text: {self.text}"
-            f")"
-        )
 
 
 # SentenceMixin must come last in arguments to not ovewrite is_* methods
@@ -322,7 +267,7 @@ class Sentence(
 
     __table_args__ = (UniqueConstraint(document_id, position),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.is_tabular():
             rows = (
                 tuple([self.row_start, self.row_end])
@@ -356,7 +301,7 @@ class Sentence(
                 f")"
             )
 
-    def _asdict(self):
+    def _asdict(self) -> Dict[str, Any]:
         return {
             # base
             "id": self.id,
@@ -386,6 +331,6 @@ class Sentence(
             "right": self.right,
         }
 
-    def __gt__(self, other):
+    def __gt__(self, other: Sentence) -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
