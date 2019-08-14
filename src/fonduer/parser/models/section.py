@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -42,6 +40,6 @@ class Section(Context):
     def __repr__(self) -> str:
         return f"Section(Doc: {self.document.name}, Pos: {self.position})"
 
-    def __gt__(self, other: Section) -> bool:
+    def __gt__(self, other: "Section") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

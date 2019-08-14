@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 import os
 import tempfile
@@ -125,7 +123,7 @@ class Meta(object):
     log_path: Optional[str] = None
 
     @classmethod
-    def init(cls, conn_string: Optional[str] = None) -> Type[Meta]:
+    def init(cls, conn_string: Optional[str] = None) -> Type["Meta"]:
         """Return the unique Meta class."""
         if conn_string:
             _update_meta(conn_string)

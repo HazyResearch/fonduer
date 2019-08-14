@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.types import PickleType
 
@@ -36,6 +34,6 @@ class Document(Context):
     def __repr__(self) -> str:
         return f"Document {self.name}"
 
-    def __gt__(self, other: Document) -> bool:
+    def __gt__(self, other: "Document") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

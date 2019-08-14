@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -96,6 +94,6 @@ class Paragraph(Context):
                 f")"
             )
 
-    def __gt__(self, other: Paragraph) -> bool:
+    def __gt__(self, other: "Paragraph") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

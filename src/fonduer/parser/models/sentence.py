@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from builtins import object
 from typing import Any, Dict
 
@@ -331,6 +329,6 @@ class Sentence(
             "right": self.right,
         }
 
-    def __gt__(self, other: Sentence) -> bool:
+    def __gt__(self, other: "Sentence") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

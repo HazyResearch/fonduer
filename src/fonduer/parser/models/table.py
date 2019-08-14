@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -56,7 +54,7 @@ class Table(Context):
             f")"
         )
 
-    def __gt__(self, other: Table) -> bool:
+    def __gt__(self, other: "Table") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
@@ -122,6 +120,6 @@ class Cell(Context):
             f"Pos: {self.position})"
         )
 
-    def __gt__(self, other: Cell) -> bool:
+    def __gt__(self, other: "Cell") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
