@@ -1,10 +1,11 @@
 import logging
-from typing import Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.meta import Meta
+from fonduer.parser.models import Context
 from fonduer.utils.utils import camel_to_under
 
 logger = logging.getLogger(__name__)
@@ -34,17 +35,17 @@ class Mention(Meta.Base):  # type: ignore
 
     __mapper_args__ = {"polymorphic_identity": "mention", "polymorphic_on": type}
 
-    def get_contexts(self):
+    def get_contexts(self) -> Tuple[Context, ...]:
         """Get the constituent context making up this mention."""
         return tuple(getattr(self, name) for name in self.__argnames__)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__argnames__)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: int) -> Context:
         return self.get_contexts()[key]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -52,12 +53,17 @@ class Mention(Meta.Base):  # type: ignore
             f")"
         )
 
-    def __gt__(self, other):
+    def __gt__(self, other: "Mention") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
 
-def mention_subclass(class_name, cardinality=None, values=None, table_name=None):
+def mention_subclass(
+    class_name: str,
+    cardinality: Optional[int] = None,
+    values: Optional[List[Any]] = None,
+    table_name: Optional[str] = None,
+) -> Type[Mention]:
     """
     Creates and returns a Mention subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
