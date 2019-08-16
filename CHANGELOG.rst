@@ -1,5 +1,5 @@
-[Unreleased]
-------------
+Unreleased_
+-----------
 
 Added
 ^^^^^
@@ -83,8 +83,8 @@ Fixed
 * `@HiromuHota`_: Associate sentence with section and paragraph no matter what tabular is.
   (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
 
-[0.7.0] - 2019-06-12
---------------------
+0.7.0_ - 2019-06-12
+-------------------
 
 Added
 ^^^^^
@@ -117,16 +117,16 @@ Fixed
 ^^^^^
 * `@senwu`_: Fix the doc about the PostgreSQL version requirement.
 
-[0.6.2] - 2019-04-01
---------------------
+0.6.2_ - 2019-04-01
+-------------------
 
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix Meta initialization bug which would configure logging
   upon import rather than allowing the user to configure logging themselves.
 
-[0.6.1] - 2019-03-29
---------------------
+0.6.1_ - 2019-03-29
+-------------------
 
 Added
 ^^^^^
@@ -201,8 +201,8 @@ Fixed
 * `@senwu`_: Fix the issue that pdfinfo causes parsing error when it contains
   more than one ``Page``.
 
-[0.6.0] - 2019-02-17
---------------------
+0.6.0_ - 2019-02-17
+-------------------
 
 Changed
 ^^^^^^^
@@ -245,8 +245,8 @@ Fixed
   (`#205 <https://github.com/HazyResearch/fonduer/pull/205>`_)
 * `@KenSugimoto`_: Fix max/min in ``visualizer.get_box``
 
-[0.5.0] - 2019-01-01
---------------------
+0.5.0_ - 2019-01-01
+-------------------
 
 Added
 ^^^^^
@@ -322,8 +322,8 @@ Fixed
 * `@lukehsiao`_: Fix the behavior of MentionExtractor ``clear`` and
   ``clear_all`` to also delete the Candidates that correspond to the Mentions.
 
-[0.4.1] - 2018-12-12
---------------------
+0.4.1_ - 2018-12-12
+-------------------
 
 Added
 ^^^^^
@@ -342,8 +342,8 @@ Fixed
 * `@senwu`_: fix non-deterministic issue from get_candidates and get_mentions
   by parallel candidate/mention generation.
 
-[0.4.0] - 2018-11-27
---------------------
+0.4.0_ - 2018-11-27
+-------------------
 
 Added
 ^^^^^
@@ -409,8 +409,8 @@ Fixed
 * `@j-rausch`_: Improve error handling for invalid row spans.
   (`#183 <https://github.com/HazyResearch/fonduer/pull/183>`_)
 
-[0.3.6] - 2018-11-15
---------------------
+0.3.6_ - 2018-11-15
+-------------------
 
 Fixed
 ^^^^^
@@ -418,8 +418,8 @@ Fixed
   works when a user upgrades Fonduer.
 * `@lukehsiao`_: Improve error messages on PostgreSQL connection and update FAQ.
 
-[0.3.5] - 2018-11-04
---------------------
+0.3.5_ - 2018-11-04
+-------------------
 
 Added
 ^^^^^
@@ -450,8 +450,8 @@ Fixed
 * `@senwu`_: Use the latest MeTaL syntax and fix flake8 issues.
   (`#173 <https://github.com/HazyResearch/fonduer/pull/173>`_)
 
-[0.3.4] - 2018-10-17
---------------------
+0.3.4_ - 2018-10-17
+-------------------
 
 Changed
 ^^^^^^^
@@ -468,8 +468,8 @@ Fixed
   inadvertently corrupt the global index of keys.
   (`#167 <https://github.com/HazyResearch/fonduer/pull/167>`_)
 
-[0.3.3] - 2018-09-27
---------------------
+0.3.3_ - 2018-09-27
+-------------------
 
 Changed
 ^^^^^^^
@@ -484,8 +484,8 @@ Fixed
 * `@lukehsiao`_: Batch queries so that PostgreSQL buffers aren't exceeded.
   (`#162 <https://github.com/HazyResearch/fonduer/pull/162>`_)
 
-[0.3.2] - 2018-09-20
---------------------
+0.3.2_ - 2018-09-20
+-------------------
 
 Changed
 ^^^^^^^
@@ -499,15 +499,15 @@ Fixed
 ^^^^^
 * `@lukehsiao`_: Fix attribute error when using MentionFigures.
 
-[0.3.1] - 2018-09-18
---------------------
+0.3.1_ - 2018-09-18
+-------------------
 
 Fixed
 ^^^^^
 * `@lukehsiao`_: Fix the layers module in fonduer.learning.disc_models.layers.
 
-[0.3.0] - 2018-09-18
---------------------
+0.3.0_ - 2018-09-18
+-------------------
 
 Added
 ^^^^^
@@ -692,8 +692,8 @@ Fixed
         from fonduer.parser.preprocessors import HTMLDocPreprocessor
         from fonduer.supervision import Labeler, get_gold_labels
 
-[0.2.3] - 2018-07-23
---------------------
+0.2.3_ - 2018-07-23
+-------------------
 
 Added
 ^^^^^
@@ -701,8 +701,8 @@ Added
   Figure contexts.
   (`#84 <https://github.com/HazyResearch/fonduer/pull/84>`_)
 
-[0.2.2] - 2018-07-22
---------------------
+0.2.2_ - 2018-07-22
+-------------------
 
 .. note::
     Version 0.2.0 and 0.2.1 had to be skipped due to errors in uploading those
@@ -746,8 +746,8 @@ Fixed
 * A variety of small bugfixes and code cleanup.
   (`view milestone <https://github.com/HazyResearch/fonduer/milestone/8>`_)
 
-[0.1.8] - 2018-06-01
---------------------
+0.1.8_ - 2018-06-01
+-------------------
 
 Added
 ^^^^^
@@ -768,8 +768,8 @@ Fixed
 * `@lukehsiao`_: Fix LocationMatch NER tags for spaCy
   (`#50 <https://github.com/HazyResearch/fonduer/pull/50>`_)
 
-[0.1.7] - 2018-04-04
---------------------
+0.1.7_ - 2018-04-04
+-------------------
 
 .. warning::
     This release is NOT backwards compatable with v0.1.6. Specifically, the
@@ -811,8 +811,8 @@ Removed
 * `@lukehsiao`_: Remove unused package dependencies
   (`#41 <https://github.com/HazyResearch/fonduer/pull/41>`_)
 
-[0.1.6] - 2018-03-31
---------------------
+0.1.6_ - 2018-03-31
+-------------------
 
 Changed
 ^^^^^^^
@@ -824,8 +824,8 @@ Fixed
   part of the connection string provided to Meta.init()
   (`#40 <https://github.com/HazyResearch/fonduer/pull/40>`_)
 
-[0.1.5] - 2018-03-31
---------------------
+0.1.5_ - 2018-03-31
+-------------------
 .. warning::
     This release is NOT backwards compatable with v0.1.4. Specifically, in order
     to initialize a session with postgresql, you no longer do
@@ -857,27 +857,52 @@ Fixed
 * `@lukehsiao`_: Bring codebase in PEP8 compliance and add automatic code-style
   checks (`#37 <https://github.com/HazyResearch/fonduer/pull/37>`_)
 
-[0.1.4] - 2018-03-30
---------------------
+0.1.4_ - 2018-03-30
+-------------------
 
 Changed
 ^^^^^^^
 * `@lukehsiao`_: Separate tutorials into their own repo (`#31
   <https://github.com/HazyResearch/fonduer/pull/31>`_)
 
-[0.1.3] - 2018-03-29
---------------------
+0.1.3_ - 2018-03-29
+-------------------
 
 Fixed
 ^^^^^
 Minor hotfix to the README formatting for PyPi.
 
-[0.1.2] - 2018-03-29
---------------------
+0.1.2_ - 2018-03-29
+-------------------
 
 Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
+
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.7.0...master
+.. _0.7.0: https://github.com/hazyresearch/fonduer/compare/v0.6.2...v0.7.0
+.. _0.6.2: https://github.com/hazyresearch/fonduer/compare/v0.6.1...v0.6.2
+.. _0.6.1: https://github.com/hazyresearch/fonduer/compare/v0.6.0...v0.6.1
+.. _0.6.0: https://github.com/hazyresearch/fonduer/compare/v0.5.0...v0.6.0
+.. _0.5.0: https://github.com/hazyresearch/fonduer/compare/v0.4.1...v0.5.0
+.. _0.4.1: https://github.com/hazyresearch/fonduer/compare/v0.4.0...v0.4.1
+.. _0.4.0: https://github.com/hazyresearch/fonduer/compare/v0.3.6...v0.4.0
+.. _0.3.6: https://github.com/hazyresearch/fonduer/compare/v0.3.5...v0.3.6
+.. _0.3.5: https://github.com/hazyresearch/fonduer/compare/v0.3.4...v0.3.5
+.. _0.3.4: https://github.com/hazyresearch/fonduer/compare/v0.3.3...v0.3.4
+.. _0.3.3: https://github.com/hazyresearch/fonduer/compare/v0.3.2...v0.3.3
+.. _0.3.2: https://github.com/hazyresearch/fonduer/compare/v0.3.1...v0.3.2
+.. _0.3.1: https://github.com/hazyresearch/fonduer/compare/v0.3.0...v0.3.1
+.. _0.3.0: https://github.com/hazyresearch/fonduer/compare/v0.2.3...v0.3.0
+.. _0.2.3: https://github.com/hazyresearch/fonduer/compare/v0.2.2...v0.2.3
+.. _0.2.2: https://github.com/hazyresearch/fonduer/compare/v0.1.8...v0.2.2
+.. _0.1.8: https://github.com/hazyresearch/fonduer/compare/v0.1.7...v0.1.8
+.. _0.1.7: https://github.com/hazyresearch/fonduer/compare/v0.1.6...v0.1.7
+.. _0.1.6: https://github.com/hazyresearch/fonduer/compare/v0.1.5...v0.1.6
+.. _0.1.5: https://github.com/hazyresearch/fonduer/compare/v0.1.4...v0.1.5
+.. _0.1.4: https://github.com/hazyresearch/fonduer/compare/v0.1.3...v0.1.4
+.. _0.1.3: https://github.com/hazyresearch/fonduer/compare/v0.1.2...v0.1.3
+.. _0.1.2: https://github.com/hazyresearch/fonduer/releases/tag/v0.1.2
 
 ..
   For convenience, all username links for contributors can be listed here
