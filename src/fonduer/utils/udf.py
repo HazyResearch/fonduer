@@ -1,9 +1,9 @@
 import logging
 from multiprocessing import JoinableQueue, Manager, Process
 from queue import Empty, Queue
-from typing import Any, Collection, Dict, List, Optional, Set, Type
+from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
 
-from sqlalchemy.orm.session import Session
+from sqlalchemy.orm import Session
 
 from fonduer.meta import Meta, new_sessionmaker
 from fonduer.parser.models.document import Document
@@ -223,6 +223,6 @@ class UDF(Process):
         self.session.commit()
         self.session.close()
 
-    def apply(self, doc: Document, **kwargs: Any):
+    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
         """This function takes in an object, and returns a generator / set / list"""
         raise NotImplementedError()
