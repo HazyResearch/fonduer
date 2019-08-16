@@ -3,9 +3,12 @@ import re
 from builtins import map, range
 from collections import defaultdict
 from copy import deepcopy
+from typing import Any, Collection, Iterator, List, Optional, Set
 
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import insert, select
 
+from fonduer.candidates.matchers import _Matcher
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.candidate import candidate_subclasses
 from fonduer.candidates.models.caption_mention import TemporaryCaptionMention
@@ -16,7 +19,8 @@ from fonduer.candidates.models.paragraph_mention import TemporaryParagraphMentio
 from fonduer.candidates.models.section_mention import TemporarySectionMention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.candidates.models.table_mention import TemporaryTableMention
-from fonduer.parser.models import Document
+from fonduer.candidates.models.temporary_context import TemporaryContext
+from fonduer.parser.models import Document, Sentence
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
@@ -29,7 +33,7 @@ class MentionSpace(object):
     *x*.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def apply(self, x):
@@ -50,7 +54,9 @@ class Ngrams(MentionSpace):
     :type split_tokens: tuple, list of str.
     """
 
-    def __init__(self, n_min=1, n_max=5, split_tokens=[]):
+    def __init__(
+        self, n_min: int = 1, n_max: int = 5, split_tokens: List[str] = []
+    ) -> None:
         MentionSpace.__init__(self)
         self.n_min = n_min
         self.n_max = n_max
@@ -60,7 +66,7 @@ class Ngrams(MentionSpace):
             else None
         )
 
-    def apply(self, context):
+    def apply(self, context: Sentence) -> Iterator[TemporarySpanMention]:
 
         # These are the character offset--**relative to the sentence
         # start**--for each _token_
@@ -126,13 +132,15 @@ class MentionNgrams(Ngrams):
     :type split_tokens: tuple, list of str.
     """
 
-    def __init__(self, n_min=1, n_max=5, split_tokens=[]):
+    def __init__(
+        self, n_min: int = 1, n_max: int = 5, split_tokens: List[Any] = []
+    ) -> None:
         """
         Initialize MentionNgrams.
         """
         Ngrams.__init__(self, n_min=n_min, n_max=n_max, split_tokens=split_tokens)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporarySpanMention]:
         """Generate MentionNgrams from a Document by parsing all of its Sentences.
 
         :param doc: The ``Document`` to parse.
@@ -157,7 +165,7 @@ class MentionFigures(MentionSpace):
     :type types: list, tuple of str
     """
 
-    def __init__(self, types=None):
+    def __init__(self, types: Optional[str] = None) -> None:
         """Initialize MentionFigures."""
         MentionSpace.__init__(self)
         if types is not None:
@@ -165,7 +173,7 @@ class MentionFigures(MentionSpace):
         else:
             self.types = None
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporaryFigureMention]:
         """
         Generate MentionFigures from a Document by parsing all of its Figures.
 
@@ -188,7 +196,7 @@ class MentionFigures(MentionSpace):
 class MentionSentences(MentionSpace):
     """Defines the space of Mentions as all sentences in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionSentences."""
         MentionSpace.__init__(self)
 
@@ -214,7 +222,7 @@ class MentionSentences(MentionSpace):
 class MentionParagraphs(MentionSpace):
     """Defines the space of Mentions as all paragraphs in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionParagraphs."""
         MentionSpace.__init__(self)
 
@@ -238,7 +246,7 @@ class MentionParagraphs(MentionSpace):
 class MentionCaptions(MentionSpace):
     """Defines the space of Mentions as all captions in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionCaptions."""
         MentionSpace.__init__(self)
 
@@ -262,7 +270,7 @@ class MentionCaptions(MentionSpace):
 class MentionCells(MentionSpace):
     """Defines the space of Mentions as all cells in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionCells."""
         MentionSpace.__init__(self)
 
@@ -286,7 +294,7 @@ class MentionCells(MentionSpace):
 class MentionTables(MentionSpace):
     """Defines the space of Mentions as all tables in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionTables."""
         MentionSpace.__init__(self)
 
@@ -310,7 +318,7 @@ class MentionTables(MentionSpace):
 class MentionSections(MentionSpace):
     """Defines the space of Mentions as all sections in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionSections."""
         MentionSpace.__init__(self)
 
@@ -334,7 +342,7 @@ class MentionSections(MentionSpace):
 class MentionDocuments(MentionSpace):
     """Defines the space of Mentions as a document in a Document *x*."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MentionDocuments."""
         MentionSpace.__init__(self)
 
@@ -395,7 +403,12 @@ class MentionExtractor(UDFRunner):
     """
 
     def __init__(
-        self, session, mention_classes, mention_spaces, matchers, parallelism=1
+        self,
+        session: Session,
+        mention_classes: List[Mention],
+        mention_spaces: List[MentionSpace],
+        matchers: List[_Matcher],
+        parallelism: int = 1,
     ):
         """Initialize the MentionExtractor."""
         super(MentionExtractor, self).__init__(
@@ -417,7 +430,13 @@ class MentionExtractor(UDFRunner):
 
         self.mention_classes = mention_classes
 
-    def apply(self, docs, clear=True, parallelism=None, progress_bar=True):
+    def apply(
+        self,
+        docs: Collection[Document],
+        clear: bool = True,
+        parallelism: Optional[int] = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Run the MentionExtractor.
 
         :Example: To extract mentions from a set of training documents using
@@ -441,7 +460,7 @@ class MentionExtractor(UDFRunner):
             docs, clear=clear, parallelism=parallelism, progress_bar=progress_bar
         )
 
-    def clear(self):
+    def clear(self) -> None:
         """Delete Mentions of each class in the extractor from the given split."""
 
         # Create set of candidate_subclasses associated with each mention_subclass
@@ -469,7 +488,7 @@ class MentionExtractor(UDFRunner):
                 synchronize_session="fetch"
             )
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         """Delete all Mentions from given split the database."""
         logger.info("Clearing ALL Mentions.")
         self.session.query(Mention).delete(synchronize_session="fetch")
@@ -478,7 +497,9 @@ class MentionExtractor(UDFRunner):
         self.session.query(Candidate).delete(synchronize_session="fetch")
         logger.info("Cleared ALL Mentions (and Candidates).")
 
-    def get_mentions(self, docs=None, sort=False):
+    def get_mentions(
+        self, docs: Optional[Collection[Document]] = None, sort: bool = False
+    ) -> List[List[Mention]]:
         """Return a list of lists of the mentions associated with this extractor.
 
         Each list of the return will contain the Mentions for one of the
@@ -519,7 +540,13 @@ class MentionExtractor(UDFRunner):
 class MentionExtractorUDF(UDF):
     """UDF for performing mention extraction."""
 
-    def __init__(self, mention_classes, mention_spaces, matchers, **kwargs):
+    def __init__(
+        self,
+        mention_classes: List[Mention],
+        mention_spaces: List[MentionSpace],
+        matchers: List[_Matcher],
+        **kwargs: Any,
+    ):
         """Initialize the MentionExtractorUDF."""
         self.mention_classes = (
             mention_classes
@@ -537,11 +564,11 @@ class MentionExtractorUDF(UDF):
         self.mention_spaces = list(map(deepcopy, self.mention_spaces))
 
         # Preallocates internal data structure
-        self.child_context_set = set()
+        self.child_context_set: Set[TemporaryContext] = set()
 
         super(MentionExtractorUDF, self).__init__(**kwargs)
 
-    def apply(self, doc, clear, **kwargs):
+    def apply(self, doc: Document, clear: bool, **kwargs: Any) -> Iterator[Mention]:
         """Extract mentions from the given Document.
 
         :param doc: A document to process.
