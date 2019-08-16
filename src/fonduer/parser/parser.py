@@ -4,7 +4,7 @@ import re
 import warnings
 from builtins import range
 from collections import defaultdict
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Pattern, Tuple
+from typing import Any, Collection, Dict, Iterator, List, Optional, Pattern, Tuple
 
 import lxml.etree
 import lxml.html
@@ -101,11 +101,11 @@ class Parser(UDFRunner):
 
     def apply(
         self,
-        doc_loader: Iterable[Document],
-        pdf_path: Optional[str] = None,
+        doc_loader: Collection[Document],
         clear: bool = True,
         parallelism: Optional[int] = None,
         progress_bar: bool = True,
+        pdf_path: Optional[str] = None,
     ) -> None:
         """Run the Parser.
 

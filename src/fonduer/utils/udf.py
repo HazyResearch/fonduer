@@ -1,8 +1,12 @@
 import logging
 from multiprocessing import JoinableQueue, Manager, Process
-from queue import Empty
+from queue import Empty, Queue
+from typing import Any, Collection, Dict, List, Optional, Set, Type
+
+from sqlalchemy.orm.session import Session
 
 from fonduer.meta import Meta, new_sessionmaker
+from fonduer.parser.models.document import Document
 
 try:
     from IPython import get_ipython
@@ -24,21 +28,34 @@ class UDFRunner(object):
     setup.
     """
 
-    def __init__(self, session, udf_class, parallelism=1, **udf_init_kwargs):
+    def __init__(
+        self,
+        session: Session,
+        udf_class: Type["UDF"],
+        parallelism: int = 1,
+        **udf_init_kwargs: Any,
+    ) -> None:
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
-        self.udfs = []
+        self.udfs: List["UDF"] = []
         self.pb = None
         self.session = session
         self.parallelism = parallelism
 
         #: The last set of documents that apply() was called on
-        self.last_docs = set()
+        self.last_docs: Set[str] = set()
 
     def apply(
-        self, doc_loader, clear=True, parallelism=None, progress_bar=True, **kwargs
-    ):
+        self,
+        doc_loader: Collection[
+            Document
+        ],  # doc_loader has __len__, but Iterable doesn't.
+        clear: bool = True,
+        parallelism: Optional[int] = None,
+        progress_bar: bool = True,
+        **kwargs: Any,
+    ) -> None:
         """
         Apply the given UDF to the set of objects returned by the doc_loader, either
         single or multi-threaded, and optionally calling clear() first.
@@ -73,11 +90,11 @@ class UDFRunner(object):
             self.logger.debug("Closing progress bar...")
             self.pb.close()
 
-    def clear(self, **kwargs):
+    def clear(self, **kwargs) -> None:
         """Clear the associated data from the database."""
         raise NotImplementedError()
 
-    def _apply_st(self, doc_loader, **kwargs):
+    def _apply_st(self, doc_loader: Collection[Document], **kwargs) -> None:
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
@@ -91,12 +108,16 @@ class UDFRunner(object):
         # Commit session and close progress bar if applicable
         udf.session.commit()
 
-    def _apply_mt(self, doc_loader, parallelism, **kwargs):
+    def _apply_mt(
+        self, doc_loader: Collection[Document], parallelism: int, **kwargs
+    ) -> None:
         """Run the UDF multi-threaded using python multiprocessing"""
         if not Meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
-        def fill_input_queue(in_queue, doc_loader, terminal_signal):
+        def fill_input_queue(
+            in_queue: Queue, doc_loader: Collection[Document], terminal_signal: str
+        ) -> None:
             for doc in doc_loader:
                 in_queue.put(doc)
             in_queue.put(terminal_signal)
@@ -105,7 +126,8 @@ class UDFRunner(object):
         manager = Manager()
         in_queue = manager.Queue()
         # Use an output queue to track multiprocess progress
-        out_queue = JoinableQueue()
+        # TODO: can out_queue be just Queue instead of JoinableQueue?
+        out_queue: JoinableQueue = JoinableQueue()
 
         total_count = len(doc_loader)
 
@@ -158,7 +180,13 @@ class UDF(Process):
     TASK_DONE = "done"
     QUEUE_CLOSED = "QUEUECLOSED"
 
-    def __init__(self, in_queue=None, out_queue=None, worker_id=0):
+    def __init__(
+        self,
+        in_queue: Optional[Queue] = None,
+        out_queue: Optional[JoinableQueue] = None,
+        worker_id: int = 0,
+        **udf_init_kwargs: Any,
+    ) -> None:
         """
         in_queue: A Queue of input objects to process; primarily for running in parallel
         """
@@ -174,9 +202,9 @@ class UDF(Process):
         self.session = Session()
 
         # We use a workaround to pass in the apply kwargs
-        self.apply_kwargs = {}
+        self.apply_kwargs: Dict[str, Any] = {}
 
-    def run(self):
+    def run(self) -> None:
         """
         This method is called when the UDF is run as a Process in a
         multiprocess setting The basic routine is: get from JoinableQueue,
@@ -195,6 +223,6 @@ class UDF(Process):
         self.session.commit()
         self.session.close()
 
-    def apply(self, doc, **kwargs):
+    def apply(self, doc: Document, **kwargs: Any):
         """This function takes in an object, and returns a generator / set / list"""
         raise NotImplementedError()
