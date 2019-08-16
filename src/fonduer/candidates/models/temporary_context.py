@@ -1,5 +1,7 @@
 from builtins import object
+from typing import Any, Dict, Type
 
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
 
 from fonduer.parser.models.context import Context
@@ -21,10 +23,10 @@ class TemporaryContext(object):
     method which returns a corresponding Context object.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.id = None
 
-    def _load_id_or_insert(self, session):
+    def _load_id_or_insert(self, session: Session) -> Dict[str, Any]:
         """Load the id of the temporary context if it exists or return insert args.
 
         As a side effect, this also inserts the Context object for the stableid.
@@ -51,7 +53,7 @@ class TemporaryContext(object):
             else:
                 self.id = id[0]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         raise NotImplementedError()
 
     def __eq__(self, other):
@@ -60,20 +62,20 @@ class TemporaryContext(object):
     def __ne__(self, other):
         raise NotImplementedError()
 
-    def __gt__(self, other):
+    def __gt__(self, other: "TemporaryContext") -> bool:
         raise NotImplementedError()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         raise NotImplementedError()
 
-    def _get_polymorphic_identity(self):
+    def _get_polymorphic_identity(self) -> str:
         raise NotImplementedError()
 
-    def get_stable_id(self):
+    def get_stable_id(self) -> str:
         raise NotImplementedError()
 
-    def _get_table(self):
+    def _get_table(self) -> Type["Context"]:
         raise NotImplementedError()
 
-    def _get_insert_args(self):
+    def _get_insert_args(self) -> Dict[str, Any]:
         raise NotImplementedError()

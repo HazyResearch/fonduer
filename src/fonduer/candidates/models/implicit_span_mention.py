@@ -1,3 +1,5 @@
+from typing import Any, Dict, List, Optional, Type
+
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
@@ -6,6 +8,7 @@ from sqlalchemy.types import PickleType
 
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.sentence import Sentence
 from fonduer.parser.models.utils import split_stable_id
 
 
@@ -14,25 +17,25 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
 
     def __init__(
         self,
-        sentence,
-        char_start,
-        char_end,
-        expander_key,
-        position,
-        text,
-        words,
-        lemmas,
-        pos_tags,
-        ner_tags,
-        dep_parents,
-        dep_labels,
-        page,
-        top,
-        left,
-        bottom,
-        right,
-        meta=None,
-    ):
+        sentence: Sentence,
+        char_start: int,
+        char_end: int,
+        expander_key: str,
+        position: int,
+        text: str,
+        words: List[str],
+        lemmas: List[str],
+        pos_tags: List[str],
+        ner_tags: List[str],
+        dep_parents: List[int],
+        dep_labels: List[str],
+        page: List[Optional[int]],
+        top: List[Optional[int]],
+        left: List[Optional[int]],
+        bottom: List[Optional[int]],
+        right: List[Optional[int]],
+        meta: Any = None,
+    ) -> None:
         super(TemporarySpanMention, self).__init__()
         self.sentence = sentence  # The sentence Context of the Span
         self.char_start = char_start
@@ -80,7 +83,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         except AttributeError:
             return True
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return (
             hash(self.sentence)
             + hash(self.char_start)
@@ -89,7 +92,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             + hash(self.position)
         )
 
-    def get_stable_id(self):
+    def get_stable_id(self) -> str:
         """
         Return a stable id.
 
@@ -110,13 +113,13 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             f"{self.position}"
         )
 
-    def _get_table(self):
+    def _get_table(self) -> Type["ImplicitSpanMention"]:
         return ImplicitSpanMention
 
-    def _get_polymorphic_identity(self):
+    def _get_polymorphic_identity(self) -> str:
         return "implicit_span_mention"
 
-    def _get_insert_args(self):
+    def _get_insert_args(self) -> Dict[str, Any]:
         return {
             "sentence_id": self.sentence.id,
             "char_start": self.char_start,
@@ -138,7 +141,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             "meta": self.meta,
         }
 
-    def get_attrib_tokens(self, a="words"):
+    def get_attrib_tokens(self, a: str = "words"):
         """Get the tokens of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -153,7 +156,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         """
         return self.__getattribute__(a)
 
-    def get_attrib_span(self, a, sep=" "):
+    def get_attrib_span(self, a: str, sep: str = " ") -> str:
         """Get the span of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -172,7 +175,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         else:
             return sep.join(self.get_attrib_tokens(a))
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: slice) -> "TemporaryImplicitSpanMention":
         """Slice operation returns a new candidate sliced according to **char index**.
 
         Note that the slicing is w.r.t. the candidate range (not the abs.
@@ -211,7 +214,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         else:
             raise NotImplementedError()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -222,7 +225,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             f")"
         )
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "TemporaryImplicitSpanMention":
         return TemporaryImplicitSpanMention(**kwargs)
 
 
@@ -316,7 +319,7 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
         "inherit_condition": (id == Context.id),
     }
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "ImplicitSpanMention":
         return ImplicitSpanMention(**kwargs)
 
     # We redefine these to use default semantics, overriding the operators
@@ -327,5 +330,5 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
     def __ne__(self, other):
         return self is not other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return id(self)

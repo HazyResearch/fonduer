@@ -1,18 +1,21 @@
+from typing import Any, Dict, Type
+
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
+from fonduer.parser.models import Document
 from fonduer.parser.models.context import Context
 
 
 class TemporaryDocumentMention(TemporaryContext):
     """The TemporaryContext version of DocumentMention."""
 
-    def __init__(self, document):
+    def __init__(self, document: Document) -> None:
         super(TemporaryDocumentMention, self).__init__()
         self.document = document  # The document Context
 
-    def __len__(self):
+    def __len__(self) -> int:
         return 1
 
     def __eq__(self, other):
@@ -27,33 +30,33 @@ class TemporaryDocumentMention(TemporaryContext):
         except AttributeError:
             return True
 
-    def __gt__(self, other):
+    def __gt__(self, other: "TemporaryDocumentMention") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_document):
+    def __contains__(self, other_document: "TemporaryDocumentMention") -> bool:
         return self.__eq__(other_document)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.document)
 
-    def get_stable_id(self):
+    def get_stable_id(self) -> str:
         """Return a stable id for the ``DocumentMention``."""
         return f"{self.document.name}::{self._get_polymorphic_identity()}"
 
-    def _get_table(self):
+    def _get_table(self) -> Type["DocumentMention"]:
         return DocumentMention
 
-    def _get_polymorphic_identity(self):
+    def _get_polymorphic_identity(self) -> str:
         return "document_mention"
 
-    def _get_insert_args(self):
+    def _get_insert_args(self) -> Dict[str, Any]:
         return {"document_id": self.document.id}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}(document={self.document.name})"
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "TemporaryDocumentMention":
         return TemporaryDocumentMention(**kwargs)
 
 

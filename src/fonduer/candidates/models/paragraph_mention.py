@@ -1,18 +1,21 @@
+from typing import Any, Dict, Type
+
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
+from fonduer.parser.models import Paragraph
 from fonduer.parser.models.context import Context
 
 
 class TemporaryParagraphMention(TemporaryContext):
     """The TemporaryContext version of ParagraphMention."""
 
-    def __init__(self, paragraph):
+    def __init__(self, paragraph: Paragraph) -> None:
         super(TemporaryParagraphMention, self).__init__()
         self.paragraph = paragraph  # The paragraph Context
 
-    def __len__(self):
+    def __len__(self) -> int:
         return 1
 
     def __eq__(self, other):
@@ -27,17 +30,17 @@ class TemporaryParagraphMention(TemporaryContext):
         except AttributeError:
             return True
 
-    def __gt__(self, other):
+    def __gt__(self, other: "TemporaryParagraphMention") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_paragraph):
+    def __contains__(self, other_paragraph: "TemporaryParagraphMention") -> bool:
         return self.__eq__(other_paragraph)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.paragraph)
 
-    def get_stable_id(self):
+    def get_stable_id(self) -> str:
         """Return a stable id for the ``ParagraphMention``."""
         return (
             f"{self.paragraph.document.name}"
@@ -47,16 +50,16 @@ class TemporaryParagraphMention(TemporaryContext):
             f"{self.paragraph.position}"
         )
 
-    def _get_table(self):
+    def _get_table(self) -> Type["ParagraphMention"]:
         return ParagraphMention
 
-    def _get_polymorphic_identity(self):
+    def _get_polymorphic_identity(self) -> str:
         return "paragraph_mention"
 
-    def _get_insert_args(self):
+    def _get_insert_args(self) -> Dict[str, Any]:
         return {"paragraph_id": self.paragraph.id}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -65,7 +68,7 @@ class TemporaryParagraphMention(TemporaryContext):
             f")"
         )
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "TemporaryParagraphMention":
         return TemporaryParagraphMention(**kwargs)
 
 
