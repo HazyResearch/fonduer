@@ -20,7 +20,7 @@ from fonduer.candidates.models.section_mention import TemporarySectionMention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.candidates.models.table_mention import TemporaryTableMention
 from fonduer.candidates.models.temporary_context import TemporaryContext
-from fonduer.parser.models import Document, Sentence
+from fonduer.parser.models import Context, Document, Sentence
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class MentionSpace(object):
     def __init__(self) -> None:
         pass
 
-    def apply(self, x):
+    def apply(self, x: Context) -> Iterator[TemporaryContext]:
         raise NotImplementedError()
 
 
@@ -55,7 +55,7 @@ class Ngrams(MentionSpace):
     """
 
     def __init__(
-        self, n_min: int = 1, n_max: int = 5, split_tokens: List[str] = []
+        self, n_min: int = 1, n_max: int = 5, split_tokens: Collection[str] = []
     ) -> None:
         MentionSpace.__init__(self)
         self.n_min = n_min
@@ -75,7 +75,7 @@ class Ngrams(MentionSpace):
         # Loop over all n-grams in **reverse** order (to facilitate
         # longest-match semantics)
         L = len(offsets)
-        seen = set()
+        seen: Set[TemporarySpanMention] = set()
         for j in range(self.n_min, self.n_max + 1)[::-1]:
             for i in range(L - j + 1):
                 w = context.words[i + j - 1]
@@ -133,7 +133,7 @@ class MentionNgrams(Ngrams):
     """
 
     def __init__(
-        self, n_min: int = 1, n_max: int = 5, split_tokens: List[Any] = []
+        self, n_min: int = 1, n_max: int = 5, split_tokens: Collection[str] = []
     ) -> None:
         """
         Initialize MentionNgrams.
@@ -200,7 +200,7 @@ class MentionSentences(MentionSpace):
         """Initialize MentionSentences."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporarySpanMention]:
         """
         Generate MentionSentences from a Document by parsing all of its Sentences.
 
@@ -226,7 +226,7 @@ class MentionParagraphs(MentionSpace):
         """Initialize MentionParagraphs."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporaryParagraphMention]:
         """
         Generate MentionParagraphs from a Document by parsing all of its Paragraphs.
 
@@ -250,7 +250,7 @@ class MentionCaptions(MentionSpace):
         """Initialize MentionCaptions."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporaryCaptionMention]:
         """
         Generate MentionCaptions from a Document by parsing all of its Captions.
 
@@ -274,7 +274,7 @@ class MentionCells(MentionSpace):
         """Initialize MentionCells."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporaryCellMention]:
         """
         Generate MentionCells from a Document by parsing all of its Cells.
 
@@ -298,7 +298,7 @@ class MentionTables(MentionSpace):
         """Initialize MentionTables."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporaryTableMention]:
         """
         Generate MentionTables from a Document by parsing all of its Tables.
 
@@ -322,7 +322,7 @@ class MentionSections(MentionSpace):
         """Initialize MentionSections."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporarySectionMention]:
         """
         Generate MentionSections from a Document by parsing all of its Sections.
 
@@ -346,7 +346,7 @@ class MentionDocuments(MentionSpace):
         """Initialize MentionDocuments."""
         MentionSpace.__init__(self)
 
-    def apply(self, doc):
+    def apply(self, doc: Document) -> Iterator[TemporaryDocumentMention]:
         """
         Generate MentionDocuments from a Document by using document.
 
