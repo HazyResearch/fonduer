@@ -1,10 +1,13 @@
 import logging
 from builtins import range
 from itertools import product
+from typing import Any, Callable, Collection, Iterator, List, Optional, Tuple, Type
 
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
 
-from fonduer.candidates.models import Candidate
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.parser.models.document import Document
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
@@ -52,14 +55,14 @@ class CandidateExtractor(UDFRunner):
 
     def __init__(
         self,
-        session,
-        candidate_classes,
-        throttlers=None,
-        self_relations=False,
-        nested_relations=False,
-        symmetric_relations=True,
-        parallelism=1,
-    ):
+        session: Session,
+        candidate_classes: List[Type[Candidate]],
+        throttlers: Optional[List[Callable[[Tuple[Mention, ...]], bool]]] = None,
+        self_relations: bool = False,
+        nested_relations: bool = False,
+        symmetric_relations: bool = True,
+        parallelism: int = 1,
+    ) -> None:
         """ Set throttlers match candidate_classes if not provide. """
         if throttlers is None:
             throttlers = [None] * len(candidate_classes)
@@ -83,7 +86,14 @@ class CandidateExtractor(UDFRunner):
 
         self.candidate_classes = candidate_classes
 
-    def apply(self, docs, split=0, clear=True, parallelism=None, progress_bar=True):
+    def apply(
+        self,
+        docs: Collection[Document],
+        split: int = 0,
+        clear: bool = True,
+        parallelism: Optional[int] = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Run the CandidateExtractor.
 
         :Example: To extract candidates from a set of training documents using
@@ -113,7 +123,7 @@ class CandidateExtractor(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def clear(self, split):
+    def clear(self, split: int) -> None:
         """Delete Candidates of each class initialized with the
         CandidateExtractor from given split the database.
 
@@ -128,7 +138,7 @@ class CandidateExtractor(UDFRunner):
                 Candidate.type == candidate_class.__tablename__
             ).filter(Candidate.split == split).delete(synchronize_session="fetch")
 
-    def clear_all(self, split):
+    def clear_all(self, split: int) -> None:
         """Delete ALL Candidates from given split the database.
 
         :param split: Which split to clear.
@@ -139,7 +149,12 @@ class CandidateExtractor(UDFRunner):
             synchronize_session="fetch"
         )
 
-    def get_candidates(self, docs=None, split=0, sort=False):
+    def get_candidates(
+        self,
+        docs: Optional[Collection[Document]] = None,
+        split: int = 0,
+        sort: bool = False,
+    ) -> List[List[Candidate]]:
         """Return a list of lists of the candidates associated with this extractor.
 
         Each list of the return will contain the candidates for one of the
@@ -205,13 +220,13 @@ class CandidateExtractorUDF(UDF):
 
     def __init__(
         self,
-        candidate_classes,
-        throttlers,
-        self_relations,
-        nested_relations,
-        symmetric_relations,
-        **kwargs,
-    ):
+        candidate_classes: List[Type[Candidate]],
+        throttlers: List[Callable[[Tuple[Mention, ...]], bool]],
+        self_relations: bool,
+        nested_relations: bool,
+        symmetric_relations: bool,
+        **kwargs: Any,
+    ) -> None:
         """Initialize the CandidateExtractorUDF."""
         self.candidate_classes = (
             candidate_classes
@@ -228,7 +243,9 @@ class CandidateExtractorUDF(UDF):
 
         super(CandidateExtractorUDF, self).__init__(**kwargs)
 
-    def apply(self, context, clear, split, **kwargs):
+    def apply(
+        self, context: Document, clear: bool, split: int, **kwargs: Any
+    ) -> Iterator[Candidate]:
         """Extract candidates from the given Context.
 
         :param context: A document to process.
