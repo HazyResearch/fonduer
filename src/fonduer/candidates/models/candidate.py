@@ -1,9 +1,10 @@
 import logging
-from typing import Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
+from fonduer.candidates.models.mention import Mention
 from fonduer.meta import Meta
 from fonduer.utils.utils import camel_to_under
 
@@ -39,20 +40,20 @@ class Candidate(Meta.Base):  # type: ignore
 
     # __table_args__ = {"extend_existing" : True}
 
-    def get_mentions(self):
+    def get_mentions(self) -> Tuple[Mention, ...]:
         """Return a tuple of the constituent ``Mentions`` making up this ``Candidate``.
 
         :rtype: tuple
         """
         return tuple(getattr(self, name) for name in self.__argnames__)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__argnames__)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: int) -> Mention:
         return self.get_mentions()[key]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -60,14 +61,18 @@ class Candidate(Meta.Base):  # type: ignore
             f")"
         )
 
-    def __gt__(self, other_cand):
+    def __gt__(self, other_cand: "Candidate") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other_cand.__repr__()
 
 
 def candidate_subclass(
-    class_name, args, table_name=None, cardinality=None, values=None
-):
+    class_name: str,
+    args: List[Mention],
+    table_name: Optional[str] = None,
+    cardinality: Optional[int] = None,
+    values: Optional[List[Any]] = None,
+) -> Type[Candidate]:
     """
     Creates and returns a Candidate subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
