@@ -4,9 +4,12 @@ import re
 import warnings
 from builtins import range
 from collections import defaultdict
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Pattern, Tuple
 
 import lxml.etree
 import lxml.html
+from lxml.html import HtmlElement
+from sqlalchemy.orm import Session
 
 from fonduer.parser.lingual_parser import LingualParser, SimpleParser, SpacyParser
 from fonduer.parser.models import (
@@ -58,21 +61,26 @@ class Parser(UDFRunner):
 
     def __init__(
         self,
-        session,
-        parallelism=1,
-        structural=True,  # structural information
-        blacklist=["style", "script"],  # ignore tag types, default: style, script
-        flatten=["span", "br"],  # flatten tag types, default: span, br
-        language="en",
-        lingual=True,  # lingual information
-        lingual_parser: LingualParser = None,
-        strip=True,
-        replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
-        tabular=True,  # tabular information
-        visual=False,  # visual information
-        vizlink=None,  # visual linker
-        pdf_path=None,
-    ):
+        session: Session,
+        parallelism: int = 1,
+        structural: bool = True,  # structural information
+        blacklist: List[str] = [
+            "style",
+            "script",
+        ],  # ignore tag types, default: style, script
+        flatten: List[str] = ["span", "br"],  # flatten tag types, default: span, br
+        language: str = "en",
+        lingual: bool = True,  # lingual information
+        lingual_parser: Optional[LingualParser] = None,
+        strip: bool = True,
+        replacements: List[Tuple[str, str]] = [
+            ("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")
+        ],
+        tabular: bool = True,  # tabular information
+        visual: bool = False,  # visual information
+        vizlink: Optional[VisualLinker] = None,  # visual linker
+        pdf_path: Optional[str] = None,
+    ) -> None:
         super(Parser, self).__init__(
             session,
             ParserUDF,
@@ -92,8 +100,13 @@ class Parser(UDFRunner):
         )
 
     def apply(
-        self, doc_loader, pdf_path=None, clear=True, parallelism=None, progress_bar=True
-    ):
+        self,
+        doc_loader: Iterable[Document],
+        pdf_path: Optional[str] = None,
+        clear: bool = True,
+        parallelism: Optional[int] = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Run the Parser.
 
         :param doc_loader: An iteratable of ``Documents`` to parse. Typically,
@@ -119,14 +132,14 @@ class Parser(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def clear(self, pdf_path=None):
+    def clear(self, pdf_path: Optional[str] = None) -> None:
         """Clear all of the ``Context`` objects in the database.
 
         :param pdf_path: This parameter is ignored.
         """
         self.session.query(Context).delete(synchronize_session="fetch")
 
-    def get_last_documents(self):
+    def get_last_documents(self) -> List[Document]:
         """Return the most recently parsed list of ``Documents``.
 
         :rtype: A list of the most recently parsed ``Documents`` ordered by name.
@@ -138,7 +151,7 @@ class Parser(UDFRunner):
             .all()
         )
 
-    def get_documents(self):
+    def get_documents(self) -> List[Document]:
         """Return all the parsed ``Documents`` in the database.
 
         :rtype: A list of all ``Documents`` in the database ordered by name.
@@ -149,20 +162,20 @@ class Parser(UDFRunner):
 class ParserUDF(UDF):
     def __init__(
         self,
-        structural,
-        blacklist,
-        flatten,
-        lingual,
-        lingual_parser,
-        strip,
-        replacements,
-        tabular,
-        visual,
-        vizlink,
-        pdf_path,
-        language,
-        **kwargs,
-    ):
+        structural: bool,
+        blacklist: List[str],
+        flatten: List[str],
+        lingual: bool,
+        lingual_parser: Optional[LingualParser],
+        strip: bool,
+        replacements: List[Tuple[str, str]],
+        tabular: bool,
+        visual: bool,
+        vizlink: Optional[VisualLinker],
+        pdf_path: Optional[str],
+        language: Optional[str],
+        **kwargs: Any,
+    ) -> None:
         """
         :param visual: boolean, if True visual features are used in the model
         :param pdf_path: directory where pdf are saved, if a pdf file is not
@@ -183,7 +196,7 @@ class ParserUDF(UDF):
         # lingual setup
         self.language = language
         self.strip = strip
-        self.replacements = []
+        self.replacements: List[Tuple[Pattern, str]] = []
         for (pattern, replace) in replacements:
             self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
 
@@ -224,7 +237,9 @@ class ParserUDF(UDF):
                 else:
                     self.vizlink = VisualLinker(pdf_path)
 
-    def apply(self, document, pdf_path=None, **kwargs):
+    def apply(
+        self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
+    ) -> Iterator[Sentence]:
         # The document is the Document model
         text = document.text
 
@@ -260,7 +275,7 @@ class ParserUDF(UDF):
                 )
             )
 
-    def _parse_table(self, node, state):
+    def _parse_table(self, node: HtmlElement, state: Dict[str, Any]) -> Dict[str, Any]:
         """Parse a table node.
 
         :param node: The lxml table node to parse
@@ -388,7 +403,7 @@ class ParserUDF(UDF):
 
         return state
 
-    def _parse_figure(self, node, state):
+    def _parse_figure(self, node: HtmlElement, state: Dict[str, Any]) -> Dict[str, Any]:
         """Parse the figure node.
 
         :param node: The lxml img node to parse
@@ -415,7 +430,7 @@ class ParserUDF(UDF):
             return state
 
         # NOTE: We currently do NOT support nested figures.
-        parts = {}
+        parts: Dict[str, Any] = {}
         parent = state["parent"][node]
         if isinstance(parent, Section):
             parts["section"] = parent
@@ -460,7 +475,9 @@ class ParserUDF(UDF):
         state["figure"]["idx"] += 1
         return state
 
-    def _parse_sentence(self, paragraph, node, state):
+    def _parse_sentence(
+        self, paragraph: Paragraph, node: HtmlElement, state: Dict[str, Any]
+    ) -> Iterator[Sentence]:
         """Parse the Sentences of the node.
 
         :param node: The lxml node to parse
@@ -563,7 +580,9 @@ class ParserUDF(UDF):
             yield Sentence(**parts)
             state["sentence"]["idx"] += 1
 
-    def _parse_paragraph(self, node, state):
+    def _parse_paragraph(
+        self, node: HtmlElement, state: Dict[str, Any]
+    ) -> Iterator[Sentence]:
         """Parse a Paragraph of the node.
 
         :param node: The lxml node to parse
@@ -636,7 +655,9 @@ class ParserUDF(UDF):
 
             yield from self._parse_sentence(paragraph, node, state)
 
-    def _parse_section(self, node, state):
+    def _parse_section(
+        self, node: HtmlElement, state: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Parse a Section of the node.
 
         Note that this implementation currently creates a Section at the
@@ -671,7 +692,9 @@ class ParserUDF(UDF):
 
         return state
 
-    def _parse_caption(self, node, state):
+    def _parse_caption(
+        self, node: HtmlElement, state: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Parse a Caption of the node.
 
         :param node: The lxml node to parse
@@ -718,7 +741,9 @@ class ParserUDF(UDF):
 
         return state
 
-    def _parse_node(self, node, state):
+    def _parse_node(
+        self, node: HtmlElement, state: Dict[str, Any]
+    ) -> Iterator[Sentence]:
         """Entry point for parsing all node types.
 
         :param node: The lxml HTML node to parse
@@ -738,7 +763,7 @@ class ParserUDF(UDF):
 
         yield from self._parse_paragraph(node, state)
 
-    def parse(self, document, text):
+    def parse(self, document: Document, text: str) -> Iterator[Sentence]:
         """Depth-first search over the provided tree.
 
         Implemented as an iterative procedure. The structure of the state
@@ -785,7 +810,7 @@ class ParserUDF(UDF):
         state["parent"][root] = document
         state["context"][root] = document
 
-        tokenized_sentences = []
+        tokenized_sentences: List[Sentence] = []
         while stack:
             node = stack.pop()
             if node not in state["visited"]:
