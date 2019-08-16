@@ -1,6 +1,11 @@
 import logging
 import os
 import re
+from typing import Iterator, Set, Tuple
+
+from fonduer.candidates.models.figure_mention import TemporaryFigureMention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models.temporary_context import TemporaryContext
 
 # Travis will not import the PorterStemmer
 if "CI" not in os.environ:
@@ -20,17 +25,17 @@ class _Matcher(object):
     where f can be compositionally defined.
     """
 
-    def __init__(self, *children, **opts):
+    def __init__(self, *children, **opts):  # type: ignore
         self.children = children
         self.opts = opts
         self.longest_match_only = self.opts.get("longest_match_only", True)
         self.init()
         self._check_opts()
 
-    def init(self):
+    def init(self) -> None:
         pass
 
-    def _check_opts(self):
+    def _check_opts(self) -> None:
         """
         Checks for unsupported opts, throws error if found
         NOTE: Must be called _after_ init()
@@ -39,11 +44,11 @@ class _Matcher(object):
             if opt not in self.__dict__:
                 raise Exception(f"Unsupported option: {opt}")
 
-    def _f(self, m):
+    def _f(self, m: TemporaryContext) -> bool:
         """The internal (non-composed) version of filter function f"""
         return True
 
-    def f(self, m):
+    def f(self, m: TemporaryContext) -> bool:
         """
         The recursively composed version of filter function f.
         By default, returns logical **conjunction** of operator and single
@@ -58,27 +63,27 @@ class _Matcher(object):
                 f"{self.__name__} does not support more than one child Matcher"
             )
 
-    def _is_subspan(self, m, span):
+    def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
         """
         Tests if mention m is subspan of span, where span is defined specific
         to mention type.
         """
         return False
 
-    def _get_span(self, m):
+    def _get_span(self, m: TemporaryContext) -> Tuple[int, ...]:
         """
         Gets a tuple that identifies a span for the specific mention class
         that m belongs to.
         """
         return m
 
-    def apply(self, mentions):
+    def apply(self, mentions: Iterator[TemporaryContext]) -> Iterator[TemporaryContext]:
         """
         Apply the Matcher to a **generator** of mentions.
         Optionally only takes the longest match (NOTE: assumes this is the
         *first* match)
         """
-        seen_spans = set()
+        seen_spans: Set[Tuple[int, ...]] = set()
         for m in mentions:
             if self.f(m) and (
                 not self.longest_match_only
@@ -92,7 +97,7 @@ class _Matcher(object):
 class _NgramMatcher(_Matcher):
     """Matcher base class for Ngram objects"""
 
-    def _is_subspan(self, m, span):
+    def _is_subspan(self, m: TemporarySpanMention, span: Tuple[int, ...]) -> bool:
         """
         Tests if mention m is subspan of span, where span is defined
         specific to mention type.
@@ -103,7 +108,7 @@ class _NgramMatcher(_Matcher):
             and m.char_end <= span[2]
         )
 
-    def _get_span(self, m):
+    def _get_span(self, m: TemporarySpanMention) -> Tuple[int, ...]:
         """
         Gets a tuple that identifies a span for the specific mention class
         that m belongs to.
@@ -126,7 +131,7 @@ class DictionaryMatch(_NgramMatcher):
         to use a PorterStemmer(). Default None.
     """
 
-    def init(self):
+    def init(self) -> None:
         self.ignore_case = self.opts.get("ignore_case", True)
         self.attrib = self.opts.get("attrib", WORDS)
         self.inverse = self.opts.get("inverse", False)
@@ -152,7 +157,7 @@ class DictionaryMatch(_NgramMatcher):
         except UnicodeDecodeError:
             return w
 
-    def _f(self, m):
+    def _f(self, m: TemporarySpanMention) -> bool:
         p = m.get_attrib_span(self.attrib)
         p = p.lower() if self.ignore_case else p
         p = self._stem(p) if self.stemmer is not None else p
@@ -172,7 +177,7 @@ class LambdaFunctionMatcher(_NgramMatcher):
     :type longest_match_only: bool
     """
 
-    def init(self):
+    def init(self) -> None:
         self.attrib = self.opts.get("attrib", WORDS)
 
         # Set longest match only to False by default.
@@ -182,7 +187,7 @@ class LambdaFunctionMatcher(_NgramMatcher):
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
 
-    def _f(self, m):
+    def _f(self, m: TemporarySpanMention) -> bool:
         """The internal (non-composed) version of filter function f"""
         return self.func(m)
 
@@ -190,7 +195,7 @@ class LambdaFunctionMatcher(_NgramMatcher):
 class Union(_NgramMatcher):
     """Takes the union of mention sets returned by the provided ``Matchers``."""
 
-    def f(self, m):
+    def f(self, m: TemporaryContext) -> bool:
         for child in self.children:
             if child.f(m) > 0:
                 return True
@@ -200,7 +205,7 @@ class Union(_NgramMatcher):
 class Intersect(_Matcher):
     """Takes the intersection of mention sets returned by the provided ``Matchers``."""
 
-    def f(self, m):
+    def f(self, m: TemporaryContext) -> bool:
         for child in self.children:
             if not child.f(m):
                 return False
@@ -214,7 +219,7 @@ class Inverse(_Matcher):
     """
 
     # TODO: confirm that this only has one child
-    def f(self, m):
+    def f(self, m: TemporaryContext) -> bool:
         if len(self.children) > 1:
             raise ValueError("Provide a single Matcher.")
         for child in self.children:
@@ -249,14 +254,14 @@ class Concat(_NgramMatcher):
         along these divisions only.
     """
 
-    def init(self):
+    def init(self) -> None:
         self.permutations = self.opts.get("permutations", False)
         self.left_required = self.opts.get("left_required", True)
         self.right_required = self.opts.get("right_required", True)
         self.ignore_sep = self.opts.get("ignore_sep", True)
         self.sep = self.opts.get("sep", " ")
 
-    def f(self, m):
+    def f(self, m: TemporarySpanMention) -> bool:
         if len(self.children) != 2:
             raise ValueError("Concat takes two child Matcher objects as arguments.")
         if not self.left_required and self.children[1].f(m):
@@ -291,7 +296,7 @@ class _RegexMatch(_NgramMatcher):
     matched yet.
     """
 
-    def init(self):
+    def init(self) -> None:
         try:
             self.rgx = self.opts["rgx"]
         except KeyError:
@@ -320,7 +325,7 @@ class _RegexMatch(_NgramMatcher):
             self.rgx, flags=(re.I if self.ignore_case else 0) | re.UNICODE
         )
 
-    def _f(self, m):
+    def _f(self, m: TemporaryContext) -> bool:
         raise NotImplementedError()
 
 
@@ -343,7 +348,7 @@ class RegexMatchSpan(_RegexMatch):
     :type longest_match_only: bool
     """
 
-    def _f(self, m):
+    def _f(self, m: TemporarySpanMention) -> bool:
         if self.search:
             return (
                 True
@@ -376,7 +381,7 @@ class RegexMatchEach(_RegexMatch):
     :type longest_match_only: bool
     """
 
-    def _f(self, m):
+    def _f(self, m: TemporarySpanMention) -> bool:
         tokens = m.get_attrib_tokens(self.attrib)
         return (
             True
@@ -393,7 +398,7 @@ class PersonMatcher(RegexMatchEach):
     for which each token was tagged as a person (PERSON).
     """
 
-    def __init__(self, *children, **kwargs):
+    def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "PERSON"
         super(PersonMatcher, self).__init__(*children, **kwargs)
@@ -407,7 +412,7 @@ class LocationMatcher(RegexMatchEach):
     for which each token was tagged as a location (GPE or LOC).
     """
 
-    def __init__(self, *children, **kwargs):
+    def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "GPE|LOC"
         super(LocationMatcher, self).__init__(*children, **kwargs)
@@ -421,7 +426,7 @@ class OrganizationMatcher(RegexMatchEach):
     for which each token was tagged as an organization (NORG or ORG).
     """
 
-    def __init__(self, *children, **kwargs):
+    def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NORG|ORG"
         super(OrganizationMatcher, self).__init__(*children, **kwargs)
@@ -435,7 +440,7 @@ class DateMatcher(RegexMatchEach):
     for which each token was tagged as a date (DATE).
     """
 
-    def __init__(self, *children, **kwargs):
+    def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "DATE"
         super(DateMatcher, self).__init__(*children, **kwargs)
@@ -449,7 +454,7 @@ class NumberMatcher(RegexMatchEach):
     for which each token was tagged as a number (NUMBER or QUANTITY).
     """
 
-    def __init__(self, *children, **kwargs):
+    def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NUMBER|QUANTITY"
         super(NumberMatcher, self).__init__(*children, **kwargs)
@@ -463,7 +468,7 @@ class MiscMatcher(RegexMatchEach):
     for which each token was tagged as miscellaneous (MISC).
     """
 
-    def __init__(self, *children, **kwargs):
+    def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "MISC"
         super(MiscMatcher, self).__init__(*children, **kwargs)
@@ -472,11 +477,11 @@ class MiscMatcher(RegexMatchEach):
 class _FigureMatcher(_Matcher):
     """Matcher base class for Figure objects"""
 
-    def _is_subspan(self, m, span):
+    def _is_subspan(self, m: TemporaryFigureMention, span: Tuple[int, ...]) -> bool:
         """Tests if mention m does exist"""
         return m.figure.document.id == span[0] and m.figure.position == span[1]
 
-    def _get_span(self, m):
+    def _get_span(self, m: TemporaryFigureMention) -> Tuple[int, ...]:
         """
         Gets a tuple that identifies a figure for the specific mention class
         that m belongs to.
@@ -492,7 +497,7 @@ class LambdaFunctionFigureMatcher(_FigureMatcher):
     :type func: function
     """
 
-    def init(self):
+    def init(self) -> None:
         # Set longest match only to False
         self.longest_match_only = False
         try:
@@ -500,7 +505,7 @@ class LambdaFunctionFigureMatcher(_FigureMatcher):
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
 
-    def _f(self, m):
+    def _f(self, m: TemporaryFigureMention) -> bool:
         """The internal (non-composed) version of filter function f"""
         return self.func(m)
 
