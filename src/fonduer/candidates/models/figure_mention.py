@@ -1,18 +1,21 @@
+from typing import Any, Dict, Type
+
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
+from fonduer.parser.models import Figure
 from fonduer.parser.models.context import Context
 
 
 class TemporaryFigureMention(TemporaryContext):
     """The TemporaryContext version of FigureMention."""
 
-    def __init__(self, figure):
+    def __init__(self, figure: Figure) -> None:
         super(TemporaryFigureMention, self).__init__()
         self.figure = figure  # The figure Context
 
-    def __len__(self):
+    def __len__(self) -> int:
         return 1
 
     def __eq__(self, other):
@@ -27,17 +30,17 @@ class TemporaryFigureMention(TemporaryContext):
         except AttributeError:
             return True
 
-    def __gt__(self, other):
+    def __gt__(self, other: "TemporaryFigureMention") -> bool:
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_span):
+    def __contains__(self, other_span: "TemporaryFigureMention") -> bool:
         return self.__eq__(other_span)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.figure)
 
-    def get_stable_id(self):
+    def get_stable_id(self) -> str:
         """Return a stable id for the ``FigureMention``."""
         return (
             f"{self.figure.document.name}"
@@ -47,16 +50,16 @@ class TemporaryFigureMention(TemporaryContext):
             f"{self.figure.position}"
         )
 
-    def _get_table(self):
+    def _get_table(self) -> Type["FigureMention"]:
         return FigureMention
 
-    def _get_polymorphic_identity(self):
+    def _get_polymorphic_identity(self) -> str:
         return "figure_mention"
 
-    def _get_insert_args(self):
+    def _get_insert_args(self) -> Dict[str, Any]:
         return {"figure_id": self.figure.id}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -66,7 +69,7 @@ class TemporaryFigureMention(TemporaryContext):
             f")"
         )
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "TemporaryFigureMention":
         return TemporaryFigureMention(**kwargs)
 
 

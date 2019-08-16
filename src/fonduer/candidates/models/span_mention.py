@@ -1,23 +1,32 @@
+from typing import Any, Dict, Optional, Type
+
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import PickleType
 
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.sentence import Sentence
 from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporarySpanMention(TemporaryContext):
     """The TemporaryContext version of Span."""
 
-    def __init__(self, sentence, char_start, char_end, meta=None):
+    def __init__(
+        self,
+        sentence: Sentence,
+        char_start: int,
+        char_end: int,
+        meta: Optional[Any] = None,
+    ) -> None:
         super(TemporarySpanMention, self).__init__()
         self.sentence = sentence  # The sentence Context of the Span
         self.char_start = char_start
         self.char_end = char_end
         self.meta = meta
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.char_end - self.char_start + 1
 
     def __eq__(self, other):
@@ -40,10 +49,10 @@ class TemporarySpanMention(TemporaryContext):
         except AttributeError:
             return True
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.sentence) + hash(self.char_start) + hash(self.char_end)
 
-    def get_stable_id(self):
+    def get_stable_id(self) -> str:
         """
         Return a stable id.
 
@@ -56,13 +65,13 @@ class TemporarySpanMention(TemporaryContext):
             self.char_end,
         )
 
-    def _get_table(self):
+    def _get_table(self) -> Type["SpanMention"]:
         return SpanMention
 
-    def _get_polymorphic_identity(self):
+    def _get_polymorphic_identity(self) -> str:
         return "span_mention"
 
-    def _get_insert_args(self):
+    def _get_insert_args(self) -> Dict[str, Any]:
         return {
             "sentence_id": self.sentence.id,
             "char_start": self.char_start,
@@ -70,7 +79,7 @@ class TemporarySpanMention(TemporaryContext):
             "meta": self.meta,
         }
 
-    def get_word_start_index(self):
+    def get_word_start_index(self) -> int:
         """Get the index of the starting word of the span.
 
         :return: The word-index of the start of the span.
@@ -78,7 +87,7 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self._char_to_word_index(self.char_start)
 
-    def get_word_end_index(self):
+    def get_word_end_index(self) -> int:
         """Get the index of the ending word of the span.
 
         :return: The word-index of the last word of the span.
@@ -86,7 +95,7 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self._char_to_word_index(self.char_end)
 
-    def get_num_words(self):
+    def get_num_words(self) -> int:
         """Get the number of words in the span.
 
         :return: The number of words in the span (n of the ngrams).
@@ -94,7 +103,7 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self.get_word_end_index() - self.get_word_start_index() + 1
 
-    def _char_to_word_index(self, ci):
+    def _char_to_word_index(self, ci: int) -> int:
         """Return the index of the **word this char is in**.
 
         :param ci: The character-level index of the char.
@@ -110,7 +119,7 @@ class TemporarySpanMention(TemporaryContext):
                 return i - 1
         return i
 
-    def _word_to_char_index(self, wi):
+    def _word_to_char_index(self, wi: int) -> int:
         """Return the character-level index (offset) of the word's start.
 
         :param wi: The word-index.
@@ -120,7 +129,7 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self.sentence.char_offsets[wi]
 
-    def get_attrib_tokens(self, a="words"):
+    def get_attrib_tokens(self, a: str = "words"):
         """Get the tokens of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -137,7 +146,7 @@ class TemporarySpanMention(TemporaryContext):
             self.get_word_start_index() : self.get_word_end_index() + 1
         ]
 
-    def get_attrib_span(self, a, sep=" "):
+    def get_attrib_span(self, a: str, sep: str = " ") -> str:
         """Get the span of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -158,7 +167,7 @@ class TemporarySpanMention(TemporaryContext):
         else:
             return sep.join(self.get_attrib_tokens(a))
 
-    def get_span(self):
+    def get_span(self) -> str:
         """Return the text of the ``Span``.
 
         :return: The text of the ``Span``.
@@ -166,14 +175,14 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self.get_attrib_span("words")
 
-    def __contains__(self, other_span):
+    def __contains__(self, other_span: "TemporarySpanMention") -> bool:
         return (
             self.sentence == other_span.sentence
             and other_span.char_start >= self.char_start
             and other_span.char_end <= self.char_end
         )
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: slice) -> "TemporarySpanMention":
         """
         Slice operation returns a new candidate sliced according to **char index**
 
@@ -196,7 +205,7 @@ class TemporarySpanMention(TemporaryContext):
         else:
             raise NotImplementedError()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -207,7 +216,7 @@ class TemporarySpanMention(TemporaryContext):
             f")"
         )
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "TemporarySpanMention":
         return TemporarySpanMention(**kwargs)
 
 
@@ -245,7 +254,7 @@ class SpanMention(Context, TemporarySpanMention):
         "inherit_condition": (id == Context.id),
     }
 
-    def _get_instance(self, **kwargs):
+    def _get_instance(self, **kwargs: Any) -> "SpanMention":
         return SpanMention(**kwargs)
 
     # We redefine these to use default semantics, overriding the operators
@@ -256,5 +265,5 @@ class SpanMention(Context, TemporarySpanMention):
     def __ne__(self, other):
         return self is not other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return id(self)
