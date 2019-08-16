@@ -1,4 +1,6 @@
 """A simple alternative tokenizer which parses text by splitting on whitespace."""
+from typing import Any, Dict, Iterator
+
 import numpy as np
 
 from fonduer.parser.lingual_parser.lingual_parser import LingualParser
@@ -7,10 +9,10 @@ from fonduer.parser.lingual_parser.lingual_parser import LingualParser
 class SimpleParser(LingualParser):
     """Tokenizes text on whitespace only using split()."""
 
-    def __init__(self, delim="<NB>"):
+    def __init__(self, delim: str = "<NB>") -> None:
         self.delim = delim
 
-    def split_sentences(self, str):
+    def split_sentences(self, str: str) -> Iterator[Dict[str, Any]]:
         """Parse the document.
 
         :param str: The text contents of the document.
@@ -38,8 +40,8 @@ class SimpleParser(LingualParser):
             }
             i += 1
 
-    def has_NLP_support(self):
+    def has_NLP_support(self) -> bool:
         return False
 
-    def has_tokenizer_support(self):
+    def has_tokenizer_support(self) -> bool:
         return True
