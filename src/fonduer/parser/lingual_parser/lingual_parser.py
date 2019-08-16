@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Collection, Iterable, Iterator
 
 from fonduer.parser.models import Sentence
 
@@ -18,8 +18,8 @@ class LingualParser(object):
         raise NotImplementedError()
 
     def enrich_sentences_with_NLP(
-        self, sentences: Iterable[Sentence]
-    ) -> Iterable[Sentence]:
+        self, sentences: Collection[Sentence]
+    ) -> Iterator[Sentence]:
         """
         Add NLP attributes like lemmas, pos_tags, etc. to sentences.
 

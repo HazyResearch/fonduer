@@ -3,10 +3,14 @@ import logging
 from collections import defaultdict
 from pathlib import Path
 from string import whitespace
+from typing import Any, Collection, Dict, Iterator, List, Optional
 
 import pkg_resources
+from spacy.language import Language
+from spacy.vocab import Vocab
 
 from fonduer.parser.lingual_parser.lingual_parser import LingualParser
+from fonduer.parser.models.sentence import Sentence
 
 try:
     import spacy
@@ -53,25 +57,25 @@ class SpacyParser(LingualParser):
     languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
     alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
 
-    def __init__(self, lang):
+    def __init__(self, lang: Optional[str]) -> None:
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
 
         self.lang = lang
-        self.model = None
+        self.model: Optional[Language] = None
         if self.has_tokenizer_support():
             self._load_lang_model()
 
-    def has_tokenizer_support(self):
+    def has_tokenizer_support(self) -> bool:
         return self.lang and (
             self.has_NLP_support() or self.lang in self.alpha_languages
         )
 
-    def has_NLP_support(self):
+    def has_NLP_support(self) -> bool:
         return self.lang and (self.lang in self.languages)
 
     @staticmethod
-    def is_package(name):
+    def is_package(name: str) -> bool:
         """Check if string maps to a package installed via pip.
 
         name (unicode): Name of package.
@@ -87,7 +91,7 @@ class SpacyParser(LingualParser):
         return False
 
     @staticmethod
-    def model_installed(name):
+    def model_installed(name: str) -> bool:
         """Check if spaCy language model is installed.
 
         From https://github.com/explosion/spaCy/blob/master/spacy/util.py
@@ -106,7 +110,7 @@ class SpacyParser(LingualParser):
             return True
         return False
 
-    def _load_lang_model(self):
+    def _load_lang_model(self) -> None:
         """
         Load spaCy language model or download if model is available and not
         installed.
@@ -130,7 +134,9 @@ class SpacyParser(LingualParser):
             model = language_method()
         self.model = model
 
-    def enrich_sentences_with_NLP(self, sentences):
+    def enrich_sentences_with_NLP(
+        self, sentences: Collection[Sentence]
+    ) -> Iterator[Sentence]:
         """
         Enrich a list of fonduer Sentence objects with NLP features. We merge
         and process the text of all Sentences for higher efficiency.
@@ -159,7 +165,7 @@ class SpacyParser(LingualParser):
             set_custom_boundary, before="parser", name="sentence_boundary_detector"
         )
 
-        sentence_batches = self._split_sentences_by_char_limit(
+        sentence_batches: List[List[Sentence]] = self._split_sentences_by_char_limit(
             sentences, self.model.max_length
         )
 
@@ -180,7 +186,7 @@ class SpacyParser(LingualParser):
                 self.logger.exception(f"{doc} was not parsed")
 
             for sent, current_sentence_obj in zip(doc.sents, sentence_batch):
-                parts = defaultdict(list)
+                parts: Dict[str, Any] = defaultdict(list)
 
                 for i, token in enumerate(sent):
                     parts["lemmas"].append(token.lemma_)
@@ -200,8 +206,10 @@ class SpacyParser(LingualParser):
                 current_sentence_obj.dep_labels = parts["dep_labels"]
                 yield current_sentence_obj
 
-    def _split_sentences_by_char_limit(self, all_sentences, batch_char_limit):
-        sentence_batches = [[]]
+    def _split_sentences_by_char_limit(
+        self, all_sentences: Collection[Sentence], batch_char_limit: int
+    ) -> List[List[Sentence]]:
+        sentence_batches: List[List[Sentence]] = [[]]
         num_chars = 0
         for sentence in all_sentences:
             if num_chars + len(sentence.text) >= batch_char_limit:
@@ -212,7 +220,7 @@ class SpacyParser(LingualParser):
                 num_chars += len(sentence.text)
         return sentence_batches
 
-    def split_sentences(self, text):
+    def split_sentences(self, text: str) -> Iterator[Dict[str, Any]]:
         """
         Split input text into sentences that match CoreNLP's default format,
         but are not yet processed.
@@ -250,7 +258,7 @@ class SpacyParser(LingualParser):
         doc.is_parsed = True
         position = 0
         for sent in doc.sents:
-            parts = defaultdict(list)
+            parts: Dict[str, Any] = defaultdict(list)
             text = sent.text
 
             for i, token in enumerate(sent):
@@ -275,7 +283,7 @@ class SpacyParser(LingualParser):
             yield parts
 
 
-def set_custom_boundary(doc):
+def set_custom_boundary(doc: Doc) -> Doc:
     """Set the sentence boundaries based on the already separated sentences.
     :param doc: doc.user_data should have a list of Sentence.
     :return doc:
@@ -301,7 +309,7 @@ class TokenPreservingTokenizer(object):
     sentences.
     """
 
-    def __init__(self, vocab):
+    def __init__(self, vocab: Vocab) -> None:
         """Initialize a custom tokenizer.
 
         :param vocab: The vocab attribute of the respective spacy language object.
@@ -309,15 +317,15 @@ class TokenPreservingTokenizer(object):
         self.logger = logging.getLogger(__name__)
         self.vocab = vocab
 
-    def __call__(self, tokenized_sentences):
+    def __call__(self, tokenized_sentences: List[Sentence]) -> Doc:
         """Apply the custom tokenizer.
 
         :param tokenized_sentences: A list of sentences that was previously
         tokenized/split by spacy
         :return: Doc (a container for accessing linguistic annotations).
         """
-        all_input_tokens = []
-        all_spaces = []
+        all_input_tokens: List[str] = []
+        all_spaces: List[bool] = []
         for sentence in tokenized_sentences:
             words_in_sentence = sentence.words
             if len(words_in_sentence) > 0:
