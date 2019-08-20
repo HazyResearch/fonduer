@@ -1,5 +1,5 @@
 from builtins import range
-from typing import Dict, Set
+from typing import Any, Dict, Iterator, List, Set, Tuple
 
 from treedlib import (
     Children,
@@ -15,8 +15,8 @@ from treedlib import (
     compile_relation_feature_generator,
 )
 
-from fonduer.candidates.models import ImplicitSpanMention
-from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models import Candidate, ImplicitSpanMention
+from fonduer.candidates.models.span_mention import SpanMention
 from fonduer.features.feature_libs.tree_structs import corenlp_to_xmltree
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
@@ -31,7 +31,9 @@ binary_tdl_feats: Dict[str, Set] = {}
 settings = get_config()
 
 
-def extract_textual_features(candidates):
+def extract_textual_features(
+    candidates: List[Candidate]
+) -> Iterator[Tuple[int, str, int]]:
     """Extract textual features.
 
     :param candidates: A list of candidates to extract features from
@@ -40,14 +42,14 @@ def extract_textual_features(candidates):
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
-        if not (isinstance(args[0], TemporarySpanMention)):
+        if not (isinstance(args[0], SpanMention)):
             raise ValueError(
                 f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
 
         # Unary candidates
         if len(args) == 1:
-            span = args[0]
+            span: SpanMention = args[0]
             if span.sentence.is_lingual():
                 get_tdl_feats = _compile_entity_feature_generator()
                 xmltree = corenlp_to_xmltree(span.sentence)
@@ -137,7 +139,9 @@ def _compile_entity_feature_generator():
     return Compile(temps).apply_mention
 
 
-def _get_ddlib_feats(span, context, idxs):
+def _get_ddlib_feats(
+    span: SpanMention, context: Dict[str, Any], idxs: List[int]
+) -> Iterator[str]:
     """
     Minimalist port of generic mention features from ddlib
     """
@@ -155,7 +159,7 @@ def _get_ddlib_feats(span, context, idxs):
         yield f
 
 
-def _get_seq_features(context, idxs):
+def _get_seq_features(context: Dict[str, Any], idxs: List[int]) -> Iterator[str]:
     yield f"WORD_SEQ_[{' '.join(context['words'][i] for i in idxs)}]"
     yield f"LEMMA_SEQ_[{' '.join(context['lemmas'][i] for i in idxs)}]"
     yield f"POS_SEQ_[{' '.join(context['pos_tags'][i] for i in idxs)}]"
@@ -163,12 +167,14 @@ def _get_seq_features(context, idxs):
 
 
 def _get_window_features(
-    context,
-    idxs,
-    window=settings["featurization"]["textual"]["window_feature"]["size"],
-    combinations=settings["featurization"]["textual"]["window_feature"]["combinations"],
-    isolated=settings["featurization"]["textual"]["window_feature"]["isolated"],
-):
+    context: Dict[str, Any],
+    idxs: List[int],
+    window: int = settings["featurization"]["textual"]["window_feature"]["size"],
+    combinations: bool = settings["featurization"]["textual"]["window_feature"][
+        "combinations"
+    ],
+    isolated: bool = settings["featurization"]["textual"]["window_feature"]["isolated"],
+) -> Iterator[str]:
     left_lemmas = []
     left_pos_tags = []
     right_lemmas = []
@@ -241,7 +247,7 @@ def _get_window_features(
                 )
 
 
-def _get_word_feats(span):
+def _get_word_feats(span: SpanMention) -> Iterator[str]:
     attrib = "words"
 
     if span.stable_id not in unary_word_feats:

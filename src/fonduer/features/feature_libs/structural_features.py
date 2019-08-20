@@ -1,6 +1,7 @@
-from typing import Dict, Set
+from typing import Dict, Iterator, List, Set, Tuple
 
-from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models import Candidate
+from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
 from fonduer.utils.data_model_utils import (
     common_ancestor,
     get_ancestor_class_names,
@@ -17,11 +18,13 @@ from fonduer.utils.data_model_utils import (
 FEATURE_PREFIX = "STR_"
 DEF_VALUE = 1
 
-unary_strlib_feats: Dict[str, Set] = {}
-binary_strlib_feats: Dict[str, Set] = {}
+unary_strlib_feats: Dict[str, Set[Tuple[str, int]]] = {}
+binary_strlib_feats: Dict[str, Set[Tuple[str, int]]] = {}
 
 
-def extract_structural_features(candidates):
+def extract_structural_features(
+    candidates: List[Candidate]
+) -> Iterator[Tuple[int, str, int]]:
     """Extract structural features.
 
     :param candidates: A list of candidates to extract features from
@@ -74,7 +77,7 @@ def extract_structural_features(candidates):
             )
 
 
-def _strlib_unary_features(span):
+def _strlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
     """
     Structural-related features for a single span
     """
@@ -108,7 +111,9 @@ def _strlib_unary_features(span):
     yield f"ANCESTOR_ID_[{' '.join(get_ancestor_id_names(span))}]", DEF_VALUE
 
 
-def _strlib_binary_features(span1, span2):
+def _strlib_binary_features(
+    span1: SpanMention, span2: SpanMention
+) -> Iterator[Tuple[str, int]]:
     """
     Structural-related features for a pair of spans
     """
