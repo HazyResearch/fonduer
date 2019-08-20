@@ -5,27 +5,35 @@ import shutil
 import subprocess
 from builtins import object, range, zip
 from collections import OrderedDict, defaultdict
+from typing import DefaultDict, Dict, Iterator, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
+
+from fonduer.parser.models import Sentence
 
 
 class VisualLinker(object):
     """Link visual information with sentences."""
 
-    def __init__(self, pdf_path, time=False, verbose=False):
+    def __init__(
+        self, pdf_path: str, time: bool = False, verbose: bool = False
+    ) -> None:
         self.pdf_path = pdf_path
         self.logger = logging.getLogger(__name__)
-        self.pdf_file = None
+        self.pdf_file: Optional[str] = None
         self.verbose = verbose
         self.time = time
-        self.coordinate_map = None
-        self.pdf_word_list = None
-        self.html_word_list = None
-        self.links = None
-        self.pdf_dim = None
+        self.coordinate_map: Optional[
+            Dict[Tuple[int, int], Tuple[int, int, int, int, int]]
+        ] = None
+        self.pdf_word_list: Optional[List[Tuple[Tuple[int, int], str]]] = None
+        self.html_word_list: Optional[List[Tuple[Tuple[str, int], str]]] = None
+        self.links: Optional[OrderedDict[Tuple[str, int], Tuple[int, int]]] = None
+        self.pdf_dim: Optional[Tuple[int, int]] = None
         delimiters = (
             r"([\(\)\,\?\u2212\u201C\u201D\u2018\u2019\u00B0\*']|(?<!http):|\.$|\.\.\.)"
         )
@@ -44,7 +52,9 @@ class VisualLinker(object):
                 f"but should be 0.36.0 or above"
             )
 
-    def link(self, document_name, sentences, pdf_path):
+    def link(
+        self, document_name: str, sentences: List[Sentence], pdf_path: str
+    ) -> Iterator[Sentence]:
         """Link visual information with sentences.
 
         :param document_name: the document name.
@@ -72,7 +82,7 @@ class VisualLinker(object):
         for sentence in self._update_coordinates():
             yield sentence
 
-    def _extract_pdf_words(self):
+    def _extract_pdf_words(self) -> None:
         self.logger.debug(
             f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'"
         )
@@ -80,8 +90,8 @@ class VisualLinker(object):
             f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'",
             shell=True,
         )
-        pdf_word_list = []
-        coordinate_map = {}
+        pdf_word_list: List[Tuple[Tuple[int, int], str]] = []
+        coordinate_map: Dict[Tuple[int, int], Tuple[int, int, int, int, int]] = {}
         for i in range(1, int(num_pages) + 1):
             self.logger.debug(
                 f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -"
@@ -110,7 +120,7 @@ class VisualLinker(object):
         if self.verbose:
             self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
-    def is_linkable(self, filename):
+    def is_linkable(self, filename: str) -> bool:
         """Verify that the file exists and has a PDF extension.
 
         :param filename: The path to the PDF document.
@@ -132,9 +142,14 @@ class VisualLinker(object):
 
         return False
 
-    def _coordinates_from_HTML(self, page, page_num):
-        pdf_word_list = []
-        coordinate_map = {}
+    def _coordinates_from_HTML(
+        self, page: Tag, page_num: int
+    ) -> Tuple[
+        List[Tuple[Tuple[int, int], str]],
+        Dict[Tuple[int, int], Tuple[int, int, int, int, int]],
+    ]:
+        pdf_word_list: List[Tuple[Tuple[int, int], str]] = []
+        coordinate_map: Dict[Tuple[int, int], Tuple[int, int, int, int, int]] = {}
         block_coordinates = {}
         blocks = page.find_all("block")
         i = 0  # counter for word_id in page_num
@@ -170,8 +185,8 @@ class VisualLinker(object):
         )
         return pdf_word_list, coordinate_map
 
-    def _extract_html_words(self):
-        html_word_list = []
+    def _extract_html_words(self) -> None:
+        html_word_list: List[Tuple[Tuple[str, int], str]] = []
         for sentence in self.sentences:
             for i, word in enumerate(sentence.words):
                 html_word_list.append(((sentence.stable_id, i), word))
@@ -179,14 +194,16 @@ class VisualLinker(object):
         if self.verbose:
             self.logger.info(f"Extracted {len(self.html_word_list)} html words")
 
-    def _link_lists(self, search_max=100, edit_cost=20, offset_cost=1):
+    def _link_lists(
+        self, search_max: int = 100, edit_cost: int = 20, offset_cost: int = 1
+    ) -> None:
         # NOTE: there are probably some inefficiencies here from rehashing words
         # multiple times, but we're not going to worry about that for now
 
-        def link_exact(l, u):
+        def link_exact(l: int, u: int) -> None:
             l, u, L, U = get_anchors(l, u)
-            html_dict = defaultdict(list)
-            pdf_dict = defaultdict(list)
+            html_dict: DefaultDict[str, List[int]] = defaultdict(list)
+            pdf_dict: DefaultDict[str, List[int]] = defaultdict(list)
             for i, (_, word) in enumerate(self.html_word_list[l:u]):
                 if html_to_pdf[l + i] is None:
                     html_dict[word].append(l + i)
@@ -200,7 +217,7 @@ class VisualLinker(object):
                         html_to_pdf[html_list[k]] = pdf_list[k]
                         pdf_to_html[pdf_list[k]] = html_list[k]
 
-        def link_fuzzy(i):
+        def link_fuzzy(i: int) -> None:
             (_, word) = self.html_word_list[i]
             l = u = i
             l, u, L, U = get_anchors(l, u)
@@ -222,7 +239,7 @@ class VisualLinker(object):
             html_to_pdf[i] = searchIndices[np.argmin(cost)]
             return
 
-        def get_anchors(l, u):
+        def get_anchors(l: int, u: int) -> Tuple[int, int, int, int]:
             while l >= 0 and html_to_pdf[l] is None:
                 l -= 1
             while u < N and html_to_pdf[u] is None:
@@ -239,7 +256,7 @@ class VisualLinker(object):
                 U = html_to_pdf[u]
             return l, u, L, U
 
-        def display_match_counts():
+        def display_match_counts() -> int:
             matches = sum(
                 [
                     html_to_pdf[i] is not None
@@ -260,8 +277,8 @@ class VisualLinker(object):
         except Exception:
             self.logger.exception(f"N = {N} and M = {M} are invalid values.")
 
-        html_to_pdf = [None] * N
-        pdf_to_html = [None] * M
+        html_to_pdf: List[Optional[int]] = [None] * N
+        pdf_to_html: List[Optional[int]] = [None] * M
         search_radius = search_max // 2
 
         # first pass: global search for exact matches
@@ -309,7 +326,7 @@ class VisualLinker(object):
             for i in range(len(self.html_word_list))
         )
 
-    def _display_links(self, max_rows=100):
+    def _display_links(self, max_rows: int = 100) -> None:
         html = []
         pdf = []
         j = []
@@ -343,7 +360,7 @@ class VisualLinker(object):
         self.logger.info(pd.DataFrame(data, columns=["html", "pdf", "j"]))
         pd.reset_option("display.max_rows")
 
-    def _update_coordinates(self):
+    def _update_coordinates(self) -> Iterator[Sentence]:
         for sentence in self.sentences:
             (page, top, left, bottom, right) = list(
                 zip(
