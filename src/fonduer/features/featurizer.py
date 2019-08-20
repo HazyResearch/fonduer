@@ -1,9 +1,14 @@
 import itertools
 import logging
+from typing import Any, Collection, Dict, Iterable, Iterator, List, Optional, Type
+
+from scipy.sparse import csr_matrix
+from sqlalchemy.orm import Session
 
 from fonduer.candidates.models import Candidate
 from fonduer.features.feature_extractors import FeatureExtractor
 from fonduer.features.models import Feature, FeatureKey
+from fonduer.parser.models.document import Document
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
     ALL_SPLITS,
@@ -33,11 +38,11 @@ class Featurizer(UDFRunner):
 
     def __init__(
         self,
-        session,
-        candidate_classes,
-        feature_extractors=FeatureExtractor(),
-        parallelism=1,
-    ):
+        session: Session,
+        candidate_classes: List[Candidate],
+        feature_extractors: FeatureExtractor = FeatureExtractor(),
+        parallelism: int = 1,
+    ) -> None:
         """Initialize the Featurizer."""
         super(Featurizer, self).__init__(
             session,
@@ -48,7 +53,13 @@ class Featurizer(UDFRunner):
         )
         self.candidate_classes = candidate_classes
 
-    def update(self, docs=None, split=0, parallelism=None, progress_bar=True):
+    def update(
+        self,
+        docs: Optional[Collection[Document]] = None,
+        split: int = 0,
+        parallelism: Optional[int] = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Update the features of the specified candidates.
 
         :param docs: If provided, apply features to all the candidates in these
@@ -75,13 +86,13 @@ class Featurizer(UDFRunner):
 
     def apply(
         self,
-        docs=None,
-        split=0,
-        train=False,
-        clear=True,
-        parallelism=None,
-        progress_bar=True,
-    ):
+        docs: Optional[Collection[Document]] = None,
+        split: int = 0,
+        train: bool = False,
+        clear: bool = True,
+        parallelism: Optional[int] = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Apply features to the specified candidates.
 
         :param docs: If provided, apply features to all the candidates in these
@@ -132,7 +143,11 @@ class Featurizer(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
-    def upsert_keys(self, keys, candidate_classes=None):
+    def upsert_keys(
+        self,
+        keys: Iterable[str],
+        candidate_classes: Optional[Iterable[Candidate]] = None,
+    ) -> None:
         """Upsert the specified keys to FeatureKey.
 
         :param keys: A list of FeatureKey names to upsert.
@@ -176,7 +191,11 @@ class Featurizer(UDFRunner):
             key_map[key] = set(candidate_classes)
         upsert_keys(self.session, FeatureKey, key_map)
 
-    def drop_keys(self, keys, candidate_classes=None):
+    def drop_keys(
+        self,
+        keys: Iterable[str],
+        candidate_classes: Optional[Iterable[Candidate]] = None,
+    ) -> None:
         """Drop the specified keys from FeatureKeys.
 
         :param keys: A list of FeatureKey names to delete.
@@ -221,7 +240,7 @@ class Featurizer(UDFRunner):
 
         drop_keys(self.session, FeatureKey, key_map)
 
-    def get_keys(self):
+    def get_keys(self) -> List[FeatureKey]:
         """Return a list of keys for the Features.
 
         :return: List of FeatureKeys.
@@ -229,7 +248,7 @@ class Featurizer(UDFRunner):
         """
         return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
-    def clear(self, train=False, split=0):
+    def clear(self, train: bool = False, split: int = 0) -> None:
         """Delete Features of each class from the database.
 
         :param train: Whether or not to clear the FeatureKeys
@@ -251,13 +270,15 @@ class Featurizer(UDFRunner):
             logger.debug(f"Clearing all FeatureKeys from {self.candidate_classes}...")
             drop_all_keys(self.session, FeatureKey, self.candidate_classes)
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         """Delete all Features."""
         logger.info("Clearing ALL Features and FeatureKeys.")
         self.session.query(Feature).delete(synchronize_session="fetch")
         self.session.query(FeatureKey).delete(synchronize_session="fetch")
 
-    def get_feature_matrices(self, cand_lists):
+    def get_feature_matrices(
+        self, cand_lists: List[List[Candidate]]
+    ) -> List[csr_matrix]:
         """Load sparse matrix of Features for each candidate_class.
 
         :param cand_lists: The candidates to get features for.
@@ -272,7 +293,12 @@ class Featurizer(UDFRunner):
 class FeaturizerUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_classes, feature_extractors, **kwargs):
+    def __init__(
+        self,
+        candidate_classes: Iterable[Type[Candidate]],
+        feature_extractors: FeatureExtractor,
+        **kwargs: Any,
+    ) -> None:
         """Initialize the FeaturizerUDF."""
         self.candidate_classes = (
             candidate_classes
@@ -284,7 +310,9 @@ class FeaturizerUDF(UDF):
 
         super(FeaturizerUDF, self).__init__(**kwargs)
 
-    def apply(self, doc, split, train, **kwargs):
+    def apply(
+        self, doc: Document, split: int, train: bool, **kwargs: Any
+    ) -> Iterator[Any]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
@@ -298,7 +326,7 @@ class FeaturizerUDF(UDF):
             self.session, self.candidate_classes, doc, split
         )
 
-        feature_map = dict()
+        feature_map: Dict = dict()
 
         # Make a flat list of all candidates from the list of list of
         # candidates. This helps reduce the number of queries needed to update.

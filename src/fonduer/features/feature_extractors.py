@@ -1,3 +1,6 @@
+from typing import Callable, Dict, Iterator, List, Tuple
+
+from fonduer.candidates.models import Candidate
 from fonduer.features.feature_libs.structural_features import (
     extract_structural_features,
 )
@@ -5,7 +8,7 @@ from fonduer.features.feature_libs.tabular_features import extract_tabular_featu
 from fonduer.features.feature_libs.textual_features import extract_textual_features
 from fonduer.features.feature_libs.visual_features import extract_visual_features
 
-FEATURES = {
+FEATURES: Dict[str, Callable[[List[Candidate]], Iterator[Tuple[int, str, int]]]] = {
     "textual": extract_textual_features,
     "structural": extract_structural_features,
     "tabular": extract_tabular_features,
@@ -27,13 +30,17 @@ class FeatureExtractor(object):
 
     def __init__(
         self,
-        features=["textual", "structural", "tabular", "visual"],
-        customize_feature_funcs=[],
-    ):
+        features: List[str] = ["textual", "structural", "tabular", "visual"],
+        customize_feature_funcs: List[
+            Callable[[List[Candidate]], Iterator[Tuple[int, str, int]]]
+        ] = [],
+    ) -> None:
         if not isinstance(customize_feature_funcs, list):
             customize_feature_funcs = [customize_feature_funcs]
 
-        self.feature_extractors = []
+        self.feature_extractors: List[
+            Callable[[List[Candidate]], Iterator[Tuple[int, str, int]]]
+        ] = []
         for feature in features:
             if feature not in FEATURES:
                 raise ValueError(f"Unrecognized feature type: {feature}")
@@ -41,7 +48,7 @@ class FeatureExtractor(object):
 
         self.feature_extractors.extend(customize_feature_funcs)
 
-    def extract(self, candidates):
+    def extract(self, candidates: List[Candidate]) -> Iterator[Tuple[int, str, int]]:
         """Extract features from candidates.
 
         :param candidates: A list of candidates to extract features from
