@@ -5,8 +5,12 @@
 from builtins import range
 from collections import defaultdict
 from functools import lru_cache
+from typing import DefaultDict, Iterator, List, Set, Union
 
 from fonduer.candidates.mentions import Ngrams
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.parser.models import Document, Sentence
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
 from fonduer.utils.utils_visual import (
@@ -21,7 +25,7 @@ from fonduer.utils.utils_visual import (
 
 
 @lru_cache(maxsize=1024)
-def get_page(mention):
+def get_page(mention: Union[Candidate, Mention, TemporarySpanMention]) -> int:
     """Return the page number of the given mention.
 
     If a candidate is passed in, this returns the page of its first Mention.
@@ -34,7 +38,7 @@ def get_page(mention):
 
 
 @lru_cache(maxsize=1024)
-def is_horz_aligned(c):
+def is_horz_aligned(c: Candidate) -> bool:
     """Return True if all the components of c are horizontally aligned.
 
     Horizontal alignment means that the bounding boxes of each Mention of c
@@ -55,7 +59,7 @@ def is_horz_aligned(c):
 
 
 @lru_cache(maxsize=1024)
-def is_vert_aligned(c):
+def is_vert_aligned(c: Candidate) -> bool:
     """Return true if all the components of c are vertically aligned.
 
     Vertical alignment means that the bounding boxes of each Mention of c
@@ -76,7 +80,7 @@ def is_vert_aligned(c):
 
 
 @lru_cache(maxsize=1024)
-def is_vert_aligned_left(c):
+def is_vert_aligned_left(c: Candidate) -> bool:
     """Return true if all components are vertically aligned on their left border.
 
     Vertical alignment means that the bounding boxes of each Mention of c
@@ -99,7 +103,7 @@ def is_vert_aligned_left(c):
 
 
 @lru_cache(maxsize=1024)
-def is_vert_aligned_right(c):
+def is_vert_aligned_right(c: Candidate) -> bool:
     """Return true if all components vertically aligned on their right border.
 
     Vertical alignment means that the bounding boxes of each Mention of c
@@ -122,7 +126,7 @@ def is_vert_aligned_right(c):
 
 
 @lru_cache(maxsize=1024)
-def is_vert_aligned_center(c):
+def is_vert_aligned_center(c: Candidate) -> bool:
     """Return true if all the components are vertically aligned on their center.
 
     Vertical alignment means that the bounding boxes of each Mention of c
@@ -145,7 +149,7 @@ def is_vert_aligned_center(c):
 
 
 @lru_cache(maxsize=1024)
-def same_page(c):
+def same_page(c: Candidate) -> bool:
     """Return true if all the components of c are on the same page of the document.
 
     Page numbers are based on the PDF rendering of the document. If a PDF file is
@@ -166,8 +170,13 @@ def same_page(c):
 
 
 def get_horz_ngrams(
-    mention, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+    from_sentence: bool = True,
+) -> Iterator[str]:
     """Return all ngrams which are visually horizontally aligned with the Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -190,8 +199,13 @@ def get_horz_ngrams(
 
 
 def get_vert_ngrams(
-    mention, attrib="words", n_min=1, n_max=1, lower=True, from_sentence=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+    from_sentence: bool = True,
+) -> Iterator[str]:
     """Return all ngrams which are visually vertivally aligned with the Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -213,7 +227,15 @@ def get_vert_ngrams(
             yield ngram
 
 
-def _get_direction_ngrams(direction, c, attrib, n_min, n_max, lower, from_sentence):
+def _get_direction_ngrams(
+    direction: str,
+    c: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str,
+    n_min: int,
+    n_max: int,
+    lower: bool,
+    from_sentence: bool,
+) -> Iterator[str]:
     # TODO: this currently looks only in current table;
     #   precompute over the whole document/page instead
     bbox_direction_aligned = (
@@ -283,8 +305,10 @@ DEFAULT_HEIGHT = 792
 
 
 def get_page_vert_percentile(
-    mention, page_width=DEFAULT_WIDTH, page_height=DEFAULT_HEIGHT
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    page_width: int = DEFAULT_WIDTH,
+    page_height: int = DEFAULT_HEIGHT,
+) -> float:
     """Return which percentile from the TOP in the page the Mention is located in.
 
     Percentile is calculated where the top of the page is 0.0, and the bottom
@@ -327,8 +351,10 @@ def get_page_vert_percentile(
 
 
 def get_page_horz_percentile(
-    mention, page_width=DEFAULT_WIDTH, page_height=DEFAULT_HEIGHT
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    page_width: int = DEFAULT_WIDTH,
+    page_height: int = DEFAULT_HEIGHT,
+) -> float:
     """Return which percentile from the LEFT in the page the Mention is located in.
 
     Percentile is calculated where the left of the page is 0.0, and the right
@@ -369,11 +395,11 @@ def get_page_horz_percentile(
     return bbox_from_span(span).left / page_width
 
 
-def _assign_alignment_features(sentences_by_key, align_type):
+def _assign_alignment_features(sentences_by_key: defaultdict, align_type: str) -> None:
     for key, sentences in sentences_by_key.items():
         if len(sentences) == 1:
             continue
-        context_lemmas = set()
+        context_lemmas: Set[str] = set()
         for p in sentences:
             p._aligned_lemmas.update(context_lemmas)
             # update lemma context for upcoming sentences in the group
@@ -384,23 +410,23 @@ def _assign_alignment_features(sentences_by_key, align_type):
 
 
 @lru_cache(maxsize=2)
-def _preprocess_visual_features(doc):
+def _preprocess_visual_features(doc: Document) -> None:
     if hasattr(doc, "_visual_features"):
         return
     # cache flag
     doc._visual_features = True
 
-    sentence_by_page = defaultdict(list)
+    sentence_by_page: DefaultDict[str, List[Sentence]] = defaultdict(list)
     for sentence in doc.sentences:
         sentence_by_page[sentence.page[0]].append(sentence)
         sentence._aligned_lemmas = set()
 
     for page, sentences in sentence_by_page.items():
         # process per page alignments
-        yc_aligned = defaultdict(list)
-        x0_aligned = defaultdict(list)
-        xc_aligned = defaultdict(list)
-        x1_aligned = defaultdict(list)
+        yc_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
+        x0_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
+        xc_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
+        x1_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
         for sentence in sentences:
             sentence.bbox = bbox_from_sentence(sentence)
             sentence.yc = (sentence.bbox.top + sentence.bbox.bottom) / 2
@@ -426,7 +452,9 @@ def _preprocess_visual_features(doc):
         _assign_alignment_features(xc_aligned, "CENTER_")
 
 
-def get_visual_aligned_lemmas(mention):
+def get_visual_aligned_lemmas(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Iterator[str]:
     """Return a generator of the lemmas aligned visually with the Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -445,7 +473,9 @@ def get_visual_aligned_lemmas(mention):
             yield aligned_lemma
 
 
-def get_aligned_lemmas(mention):
+def get_aligned_lemmas(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Set[str]:
     """Return a set of the lemmas aligned visually with the Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.

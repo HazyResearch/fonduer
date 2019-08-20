@@ -5,7 +5,12 @@ from builtins import range
 from collections import defaultdict
 from functools import lru_cache
 from itertools import chain
+from typing import DefaultDict, Iterator, List, Optional, Tuple, Union
 
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.parser.models.sentence import Sentence
+from fonduer.parser.models.table import Cell, Table
 from fonduer.utils.data_model_utils.textual import get_left_ngrams, get_right_ngrams
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
@@ -18,7 +23,7 @@ from fonduer.utils.utils_table import (
 )
 
 
-def same_table(c):
+def same_table(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Table.
 
     :param c: The candidate whose Mentions are being compared
@@ -31,7 +36,7 @@ def same_table(c):
     )
 
 
-def same_row(c):
+def same_row(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Row.
 
     :param c: The candidate whose Mentions are being compared
@@ -43,7 +48,7 @@ def same_row(c):
     )
 
 
-def same_col(c):
+def same_col(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Col.
 
     :param c: The candidate whose Mentions are being compared
@@ -55,7 +60,7 @@ def same_col(c):
     )
 
 
-def is_tabular_aligned(c):
+def is_tabular_aligned(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Row or Col.
 
     :param c: The candidate whose Mentions are being compared
@@ -68,7 +73,7 @@ def is_tabular_aligned(c):
     )
 
 
-def same_cell(c):
+def same_cell(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Cell.
 
     :param c: The candidate whose Mentions are being compared
@@ -81,7 +86,7 @@ def same_cell(c):
     )
 
 
-def same_sentence(c):
+def same_sentence(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Sentence.
 
     :param c: The candidate whose Mentions are being compared
@@ -94,7 +99,9 @@ def same_sentence(c):
     )
 
 
-def get_max_col_num(mention):
+def get_max_col_num(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Optional[int]:
     """Return the largest column number that a Mention occupies.
 
     :param mention: The Mention to evaluate. If a candidate is given, default
@@ -108,7 +115,9 @@ def get_max_col_num(mention):
         return None
 
 
-def get_min_col_num(mention):
+def get_min_col_num(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Optional[int]:
     """Return the lowest column number that a Mention occupies.
 
     :param mention: The Mention to evaluate. If a candidate is given, default
@@ -122,7 +131,9 @@ def get_min_col_num(mention):
         return None
 
 
-def get_min_row_num(mention):
+def get_min_row_num(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Optional[int]:
     """Return the lowest row number that a Mention occupies.
 
     :param mention: The Mention to evaluate. If a candidate is given, default
@@ -136,7 +147,13 @@ def get_min_row_num(mention):
         return None
 
 
-def get_sentence_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
+def get_sentence_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams that are in the Sentence of the given Mention, not including itself.
 
     Note that if a candidate is passed in, all of its Mentions will be
@@ -162,8 +179,13 @@ def get_sentence_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
 
 
 def get_neighbor_sentence_ngrams(
-    mention, d=1, attrib="words", n_min=1, n_max=1, lower=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    d: int = 1,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams that are in the neighoring Sentences of the given Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -190,7 +212,13 @@ def get_neighbor_sentence_ngrams(
             yield ngram
 
 
-def get_cell_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
+def get_cell_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams that are in the Cell of the given mention, not including itself.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -224,8 +252,14 @@ def get_cell_ngrams(mention, attrib="words", n_min=1, n_max=1, lower=True):
 
 
 def get_neighbor_cell_ngrams(
-    mention, dist=1, directions=False, attrib="words", n_min=1, n_max=1, lower=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    dist: int = 1,
+    directions: bool = False,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[Union[str, Tuple[str, str]]]:
     """
     Get the ngrams from all Cells that are within a given Cell distance in one
     direction from the given Mention.
@@ -297,8 +331,13 @@ def get_neighbor_cell_ngrams(
 
 
 def get_row_ngrams(
-    mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    spread: List[int] = [0, 0],
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams from all Cells that are in the same row as the given Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -326,8 +365,13 @@ def get_row_ngrams(
 
 
 def get_col_ngrams(
-    mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    spread: List[int] = [0, 0],
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams from all Cells that are in the same column as the given Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
@@ -355,8 +399,13 @@ def get_col_ngrams(
 
 
 def get_aligned_ngrams(
-    mention, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    spread: List[int] = [0, 0],
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams from all Cells in the same row or column as the given Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be
@@ -383,7 +432,14 @@ def get_aligned_ngrams(
             yield ngram
 
 
-def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=True):
+def get_head_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    axis: Optional[str] = None,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams from the cell in the head of the row or column.
 
     More specifically, this returns the ngrams in the leftmost cell in a row and/or the
@@ -417,7 +473,7 @@ def get_head_ngrams(mention, axis=None, attrib="words", n_min=1, n_max=1, lower=
 
 
 @lru_cache(maxsize=1024)
-def _get_head_cell(root_cell, axis):
+def _get_head_cell(root_cell: Cell, axis: str) -> Cell:
     other_axis = "row" if axis == "col" else "col"
     aligned_cells = _get_aligned_cells(root_cell, axis)
     return (
@@ -428,7 +484,7 @@ def _get_head_cell(root_cell, axis):
 
 
 @lru_cache(maxsize=256)
-def _get_table_cells(table):
+def _get_table_cells(table: Table) -> DefaultDict[str, List[Cell]]:
     """Helper function with caching for table cells and the cells' sentences.
 
     This function significantly improves the speed of `get_row_ngrams`
@@ -442,7 +498,7 @@ def _get_table_cells(table):
     :param table: the Table object to cache.
     :return: an iterator of (Cell, [Sentence._asdict(), ...]) tuples.
     """
-    sent_map = defaultdict(list)
+    sent_map: DefaultDict[str, List[Cell]] = defaultdict(list)
     for sent in table.sentences:
         if sent.is_tabular():
             sent_map[sent.cell].append(sent)
@@ -450,8 +506,14 @@ def _get_table_cells(table):
 
 
 def _get_axis_ngrams(
-    mention, axis, attrib="words", n_min=1, n_max=1, spread=[0, 0], lower=True
-):
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    axis: str,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    spread: List[int] = [0, 0],
+    lower: bool = True,
+) -> Iterator[Union[str, None]]:
     span = _to_span(mention)
 
     if not span.sentence.is_tabular():
@@ -471,7 +533,7 @@ def _get_axis_ngrams(
 
 
 @lru_cache(maxsize=1024)
-def _get_aligned_cells(root_cell, axis):
+def _get_aligned_cells(root_cell: Cell, axis: str) -> List[Cell]:
     aligned_cells = [
         cell
         for cell in root_cell.table.cells
@@ -480,7 +542,9 @@ def _get_aligned_cells(root_cell, axis):
     return aligned_cells
 
 
-def _get_aligned_sentences(root_sentence, axis, spread=[0, 0]):
+def _get_aligned_sentences(
+    root_sentence: Sentence, axis: str, spread: List[int] = [0, 0]
+) -> List[Sentence]:
     cells = _get_table_cells(root_sentence.table).items()
     aligned_sentences = [
         sentence
@@ -492,5 +556,5 @@ def _get_aligned_sentences(root_sentence, axis, spread=[0, 0]):
     return aligned_sentences
 
 
-def _other_axis(axis):
+def _other_axis(axis: str) -> str:
     return "row" if axis == "col" else "col"

@@ -1,12 +1,15 @@
 import logging
 from functools import lru_cache
+from typing import Callable, List, Set, Union
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 
 
 @lru_cache(maxsize=1024)
-def _to_span(x, idx=0):
+def _to_span(
+    x: Union[Candidate, Mention, TemporarySpanMention], idx: int = 0
+) -> TemporarySpanMention:
     """Convert a Candidate, Mention, or Span to a span."""
     if isinstance(x, Candidate):
         return x[idx].context
@@ -19,7 +22,9 @@ def _to_span(x, idx=0):
 
 
 @lru_cache(maxsize=1024)
-def _to_spans(x):
+def _to_spans(
+    x: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[TemporarySpanMention]:
     """Convert a Candidate, Mention, or Span to a list of spans."""
     if isinstance(x, Candidate):
         return [_to_span(m) for m in x]
@@ -31,7 +36,7 @@ def _to_spans(x):
         raise ValueError(f"{type(x)} is an invalid argument type")
 
 
-def is_superset(a, b):
+def is_superset(a, b) -> bool:
     """Check if a is a superset of b.
 
     This is typically used to check if ALL of a list of sentences is in the
@@ -44,7 +49,7 @@ def is_superset(a, b):
     return set(a).issuperset(b)
 
 
-def overlap(a, b):
+def overlap(a, b) -> bool:
     """Check if a overlaps b.
 
     This is typically used to check if ANY of a list of sentences is in the
@@ -57,7 +62,9 @@ def overlap(a, b):
     return not set(a).isdisjoint(b)
 
 
-def get_matches(lf, candidate_set, match_values=[1, -1]):
+def get_matches(
+    lf: Callable, candidate_set: Set[Candidate], match_values: List[int] = [1, -1]
+) -> List[Candidate]:
     """Return a list of candidates that are matched by a particular LF.
 
     A simple helper function to see how many matches (non-zero by default) an
@@ -70,7 +77,7 @@ def get_matches(lf, candidate_set, match_values=[1, -1]):
     :rtype: a list of candidates
     """
     logger = logging.getLogger(__name__)
-    matches = []
+    matches: List[Candidate] = []
     for c in candidate_set:
         label = lf(c)
         if label in match_values:
