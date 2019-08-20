@@ -2,11 +2,21 @@
 # Textual modality utilities
 ############################
 
+from typing import Iterator, Union
+
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.utils.data_model_utils.utils import _to_span
 from fonduer.utils.utils import tokens_to_ngrams
 
 
-def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
+def get_between_ngrams(
+    c: Candidate,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Return the ngrams *between* two unary Mentions of a binary-Mention Candidate.
 
     Get the ngrams *between* two unary Mentions of a binary-Mention Candidate,
@@ -51,7 +61,14 @@ def get_between_ngrams(c, attrib="words", n_min=1, n_max=1, lower=True):
             yield ngram
 
 
-def get_left_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=True):
+def get_left_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    window: int = 3,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams within a window to the *left* from the sentence Context.
 
     For higher-arity Candidates, defaults to the *first* argument.
@@ -77,7 +94,14 @@ def get_left_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=T
         yield ngram
 
 
-def get_right_ngrams(mention, window=3, attrib="words", n_min=1, n_max=1, lower=True):
+def get_right_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    window: int = 3,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
     """Get the ngrams within a window to the *right* from the sentence Context.
 
     For higher-arity Candidates, defaults to the *last* argument.

@@ -4,15 +4,20 @@
 
 import functools
 from builtins import str
+from typing import List, Optional, Union
 
 import numpy as np
 from lxml import etree
-from lxml.html import fromstring
+from lxml.etree import _ElementTree
+from lxml.html import HtmlElement, fromstring
 
+from fonduer.candidates.models import Candidate, Mention
+from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.parser.models.sentence import Sentence
 from fonduer.utils.data_model_utils.utils import _to_span
 
 
-def get_tag(mention):
+def get_tag(mention: Union[Candidate, Mention, TemporarySpanMention]) -> str:
     """Return the HTML tag of the Mention.
 
     If a candidate is passed in, only the tag of its first Mention is returned.
@@ -25,7 +30,9 @@ def get_tag(mention):
     return str(span.sentence.html_tag)
 
 
-def get_attributes(mention):
+def get_attributes(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[str]:
     """Return the HTML attributes of the Mention.
 
     If a candidate is passed in, only the tag of its first Mention is returned.
@@ -41,17 +48,19 @@ def get_attributes(mention):
 
 
 @functools.lru_cache(maxsize=16)
-def _get_etree_for_text(text):
+def _get_etree_for_text(text: str) -> _ElementTree:
     return etree.ElementTree(fromstring(text))
 
 
-def _get_node(sentence):
+def _get_node(sentence: Sentence) -> HtmlElement:
     # Using caching to speed up retrieve process
     doc_etree = _get_etree_for_text(sentence.document.text)
     return doc_etree.xpath(sentence.xpath)[0]
 
 
-def get_parent_tag(mention):
+def get_parent_tag(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Optional[str]:
     """Return the HTML tag of the Mention's parent.
 
     These may be tags such as 'p', 'h2', 'table', 'div', etc.
@@ -65,7 +74,9 @@ def get_parent_tag(mention):
     return str(i.getparent().tag) if i.getparent() is not None else None
 
 
-def get_prev_sibling_tags(mention):
+def get_prev_sibling_tags(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[str]:
     """Return the HTML tag of the Mention's previous siblings.
 
     Previous siblings are Mentions which are at the same level in the HTML tree
@@ -77,7 +88,7 @@ def get_prev_sibling_tags(mention):
     :rtype: list of strings
     """
     span = _to_span(mention)
-    prev_sibling_tags = []
+    prev_sibling_tags: List[str] = []
     i = _get_node(span.sentence)
     while i.getprevious() is not None:
         prev_sibling_tags.insert(0, str(i.getprevious().tag))
@@ -85,7 +96,9 @@ def get_prev_sibling_tags(mention):
     return prev_sibling_tags
 
 
-def get_next_sibling_tags(mention):
+def get_next_sibling_tags(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[str]:
     """Return the HTML tag of the Mention's next siblings.
 
     Next siblings are Mentions which are at the same level in the HTML tree as
@@ -105,7 +118,9 @@ def get_next_sibling_tags(mention):
     return next_sibling_tags
 
 
-def get_ancestor_class_names(mention):
+def get_ancestor_class_names(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[str]:
     """Return the HTML classes of the Mention's ancestors.
 
     If a candidate is passed in, only the ancestors of its first Mention are
@@ -115,7 +130,7 @@ def get_ancestor_class_names(mention):
     :rtype: list of strings
     """
     span = _to_span(mention)
-    class_names = []
+    class_names: List[str] = []
     i = _get_node(span.sentence)
     while i is not None:
         class_names.insert(0, str(i.get("class")))
@@ -123,7 +138,9 @@ def get_ancestor_class_names(mention):
     return class_names
 
 
-def get_ancestor_tag_names(mention):
+def get_ancestor_tag_names(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[str]:
     """Return the HTML tag of the Mention's ancestors.
 
     For example, ['html', 'body', 'p'].
@@ -133,7 +150,7 @@ def get_ancestor_tag_names(mention):
     :rtype: list of strings
     """
     span = _to_span(mention)
-    tag_names = []
+    tag_names: List[str] = []
     i = _get_node(span.sentence)
     while i is not None:
         tag_names.insert(0, str(i.tag))
@@ -141,7 +158,9 @@ def get_ancestor_tag_names(mention):
     return tag_names
 
 
-def get_ancestor_id_names(mention):
+def get_ancestor_id_names(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> List[str]:
     """Return the HTML id's of the Mention's ancestors.
 
     If a candidate is passed in, only the ancestors of its first Mention are
@@ -151,7 +170,7 @@ def get_ancestor_id_names(mention):
     :rtype: list of strings
     """
     span = _to_span(mention)
-    id_names = []
+    id_names: List[str] = []
     i = _get_node(span.sentence)
     while i is not None:
         id_names.insert(0, str(i.get("id")))
@@ -159,7 +178,7 @@ def get_ancestor_id_names(mention):
     return id_names
 
 
-def common_ancestor(c):
+def common_ancestor(c: Candidate) -> List[str]:
     """Return the path to the root that is shared between a binary-Mention Candidate.
 
     In particular, this is the common path of HTML tags.
@@ -175,7 +194,7 @@ def common_ancestor(c):
     return list(ancestor1[: np.argmin(ancestor1[:min_len] == ancestor2[:min_len])])
 
 
-def lowest_common_ancestor_depth(c):
+def lowest_common_ancestor_depth(c: Candidate) -> int:
     """Return the minimum distance between a binary-Mention Candidate to their
     lowest common ancestor.
 
