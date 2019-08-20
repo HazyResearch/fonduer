@@ -309,17 +309,6 @@ class VisualLinker(object):
             for i in range(len(self.html_word_list))
         )
 
-    def _calculate_offset(self, listA, listB, seedSize, maxOffset):
-        wordsA = zip(*listA[:seedSize])[1]
-        wordsB = zip(*listB[:maxOffset])[1]
-        offsets = []
-        for i in range(seedSize):
-            try:
-                offsets.append(wordsB.index(wordsA[i]) - i)
-            except Exception:
-                pass
-        return int(np.median(offsets))
-
     def _display_links(self, max_rows=100):
         html = []
         pdf = []
