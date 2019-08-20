@@ -1,6 +1,7 @@
-from typing import Dict, Set
+from typing import Dict, Iterator, List, Set, Tuple
 
-from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models import Candidate
+from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
 from fonduer.utils.data_model_utils import (
     get_visual_aligned_lemmas,
     is_horz_aligned,
@@ -18,7 +19,9 @@ unary_vizlib_feats: Dict[str, Set] = {}
 binary_vizlib_feats: Dict[str, Set] = {}
 
 
-def extract_visual_features(candidates):
+def extract_visual_features(
+    candidates: List[Candidate]
+) -> Iterator[Tuple[int, str, int]]:
     """Extract visual features.
 
     :param candidates: A list of candidates to extract features from
@@ -73,7 +76,7 @@ def extract_visual_features(candidates):
             )
 
 
-def _vizlib_unary_features(span):
+def _vizlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
     """
     Visual-related features for a single span
     """
@@ -87,7 +90,9 @@ def _vizlib_unary_features(span):
         yield f"PAGE_[{page}]", DEF_VALUE
 
 
-def _vizlib_binary_features(span1, span2):
+def _vizlib_binary_features(
+    span1: SpanMention, span2: SpanMention
+) -> Iterator[Tuple[str, int]]:
     """
     Visual-related features for a pair of spans
     """

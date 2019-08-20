@@ -1,7 +1,9 @@
 import re
 from functools import lru_cache
+from typing import Any, Dict, List, Optional
 
 import lxml.etree as et
+from lxml.etree import _Element
 
 from fonduer.utils.utils import get_as_dict
 
@@ -13,7 +15,7 @@ class XMLTree:
     form
     """
 
-    def __init__(self, xml_root, words=None):
+    def __init__(self, xml_root: _Element, words: Optional[List[str]] = None) -> None:
         """Calls subroutines to generate JSON form of XML input"""
         self.root = xml_root
         self.words = words
@@ -21,21 +23,21 @@ class XMLTree:
         # create a unique id for e.g. canvas id in notebook
         self.id = str(abs(hash(self.to_str())))
 
-    def _to_json(self, root):
+    def _to_json(self, root: _Element) -> Dict:
         js = {"attrib": dict(root.attrib), "children": []}
         for i, c in enumerate(root):
             js["children"].append(self._to_json(c))
         return js
 
-    def to_json(self):
+    def to_json(self) -> Dict:
         return self._to_json(self.root)
 
-    def to_str(self):
+    def to_str(self) -> bytes:
         return et.tostring(self.root)
 
 
 @lru_cache(maxsize=1024)
-def corenlp_to_xmltree(s, prune_root=True):
+def corenlp_to_xmltree(s: Any, prune_root: bool = True) -> XMLTree:
     """
     Transforms an object with CoreNLP dep_path and dep_parent attributes into
     an XMLTree. Will include elements of any array having the same dimensiion
@@ -43,7 +45,7 @@ def corenlp_to_xmltree(s, prune_root=True):
     corresponding to original sequence order in sentence.
     """
     # Convert input object to dictionary
-    s = get_as_dict(s)
+    s: Dict = get_as_dict(s)
 
     # Use the dep_parents array as a guide: ensure it is present and a list of
     # ints
@@ -79,11 +81,13 @@ def corenlp_to_xmltree(s, prune_root=True):
     return XMLTree(root, words=s["words"])
 
 
-def scrub(s):
+def scrub(s: str) -> str:
     return "".join(c for c in s if ord(c) < 128)
 
 
-def corenlp_to_xmltree_sub(s, dep_parents, rid=0):
+def corenlp_to_xmltree_sub(
+    s: Dict[str, Any], dep_parents: List[int], rid: int = 0
+) -> _Element:
     i = rid - 1
     attrib = {}
     N = len(list(dep_parents))
@@ -112,6 +116,6 @@ def corenlp_to_xmltree_sub(s, dep_parents, rid=0):
     return root
 
 
-def singular(s):
+def singular(s: str) -> str:
     """Get singular form of word s (crudely)"""
     return re.sub(r"e?s$", "", s, flags=re.I)

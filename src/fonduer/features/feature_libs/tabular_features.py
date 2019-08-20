@@ -1,6 +1,7 @@
-from typing import Dict, Set
+from typing import Dict, Iterator, List, Set, Tuple
 
-from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models import Candidate
+from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import (
     get_cell_ngrams,
@@ -19,7 +20,9 @@ binary_tablelib_feats: Dict[str, Set] = {}
 settings = get_config()
 
 
-def extract_tabular_features(candidates):
+def extract_tabular_features(
+    candidates: List[Candidate]
+) -> Iterator[Tuple[int, str, int]]:
     """Extract tabular features.
 
     :param candidates: A list of candidates to extract features from
@@ -71,7 +74,7 @@ def extract_tabular_features(candidates):
             )
 
 
-def _tablelib_unary_features(span):
+def _tablelib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
     """
     Table-/structure-related features for a single span
     """
@@ -132,7 +135,9 @@ def _tablelib_unary_features(span):
         #      yield "COL_INFERRED_%s_[%s]" % (attrib.upper(), ngram), DEF_VALUE
 
 
-def _tablelib_binary_features(span1, span2):
+def _tablelib_binary_features(
+    span1: SpanMention, span2: SpanMention
+) -> Iterator[Tuple[str, int]]:
     """
     Table-/structure-related features for a pair of spans
     """
