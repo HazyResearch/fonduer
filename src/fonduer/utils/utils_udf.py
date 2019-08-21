@@ -1,12 +1,28 @@
 import logging
+from itertools import chain
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 
 from scipy.sparse import csr_matrix
-from sqlalchemy import String
+from sqlalchemy import String, Table
 from sqlalchemy.dialects.postgresql import ARRAY, insert
+from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import cast
 
 from fonduer.candidates.models import Candidate
+from fonduer.parser.models import Document
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +31,7 @@ logger = logging.getLogger(__name__)
 ALL_SPLITS = "ALL"
 
 
-def _get_cand_values(candidate, key_table):
+def _get_cand_values(candidate: Candidate, key_table: Table) -> List:
     """Get the corresponding values for the key_table."""
     # NOTE: Import just before checking to avoid circular imports.
     from fonduer.features.models import FeatureKey
@@ -31,7 +47,9 @@ def _get_cand_values(candidate, key_table):
         raise ValueError(f"{key_table} is not a valid key table.")
 
 
-def _batch_postgres_query(table, records):
+def _batch_postgres_query(
+    table: Table, records: List[Dict[str, Any]]
+) -> Iterator[List[Dict[str, Any]]]:
     """Break the list into chunks that can be processed as a single statement.
 
     Postgres query cannot be too long or it will fail.
@@ -79,12 +97,14 @@ def _batch_postgres_query(table, records):
     yield records[start:end]
 
 
-def get_sparse_matrix_keys(session, key_table):
+def get_sparse_matrix_keys(session: Session, key_table: Table) -> List:
     """Return a list of keys for the sparse matrix."""
     return session.query(key_table).order_by(key_table.name).all()
 
 
-def batch_upsert_records(session, table, records):
+def batch_upsert_records(
+    session: Session, table: Table, records: List[Dict[str, Any]]
+) -> None:
     """Batch upsert records into postgresql database."""
     if not records:
         return
@@ -101,7 +121,12 @@ def batch_upsert_records(session, table, records):
         session.commit()
 
 
-def get_sparse_matrix(session, key_table, cand_lists, key=None):
+def get_sparse_matrix(
+    session: Session,
+    key_table: Table,
+    cand_lists: Iterable[Iterable[Candidate]],
+    key: Optional[str] = None,
+) -> List[csr_matrix]:
     """Load sparse matrix of GoldLabels for each candidate_class."""
     result = []
     cand_lists = cand_lists if isinstance(cand_lists, (list, tuple)) else [cand_lists]
@@ -143,11 +168,13 @@ def get_sparse_matrix(session, key_table, cand_lists, key=None):
     return result
 
 
-def get_docs_from_split(session, candidate_classes, split):
+def get_docs_from_split(
+    session: Session, candidate_classes: Iterable[Type[Candidate]], split: int
+) -> Set[Document]:
     """Return a list of documents that contain the candidates in the split."""
     # Only grab the docs containing candidates from the given split.
     sub_query = session.query(Candidate.id).filter(Candidate.split == split).subquery()
-    split_docs = set()
+    split_docs: Set[Document] = set()
     for candidate_class in candidate_classes:
         split_docs.update(
             cand.document
@@ -158,7 +185,13 @@ def get_docs_from_split(session, candidate_classes, split):
     return split_docs
 
 
-def get_mapping(session, table, candidates, generator, key_map):
+def get_mapping(
+    session: Session,
+    table: Table,
+    candidates: chain,
+    generator: Callable[[Candidate], Tuple],
+    key_map: Dict[Any, Any],
+) -> Iterator[Dict[str, Any]]:
     """Generate map of keys and values for the candidate from the generator.
 
     :param session: The database session.
@@ -198,7 +231,12 @@ def get_mapping(session, table, candidates, generator, key_map):
         yield map_args
 
 
-def get_cands_list_from_split(session, candidate_classes, doc, split):
+def get_cands_list_from_split(
+    session: Session,
+    candidate_classes: Iterable[Type[Candidate]],
+    doc: Document,
+    split: Union[int, str],
+) -> List[Candidate]:
     """Return the list of list of candidates from this document based on the split."""
     cands = []
     if split == ALL_SPLITS:
@@ -221,7 +259,9 @@ def get_cands_list_from_split(session, candidate_classes, doc, split):
     return cands
 
 
-def drop_all_keys(session, key_table, candidate_classes):
+def drop_all_keys(
+    session: Session, key_table: Table, candidate_classes: Iterable[Type[Candidate]]
+) -> None:
     """Bulk drop annotation keys for all the candidate_classes in the table.
 
     Rather than directly dropping the keys, this removes the candidate_classes
@@ -234,7 +274,7 @@ def drop_all_keys(session, key_table, candidate_classes):
     if not candidate_classes:
         return
 
-    candidate_classes = set([c.__tablename__ for c in candidate_classes])
+    candidate_classes: Set[str] = set([c.__tablename__ for c in candidate_classes])
 
     # Select all rows that contain ANY of the candidate_classes
     all_rows = (
@@ -280,7 +320,7 @@ def drop_all_keys(session, key_table, candidate_classes):
             session.commit()
 
 
-def drop_keys(session, key_table, keys):
+def drop_keys(session: Session, key_table: Table, keys: Dict) -> None:
     """Bulk drop annotation keys to the specified table.
 
     Rather than directly dropping the keys, this removes the candidate_classes
@@ -339,7 +379,7 @@ def drop_keys(session, key_table, keys):
             session.commit()
 
 
-def upsert_keys(session, key_table, keys):
+def upsert_keys(session: Session, key_table: Table, keys: Dict) -> None:
     """Bulk add annotation keys to the specified table.
 
     :param key_table: The sqlalchemy class to insert into.

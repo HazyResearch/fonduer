@@ -1,8 +1,9 @@
 import re
 from builtins import range
+from typing import Any, Dict, Iterator, List
 
 
-def camel_to_under(name):
+def camel_to_under(name: str) -> str:
     """
     Converts camel-case string to lowercase string separated by underscores.
 
@@ -15,7 +16,7 @@ def camel_to_under(name):
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def get_as_dict(x):
+def get_as_dict(x: Any) -> Dict:
     """Return an object as a dictionary of its attributes."""
     if isinstance(x, dict):
         return x
@@ -26,7 +27,13 @@ def get_as_dict(x):
             return x.__dict__
 
 
-def tokens_to_ngrams(tokens, n_min=1, n_max=3, delim=" ", lower=False):
+def tokens_to_ngrams(
+    tokens: List[str],
+    n_min: int = 1,
+    n_max: int = 3,
+    delim: str = " ",
+    lower: bool = False,
+) -> Iterator[str]:
     f = (lambda x: x.lower()) if lower else (lambda x: x)
     N = len(tokens)
     for root in range(N):
