@@ -6,7 +6,7 @@ from fonduer.parser.models import Sentence
 Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"])
 
 
-def bbox_from_span(span):
+def bbox_from_span(span: TemporarySpanMention) -> Bbox:
     if isinstance(span, TemporarySpanMention) and span.sentence.is_visual():
         return Bbox(
             span.get_attrib_tokens("page")[0],
@@ -19,7 +19,7 @@ def bbox_from_span(span):
         return None
 
 
-def bbox_from_sentence(sentence):
+def bbox_from_sentence(sentence: Sentence) -> Bbox:
     # TODO: this may have issues where a sentence is linked to words on different pages
     if isinstance(sentence, Sentence) and sentence.is_visual():
         return Bbox(
@@ -33,7 +33,7 @@ def bbox_from_sentence(sentence):
         return None
 
 
-def bbox_horz_aligned(box1, box2):
+def bbox_horz_aligned(box1: Bbox, box2: Bbox) -> bool:
     """
     Returns true if the vertical center point of either span is within the
     vertical range of the other
@@ -56,7 +56,7 @@ def bbox_horz_aligned(box1, box2):
 #            (center2 >= box1.top and center2 <= box1.bottom))
 
 
-def bbox_vert_aligned(box1, box2):
+def bbox_vert_aligned(box1: Bbox, box2: Bbox) -> bool:
     """
     Returns true if the horizontal center point of either span is within the
     horizontal range of the other
@@ -76,7 +76,7 @@ def bbox_vert_aligned(box1, box2):
     #         (center2 >= box1.left and center2 <= box1.right))
 
 
-def bbox_vert_aligned_left(box1, box2):
+def bbox_vert_aligned_left(box1: Bbox, box2: Bbox) -> bool:
     """
     Returns true if the left boundary of both boxes is within 2 pts
     """
@@ -85,7 +85,7 @@ def bbox_vert_aligned_left(box1, box2):
     return abs(box1.left - box2.left) <= 2
 
 
-def bbox_vert_aligned_right(box1, box2):
+def bbox_vert_aligned_right(box1: Bbox, box2: Bbox) -> bool:
     """
     Returns true if the right boundary of both boxes is within 2 pts
     """
@@ -94,7 +94,7 @@ def bbox_vert_aligned_right(box1, box2):
     return abs(box1.right - box2.right) <= 2
 
 
-def bbox_vert_aligned_center(box1, box2):
+def bbox_vert_aligned_center(box1: Bbox, box2: Bbox) -> bool:
     """
     Returns true if the center of both boxes is within 5 pts
     """

@@ -1,4 +1,7 @@
-def build_node(type, name, content):
+from typing import List, Optional, Tuple
+
+
+def build_node(type: str, name: str, content: str) -> str:
     """
     Wrap up content in to a html node.
 
@@ -20,7 +23,12 @@ def build_node(type, name, content):
         return f"<img name='{name}' src='{content}'/>"
 
 
-def column_constructor(text, name=None, type="text", delim=None):
+def column_constructor(
+    text: str,
+    name: Optional[str] = None,
+    type: str = "text",
+    delim: Optional[str] = None,
+) -> List[Tuple[str, str, str]]:
     """
     Converts raw content to a list of strutured tuple where each tuple contains
         (type, name, content).
