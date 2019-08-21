@@ -16,7 +16,7 @@ from treedlib import (
 )
 
 from fonduer.candidates.models import Candidate, ImplicitSpanMention
-from fonduer.candidates.models.span_mention import SpanMention
+from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
 from fonduer.features.feature_libs.tree_structs import corenlp_to_xmltree
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
@@ -42,7 +42,7 @@ def extract_textual_features(
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
-        if not (isinstance(args[0], SpanMention)):
+        if not (isinstance(args[0], TemporarySpanMention)):
             raise ValueError(
                 f"Accepts Span-type arguments, {type(candidate)}-type found."
             )
