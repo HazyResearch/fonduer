@@ -82,6 +82,8 @@ Fixed
 * `@HiromuHota`_: Fix the type of max_docs.
 * `@HiromuHota`_: Associate sentence with section and paragraph no matter what tabular is.
   (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
+* `@HiromuHota`_: Add a safeguard that prevents from accessing Meta.engine before it is assigned.
+  Also this change allows creating a mention/candidate subclass even before Meta is initialized.
 
 0.7.0_ - 2019-06-12
 -------------------

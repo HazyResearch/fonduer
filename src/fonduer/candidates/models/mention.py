@@ -169,7 +169,7 @@ def mention_subclass(
         C = type(class_name, (Mention,), class_attribs)
 
         # Create table in DB
-        if not Meta.engine.dialect.has_table(Meta.engine, table_name):
+        if Meta.engine and not Meta.engine.has_table(table_name):
             C.__table__.create(bind=Meta.engine)
 
         mention_subclasses[class_name] = C, class_spec
