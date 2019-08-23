@@ -633,3 +633,17 @@ def test_multimodal_cand(caplog):
     assert session.query(ms_para).count() == 30
     assert session.query(ms_sent).count() == 35
     assert session.query(ms_cell).count() == 21
+
+
+def test_subclass_before_meta_init(caplog):
+    """Test if it is possible to create a mention (candidate) subclass even before Meta
+    is initialized.
+    """
+    caplog.set_level(logging.INFO)
+
+    conn_string = "postgresql://localhost:5432/" + DB
+    Part = mention_subclass("Part")
+    logger.info(f"Create a mention subclass '{Part.__tablename__}'")
+    Meta.init(conn_string).Session()
+    Temp = mention_subclass("Temp")
+    logger.info(f"Create a mention subclass '{Temp.__tablename__}'")
