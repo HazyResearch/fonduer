@@ -1,19 +1,9 @@
-import logging
-import os
 import re
 from typing import Iterator, Set, Tuple
 
 from fonduer.candidates.models.figure_mention import TemporaryFigureMention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.candidates.models.temporary_context import TemporaryContext
-
-# Travis will not import the PorterStemmer
-if "CI" not in os.environ:
-    try:
-        from nltk.stem.porter import PorterStemmer
-    except ImportError:
-        logger = logging.getLogger(__name__)
-        logger.warning("nltk not installed- some default functionality may be absent.")
 
 WORDS = "words"
 
@@ -127,8 +117,8 @@ class DictionaryMatch(_NgramMatcher):
         not in the list). Default False.
     :type inverse: bool
     :param stemmer: Optionally provide a stemmer to preprocess the dictionary.
-        Can be any object which has a ``stem()`` method. Use stemmer="porter"
-        to use a PorterStemmer(). Default None.
+        Can be any object which has a ``stem(str) -> str`` method
+        like ``PorterStemmer()``. Default None.
     """
 
     def init(self) -> None:
@@ -145,12 +135,10 @@ class DictionaryMatch(_NgramMatcher):
         # Optionally use a stemmer, preprocess the dictionary
         # Note that user can provide *an object having a stem() method*
         self.stemmer = self.opts.get("stemmer", None)
-        if self.stemmer is not None:
-            if self.stemmer == "porter":
-                self.stemmer = PorterStemmer()
+        if self.stemmer:
             self.d = frozenset(self._stem(w) for w in list(self.d))
 
-    def _stem(self, w):
+    def _stem(self, w: str) -> str:
         """Apply stemmer, handling encoding errors"""
         try:
             return self.stemmer.stem(w)
