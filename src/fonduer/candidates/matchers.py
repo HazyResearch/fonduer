@@ -50,7 +50,7 @@ class _Matcher(object):
             return self._f(m) and self.children[0].f(m)
         else:
             raise Exception(
-                f"{self.__name__} does not support more than one child Matcher"
+                f"{self.__class__.__name__} does not support two or more child Matcher"
             )
 
     def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
