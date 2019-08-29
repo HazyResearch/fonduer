@@ -185,7 +185,7 @@ class Union(_NgramMatcher):
 
     def f(self, m: TemporaryContext) -> bool:
         for child in self.children:
-            if child.f(m) > 0:
+            if child.f(m):
                 return True
         return False
 
