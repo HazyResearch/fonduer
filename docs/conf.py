@@ -21,7 +21,6 @@ autodoc_mock_imports = [
     "bs4",
     "editdistance",
     "lxml",
-    "nltk",
     "numpy",
     "pandas",
     "scipy",
