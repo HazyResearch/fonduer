@@ -170,3 +170,11 @@ def test_inverse(caplog, doc_setup):
         "This",
         "is",
     }
+
+    # Check if Inverse raises an error when no child matcher is provided.
+    with pytest.raises(ValueError):
+        Inverse()
+
+    # Check if Inverse raises an error when two child matchers are provided.
+    with pytest.raises(ValueError):
+        Inverse(matcher0, matcher0)
