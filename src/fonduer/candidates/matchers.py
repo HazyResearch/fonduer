@@ -159,6 +159,7 @@ class Union(_Matcher):
     """Takes the union of mention sets returned by the provided ``Matchers``.
 
     :param longest_match_only: If True, only return the longest match. Default True.
+        Overrides longest_match_only of its child matchers.
     :type longest_match_only: bool
     """
 
@@ -170,7 +171,12 @@ class Union(_Matcher):
 
 
 class Intersect(_Matcher):
-    """Takes the intersection of mention sets returned by the provided ``Matchers``."""
+    """Takes the intersection of mention sets returned by the provided ``Matchers``.
+
+    :param longest_match_only: If True, only return the longest match. Default True.
+        Overrides longest_match_only of its child matchers.
+    :type longest_match_only: bool
+    """
 
     def f(self, m: TemporaryContext) -> bool:
         for child in self.children:
@@ -183,6 +189,9 @@ class Inverse(_Matcher):
     """Returns the opposite result of ifs child ``Matcher``.
 
     :raises ValueError: If more than one Matcher is provided.
+    :param longest_match_only: If True, only return the longest match. Default True.
+        Overrides longest_match_only of its child matchers.
+    :type longest_match_only: bool
     """
 
     def __init__(self, *children, **opts):  # type: ignore
@@ -317,8 +326,8 @@ class RegexMatchSpan(_RegexMatch):
         Default True.
     :type full_match: bool
     :param longest_match_only: If True, only return the longest match. Default True.
-        Ignored when used as a child matcher of :class:`Union`, :class:`Intersect`,
-        or :class:`Inverse`.
+        Will be overridden by the parent matcher like :class:`Union` when it is wrapped
+        by :class:`Union`, :class:`Intersect`, or :class:`Inverse`.
     :type longest_match_only: bool
     """
 
