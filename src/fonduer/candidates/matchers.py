@@ -226,12 +226,14 @@ class Inverse(_Matcher):
     :raises ValueError: If more than one Matcher is provided.
     """
 
-    # TODO: confirm that this only has one child
-    def f(self, m: TemporaryContext) -> bool:
-        if len(self.children) > 1:
+    def __init__(self, *children, **opts):  # type: ignore
+        if not len(children) == 1:
             raise ValueError("Provide a single Matcher.")
-        for child in self.children:
-            return not child.f(m)
+        super().__init__(*children, **opts)
+
+    def f(self, m: TemporaryContext) -> bool:
+        child = self.children[0]
+        return not child.f(m)
 
 
 class Concat(_NgramMatcher):
