@@ -87,22 +87,30 @@ class _Matcher(object):
 class _NgramMatcher(_Matcher):
     """Matcher base class for Ngram objects"""
 
-    def _is_subspan(self, m: TemporarySpanMention, span: Tuple[int, ...]) -> bool:
+    def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
         """
         Tests if mention m is subspan of span, where span is defined
         specific to mention type.
         """
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         return (
             m.sentence.id == span[0]
             and m.char_start >= span[1]
             and m.char_end <= span[2]
         )
 
-    def _get_span(self, m: TemporarySpanMention) -> Tuple[int, ...]:
+    def _get_span(self, m: TemporaryContext) -> Tuple[int, ...]:
         """
         Gets a tuple that identifies a span for the specific mention class
         that m belongs to.
         """
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         return (m.sentence.id, m.char_start, m.char_end)
 
 
@@ -145,7 +153,11 @@ class DictionaryMatch(_NgramMatcher):
         except UnicodeDecodeError:
             return w
 
-    def _f(self, m: TemporarySpanMention) -> bool:
+    def _f(self, m: TemporaryContext) -> bool:
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         p = m.get_attrib_span(self.attrib)
         p = p.lower() if self.ignore_case else p
         p = self._stem(p) if self.stemmer is not None else p
@@ -175,8 +187,12 @@ class LambdaFunctionMatcher(_NgramMatcher):
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
 
-    def _f(self, m: TemporarySpanMention) -> bool:
+    def _f(self, m: TemporaryContext) -> bool:
         """The internal (non-composed) version of filter function f"""
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         return self.func(m)
 
 
@@ -249,7 +265,11 @@ class Concat(_NgramMatcher):
         self.ignore_sep = self.opts.get("ignore_sep", True)
         self.sep = self.opts.get("sep", " ")
 
-    def f(self, m: TemporarySpanMention) -> bool:
+    def f(self, m: TemporaryContext) -> bool:
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         if len(self.children) != 2:
             raise ValueError("Concat takes two child Matcher objects as arguments.")
         if not self.left_required and self.children[1].f(m):
@@ -336,7 +356,11 @@ class RegexMatchSpan(_RegexMatch):
     :type longest_match_only: bool
     """
 
-    def _f(self, m: TemporarySpanMention) -> bool:
+    def _f(self, m: TemporaryContext) -> bool:
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         if self.search:
             return (
                 True
@@ -369,7 +393,11 @@ class RegexMatchEach(_RegexMatch):
     :type longest_match_only: bool
     """
 
-    def _f(self, m: TemporarySpanMention) -> bool:
+    def _f(self, m: TemporaryContext) -> bool:
+        if not isinstance(m, TemporarySpanMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporarySpanMention"
+            )
         tokens = m.get_attrib_tokens(self.attrib)
         return (
             True
@@ -465,15 +493,23 @@ class MiscMatcher(RegexMatchEach):
 class _FigureMatcher(_Matcher):
     """Matcher base class for Figure objects"""
 
-    def _is_subspan(self, m: TemporaryFigureMention, span: Tuple[int, ...]) -> bool:
+    def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
         """Tests if mention m does exist"""
+        if not isinstance(m, TemporaryFigureMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporaryFigureMention"
+            )
         return m.figure.document.id == span[0] and m.figure.position == span[1]
 
-    def _get_span(self, m: TemporaryFigureMention) -> Tuple[int, ...]:
+    def _get_span(self, m: TemporaryContext) -> Tuple[int, ...]:
         """
         Gets a tuple that identifies a figure for the specific mention class
         that m belongs to.
         """
+        if not isinstance(m, TemporaryFigureMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporaryFigureMention"
+            )
         return (m.figure.document.id, m.figure.position)
 
 
@@ -493,8 +529,12 @@ class LambdaFunctionFigureMatcher(_FigureMatcher):
         except KeyError:
             raise Exception("Please supply a function f as func=f.")
 
-    def _f(self, m: TemporaryFigureMention) -> bool:
+    def _f(self, m: TemporaryContext) -> bool:
         """The internal (non-composed) version of filter function f"""
+        if not isinstance(m, TemporaryFigureMention):
+            raise ValueError(
+                f"{self.__class__.__name__} only supports TemporaryFigureMention"
+            )
         return self.func(m)
 
 
