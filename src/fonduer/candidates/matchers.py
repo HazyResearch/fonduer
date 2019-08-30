@@ -1,5 +1,5 @@
 import re
-from typing import Iterator, Set, Tuple
+from typing import Iterator, Set
 
 from fonduer.candidates.models.figure_mention import TemporaryFigureMention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
@@ -53,65 +53,24 @@ class _Matcher(object):
                 f"{self.__class__.__name__} does not support two or more child Matcher"
             )
 
-    def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
-        """
-        Tests if mention m is subspan of span, where span is defined specific
-        to mention type.
-        """
-        return False
-
-    def _get_span(self, m: TemporaryContext) -> Tuple[int, ...]:
-        """
-        Gets a tuple that identifies a span for the specific mention class
-        that m belongs to.
-        """
-        return m
-
     def apply(self, mentions: Iterator[TemporaryContext]) -> Iterator[TemporaryContext]:
         """
         Apply the Matcher to a **generator** of mentions.
         Optionally only takes the longest match (NOTE: assumes this is the
         *first* match)
         """
-        seen_spans: Set[Tuple[int, ...]] = set()
+        seen_mentions: Set[TemporaryContext] = set()
         for m in mentions:
             if self.f(m) and (
-                not self.longest_match_only
-                or not any([self._is_subspan(m, s) for s in seen_spans])
+                not self.longest_match_only or not any([m in s for s in seen_mentions])
             ):
                 if self.longest_match_only:
-                    seen_spans.add(self._get_span(m))
+                    seen_mentions.add(m)
                 yield m
 
 
 class _NgramMatcher(_Matcher):
     """Matcher base class for Ngram objects"""
-
-    def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
-        """
-        Tests if mention m is subspan of span, where span is defined
-        specific to mention type.
-        """
-        if not isinstance(m, TemporarySpanMention):
-            raise ValueError(
-                f"{self.__class__.__name__} only supports TemporarySpanMention"
-            )
-        return (
-            m.sentence.id == span[0]
-            and m.char_start >= span[1]
-            and m.char_end <= span[2]
-        )
-
-    def _get_span(self, m: TemporaryContext) -> Tuple[int, ...]:
-        """
-        Gets a tuple that identifies a span for the specific mention class
-        that m belongs to.
-        """
-        if not isinstance(m, TemporarySpanMention):
-            raise ValueError(
-                f"{self.__class__.__name__} only supports TemporarySpanMention"
-            )
-        return (m.sentence.id, m.char_start, m.char_end)
 
 
 class DictionaryMatch(_NgramMatcher):
@@ -196,7 +155,7 @@ class LambdaFunctionMatcher(_NgramMatcher):
         return self.func(m)
 
 
-class Union(_NgramMatcher):
+class Union(_Matcher):
     """Takes the union of mention sets returned by the provided ``Matchers``.
 
     :param longest_match_only: If True, only return the longest match. Default True.
@@ -499,25 +458,6 @@ class MiscMatcher(RegexMatchEach):
 
 class _FigureMatcher(_Matcher):
     """Matcher base class for Figure objects"""
-
-    def _is_subspan(self, m: TemporaryContext, span: Tuple[int, ...]) -> bool:
-        """Tests if mention m does exist"""
-        if not isinstance(m, TemporaryFigureMention):
-            raise ValueError(
-                f"{self.__class__.__name__} only supports TemporaryFigureMention"
-            )
-        return m.figure.document.id == span[0] and m.figure.position == span[1]
-
-    def _get_span(self, m: TemporaryContext) -> Tuple[int, ...]:
-        """
-        Gets a tuple that identifies a figure for the specific mention class
-        that m belongs to.
-        """
-        if not isinstance(m, TemporaryFigureMention):
-            raise ValueError(
-                f"{self.__class__.__name__} only supports TemporaryFigureMention"
-            )
-        return (m.figure.document.id, m.figure.position)
 
 
 class LambdaFunctionFigureMatcher(_FigureMatcher):

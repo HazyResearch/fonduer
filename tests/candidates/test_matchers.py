@@ -106,9 +106,7 @@ def test_intersect(caplog, doc_setup):
     # longest_match_only=True has no effect on Intersect.
     matcher = Intersect(matcher0, matcher0, longest_match_only=True)
     assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
-        "This is apple",
-        "is apple",
-        "apple",
+        "This is apple"
     }
 
 
@@ -141,13 +139,9 @@ def test_inverse(caplog, doc_setup):
         "is",
     }
 
-    # longest_match_only=True has no effect on Inverse.
+    # longest_match_only=True
     matcher = Inverse(matcher0, longest_match_only=True)
-    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
-        "This is",
-        "This",
-        "is",
-    }
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
 
     # Match any span that contains "apple" with longest_match_only=True
     matcher0 = RegexMatchSpan(
@@ -165,11 +159,7 @@ def test_inverse(caplog, doc_setup):
 
     # longest_match_only=True has no effect on Inverse.
     matcher = Inverse(matcher0, longest_match_only=True)
-    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
-        "This is",
-        "This",
-        "is",
-    }
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
 
     # Check if Inverse raises an error when no child matcher is provided.
     with pytest.raises(ValueError):
