@@ -159,7 +159,7 @@ class Union(_Matcher):
     """Takes the union of mention sets returned by the provided ``Matchers``.
 
     :param longest_match_only: If True, only return the longest match. Default True.
-        Overrides longest_match_only of its child matchers.
+        Overrides longest_match_only of its child ``Matchers``.
     :type longest_match_only: bool
     """
 
@@ -174,7 +174,7 @@ class Intersect(_Matcher):
     """Takes the intersection of mention sets returned by the provided ``Matchers``.
 
     :param longest_match_only: If True, only return the longest match. Default True.
-        Overrides longest_match_only of its child matchers.
+        Overrides longest_match_only of its child ``Matchers``.
     :type longest_match_only: bool
     """
 
@@ -190,7 +190,7 @@ class Inverse(_Matcher):
 
     :raises ValueError: If more than one Matcher is provided.
     :param longest_match_only: If True, only return the longest match. Default True.
-        Overrides longest_match_only of its child matchers.
+        Overrides longest_match_only of its child ``Matchers``.
     :type longest_match_only: bool
     """
 

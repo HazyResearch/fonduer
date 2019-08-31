@@ -70,6 +70,7 @@ Changed
 * `@HiromuHota`_: Make load_lang_model private as a model is internally loaded during init.
 * `@HiromuHota`_: Add a unit test for ``Parser`` with tabular=False.
   (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
+* `@HiromuHota`_: Now ``longest_match_only`` of ``Union``, ``Intersect``, and ``Inverse`` override that of child matchers.
 
 Removed
 ^^^^^^^
