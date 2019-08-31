@@ -103,7 +103,7 @@ def test_intersect(caplog, doc_setup):
         "apple",
     }
 
-    # longest_match_only=True has no effect on Intersect.
+    # longest_match_only=True overrides that of child matchers.
     matcher = Intersect(matcher0, matcher0, longest_match_only=True)
     assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
         "This is apple"
@@ -157,7 +157,7 @@ def test_inverse(caplog, doc_setup):
         "is",
     }
 
-    # longest_match_only=True has no effect on Inverse.
+    # longest_match_only=True on Inverse is in effect.
     matcher = Inverse(matcher0, longest_match_only=True)
     assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
 
