@@ -69,11 +69,7 @@ class _Matcher(object):
                 yield m
 
 
-class _NgramMatcher(_Matcher):
-    """Matcher base class for Ngram objects"""
-
-
-class DictionaryMatch(_NgramMatcher):
+class DictionaryMatch(_Matcher):
     """Selects mention Ngrams that match against a given list *d*.
 
     :param d: A list of strings representing a dictionary.
@@ -123,7 +119,7 @@ class DictionaryMatch(_NgramMatcher):
         return (not self.inverse) if p in self.d else self.inverse
 
 
-class LambdaFunctionMatcher(_NgramMatcher):
+class LambdaFunctionMatcher(_Matcher):
     """Selects Ngrams that return True when fed to a function f.
 
     :param func: The function to evaluate with a signature of ``f: m -> {True, False}``,
@@ -204,7 +200,7 @@ class Inverse(_Matcher):
         return not child.f(m)
 
 
-class Concat(_NgramMatcher):
+class Concat(_Matcher):
     """Selects mentions which are the concatenation of adjacent matches from
     child operators.
 
@@ -272,7 +268,7 @@ class Concat(_NgramMatcher):
         return False
 
 
-class _RegexMatch(_NgramMatcher):
+class _RegexMatch(_Matcher):
     """
     Base regex class. Does not specify specific semantics of *what* is being
     matched yet.
@@ -465,11 +461,7 @@ class MiscMatcher(RegexMatchEach):
         super(MiscMatcher, self).__init__(*children, **kwargs)
 
 
-class _FigureMatcher(_Matcher):
-    """Matcher base class for Figure objects"""
-
-
-class LambdaFunctionFigureMatcher(_FigureMatcher):
+class LambdaFunctionFigureMatcher(_Matcher):
     """Selects Figures that return True when fed to a function f.
 
     :param func: The function to evaluate. See :class:`LambdaFunctionMatcher` for
