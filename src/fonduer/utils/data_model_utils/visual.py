@@ -269,31 +269,31 @@ def _get_direction_ngrams(
                         yield f(ts.get_span())
 
 
-def get_vert_ngrams_left(c):
+def get_vert_ngrams_left(c):  # type: ignore
     """Not implemented."""
     # TODO
     return
 
 
-def get_vert_ngrams_right(c):
+def get_vert_ngrams_right(c):  # type: ignore
     """Not implemented."""
     # TODO
     return
 
 
-def get_vert_ngrams_center(c):
+def get_vert_ngrams_center(c):  # type: ignore
     """Not implemented."""
     # TODO
     return
 
 
-def get_visual_header_ngrams(c, axis=None):
+def get_visual_header_ngrams(c, axis=None):  # type: ignore
     """Not implemented."""
     # TODO
     return
 
 
-def get_visual_distance(c, axis=None):
+def get_visual_distance(c, axis=None):  # type: ignore
     """Not implemented."""
     # TODO
     return
