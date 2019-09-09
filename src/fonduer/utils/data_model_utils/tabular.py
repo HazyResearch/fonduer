@@ -66,7 +66,7 @@ def is_tabular_aligned(c: Candidate) -> bool:
     :param c: The candidate whose Mentions are being compared
     :rtype: boolean
     """
-    return same_table(c) and (
+    return same_table(c) and all(
         is_col_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
         or is_row_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
         for i in range(len(c))
