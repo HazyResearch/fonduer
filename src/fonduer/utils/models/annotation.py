@@ -14,16 +14,16 @@ class AnnotationKeyMixin(object):
     """
 
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(cls) -> str:
         return camel_to_under(cls.__name__)
 
     @declared_attr
-    def name(cls):
+    def name(cls) -> Column:
         """The name of the Key."""
         return Column(String, primary_key=True)
 
     @declared_attr
-    def candidate_classes(cls):
+    def candidate_classes(cls) -> Column:
         """The name of the Key."""
         return Column(postgresql.ARRAY(String), nullable=False)
 
@@ -31,7 +31,7 @@ class AnnotationKeyMixin(object):
     def __table_args__(cls):
         return (UniqueConstraint("name"),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__} ({self.name})"
 
 
@@ -54,19 +54,19 @@ class AnnotationMixin(object):
     """
 
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(cls) -> str:
         return camel_to_under(cls.__name__)
 
     # The key is the "name" or "type" of the Annotation- e.g. the name of a
     # feature, lf, or of a human annotator
     @declared_attr
-    def keys(cls):
+    def keys(cls) -> Column:
         """A list of strings of each Key name."""
         return Column(postgresql.ARRAY(String), nullable=False)
 
     # Every annotation is with respect to a candidate
     @declared_attr
-    def candidate_id(cls):
+    def candidate_id(cls) -> Column:
         """The id of the ``Candidate`` being annotated."""
         return Column(
             "candidate_id",
@@ -76,7 +76,7 @@ class AnnotationMixin(object):
         )
 
     @declared_attr
-    def candidate(cls):
+    def candidate(cls) -> relationship:
         """The ``Candidate``."""
         return relationship(
             "Candidate",
@@ -88,7 +88,7 @@ class AnnotationMixin(object):
             cascade_backrefs=False,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f" ("
