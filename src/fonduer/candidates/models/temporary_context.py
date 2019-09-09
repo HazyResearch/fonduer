@@ -56,13 +56,19 @@ class TemporaryContext(object):
     def __repr__(self) -> str:
         raise NotImplementedError()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryContext):
+            return NotImplemented
         raise NotImplementedError()
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryContext):
+            return NotImplemented
         raise NotImplementedError()
 
-    def __gt__(self, other: "TemporaryContext") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryContext):
+            return NotImplemented
         raise NotImplementedError()
 
     def __hash__(self) -> int:

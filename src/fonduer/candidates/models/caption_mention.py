@@ -18,19 +18,19 @@ class TemporaryCaptionMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.caption == other.caption
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCaptionMention):
+            return NotImplemented
+        return self.caption == other.caption
 
-    def __ne__(self, other):
-        try:
-            return self.caption != other.caption
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCaptionMention):
+            return NotImplemented
+        return self.caption != other.caption
 
-    def __gt__(self, other: "TemporaryCaptionMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCaptionMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 

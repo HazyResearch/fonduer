@@ -29,25 +29,23 @@ class TemporarySpanMention(TemporaryContext):
     def __len__(self) -> int:
         return self.char_end - self.char_start + 1
 
-    def __eq__(self, other):
-        try:
-            return (
-                self.sentence == other.sentence
-                and self.char_start == other.char_start
-                and self.char_end == other.char_end
-            )
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporarySpanMention):
+            return NotImplemented
+        return (
+            self.sentence == other.sentence
+            and self.char_start == other.char_start
+            and self.char_end == other.char_end
+        )
 
-    def __ne__(self, other):
-        try:
-            return (
-                self.sentence != other.sentence
-                or self.char_start != other.char_start
-                or self.char_end != other.char_end
-            )
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporarySpanMention):
+            return NotImplemented
+        return (
+            self.sentence != other.sentence
+            or self.char_start != other.char_start
+            or self.char_end != other.char_end
+        )
 
     def __hash__(self) -> int:
         return hash(self.sentence) + hash(self.char_start) + hash(self.char_end)
@@ -259,10 +257,14 @@ class SpanMention(Context, TemporarySpanMention):
 
     # We redefine these to use default semantics, overriding the operators
     # inherited from TemporarySpanMention
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SpanMention):
+            return NotImplemented
         return self is other
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, SpanMention):
+            return NotImplemented
         return self is not other
 
     def __hash__(self) -> int:

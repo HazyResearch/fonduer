@@ -18,19 +18,19 @@ class TemporaryDocumentMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.document == other.document
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryDocumentMention):
+            return NotImplemented
+        return self.document == other.document
 
-    def __ne__(self, other):
-        try:
-            return self.document != other.document
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryDocumentMention):
+            return NotImplemented
+        return self.document != other.document
 
-    def __gt__(self, other: "TemporaryDocumentMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryDocumentMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 

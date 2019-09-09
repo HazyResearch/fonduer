@@ -18,19 +18,19 @@ class TemporaryParagraphMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.paragraph == other.paragraph
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryParagraphMention):
+            return NotImplemented
+        return self.paragraph == other.paragraph
 
-    def __ne__(self, other):
-        try:
-            return self.paragraph != other.paragraph
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryParagraphMention):
+            return NotImplemented
+        return self.paragraph != other.paragraph
 
-    def __gt__(self, other: "TemporaryParagraphMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryParagraphMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 

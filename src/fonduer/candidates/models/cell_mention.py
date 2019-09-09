@@ -18,19 +18,19 @@ class TemporaryCellMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.cell == other.cell
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCellMention):
+            return NotImplemented
+        return self.cell == other.cell
 
-    def __ne__(self, other):
-        try:
-            return self.cell != other.cell
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCellMention):
+            return NotImplemented
+        return self.cell != other.cell
 
-    def __gt__(self, other: "TemporaryCellMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCellMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
