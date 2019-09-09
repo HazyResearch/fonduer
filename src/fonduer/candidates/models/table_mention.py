@@ -18,19 +18,19 @@ class TemporaryTableMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.table == other.table
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryTableMention):
+            return NotImplemented
+        return self.table == other.table
 
-    def __ne__(self, other):
-        try:
-            return self.table != other.table
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryTableMention):
+            return NotImplemented
+        return self.table != other.table
 
-    def __gt__(self, other: "TemporaryTableMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryTableMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 

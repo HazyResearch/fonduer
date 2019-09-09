@@ -18,19 +18,19 @@ class TemporaryFigureMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.figure == other.figure
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryFigureMention):
+            return NotImplemented
+        return self.figure == other.figure
 
-    def __ne__(self, other):
-        try:
-            return self.figure != other.figure
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryFigureMention):
+            return NotImplemented
+        return self.figure != other.figure
 
-    def __gt__(self, other: "TemporaryFigureMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryFigureMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 

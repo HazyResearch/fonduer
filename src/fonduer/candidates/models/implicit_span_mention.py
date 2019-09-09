@@ -56,32 +56,30 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         self.right = right
         self.meta = meta
 
-    def __len__(self):
+    def __len__(self) -> int:
         return sum(map(len, self.words))
 
-    def __eq__(self, other):
-        try:
-            return (
-                self.sentence == other.sentence
-                and self.char_start == other.char_start
-                and self.char_end == other.char_end
-                and self.expander_key == other.expander_key
-                and self.position == other.position
-            )
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryImplicitSpanMention):
+            return NotImplemented
+        return (
+            self.sentence == other.sentence
+            and self.char_start == other.char_start
+            and self.char_end == other.char_end
+            and self.expander_key == other.expander_key
+            and self.position == other.position
+        )
 
-    def __ne__(self, other):
-        try:
-            return (
-                self.sentence != other.sentence
-                or self.char_start != other.char_start
-                or self.char_end != other.char_end
-                or self.expander_key != other.expander_key
-                or self.position != other.position
-            )
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryImplicitSpanMention):
+            return NotImplemented
+        return (
+            self.sentence != other.sentence
+            or self.char_start != other.char_start
+            or self.char_end != other.char_end
+            or self.expander_key != other.expander_key
+            or self.position != other.position
+        )
 
     def __hash__(self) -> int:
         return (
@@ -324,10 +322,14 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
 
     # We redefine these to use default semantics, overriding the operators
     # inherited from TemporarySpan
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ImplicitSpanMention):
+            return NotImplemented
         return self is other
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, ImplicitSpanMention):
+            return NotImplemented
         return self is not other
 
     def __hash__(self) -> int:

@@ -18,19 +18,19 @@ class TemporarySectionMention(TemporaryContext):
     def __len__(self) -> int:
         return 1
 
-    def __eq__(self, other):
-        try:
-            return self.section == other.section
-        except AttributeError:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TemporarySectionMention):
+            return NotImplemented
+        return self.section == other.section
 
-    def __ne__(self, other):
-        try:
-            return self.section != other.section
-        except AttributeError:
-            return True
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, TemporarySectionMention):
+            return NotImplemented
+        return self.section != other.section
 
-    def __gt__(self, other: "TemporarySectionMention") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporarySectionMention):
+            return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
