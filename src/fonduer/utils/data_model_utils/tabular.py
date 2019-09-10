@@ -484,7 +484,7 @@ def _get_head_cell(root_cell: Cell, axis: str) -> Cell:
 
 
 @lru_cache(maxsize=256)
-def _get_table_cells(table: Table) -> DefaultDict[str, List[Cell]]:
+def _get_table_cells(table: Table) -> DefaultDict[Cell, List[Sentence]]:
     """Helper function with caching for table cells and the cells' sentences.
 
     This function significantly improves the speed of `get_row_ngrams`
@@ -498,7 +498,7 @@ def _get_table_cells(table: Table) -> DefaultDict[str, List[Cell]]:
     :param table: the Table object to cache.
     :return: an iterator of (Cell, [Sentence._asdict(), ...]) tuples.
     """
-    sent_map: DefaultDict[str, List[Cell]] = defaultdict(list)
+    sent_map: DefaultDict[Cell, List[Sentence]] = defaultdict(list)
     for sent in table.sentences:
         if sent.is_tabular():
             sent_map[sent.cell].append(sent)
