@@ -479,7 +479,7 @@ def _get_head_cell(root_cell: Cell, axis: str) -> Cell:
     return (
         sorted(aligned_cells, key=lambda x: getattr(x, other_axis + "_start"))[0]
         if aligned_cells
-        else []
+        else None
     )
 
 
