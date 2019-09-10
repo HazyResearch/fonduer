@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Callable, List, Set, Union
+from typing import Callable, Iterable, List, Set, Union
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
@@ -36,7 +36,7 @@ def _to_spans(
         raise ValueError(f"{type(x)} is an invalid argument type")
 
 
-def is_superset(a, b) -> bool:
+def is_superset(a: Iterable, b: Iterable) -> bool:
     """Check if a is a superset of b.
 
     This is typically used to check if ALL of a list of sentences is in the
@@ -49,7 +49,7 @@ def is_superset(a, b) -> bool:
     return set(a).issuperset(b)
 
 
-def overlap(a, b) -> bool:
+def overlap(a: Iterable, b: Iterable) -> bool:
     """Check if a overlaps b.
 
     This is typically used to check if ANY of a list of sentences is in the
