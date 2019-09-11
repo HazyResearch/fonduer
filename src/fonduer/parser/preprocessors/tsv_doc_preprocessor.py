@@ -31,7 +31,7 @@ class TSVDocPreprocessor(DocPreprocessor):
         max_docs: int = sys.maxsize,
         header: bool = False,
     ) -> None:
-        super(TSVDocPreprocessor, self).__init__(path, encoding, max_docs)
+        super().__init__(path, encoding, max_docs)
         self.header = header
 
     def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:

@@ -31,7 +31,7 @@ class Labeler(UDFRunner):
 
     def __init__(self, session, candidate_classes, parallelism=1):
         """Initialize the Labeler."""
-        super(Labeler, self).__init__(
+        super().__init__(
             session,
             LabelerUDF,
             parallelism=parallelism,
@@ -122,7 +122,7 @@ class Labeler(UDFRunner):
         if docs:
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
-            super(Labeler, self).apply(
+            super().apply(
                 docs,
                 split=split,
                 train=train,
@@ -138,7 +138,7 @@ class Labeler(UDFRunner):
             split_docs = get_docs_from_split(
                 self.session, self.candidate_classes, split
             )
-            super(Labeler, self).apply(
+            super().apply(
                 split_docs,
                 split=split,
                 train=train,
@@ -319,7 +319,7 @@ class LabelerUDF(UDF):
             if isinstance(candidate_classes, (list, tuple))
             else [candidate_classes]
         )
-        super(LabelerUDF, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _f_gen(self, c):
         """Convert lfs into a generator of id, name, and labels.

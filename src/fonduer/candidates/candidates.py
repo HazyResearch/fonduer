@@ -68,7 +68,7 @@ class CandidateExtractor(UDFRunner):
             throttlers = [None] * len(candidate_classes)
 
         """Initialize the CandidateExtractor."""
-        super(CandidateExtractor, self).__init__(
+        super().__init__(
             session,
             CandidateExtractorUDF,
             parallelism=parallelism,
@@ -115,7 +115,7 @@ class CandidateExtractor(UDFRunner):
             progress bar is measured per document.
         :type progress_bar: bool
         """
-        super(CandidateExtractor, self).apply(
+        super().apply(
             docs,
             split=split,
             clear=clear,
@@ -241,7 +241,7 @@ class CandidateExtractorUDF(UDF):
         self.symmetric_relations = symmetric_relations
         self.arities = [len(cclass.__argnames__) for cclass in self.candidate_classes]
 
-        super(CandidateExtractorUDF, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def apply(
         self, context: Document, clear: bool, split: int, **kwargs: Any

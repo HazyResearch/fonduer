@@ -172,7 +172,7 @@ class MentionNgramsPart(MentionNgrams):
         :param parts_by_doc: a dictionary d where d[document_name.upper()] =
             [partA, partB, ...]
         """
-        super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
+        super().__init__(n_max=n_max, split_tokens=split_tokens)
         self.parts_by_doc = parts_by_doc
         self.expander = expand_part_range if expand else (lambda x: [x])
 
@@ -228,7 +228,7 @@ class MentionNgramsPart(MentionNgrams):
 
 class MentionNgramsTemp(MentionNgrams):
     def __init__(self, n_max=2, split_tokens=["-", "/"]):
-        super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
+        super().__init__(n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, doc):
         for ts in MentionNgrams.apply(self, doc):
@@ -287,7 +287,7 @@ class MentionNgramsTemp(MentionNgrams):
 
 class MentionNgramsVolt(MentionNgrams):
     def __init__(self, n_max=1, split_tokens=["-", "/"]):
-        super(MentionNgrams, self).__init__(n_max=n_max, split_tokens=split_tokens)
+        super().__init__(n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, doc):
         for ts in MentionNgrams.apply(self, doc):

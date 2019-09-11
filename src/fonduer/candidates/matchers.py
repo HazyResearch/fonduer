@@ -388,7 +388,7 @@ class PersonMatcher(RegexMatchEach):
     def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "PERSON"
-        super(PersonMatcher, self).__init__(*children, **kwargs)
+        super().__init__(*children, **kwargs)
 
 
 class LocationMatcher(RegexMatchEach):
@@ -402,7 +402,7 @@ class LocationMatcher(RegexMatchEach):
     def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "GPE|LOC"
-        super(LocationMatcher, self).__init__(*children, **kwargs)
+        super().__init__(*children, **kwargs)
 
 
 class OrganizationMatcher(RegexMatchEach):
@@ -416,7 +416,7 @@ class OrganizationMatcher(RegexMatchEach):
     def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NORG|ORG"
-        super(OrganizationMatcher, self).__init__(*children, **kwargs)
+        super().__init__(*children, **kwargs)
 
 
 class DateMatcher(RegexMatchEach):
@@ -430,7 +430,7 @@ class DateMatcher(RegexMatchEach):
     def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "DATE"
-        super(DateMatcher, self).__init__(*children, **kwargs)
+        super().__init__(*children, **kwargs)
 
 
 class NumberMatcher(RegexMatchEach):
@@ -444,7 +444,7 @@ class NumberMatcher(RegexMatchEach):
     def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NUMBER|QUANTITY"
-        super(NumberMatcher, self).__init__(*children, **kwargs)
+        super().__init__(*children, **kwargs)
 
 
 class MiscMatcher(RegexMatchEach):
@@ -458,7 +458,7 @@ class MiscMatcher(RegexMatchEach):
     def __init__(self, *children, **kwargs):  # type: ignore
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "MISC"
-        super(MiscMatcher, self).__init__(*children, **kwargs)
+        super().__init__(*children, **kwargs)
 
 
 class LambdaFunctionFigureMatcher(_Matcher):

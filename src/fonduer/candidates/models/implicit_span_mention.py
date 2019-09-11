@@ -36,10 +36,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         right: List[Optional[int]],
         meta: Any = None,
     ) -> None:
-        super(TemporarySpanMention, self).__init__()
-        self.sentence = sentence  # The sentence Context of the Span
-        self.char_start = char_start
-        self.char_end = char_end
+        super().__init__(sentence, char_start, char_end, meta)
         self.expander_key = expander_key
         self.position = position
         self.text = text
@@ -54,7 +51,6 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         self.left = left
         self.bottom = bottom
         self.right = right
-        self.meta = meta
 
     def __len__(self) -> int:
         return sum(map(len, self.words))

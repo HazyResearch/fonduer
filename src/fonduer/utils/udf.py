@@ -190,7 +190,7 @@ class UDF(Process):
         """
         in_queue: A Queue of input objects to process; primarily for running in parallel
         """
-        Process.__init__(self)
+        super().__init__()
         self.daemon = True
         self.in_queue = in_queue
         self.out_queue = out_queue

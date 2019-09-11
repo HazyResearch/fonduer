@@ -44,7 +44,7 @@ class Featurizer(UDFRunner):
         parallelism: int = 1,
     ) -> None:
         """Initialize the Featurizer."""
-        super(Featurizer, self).__init__(
+        super().__init__(
             session,
             FeaturizerUDF,
             parallelism=parallelism,
@@ -117,7 +117,7 @@ class Featurizer(UDFRunner):
         if docs:
             # Call apply on the specified docs for all splits
             split = ALL_SPLITS
-            super(Featurizer, self).apply(
+            super().apply(
                 docs,
                 split=split,
                 train=train,
@@ -132,7 +132,7 @@ class Featurizer(UDFRunner):
             split_docs = get_docs_from_split(
                 self.session, self.candidate_classes, split
             )
-            super(Featurizer, self).apply(
+            super().apply(
                 split_docs,
                 split=split,
                 train=train,
@@ -308,7 +308,7 @@ class FeaturizerUDF(UDF):
 
         self.feature_extractors = feature_extractors
 
-        super(FeaturizerUDF, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def apply(
         self, doc: Document, split: int, train: bool, **kwargs: Any

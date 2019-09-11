@@ -81,7 +81,7 @@ class Parser(UDFRunner):
         vizlink: Optional[VisualLinker] = None,  # visual linker
         pdf_path: Optional[str] = None,
     ) -> None:
-        super(Parser, self).__init__(
+        super().__init__(
             session,
             ParserUDF,
             parallelism=parallelism,
@@ -124,7 +124,7 @@ class Parser(UDFRunner):
             progress bar is measured per document.
         :type progress_bar: bool
         """
-        super(Parser, self).apply(
+        super().apply(
             doc_loader,
             pdf_path=pdf_path,
             clear=clear,
@@ -186,7 +186,7 @@ class ParserUDF(UDF):
             All occurents of _pattern_ in the text will be replaced by
             _replace_.
         """
-        super(ParserUDF, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         # structural (html) setup
         self.structural = structural

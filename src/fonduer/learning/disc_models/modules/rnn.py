@@ -42,7 +42,7 @@ class RNN(nn.Module):
         use_cuda=False,
     ):
 
-        super(RNN, self).__init__()
+        super().__init__()
 
         self.num_tokens = num_tokens
         self.emb_size = emb_size

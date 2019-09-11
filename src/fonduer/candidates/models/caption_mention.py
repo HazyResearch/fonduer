@@ -12,7 +12,7 @@ class TemporaryCaptionMention(TemporaryContext):
     """The TemporaryContext version of CaptionMention."""
 
     def __init__(self, caption: Caption) -> None:
-        super(TemporaryCaptionMention, self).__init__()
+        super().__init__()
         self.caption = caption  # The caption Context
 
     def __len__(self) -> int:

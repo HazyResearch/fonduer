@@ -31,7 +31,7 @@ class Classifier(nn.Module):
     _collate = default_collate
 
     def __init__(self, name=None):
-        nn.Module.__init__(self)
+        super().__init__()
         self.logger = logging.getLogger(__name__)
         self.name = name or self.__class__.__name__
         self.tensorboard_logger = None
