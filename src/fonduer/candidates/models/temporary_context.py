@@ -71,6 +71,11 @@ class TemporaryContext(object):
             return NotImplemented
         raise NotImplementedError()
 
+    def __contains__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryContext):
+            return NotImplemented
+        raise NotImplementedError()
+
     def __hash__(self) -> int:
         raise NotImplementedError()
 

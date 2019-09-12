@@ -34,8 +34,10 @@ class TemporaryParagraphMention(TemporaryContext):
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_paragraph: "TemporaryParagraphMention") -> bool:
-        return self.__eq__(other_paragraph)
+    def __contains__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryParagraphMention):
+            return NotImplemented
+        return self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.paragraph)

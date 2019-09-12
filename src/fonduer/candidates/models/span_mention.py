@@ -173,7 +173,9 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self.get_attrib_span("words")
 
-    def __contains__(self, other_span: "TemporarySpanMention") -> bool:
+    def __contains__(self, other_span: object) -> bool:
+        if not isinstance(other_span, TemporarySpanMention):
+            return NotImplemented
         return (
             self.sentence == other_span.sentence
             and other_span.char_start >= self.char_start
