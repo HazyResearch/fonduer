@@ -14,7 +14,7 @@ setup(
     package_dir={"": "src"},
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     install_requires=[
-        "bs4>=0.0.1, <0.1.0",
+        "beautifulsoup4==4.7.1",
         "editdistance>=0.5.2, <0.6.0",
         "lxml>=4.2.5, <5.0.0",
         "numpy>=1.11, <2.0",

@@ -71,6 +71,8 @@ Changed
 * `@HiromuHota`_: Add a unit test for ``Parser`` with tabular=False.
   (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
 * `@HiromuHota`_: Now ``longest_match_only`` of ``Union``, ``Intersect``, and ``Inverse`` override that of child matchers.
+* `@HiromuHota`_: Use the official name "beautifulsoup4" instead of an alias "bs4".
+  (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 
 Removed
 ^^^^^^^
