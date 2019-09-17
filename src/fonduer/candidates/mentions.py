@@ -411,7 +411,7 @@ class MentionExtractor(UDFRunner):
         parallelism: int = 1,
     ):
         """Initialize the MentionExtractor."""
-        super(MentionExtractor, self).__init__(
+        super().__init__(
             session,
             MentionExtractorUDF,
             parallelism=parallelism,
@@ -456,7 +456,7 @@ class MentionExtractor(UDFRunner):
             progress bar is measured per document.
         :type progress_bar: bool
         """
-        super(MentionExtractor, self).apply(
+        super().apply(
             docs, clear=clear, parallelism=parallelism, progress_bar=progress_bar
         )
 
@@ -566,7 +566,7 @@ class MentionExtractorUDF(UDF):
         # Preallocates internal data structure
         self.child_context_set: Set[TemporaryContext] = set()
 
-        super(MentionExtractorUDF, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def apply(self, doc: Document, clear: bool, **kwargs: Any) -> Iterator[Mention]:
         """Extract mentions from the given Document.

@@ -23,7 +23,7 @@ class SparseLinear(nn.Module):
 
     def __init__(self, num_features, num_classes, bias=False, padding_idx=0):
 
-        super(SparseLinear, self).__init__()
+        super().__init__()
 
         self.num_features = num_features
         self.num_classes = num_classes

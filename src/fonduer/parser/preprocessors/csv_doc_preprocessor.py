@@ -45,7 +45,7 @@ class CSVDocPreprocessor(DocPreprocessor):
         delim: str = ",",
         parser_rule: Optional[Dict[int, Callable]] = None,
     ) -> None:
-        super(CSVDocPreprocessor, self).__init__(path, encoding, max_docs)
+        super().__init__(path, encoding, max_docs)
         self.header = header
         self.delim = delim
         self.parser_rule = parser_rule

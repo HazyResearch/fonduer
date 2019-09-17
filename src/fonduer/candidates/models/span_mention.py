@@ -20,7 +20,7 @@ class TemporarySpanMention(TemporaryContext):
         char_end: int,
         meta: Optional[Any] = None,
     ) -> None:
-        super(TemporarySpanMention, self).__init__()
+        super().__init__()
         self.sentence = sentence  # The sentence Context of the Span
         self.char_start = char_start
         self.char_end = char_end

@@ -12,7 +12,7 @@ class TemporaryParagraphMention(TemporaryContext):
     """The TemporaryContext version of ParagraphMention."""
 
     def __init__(self, paragraph: Paragraph) -> None:
-        super(TemporaryParagraphMention, self).__init__()
+        super().__init__()
         self.paragraph = paragraph  # The paragraph Context
 
     def __len__(self) -> int:

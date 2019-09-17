@@ -12,7 +12,7 @@ class TemporaryFigureMention(TemporaryContext):
     """The TemporaryContext version of FigureMention."""
 
     def __init__(self, figure: Figure) -> None:
-        super(TemporaryFigureMention, self).__init__()
+        super().__init__()
         self.figure = figure  # The figure Context
 
     def __len__(self) -> int:
