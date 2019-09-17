@@ -1,5 +1,5 @@
 from builtins import object
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
@@ -26,7 +26,7 @@ class TemporaryContext(object):
     def __init__(self) -> None:
         self.id = None
 
-    def _load_id_or_insert(self, session: Session) -> Dict[str, Any]:
+    def _load_id_or_insert(self, session: Session) -> Optional[Dict[str, Any]]:
         """Load the id of the temporary context if it exists or return insert args.
 
         As a side effect, this also inserts the Context object for the stableid.

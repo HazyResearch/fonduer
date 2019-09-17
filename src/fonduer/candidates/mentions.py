@@ -2,7 +2,17 @@ import logging
 import re
 from builtins import map, range
 from collections import defaultdict
-from typing import Any, Collection, Iterator, List, Optional, Set
+from typing import (
+    Any,
+    Collection,
+    DefaultDict,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Type,
+)
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import insert, select
@@ -421,7 +431,8 @@ class MentionExtractor(UDFRunner):
         # Check that arity is same
         arity = len(mention_classes)
         if not all(
-            len(x) == arity for x in [mention_classes, mention_spaces, matchers]
+            len(x) == arity  # type: ignore
+            for x in [mention_classes, mention_spaces, matchers]
         ):
             raise ValueError(
                 "Mismatched arity of mention classes, spaces, and matchers."
@@ -575,12 +586,12 @@ class MentionExtractorUDF(UDF):
         doc = self.session.merge(doc)
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
-            tc_to_insert = defaultdict(list)
+            tc_to_insert: DefaultDict[Type, List[Dict[str, Any]]] = defaultdict(list)
             # Generate TemporaryContexts that are children of the context using
             # the mention_space and filtered by the Matcher
             self.child_context_set.clear()
             for tc in self.matchers[i].apply(self.mention_spaces[i].apply(doc)):
-                rec = tc._load_id_or_insert(self.session)
+                rec: Optional[Dict[str, Any]] = tc._load_id_or_insert(self.session)
                 if rec:
                     tc_to_insert[tc._get_table()].append(rec)
                 self.child_context_set.add(tc)
