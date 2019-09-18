@@ -5,8 +5,8 @@ from pathlib import Path
 from string import whitespace
 from typing import Any, Collection, Dict, Iterator, List, Optional
 
-import pkg_resources
 from spacy.language import Language
+from spacy.util import is_package
 from spacy.vocab import Vocab
 
 from fonduer.parser.lingual_parser.lingual_parser import LingualParser
@@ -75,22 +75,6 @@ class SpacyParser(LingualParser):
         return self.lang and (self.lang in self.languages)
 
     @staticmethod
-    def is_package(name: str) -> bool:
-        """Check if string maps to a package installed via pip.
-
-        name (unicode): Name of package.
-        RETURNS (bool): True if installed package, False if not.
-
-        From https://github.com/explosion/spaCy/blob/master/spacy/util.py
-        """
-        name = name.lower()  # compare package name against lowercase name
-        packages = pkg_resources.working_set.by_key.keys()
-        for package in packages:
-            if package.lower().replace("-", "_") == name:
-                return True
-        return False
-
-    @staticmethod
     def model_installed(name: str) -> bool:
         """Check if spaCy language model is installed.
 
@@ -104,7 +88,7 @@ class SpacyParser(LingualParser):
             raise IOError(f"Can't find spaCy data path: {data_path}")
         if name in {d.name for d in data_path.iterdir()}:
             return True
-        if SpacyParser.is_package(name):  # installed as package
+        if is_package(name):  # installed as package
             return True
         if Path(name).exists():  # path to model data directory
             return True
