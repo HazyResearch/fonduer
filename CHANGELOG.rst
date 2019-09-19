@@ -73,6 +73,7 @@ Changed
 * `@HiromuHota`_: Now ``longest_match_only`` of ``Union``, ``Intersect``, and ``Inverse`` override that of child matchers.
 * `@HiromuHota`_: Use the official name "beautifulsoup4" instead of an alias "bs4".
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
+* `@HiromuHota`_: Use pytorch of 1.2.0 for Travis and Docker for simpler installation (than 1.1.0 and lower).
 
 Removed
 ^^^^^^^
