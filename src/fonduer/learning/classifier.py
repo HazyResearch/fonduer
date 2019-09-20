@@ -103,7 +103,7 @@ class Classifier(nn.Module):
         """Calculate the logits of input."""
         raise NotImplementedError()
 
-    def train(
+    def train(  # type: ignore
         self,
         X_train,
         Y_train,

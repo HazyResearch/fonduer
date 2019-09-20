@@ -84,7 +84,7 @@ class Featurizer(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def apply(
+    def apply(  # type: ignore
         self,
         docs: Optional[Collection[Document]] = None,
         split: int = 0,
@@ -248,7 +248,7 @@ class Featurizer(UDFRunner):
         """
         return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
-    def clear(self, train: bool = False, split: int = 0) -> None:
+    def clear(self, train: bool = False, split: int = 0) -> None:  # type: ignore
         """Delete Features of each class from the database.
 
         :param train: Whether or not to clear the FeatureKeys
@@ -310,7 +310,7 @@ class FeaturizerUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(
+    def apply(  # type: ignore
         self, doc: Document, split: int, train: bool, **kwargs: Any
     ) -> Iterator[Any]:
         """Extract candidates from the given Context.

@@ -440,7 +440,7 @@ class MentionExtractor(UDFRunner):
 
         self.mention_classes = mention_classes
 
-    def apply(
+    def apply(  # type: ignore
         self,
         docs: Collection[Document],
         clear: bool = True,
@@ -470,7 +470,7 @@ class MentionExtractor(UDFRunner):
             docs, clear=clear, parallelism=parallelism, progress_bar=progress_bar
         )
 
-    def clear(self) -> None:
+    def clear(self) -> None:  # type: ignore
         """Delete Mentions of each class in the extractor from the given split."""
 
         # Create set of candidate_subclasses associated with each mention_subclass
@@ -575,7 +575,9 @@ class MentionExtractorUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(self, doc: Document, clear: bool, **kwargs: Any) -> Iterator[Mention]:
+    def apply(  # type: ignore
+        self, doc: Document, clear: bool, **kwargs: Any
+    ) -> Iterator[Mention]:
         """Extract mentions from the given Document.
 
         :param doc: A document to process.
