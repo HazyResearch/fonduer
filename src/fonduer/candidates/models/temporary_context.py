@@ -52,6 +52,7 @@ class TemporaryContext(object):
                 return insert_args
             else:
                 self.id = id[0]
+                return None
 
     def __repr__(self) -> str:
         raise NotImplementedError()

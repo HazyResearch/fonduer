@@ -135,7 +135,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             "meta": self.meta,
         }
 
-    def get_attrib_tokens(self, a: str = "words"):
+    def get_attrib_tokens(self, a: str = "words") -> List:
         """Get the tokens of sentence attribute *a*.
 
         Intuitively, like calling::

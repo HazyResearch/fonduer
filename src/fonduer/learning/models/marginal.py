@@ -23,7 +23,7 @@ class Marginal(Meta.Base):  # type: ignore
 
     __table_args__ = (UniqueConstraint(candidate_id, training, value),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         label = "Training" if self.training else "Predicted"
         return (
             f"<"

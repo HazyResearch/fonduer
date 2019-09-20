@@ -3,7 +3,7 @@ import os
 import tempfile
 from builtins import object
 from datetime import datetime
-from typing import Optional, Type
+from typing import Any, Optional, Type
 from urllib.parse import urlparse
 
 import sqlalchemy
@@ -118,7 +118,7 @@ class Meta(object):
     DBPWD: Optional[str] = None
     Session = None
     engine = None
-    Base = declarative_base(name="Base", cls=object)
+    Base: Any = declarative_base(name="Base", cls=object)
     postgres = False
     log_path: Optional[str] = None
 

@@ -90,11 +90,11 @@ class UDFRunner(object):
             self.logger.debug("Closing progress bar...")
             self.pb.close()
 
-    def clear(self, **kwargs) -> None:
+    def clear(self, **kwargs: Any) -> None:
         """Clear the associated data from the database."""
         raise NotImplementedError()
 
-    def _apply_st(self, doc_loader: Collection[Document], **kwargs) -> None:
+    def _apply_st(self, doc_loader: Collection[Document], **kwargs: Any) -> None:
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
 
@@ -109,7 +109,7 @@ class UDFRunner(object):
         udf.session.commit()
 
     def _apply_mt(
-        self, doc_loader: Collection[Document], parallelism: int, **kwargs
+        self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
     ) -> None:
         """Run the UDF multi-threaded using python multiprocessing"""
         if not Meta.postgres:

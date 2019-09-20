@@ -21,6 +21,7 @@ def build_node(type: str, name: str, content: str) -> str:
         return f"<p name='{name}'>{content}</p>"
     if type == "figure":
         return f"<img name='{name}' src='{content}'/>"
+    raise RuntimeError(f"unknown type")
 
 
 def column_constructor(

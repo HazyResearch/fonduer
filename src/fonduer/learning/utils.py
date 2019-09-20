@@ -1,4 +1,5 @@
 import logging
+from typing import Set, Tuple
 
 import numpy as np
 from torch.utils.data import Dataset
@@ -86,7 +87,7 @@ class MultiModalDataset(Dataset):
         return self.X[idx]
 
 
-def confusion_matrix(pred, gold):
+def confusion_matrix(pred: Set, gold: Set) -> Tuple[Set, Set, Set]:
     """Return a confusion matrix.
 
     This can be used for both entity-level and mention-level
