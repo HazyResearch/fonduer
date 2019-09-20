@@ -1,10 +1,11 @@
 import re
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import lxml.etree as et
 from lxml.etree import _Element
 
+from fonduer.parser.models import Sentence
 from fonduer.utils.utils import get_as_dict
 
 
@@ -37,7 +38,7 @@ class XMLTree:
 
 
 @lru_cache(maxsize=1024)
-def corenlp_to_xmltree(s: Any, prune_root: bool = True) -> XMLTree:
+def corenlp_to_xmltree(obj: Union[Dict, Sentence], prune_root: bool = True) -> XMLTree:
     """
     Transforms an object with CoreNLP dep_path and dep_parent attributes into
     an XMLTree. Will include elements of any array having the same dimensiion
@@ -45,7 +46,7 @@ def corenlp_to_xmltree(s: Any, prune_root: bool = True) -> XMLTree:
     corresponding to original sequence order in sentence.
     """
     # Convert input object to dictionary
-    s: Dict = get_as_dict(s)
+    s: Dict = get_as_dict(obj)
 
     # Use the dep_parents array as a guide: ensure it is present and a list of
     # ints

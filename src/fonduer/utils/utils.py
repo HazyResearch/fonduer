@@ -1,6 +1,8 @@
 import re
 from builtins import range
-from typing import Any, Dict, Iterator, List
+from typing import Dict, Iterator, List, Union
+
+from fonduer.parser.models import Sentence
 
 
 def camel_to_under(name: str) -> str:
@@ -16,7 +18,7 @@ def camel_to_under(name: str) -> str:
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def get_as_dict(x: Any) -> Dict:
+def get_as_dict(x: Union[Dict, Sentence]) -> Dict:
     """Return an object as a dictionary of its attributes."""
     if isinstance(x, dict):
         return x

@@ -4,7 +4,7 @@
 
 import functools
 from builtins import str
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from lxml import etree
@@ -12,7 +12,7 @@ from lxml.etree import _ElementTree
 from lxml.html import HtmlElement, fromstring
 
 from fonduer.candidates.models import Candidate, Mention
-from fonduer.candidates.models.span_mention import TemporarySpanMention
+from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
 from fonduer.parser.models.sentence import Sentence
 from fonduer.utils.data_model_utils.utils import _to_span
 
@@ -178,7 +178,7 @@ def get_ancestor_id_names(
     return id_names
 
 
-def common_ancestor(c: Candidate) -> List[str]:
+def common_ancestor(c: Tuple[SpanMention, SpanMention]) -> List[str]:
     """Return the path to the root that is shared between a binary-Mention Candidate.
 
     In particular, this is the common path of HTML tags.
@@ -194,7 +194,7 @@ def common_ancestor(c: Candidate) -> List[str]:
     return list(ancestor1[: np.argmin(ancestor1[:min_len] == ancestor2[:min_len])])
 
 
-def lowest_common_ancestor_depth(c: Candidate) -> int:
+def lowest_common_ancestor_depth(c: Tuple[SpanMention, SpanMention]) -> int:
     """Return the minimum distance between a binary-Mention Candidate to their
     lowest common ancestor.
 
