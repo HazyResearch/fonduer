@@ -2,7 +2,6 @@ import logging
 import re
 from builtins import map, range
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any, Collection, Iterator, List, Optional, Set
 
 from sqlalchemy.orm import Session
@@ -559,9 +558,6 @@ class MentionExtractorUDF(UDF):
             else [mention_spaces]
         )
         self.matchers = matchers if isinstance(matchers, (list, tuple)) else [matchers]
-
-        # Make sure the mention spaces are different so generators aren't expended!
-        self.mention_spaces = list(map(deepcopy, self.mention_spaces))
 
         # Preallocates internal data structure
         self.child_context_set: Set[TemporaryContext] = set()
