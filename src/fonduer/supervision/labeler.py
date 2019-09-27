@@ -23,6 +23,7 @@ from fonduer.parser.models import Document
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
+    ABSTAIN,
     ALL_SPLITS,
     batch_upsert_records,
     drop_all_keys,
@@ -406,10 +407,10 @@ class LabelerUDF(UDF):
             # mapped correctly
             if isinstance(label, int):
                 yield cid, lf_key, label
-            # None is a protected LF output value corresponding to 0,
+            # None is a protected LF output value corresponding to ABSTAIN,
             # representing LF abstaining
             elif label is None:
-                yield cid, lf_key, 0
+                yield cid, lf_key, ABSTAIN
             elif label in c.values:
                 if c.cardinality > 2:
                     yield cid, lf_key, c.values.index(label) + 1
