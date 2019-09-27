@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Dict
 
 import yaml
 
@@ -52,7 +53,7 @@ default = {
 }
 
 
-def _merge(x, y):
+def _merge(x: Dict, y: Dict) -> Dict:
     """Merge two nested dictionaries. Overwrite values in x with values in y."""
     merged = {**x, **y}
 
@@ -65,7 +66,7 @@ def _merge(x, y):
     return merged
 
 
-def get_config(path=os.getcwd()):
+def get_config(path: str = os.getcwd()) -> Dict:
     """Search for settings file in root of project and its parents."""
     config = default
     tries = 0

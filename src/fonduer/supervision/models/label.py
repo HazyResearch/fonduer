@@ -61,5 +61,5 @@ class StableLabel(Meta.Base):  # type: ignore
     # The value of the label
     value = Column(Integer, nullable=False)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__} ({self.annotator_name} : {self.value})"

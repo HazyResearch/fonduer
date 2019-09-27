@@ -1,5 +1,5 @@
 from builtins import range
-from typing import Any, Dict, Iterator, List, Set, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Set, Tuple
 
 from treedlib import (
     Children,
@@ -112,7 +112,7 @@ def extract_textual_features(
             )
 
 
-def _compile_entity_feature_generator():
+def _compile_entity_feature_generator() -> Callable:
     """
     Given optional arguments, returns a generator function which accepts an xml
     root and a list of indexes for a mention, and will generate relation

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
@@ -127,7 +127,7 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self.sentence.char_offsets[wi]
 
-    def get_attrib_tokens(self, a: str = "words"):
+    def get_attrib_tokens(self, a: str = "words") -> List:
         """Get the tokens of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -173,7 +173,9 @@ class TemporarySpanMention(TemporaryContext):
         """
         return self.get_attrib_span("words")
 
-    def __contains__(self, other_span: "TemporarySpanMention") -> bool:
+    def __contains__(self, other_span: object) -> bool:
+        if not isinstance(other_span, TemporarySpanMention):
+            return NotImplemented
         return (
             self.sentence == other_span.sentence
             and other_span.char_start >= self.char_start

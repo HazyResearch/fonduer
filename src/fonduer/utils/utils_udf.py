@@ -1,5 +1,4 @@
 import logging
-from itertools import chain
 from typing import (
     Any,
     Callable,
@@ -188,8 +187,8 @@ def get_docs_from_split(
 def get_mapping(
     session: Session,
     table: Table,
-    candidates: chain,
-    generator: Callable[[Candidate], Tuple],
+    candidates: Iterable[Candidate],
+    generator: Callable[[List[Candidate]], Iterator[Tuple]],
     key_map: Dict[Any, Any],
 ) -> Iterator[Dict[str, Any]]:
     """Generate map of keys and values for the candidate from the generator.

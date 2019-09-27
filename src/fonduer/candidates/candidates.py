@@ -86,7 +86,7 @@ class CandidateExtractor(UDFRunner):
 
         self.candidate_classes = candidate_classes
 
-    def apply(
+    def apply(  # type: ignore
         self,
         docs: Collection[Document],
         split: int = 0,
@@ -123,7 +123,7 @@ class CandidateExtractor(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def clear(self, split: int) -> None:
+    def clear(self, split: int) -> None:  # type: ignore
         """Delete Candidates of each class initialized with the
         CandidateExtractor from given split the database.
 
@@ -243,7 +243,7 @@ class CandidateExtractorUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(
+    def apply(  # type: ignore
         self, context: Document, clear: bool, split: int, **kwargs: Any
     ) -> Iterator[Candidate]:
         """Extract candidates from the given Context.

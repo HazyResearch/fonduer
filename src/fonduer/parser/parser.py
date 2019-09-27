@@ -99,7 +99,7 @@ class Parser(UDFRunner):
             language=language,
         )
 
-    def apply(
+    def apply(  # type: ignore
         self,
         doc_loader: Collection[Document],
         clear: bool = True,
@@ -132,7 +132,7 @@ class Parser(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def clear(self, pdf_path: Optional[str] = None) -> None:
+    def clear(self, pdf_path: Optional[str] = None) -> None:  # type: ignore
         """Clear all of the ``Context`` objects in the database.
 
         :param pdf_path: This parameter is ignored.
@@ -237,7 +237,7 @@ class ParserUDF(UDF):
                 else:
                     self.vizlink = VisualLinker(pdf_path)
 
-    def apply(
+    def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
     ) -> Iterator[Sentence]:
         # The document is the Document model

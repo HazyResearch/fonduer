@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declared_attr
@@ -12,6 +14,8 @@ class AnnotationKeyMixin(object):
     An AnnotationKey is the unique name associated with a set of Annotations,
     corresponding e.g. to a single labeling function or feature.
     """
+
+    __name__: str  # declare for mypy
 
     @declared_attr
     def __tablename__(cls) -> str:
@@ -28,7 +32,7 @@ class AnnotationKeyMixin(object):
         return Column(postgresql.ARRAY(String), nullable=False)
 
     @declared_attr
-    def __table_args__(cls):
+    def __table_args__(cls) -> Tuple[UniqueConstraint]:
         return (UniqueConstraint("name"),)
 
     def __repr__(self) -> str:
@@ -52,6 +56,9 @@ class AnnotationMixin(object):
 
     The annotation class should include a Column attribute named values.
     """
+
+    __name__: str  # declare for mypy
+    values: Column  # declare for mypy
 
     @declared_attr
     def __tablename__(cls) -> str:

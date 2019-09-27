@@ -34,8 +34,10 @@ class TemporaryDocumentMention(TemporaryContext):
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_document: "TemporaryDocumentMention") -> bool:
-        return self.__eq__(other_document)
+    def __contains__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryDocumentMention):
+            return NotImplemented
+        return self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.document)

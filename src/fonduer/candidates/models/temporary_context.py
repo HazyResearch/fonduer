@@ -1,5 +1,5 @@
 from builtins import object
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
@@ -26,7 +26,7 @@ class TemporaryContext(object):
     def __init__(self) -> None:
         self.id = None
 
-    def _load_id_or_insert(self, session: Session) -> Dict[str, Any]:
+    def _load_id_or_insert(self, session: Session) -> Optional[Dict[str, Any]]:
         """Load the id of the temporary context if it exists or return insert args.
 
         As a side effect, this also inserts the Context object for the stableid.
@@ -52,6 +52,7 @@ class TemporaryContext(object):
                 return insert_args
             else:
                 self.id = id[0]
+                return None
 
     def __repr__(self) -> str:
         raise NotImplementedError()
@@ -67,6 +68,11 @@ class TemporaryContext(object):
         raise NotImplementedError()
 
     def __gt__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryContext):
+            return NotImplemented
+        raise NotImplementedError()
+
+    def __contains__(self, other: object) -> bool:
         if not isinstance(other, TemporaryContext):
             return NotImplemented
         raise NotImplementedError()

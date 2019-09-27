@@ -34,8 +34,10 @@ class TemporaryCellMention(TemporaryContext):
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_cell: "TemporaryCellMention") -> bool:
-        return self.__eq__(other_cell)
+    def __contains__(self, other: object) -> bool:
+        if not isinstance(other, TemporaryCellMention):
+            return NotImplemented
+        return self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.cell)

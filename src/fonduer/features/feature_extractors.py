@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Iterator, List, Tuple
+from typing import Callable, Dict, Iterator, List, Tuple, Union
 
 from fonduer.candidates.models import Candidate
 from fonduer.features.feature_libs.structural_features import (
@@ -48,7 +48,9 @@ class FeatureExtractor(object):
 
         self.feature_extractors.extend(customize_feature_funcs)
 
-    def extract(self, candidates: List[Candidate]) -> Iterator[Tuple[int, str, int]]:
+    def extract(
+        self, candidates: Union[List[Candidate], Candidate]
+    ) -> Iterator[Tuple[int, str, int]]:
         """Extract features from candidates.
 
         :param candidates: A list of candidates to extract features from

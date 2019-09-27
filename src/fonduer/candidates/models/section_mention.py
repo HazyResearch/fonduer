@@ -34,8 +34,10 @@ class TemporarySectionMention(TemporaryContext):
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
-    def __contains__(self, other_section: "TemporarySectionMention") -> bool:
-        return self.__eq__(other_section)
+    def __contains__(self, other: object) -> bool:
+        if not isinstance(other, TemporarySectionMention):
+            return NotImplemented
+        return self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.section)

@@ -188,7 +188,7 @@ def candidate_subclass(
 
         # Create table in DB
         if Meta.engine and not Meta.engine.has_table(table_name):
-            C.__table__.create(bind=Meta.engine)
+            C.__table__.create(bind=Meta.engine)  # type: ignore
 
         candidate_subclasses[class_name] = C, class_spec
 
