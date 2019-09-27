@@ -127,11 +127,10 @@ def test_incremental(caplog):
     labeler.apply(split=0, lfs=[stg_temp_lfs], train=True, parallelism=PARALLEL)
     assert session.query(Label).count() == 70
 
-    # Only 5 because LF_operating_row doesn't apply to the first test doc
-    assert session.query(LabelKey).count() == 5
+    assert session.query(LabelKey).count() == 6
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (70, 5)
-    assert len(labeler.get_keys()) == 5
+    assert L_train[0].shape == (70, 6)
+    assert len(labeler.get_keys()) == 6
 
     docs_path = "tests/data/html/112823.html"
     pdf_path = "tests/data/pdf/112823.pdf"
