@@ -4,7 +4,7 @@ import pickle
 
 import numpy as np
 import pytest
-from metal.label_model import LabelModel
+from snorkel.labeling import LabelModel
 
 import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
@@ -372,10 +372,10 @@ def test_e2e(caplog):
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
     assert L_train_gold[0].shape == (3493, 1)
 
-    gen_model = LabelModel(k=2)
-    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
+    gen_model = LabelModel()
+    gen_model.fit(L_train=L_train[0].toarray(), n_epochs=500, log_freq=100)
 
-    train_marginals = gen_model.predict_proba(L_train[0])
+    train_marginals = gen_model.predict_proba(L_train[0].toarray())
 
     disc_model = LogisticRegression()
     disc_model.train(
@@ -429,14 +429,14 @@ def test_e2e(caplog):
     ]
     labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
     assert session.query(Label).count() == 6478
-    assert session.query(LabelKey).count() == 16
+    assert session.query(LabelKey).count() == 19
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3493, 16)
+    assert L_train[0].shape == (3493, 19)
 
-    gen_model = LabelModel(k=2)
-    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
+    gen_model = LabelModel()
+    gen_model.fit(L_train=L_train[0].toarray(), n_epochs=500, log_freq=100)
 
-    train_marginals = gen_model.predict_proba(L_train[0])
+    train_marginals = gen_model.predict_proba(L_train[0].toarray())
 
     disc_model = LogisticRegression()
     disc_model.train(

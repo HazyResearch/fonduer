@@ -20,7 +20,7 @@ setup(
         "numpy>=1.11, <2.0",
         "pyyaml>=4.2b1, <5.0",
         "scipy>=1.1.0, <2.0.0",
-        "snorkel-metal>=0.4.1, <0.5.0",
+        "snorkel>=0.9.0, <0.10.0",
         "networkx>=2.2, <2.4",
         "spacy>=2.1.3, <2.2.0",
         "sqlalchemy[postgresql_psycopg2binary]>=1.2.12, <2.0.0",
