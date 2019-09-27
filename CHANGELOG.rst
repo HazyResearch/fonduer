@@ -74,6 +74,8 @@ Changed
 * `@HiromuHota`_: Use the official name "beautifulsoup4" instead of an alias "bs4".
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 * `@HiromuHota`_: Use pytorch of 1.2.0 for Travis and Docker for simpler installation (than 1.1.0 and lower).
+* `@HiromuHota`_: Update Pandas to 0.24.0 to be align with Snorkel of v0.9.X.
+  (`#317 <https://github.com/HazyResearch/fonduer/issues/317>`_)
 
 Removed
 ^^^^^^^
