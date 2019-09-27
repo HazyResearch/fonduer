@@ -9,9 +9,9 @@ from fonduer.candidates.candidates import Candidate
 from fonduer.learning.classifier import Classifier
 from fonduer.learning.disc_models.logistic_regression import LogisticRegression
 
-ABSTAIN = 0
-FALSE = 1
-TRUE = 2
+ABSTAIN = -1
+FALSE = 0
+TRUE = 1
 
 
 def test_classifier_predict(caplog):

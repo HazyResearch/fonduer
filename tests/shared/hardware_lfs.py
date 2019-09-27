@@ -8,9 +8,9 @@ from fonduer.utils.data_model_utils import (
     overlap,
 )
 
-ABSTAIN = 0
-FALSE = 1
-TRUE = 2
+ABSTAIN = -1
+FALSE = 0
+TRUE = 1
 
 
 def LF_storage_row(c):

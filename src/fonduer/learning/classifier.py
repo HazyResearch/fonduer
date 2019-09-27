@@ -403,7 +403,7 @@ class Classifier(nn.Module):
         self.logger.info(f"Using positive label class {pos_label} with threshold {b}")
 
         Y_pred = np.array(
-            [pos_label if p[pos_label - 1] > b else 3 - pos_label for p in Y_prob]
+            [pos_label if p[pos_label] > b else pos_label - 1 for p in Y_prob]
         )
         if return_probs:
             return Y_pred, Y_prob
@@ -452,7 +452,7 @@ class Classifier(nn.Module):
         if self.cardinality == 2:
             # Either remap or filter out unlabeled (0-valued) test labels
             if set_unlabeled_as_neg:
-                Y_test[Y_test == 0] = 3 - pos_label
+                Y_test[Y_test == 0] = pos_label - 1
             else:
                 Y_pred = Y_pred[Y_test != 0]
                 Y_test = Y_test[Y_test != 0]
