@@ -25,7 +25,7 @@ setup(
         "spacy>=2.1.3, <2.2.0",
         "sqlalchemy[postgresql_psycopg2binary]>=1.2.12, <2.0.0",
         "tensorboardX>=1.6, <2.0",
-        "torch>=1.0, <2.0",
+        "torch>=1.1.0,<1.2.0",
         "tqdm>=4.26.0, <5.0.0",
         "treedlib>=0.1.1, <0.2.0",
         "wand>=0.4.4, <0.5.0",

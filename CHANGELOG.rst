@@ -75,6 +75,7 @@ Changed
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 * `@HiromuHota`_: Update Pandas to 0.24.0 to be align with Snorkel of v0.9.X.
   (`#317 <https://github.com/HazyResearch/fonduer/issues/317>`_)
+* `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
 
 Removed
 ^^^^^^^
