@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 # integer to ensure that it won't conflict with a user's split value.
 ALL_SPLITS = "ALL"
 
+ABSTAIN = -1
+
 
 def _get_cand_values(candidate: Candidate, key_table: Table) -> List:
     """Get the corresponding values for the key_table."""
@@ -207,7 +209,7 @@ def get_mapping(
             cand_map = {}
 
         for cid, key, value in generator(cand):
-            if value == 0:
+            if value == ABSTAIN:
                 continue
             cand_map[key] = value
 
