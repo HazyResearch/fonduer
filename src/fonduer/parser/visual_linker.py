@@ -8,7 +8,6 @@ from collections import OrderedDict, defaultdict
 from typing import DefaultDict, Dict, Iterator, List, Optional, Tuple
 
 import numpy as np
-import pandas as pd
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
@@ -325,40 +324,6 @@ class VisualLinker(object):
             (self.html_word_list[i][0], self.pdf_word_list[html_to_pdf[i]][0])
             for i in range(len(self.html_word_list))
         )
-
-    def _display_links(self, max_rows: int = 100) -> None:
-        html = []
-        pdf = []
-        j = []
-        for i, l in enumerate(self.links):
-            html.append(self.html_word_list[i][1])
-            for k, b in enumerate(self.pdf_word_list):
-                if b[0] == self.links[self.html_word_list[i][0]]:
-                    pdf.append(b[1])
-                    j.append(k)
-                    break
-        try:
-            assert len(pdf) == len(html)
-        except Exception:
-            self.logger.exception("PDF and HTML are not the same length")
-
-        total = 0
-        match = 0
-        for i, word in enumerate(html):
-            total += 1
-            if word == pdf[i]:
-                match += 1
-        self.logger.info((match, total, match / total))
-
-        data = {
-            # 'i': range(len(self.links)),
-            "html": html,
-            "pdf": pdf,
-            "j": j,
-        }
-        pd.set_option("display.max_rows", max_rows)
-        self.logger.info(pd.DataFrame(data, columns=["html", "pdf", "j"]))
-        pd.reset_option("display.max_rows")
 
     def _update_coordinates(self) -> Iterator[Sentence]:
         for sentence in self.sentences:
