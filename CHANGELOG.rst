@@ -73,8 +73,6 @@ Changed
 * `@HiromuHota`_: Now ``longest_match_only`` of ``Union``, ``Intersect``, and ``Inverse`` override that of child matchers.
 * `@HiromuHota`_: Use the official name "beautifulsoup4" instead of an alias "bs4".
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
-* `@HiromuHota`_: Update Pandas to 0.24.0 to be align with Snorkel of v0.9.X.
-  (`#317 <https://github.com/HazyResearch/fonduer/issues/317>`_)
 * `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
 
 Removed
@@ -84,6 +82,7 @@ Removed
 * `@HiromuHota`_: Remove the dependency on nltk, but ``PorterStemmer()`` can still be used,
   if it is provided as ``DictionaryMatch(stemmer=PorterStemmer())``.
 * `@HiromuHota`_: Remove ``_NgramMatcher`` and ``_FigureMatcher`` as they are no longer needed.
+* `@HiromuHota`_: Remove the dependency on Pandas and visual_linker._display_links.
 
 Fixed
 ^^^^^
