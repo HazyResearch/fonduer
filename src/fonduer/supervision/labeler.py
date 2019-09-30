@@ -23,7 +23,6 @@ from fonduer.parser.models import Document
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
-    ABSTAIN,
     ALL_SPLITS,
     batch_upsert_records,
     drop_all_keys,
@@ -37,6 +36,11 @@ from fonduer.utils.utils_udf import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Snorkel standardized ABSTAIN as follows:
+# ABSTAIN is None (LFs), -1 (label matrix), or 0 (LFAnalysis)
+# https://github.com/snorkel-team/snorkel/pull/1309
+ABSTAIN = -1
 
 
 class Labeler(UDFRunner):
