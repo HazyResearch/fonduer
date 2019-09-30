@@ -98,6 +98,9 @@ Changed
 * `@HiromuHota`_: Use the official name "beautifulsoup4" instead of an alias "bs4".
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 * `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
+* `@HiromuHota`_: Change ABSTAIN to -1 to be compatible with Snorkel of 0.9.X.
+  (`#310 <https://github.com/HazyResearch/fonduer/issues/310>`_)
+  (`#320 <https://github.com/HazyResearch/fonduer/pull/320>`_)
 
 Removed
 ^^^^^^^
