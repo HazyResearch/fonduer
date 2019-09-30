@@ -7,10 +7,7 @@ from fonduer.utils.data_model_utils import (
     get_row_ngrams,
     overlap,
 )
-
-ABSTAIN = -1
-FALSE = 0
-TRUE = 1
+from tests.shared.hardware_utils import ABSTAIN, FALSE, TRUE
 
 
 def LF_storage_row(c):

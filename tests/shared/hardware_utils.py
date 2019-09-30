@@ -6,7 +6,6 @@ from builtins import range
 from fonduer.candidates.models import Candidate
 from fonduer.learning.utils import confusion_matrix
 from fonduer.supervision.models import GoldLabel, GoldLabelKey
-from tests.shared.hardware_lfs import FALSE, TRUE
 
 try:
     from IPython import get_ipython
@@ -20,6 +19,10 @@ else:
 
 
 logger = logging.getLogger(__name__)
+
+ABSTAIN = -1
+FALSE = 0
+TRUE = 1
 
 
 def get_gold_dict(
