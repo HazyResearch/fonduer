@@ -262,10 +262,8 @@ class CandidateExtractorUDF(UDF):
             cands = product(
                 *[
                     enumerate(
-                        self.session.query(mention)
-                        .filter(mention.document_id == context.id)
-                        .order_by(mention.id)
-                        .all()
+                        # a list of mentions for each mention subclass within a doc
+                        getattr(context, mention.__tablename__ + "s")
                     )
                     for mention in candidate_class.mentions
                 ]
