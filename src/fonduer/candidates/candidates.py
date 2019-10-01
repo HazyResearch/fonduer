@@ -252,6 +252,9 @@ class CandidateExtractorUDF(UDF):
         :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
+        # Reattach doc with the current session or DetachedInstanceError happens
+        doc = self.session.merge(doc)
+
         logger.debug(f"Document: {doc}")
         # Iterate over each candidate class
         for i, candidate_class in enumerate(self.candidate_classes):
