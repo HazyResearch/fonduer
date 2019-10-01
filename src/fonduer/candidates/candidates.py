@@ -244,26 +244,26 @@ class CandidateExtractorUDF(UDF):
         super().__init__(**kwargs)
 
     def apply(  # type: ignore
-        self, context: Document, clear: bool, split: int, **kwargs: Any
+        self, doc: Document, clear: bool, split: int, **kwargs: Any
     ) -> Iterator[Candidate]:
         """Extract candidates from the given Context.
 
-        :param context: A document to process.
+        :param doc: A document to process.
         :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
-        logger.debug(f"Document: {context}")
+        logger.debug(f"Document: {doc}")
         # Iterate over each candidate class
         for i, candidate_class in enumerate(self.candidate_classes):
             logger.debug(f"  Relation: {candidate_class.__name__}")
             # Generates and persists candidates
             candidate_args = {"split": split}
-            candidate_args["document_id"] = context.id
+            candidate_args["document_id"] = doc.id
             cands = product(
                 *[
                     enumerate(
                         # a list of mentions for each mention subclass within a doc
-                        getattr(context, mention.__tablename__ + "s")
+                        getattr(doc, mention.__tablename__ + "s")
                     )
                     for mention in candidate_class.mentions
                 ]
