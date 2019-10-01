@@ -196,11 +196,6 @@ class UDF(Process):
         self.out_queue = out_queue
         self.worker_id = worker_id
 
-        # Each UDF starts its own Engine
-        # See SQLalchemy, using connection pools with multiprocessing.
-        Session = new_sessionmaker()
-        self.session = Session()
-
         # We use a workaround to pass in the apply kwargs
         self.apply_kwargs: Dict[str, Any] = {}
 
@@ -210,6 +205,10 @@ class UDF(Process):
         multiprocess setting The basic routine is: get from JoinableQueue,
         apply, put / add outputs, loop
         """
+        # Each UDF starts its own Engine
+        # See SQLalchemy, using connection pools with multiprocessing.
+        Session = new_sessionmaker()
+        self.session = Session()
         while True:
             try:
                 doc = self.in_queue.get(True, QUEUE_TIMEOUT)
