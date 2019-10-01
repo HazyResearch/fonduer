@@ -275,10 +275,10 @@ def test_cand_gen(caplog):
 
     if platform == "darwin":
         logger.info("Using single core.")
-        PARALLEL = 1
+        PARALLEL = 32
     else:
         logger.info("Using two cores.")
-        PARALLEL = 2  # Travis only gives 2 cores
+        PARALLEL = 32  # Travis only gives 2 cores
 
     def do_nothing_matcher(fig):
         return True
