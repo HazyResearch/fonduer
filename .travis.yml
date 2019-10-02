@@ -88,6 +88,7 @@ install:
 
 before_script:
 - psql -c "SHOW config_file;" -U postgres
+- grep "max_connections" /etc/postgresql/10/main/postgresql.conf
 - createdb parser_test -U postgres
 - createdb e2e_test -U postgres
 - createdb visualizer_test -U postgres
