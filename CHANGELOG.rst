@@ -92,6 +92,8 @@ Fixed
   (`#261 <https://github.com/HazyResearch/fonduer/pull/261>`_)
 * `@HiromuHota`_: Add a safeguard that prevents from accessing Meta.engine before it is assigned.
   Also this change allows creating a mention/candidate subclass even before Meta is initialized.
+* `@HiromuHota`_: Create an Engine and open a connection in each child process.
+  (`#323 <https://github.com/HazyResearch/fonduer/issues/323>`_)
 
 0.7.0_ - 2019-06-12
 -------------------
