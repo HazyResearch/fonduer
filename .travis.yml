@@ -37,6 +37,10 @@ before_install:
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     OS=Linux-x86_64
     sudo apt-get install -q -y libmecab-dev swig mecab unidic-mecab
+    # Set the max number of connections 100
+    # No need to adjust it on Mac as it's 100 by default
+    sudo sed -i 's/max_connections = 255/max_connections = 100/g' /etc/postgresql/10/main/postgresql.conf
+    sudo service postgresql restart
   else
     OS=MacOSX-x86_64
     brew update
@@ -76,10 +80,6 @@ before_install:
     pip install Wand
     sudo apt-get install libmagickwand-dev ghostscript
     sudo rm -rf /etc/ImageMagick-6/policy.xml
-    # Set the max number of connections 100
-    # Not need to adjust it on Mac as it's 100 by default
-    sudo sed -i 's/max_connections = 255/max_connections = 100/g' /etc/postgresql/10/main/postgresql.conf
-    sudo service postgresql restart
   fi
 
 install:
