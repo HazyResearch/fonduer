@@ -77,6 +77,7 @@ before_install:
     sudo apt-get install libmagickwand-dev ghostscript
     sudo rm -rf /etc/ImageMagick-6/policy.xml
     # Set the max number of connections 100
+    # Not need to adjust it on Mac as it's 100 by default
     sudo sed -i 's/max_connections = 255/max_connections = 100/g' /etc/postgresql/10/main/postgresql.conf
     sudo service postgresql restart
   fi
@@ -90,8 +91,6 @@ install:
 - python -m spacy download en
 
 before_script:
-- psql -c "SHOW config_file;" -U postgres
-- grep "max_connections" /usr/local/var/postgres/postgresql.conf
 - createdb parser_test -U postgres
 - createdb e2e_test -U postgres
 - createdb visualizer_test -U postgres
