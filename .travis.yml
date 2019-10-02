@@ -87,6 +87,7 @@ install:
 - python -m spacy download en
 
 before_script:
+- psql -c "SHOW config_file;" -U postgres
 - createdb parser_test -U postgres
 - createdb e2e_test -U postgres
 - createdb visualizer_test -U postgres
