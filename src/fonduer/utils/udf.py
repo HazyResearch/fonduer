@@ -97,6 +97,8 @@ class UDFRunner(object):
     def _apply_st(self, doc_loader: Collection[Document], **kwargs: Any) -> None:
         """Run the UDF single-threaded, optionally with progress bar"""
         udf = self.udf_class(**self.udf_init_kwargs)
+        Session = new_sessionmaker()
+        udf.session = Session()
 
         # Run single-thread
         for doc in doc_loader:
@@ -105,8 +107,9 @@ class UDFRunner(object):
 
             udf.session.add_all(y for y in udf.apply(doc, **kwargs))
 
-        # Commit session and close progress bar if applicable
+        # Commit and close session
         udf.session.commit()
+        udf.session.close()
 
     def _apply_mt(
         self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
