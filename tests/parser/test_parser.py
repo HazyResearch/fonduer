@@ -1,6 +1,5 @@
 import logging
 import os
-from unittest.mock import patch
 
 import pytest
 
@@ -30,25 +29,20 @@ def get_parser_udf(
     pdf_path=None,
 ):
     """Return an instance of ParserUDF."""
-
-    # Patch new_sessionmaker() under the namespace of fonduer.utils.udf
-    # See more details in
-    # https://docs.python.org/3/library/unittest.mock.html#where-to-patch
-    with patch("fonduer.utils.udf.new_sessionmaker", autospec=True):
-        parser_udf = ParserUDF(
-            structural=structural,
-            blacklist=blacklist,
-            flatten=flatten,
-            lingual=lingual,
-            lingual_parser=lingual_parser,
-            strip=strip,
-            replacements=replacements,
-            tabular=tabular,
-            visual=visual,
-            vizlink=vizlink,
-            pdf_path=pdf_path,
-            language=language,
-        )
+    parser_udf = ParserUDF(
+        structural=structural,
+        blacklist=blacklist,
+        flatten=flatten,
+        lingual=lingual,
+        lingual_parser=lingual_parser,
+        strip=strip,
+        replacements=replacements,
+        tabular=tabular,
+        visual=visual,
+        vizlink=vizlink,
+        pdf_path=pdf_path,
+        language=language,
+    )
     return parser_udf
 
 
