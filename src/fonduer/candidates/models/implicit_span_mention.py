@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import text
 from sqlalchemy.types import PickleType
 
@@ -245,7 +245,11 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
         Integer, ForeignKey("context.id", ondelete="CASCADE"), primary_key=True
     )
     #: The parent ``Sentence``.
-    sentence = relationship("Context", foreign_keys=sentence_id)
+    sentence = relationship(
+        "Context",
+        backref=backref("implicit_spans", cascade="all, delete-orphan"),
+        foreign_keys=sentence_id,
+    )
 
     #: The starting character-index of the ``ImplicitSpanMention``.
     char_start = Column(Integer, nullable=False)
@@ -312,6 +316,27 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
         "polymorphic_identity": "implicit_span_mention",
         "inherit_condition": (id == Context.id),
     }
+
+    def __init__(self, tc: TemporaryImplicitSpanMention):
+        self.stable_id = tc.get_stable_id()
+        self.sentence = tc.sentence
+        self.char_start = tc.char_start
+        self.char_end = tc.char_end
+        self.expander_key = tc.expander_key
+        self.position = tc.position
+        self.text = tc.text
+        self.words = tc.words
+        self.lemmas = tc.lemmas
+        self.pos_tags = tc.pos_tags
+        self.ner_tags = tc.ner_tags
+        self.dep_parents = tc.dep_parents
+        self.dep_labels = tc.dep_labels
+        self.page = tc.page
+        self.top = tc.top
+        self.left = tc.left
+        self.bottom = tc.bottom
+        self.right = tc.right
+        self.meta = tc.meta
 
     def _get_instance(self, **kwargs: Any) -> "ImplicitSpanMention":
         return ImplicitSpanMention(**kwargs)

@@ -150,7 +150,11 @@ def test_incremental():
 
     # Get mentions from just the new docs
     mention_extractor.apply(new_docs, parallelism=PARALLEL, clear=False)
+    assert session.query(Part).count() == 81
+    assert session.query(Temp).count() == 31
 
+    # Test if existing mentions are skipped.
+    mention_extractor.apply(new_docs, parallelism=PARALLEL, clear=False)
     assert session.query(Part).count() == 81
     assert session.query(Temp).count() == 31
 
@@ -158,6 +162,12 @@ def test_incremental():
     candidate_extractor.apply(new_docs, split=0, parallelism=PARALLEL, clear=False)
 
     # Grab candidate lists
+    train_cands = candidate_extractor.get_candidates(split=0)
+    assert len(train_cands) == 1
+    assert len(train_cands[0]) == 1502
+
+    # Test if existing candidates are skipped.
+    candidate_extractor.apply(new_docs, split=0, parallelism=PARALLEL, clear=False)
     train_cands = candidate_extractor.get_candidates(split=0)
     assert len(train_cands) == 1
     assert len(train_cands[0]) == 1502

@@ -89,3 +89,7 @@ class FigureMention(Context, TemporaryFigureMention):
         "polymorphic_identity": "figure_mention",
         "inherit_condition": (id == Context.id),
     }
+
+    def __init__(self, tc: TemporaryFigureMention):
+        self.stable_id = tc.get_stable_id()
+        self.figure = tc.figure

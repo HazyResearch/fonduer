@@ -1,23 +1,9 @@
 import logging
 import re
 from builtins import map, range
-from collections import defaultdict
-from typing import (
-    Any,
-    Collection,
-    DefaultDict,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    Type,
-    Union,
-)
+from typing import Any, Collection, Iterable, Iterator, List, Optional, Set, Union
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import insert, select
 
 from fonduer.candidates.matchers import _Matcher
 from fonduer.candidates.models import Candidate, Mention
@@ -577,46 +563,60 @@ class MentionExtractorUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(  # type: ignore
-        self, doc: Document, clear: bool, **kwargs: Any
-    ) -> Iterator[Mention]:
+    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Mention]:
         """Extract mentions from the given Document.
 
         :param doc: A document to process.
-        :param clear: Whether or not to clear the existing database entries.
         """
+        # Construct a dict of stable ids of contexts.
+        dict_of_stable_id = {
+            doc.stable_id: doc,
+            **{
+                c.stable_id: c
+                for a in [
+                    "sentences",
+                    "paragraphs",
+                    "captions",
+                    "cells",
+                    "tables",
+                    "sections",
+                    "figures",
+                ]
+                for c in getattr(doc, a)
+            },
+            **{
+                c.stable_id: c
+                for s in doc.sentences
+                for a in ["spans", "implicit_spans"]
+                for c in getattr(s, a)
+            },
+        }
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
-            tc_to_insert: DefaultDict[Type, List[Dict[str, Any]]] = defaultdict(list)
             # Generate TemporaryContexts that are children of the context using
             # the mention_space and filtered by the Matcher
-            self.child_context_set.clear()
-            for tc in self.matchers[i].apply(self.mention_spaces[i].apply(doc)):
-                rec: Optional[Dict[str, Any]] = tc._load_id_or_insert(self.session)
-                if rec:
-                    tc_to_insert[tc._get_table()].append(rec)
-                self.child_context_set.add(tc)
+            for child_context in self.matchers[i].apply(
+                self.mention_spaces[i].apply(doc)
+            ):
+                # Skip if this temporary context is used by this mention class.
+                stable_id = child_context.get_stable_id()
+                if hasattr(doc, mention_class.__tablename__ + "s") and any(
+                    [
+                        m.context.stable_id == stable_id
+                        for m in getattr(doc, mention_class.__tablename__ + "s")
+                    ]
+                ):
+                    continue
+                # Re-use a persisted context if exists.
+                if stable_id in dict_of_stable_id:
+                    context = dict_of_stable_id[stable_id]
+                # Persist a temporary context.
+                else:
+                    context_type = child_context._get_table()
+                    context = context_type(child_context)
+                    dict_of_stable_id[stable_id] = context
 
-            # Bulk insert temporary contexts
-            for table, records in tc_to_insert.items():
-                stmt = insert(table.__table__).values(records)
-                self.session.execute(stmt)
-
-            # Generates and persists mentions
-            mention_args = {"document_id": doc.id}
-            for child_context in self.child_context_set:
-                # Assemble mention arguments
-                for arg_name in mention_class.__argnames__:
-                    mention_args[arg_name + "_id"] = child_context.id
-
-                # Checking for existence
-                if not clear:
-                    q = select([mention_class.id])
-                    for key, value in list(mention_args.items()):
-                        q = q.where(getattr(mention_class, key) == value)
-                    mention_id = self.session.execute(q).first()
-                    if mention_id is not None:
-                        continue
+                mention_args = {"document": doc, "context": context}
 
                 # Add Mention to session
                 yield mention_class(**mention_args)

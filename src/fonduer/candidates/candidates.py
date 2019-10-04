@@ -15,7 +15,6 @@ from typing import (
 )
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import select
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.parser.models.document import Document
@@ -259,12 +258,11 @@ class CandidateExtractorUDF(UDF):
         super().__init__(**kwargs)
 
     def apply(  # type: ignore
-        self, doc: Document, clear: bool, split: int, **kwargs: Any
+        self, doc: Document, split: int, **kwargs: Any
     ) -> Iterator[Candidate]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
-        :param clear: Whether or not to clear the existing database entries.
         :param split: Which split to use.
         """
         logger.debug(f"Document: {doc}")
@@ -273,7 +271,7 @@ class CandidateExtractorUDF(UDF):
             logger.debug(f"  Relation: {candidate_class.__name__}")
             # Generates and persists candidates
             candidate_args = {"split": split}
-            candidate_args["document_id"] = doc.id
+            candidate_args["document"] = doc
             cands = product(
                 *[
                     enumerate(
@@ -283,6 +281,17 @@ class CandidateExtractorUDF(UDF):
                     for mention in candidate_class.mentions
                 ]
             )
+            # Construct a set of stable ids of candidates.
+            set_of_stable_ids = set()
+            if hasattr(doc, candidate_class.__tablename__ + "s"):
+                set_of_stable_ids.update(
+                    set(
+                        [
+                            tuple(m.context.get_stable_id() for m in c)
+                            for c in getattr(doc, candidate_class.__tablename__ + "s")
+                        ]
+                    )
+                )
             for cand in cands:
 
                 # Apply throttler if one was given.
@@ -314,16 +323,17 @@ class CandidateExtractorUDF(UDF):
 
                 # Assemble candidate arguments
                 for j, arg_name in enumerate(candidate_class.__argnames__):
-                    candidate_args[arg_name + "_id"] = cand[j][1].id
+                    candidate_args[arg_name] = cand[j][1]
 
-                # Checking for existence
-                if not clear:
-                    q = select([candidate_class.id])
-                    for key, value in list(candidate_args.items()):
-                        q = q.where(getattr(candidate_class, key) == value)
-                    candidate_id = self.session.execute(q).first()
-                    if candidate_id is not None:
-                        continue
+                stable_ids = tuple(
+                    cand[j][1].context.get_stable_id() for j in range(self.arities[i])
+                )
+                # Skip if this (temporary) candidate is used by this candidate class.
+                if (
+                    hasattr(doc, candidate_class.__tablename__ + "s")
+                    and stable_ids in set_of_stable_ids
+                ):
+                    continue
 
                 # Add Candidate to session
                 yield candidate_class(**candidate_args)
