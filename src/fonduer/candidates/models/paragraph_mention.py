@@ -44,13 +44,7 @@ class TemporaryParagraphMention(TemporaryContext):
 
     def get_stable_id(self) -> str:
         """Return a stable id for the ``ParagraphMention``."""
-        return (
-            f"{self.paragraph.document.name}"
-            f"::"
-            f"{self._get_polymorphic_identity()}"
-            f":"
-            f"{self.paragraph.position}"
-        )
+        return self.paragraph.stable_id
 
     def _get_table(self) -> Type["ParagraphMention"]:
         return ParagraphMention

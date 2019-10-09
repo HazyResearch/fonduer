@@ -44,13 +44,7 @@ class TemporaryTableMention(TemporaryContext):
 
     def get_stable_id(self) -> str:
         """Return a stable id for the ``TableMention``."""
-        return (
-            f"{self.table.document.name}"
-            f"::"
-            f"{self._get_polymorphic_identity()}"
-            f":"
-            f"{self.table.position}"
-        )
+        return self.table.stable_id
 
     def _get_table(self) -> Type["TableMention"]:
         return TableMention

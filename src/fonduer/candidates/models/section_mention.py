@@ -44,13 +44,7 @@ class TemporarySectionMention(TemporaryContext):
 
     def get_stable_id(self) -> str:
         """Return a stable id for the ``SectionMention``."""
-        return (
-            f"{self.section.document.name}"
-            f"::"
-            f"{self._get_polymorphic_identity()}"
-            f":"
-            f"{self.section.position}"
-        )
+        return self.section.stable_id
 
     def _get_table(self) -> Type["SectionMention"]:
         return SectionMention

@@ -44,13 +44,7 @@ class TemporaryFigureMention(TemporaryContext):
 
     def get_stable_id(self) -> str:
         """Return a stable id for the ``FigureMention``."""
-        return (
-            f"{self.figure.document.name}"
-            f"::"
-            f"{self._get_polymorphic_identity()}"
-            f":"
-            f"{self.figure.position}"
-        )
+        return self.figure.stable_id
 
     def _get_table(self) -> Type["FigureMention"]:
         return FigureMention
