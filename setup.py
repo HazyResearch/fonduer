@@ -16,6 +16,7 @@ setup(
     install_requires=[
         "beautifulsoup4==4.7.1",
         "editdistance>=0.5.2, <0.6.0",
+        "emmental==0.0.4",
         "lxml>=4.2.5, <5.0.0",
         "numpy>=1.11, <2.0",
         "pyyaml>=4.2b1, <5.0",
@@ -23,7 +24,6 @@ setup(
         "snorkel>=0.9.2, <0.10.0",
         "spacy>=2.1.3, <2.2.0",
         "sqlalchemy[postgresql]>=1.3.7, <2.0.0",
-        "tensorboardX>=1.6, <2.0",
         "torch>=1.1.0,<1.2.0",
         "tqdm>=4.36.0, <5.0.0",
         "treedlib>=0.1.1, <0.2.0",

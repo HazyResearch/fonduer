@@ -9,12 +9,12 @@ def test_load_config():
     defaults = get_config()
     assert defaults["featurization"]["textual"]["window_feature"]["size"] == 3
     assert defaults["learning"]["LSTM"]["emb_dim"] == 100
-    assert defaults["learning"]["LSTM"]["host_device"] == "CPU"
+    assert defaults["learning"]["LSTM"]["bias"] is False
 
     # Check that file is loaded if present
     settings = get_config(os.path.dirname(__file__))
     assert settings["featurization"]["textual"]["window_feature"]["size"] == 8
-    assert settings["learning"]["LSTM"]["host_device"] == "GPU"
+    assert settings["learning"]["LSTM"]["bias"] is False
 
     # Check that defaults are used for unspecified settings
     assert (
