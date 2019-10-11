@@ -626,17 +626,6 @@ def test_multimodal_cand():
     assert session.query(ms_cell).count() == 21
 
 
-def test_subclass_before_meta_init():
-    """Test if it is possible to create a mention (candidate) subclass even before Meta
-    is initialized.
-    """
-    Part = mention_subclass("Part")
-    logger.info(f"Create a mention subclass '{Part.__tablename__}'")
-    Meta.init(CONN_STRING).Session()
-    Temp = mention_subclass("Temp")
-    logger.info(f"Create a mention subclass '{Temp.__tablename__}'")
-
-
 def test_pickle_subclasses():
     """Test if it is possible to pickle mention/candidate subclasses and their objects.
     """
