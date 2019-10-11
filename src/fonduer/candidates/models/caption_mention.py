@@ -44,13 +44,7 @@ class TemporaryCaptionMention(TemporaryContext):
 
     def get_stable_id(self) -> str:
         """Return a stable id for the ``CaptionMention``."""
-        return (
-            f"{self.caption.document.name}"
-            f"::"
-            f"{self._get_polymorphic_identity()}"
-            f":"
-            f"{self.caption.position}"
-        )
+        return self.caption.stable_id
 
     def _get_table(self) -> Type["CaptionMention"]:
         return CaptionMention

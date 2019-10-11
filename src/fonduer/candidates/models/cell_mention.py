@@ -44,15 +44,7 @@ class TemporaryCellMention(TemporaryContext):
 
     def get_stable_id(self) -> str:
         """Return a stable id for the ``CellMention``."""
-        return (
-            f"{self.cell.document.name}"
-            f"::"
-            f"{self._get_polymorphic_identity()}"
-            f":"
-            f"{self.cell.table.position}"
-            f":"
-            f"{self.cell.position}"
-        )
+        return self.cell.stable_id
 
     def _get_table(self) -> Type["CellMention"]:
         return CellMention
