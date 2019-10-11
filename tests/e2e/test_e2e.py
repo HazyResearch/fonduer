@@ -2,8 +2,13 @@ import logging
 import os
 import pickle
 
+import emmental
 import numpy as np
 import pytest
+from emmental.data import EmmentalDataLoader
+from emmental.learner import EmmentalLearner
+from emmental.model import EmmentalModel
+from emmental.modules.embedding_module import EmbeddingModule
 from snorkel.labeling import LabelModel
 
 import fonduer
@@ -11,12 +16,9 @@ from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
-from fonduer.learning import (
-    LSTM,
-    LogisticRegression,
-    SparseLogisticRegression,
-    SparseLSTM,
-)
+from fonduer.learning.dataset import FonduerDataset
+from fonduer.learning.task import create_task
+from fonduer.learning.utils import collect_word_counter
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
@@ -377,20 +379,89 @@ def test_e2e():
 
     train_marginals = gen_model.predict_proba(L_train[0])
 
-    disc_model = LogisticRegression()
-    disc_model.train(
-        (train_cands[0], F_train[0]),
-        train_marginals,
-        X_dev=(train_cands[0], F_train[0]),
-        Y_dev=L_train_gold[0].reshape(-1),
-        b=0.6,
-        pos_label=TRUE,
-        n_epochs=5,
-        lr=0.001,
+    # Collect word counter
+    word_counter = collect_word_counter(train_cands)
+
+    emmental.init(fonduer.Meta.log_path)
+
+    # Training config
+    config = {
+        "meta_config": {"verbose": False},
+        "model_config": {"model_path": None, "device": 0, "dataparallel": False},
+        "learner_config": {
+            "n_epochs": 5,
+            "optimizer_config": {"lr": 0.001, "l2": 0.0},
+            "task_scheduler": "round_robin",
+        },
+        "logging_config": {
+            "evaluation_freq": 1,
+            "counter_unit": "epoch",
+            "checkpointing": False,
+            "checkpointer_config": {
+                "checkpoint_metric": {f"{ATTRIBUTE}/{ATTRIBUTE}/train/loss": "min"},
+                "checkpoint_freq": 1,
+                "checkpoint_runway": 2,
+                "clear_intermediate_checkpoints": True,
+                "clear_all_checkpoints": True,
+            },
+        },
+    }
+    emmental.Meta.update_config(config=config)
+
+    # Generate word embedding module
+    arity = 2
+    # Geneate special tokens
+    specials = []
+    for i in range(arity):
+        specials += [f"~~[[{i}", f"{i}]]~~"]
+
+    emb_layer = EmbeddingModule(
+        word_counter=word_counter, word_dim=300, specials=specials
     )
 
-    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+    diffs = train_marginals.max(axis=1) - train_marginals.min(axis=1)
+    train_idxs = np.where(diffs > 1e-6)[0]
+
+    train_dataloader = EmmentalDataLoader(
+        task_to_label_dict={ATTRIBUTE: "labels"},
+        dataset=FonduerDataset(
+            ATTRIBUTE,
+            train_cands[0],
+            F_train[0],
+            emb_layer.word2id,
+            train_marginals,
+            train_idxs,
+        ),
+        split="train",
+        batch_size=100,
+        shuffle=True,
+    )
+
+    tasks = create_task(
+        ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LogisticRegression"
+    )
+
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+
+    for task in tasks:
+        model.add_task(task)
+
+    emmental_learner = EmmentalLearner()
+    emmental_learner.learn(model, [train_dataloader])
+
+    test_dataloader = EmmentalDataLoader(
+        task_to_label_dict={ATTRIBUTE: "labels"},
+        dataset=FonduerDataset(
+            ATTRIBUTE, test_cands[0], F_test[0], emb_layer.word2id, 2
+        ),
+        split="test",
+        batch_size=100,
+        shuffle=False,
+    )
+
+    test_preds = model.predict(test_dataloader, return_preds=True)
+    positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.6)
+    true_pred = [test_cands[0][_] for _ in positive[0]]
 
     pickle_file = "tests/data/parts_by_doc_dict.pkl"
     with open(pickle_file, "rb") as f:
@@ -438,13 +509,43 @@ def test_e2e():
 
     train_marginals = gen_model.predict_proba(L_train[0])
 
-    disc_model = LogisticRegression()
-    disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
+    diffs = train_marginals.max(axis=1) - train_marginals.min(axis=1)
+    train_idxs = np.where(diffs > 1e-6)[0]
+
+    train_dataloader = EmmentalDataLoader(
+        task_to_label_dict={ATTRIBUTE: "labels"},
+        dataset=FonduerDataset(
+            ATTRIBUTE,
+            train_cands[0],
+            F_train[0],
+            emb_layer.word2id,
+            train_marginals,
+            train_idxs,
+        ),
+        split="train",
+        batch_size=100,
+        shuffle=True,
     )
 
-    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+    emmental.Meta.reset()
+    emmental.init(fonduer.Meta.log_path)
+    emmental.Meta.update_config(config=config)
+
+    tasks = create_task(
+        ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LogisticRegression"
+    )
+
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+
+    for task in tasks:
+        model.add_task(task)
+
+    emmental_learner = EmmentalLearner()
+    emmental_learner.learn(model, [train_dataloader])
+
+    test_preds = model.predict(test_dataloader, return_preds=True)
+    positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
+    true_pred = [test_cands[0][_] for _ in positive[0]]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -464,39 +565,23 @@ def test_e2e():
     assert f1 > 0.7
 
     # Testing LSTM
-    disc_model = LSTM()
-    disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
-    )
+    emmental.Meta.reset()
+    emmental.init(fonduer.Meta.log_path)
+    emmental.Meta.update_config(config=config)
 
-    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+    tasks = create_task(ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LSTM")
 
-    (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
-    )
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 
-    tp_len = len(TP)
-    fp_len = len(FP)
-    fn_len = len(FN)
-    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
-    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
-    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+    for task in tasks:
+        model.add_task(task)
 
-    logger.info(f"prec: {prec}")
-    logger.info(f"rec: {rec}")
-    logger.info(f"f1: {f1}")
+    emmental_learner = EmmentalLearner()
+    emmental_learner.learn(model, [train_dataloader])
 
-    assert f1 > 0.7
-
-    # Testing Sparse Logistic Regression
-    disc_model = SparseLogisticRegression()
-    disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
-    )
-
-    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
+    test_preds = model.predict(test_dataloader, return_preds=True)
+    positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
+    true_pred = [test_cands[0][_] for _ in positive[0]]
 
     (TP, FP, FN) = entity_level_f1(
         true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
@@ -514,39 +599,3 @@ def test_e2e():
     logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
-
-    # Testing Sparse LSTM
-    disc_model = SparseLSTM()
-    disc_model.train(
-        (train_cands[0], F_train[0]), train_marginals, n_epochs=5, lr=0.001
-    )
-
-    test_score = disc_model.predict((test_cands[0], F_test[0]), b=0.6, pos_label=TRUE)
-    true_pred = [test_cands[0][_] for _ in np.nditer(np.where(test_score == TRUE))]
-
-    (TP, FP, FN) = entity_level_f1(
-        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
-    )
-
-    tp_len = len(TP)
-    fp_len = len(FP)
-    fn_len = len(FN)
-    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
-    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
-    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
-
-    logger.info(f"prec: {prec}")
-    logger.info(f"rec: {rec}")
-    logger.info(f"f1: {f1}")
-
-    assert f1 > 0.7
-
-    # Evaluate mention level scores
-    L_test_gold = labeler.get_gold_labels(test_cands, annotator="gold")
-    Y_test = L_test_gold[0].reshape(-1)
-
-    scores = disc_model.score((test_cands[0], F_test[0]), Y_test, b=0.6, pos_label=TRUE)
-
-    logger.info(scores)
-
-    assert scores["f1"] > 0.6

@@ -3,6 +3,117 @@ Unreleased_
 
 Changed
 ^^^^^^^
+* `@senwu`_: Switch to Emmental as the default learning engine.
+
+.. note::
+    Rather than maintaining a separate learning engine, we switch to Emmental,
+    a deep learning framework for multi-task learning. Switching to a more general
+    learning framework allows Fonduer to support more applications and
+    multi-task learning. Example usage:
+
+    .. code:: python
+
+        # With Emmental, you need do following steps to perform learning:
+        # 1. Create task for each relations and EmmentalModel to learn those tasks.
+        # 2. Wrap candidates into EmmentalDataLoader for training.
+        # 3. Training and inference (prediction).
+
+        import emmental
+
+        # Collect word counter from candidates which is used in LSTM model.
+        word_counter = collect_word_counter(train_cands)
+
+        # Initialize Emmental. For customize Emmental, please check here: 
+        # https://emmental.readthedocs.io/en/latest/user/config.html
+        emmental.init(fonduer.Meta.log_path)
+
+        #######################################################################
+        # 1. Create task for each relations and EmmentalModel to learn those tasks.
+        #######################################################################
+
+        # Generate special tokens which are used for LSTM model to locate mentions.
+        # In LSTM model, we pad sentence with special tokens to help LSTM to learn
+        # those mentions. Example:
+        # Original sentence: Then Barack married Michelle.
+        # ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
+        arity = 2
+        special_tokens = []
+        for i in range(arity):
+            special_tokens += [f"~~[[{i}", f"{i}]]~~"]
+
+        # Generate word embedding module for LSTM.
+        emb_layer = EmbeddingModule(
+            word_counter=word_counter, word_dim=300, specials=special_tokens
+        )
+
+        # Create task for each relation.
+        tasks = create_task(
+            ATTRIBUTE,
+            2,
+            F_train[0].shape[1],
+            2,
+            emb_layer,
+            mode="mtl",
+            model="LogisticRegression",
+        )
+
+        # Create Emmental model to learn the tasks.
+        model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+
+        # Add tasks into model
+        for task in tasks:
+            model.add_task(task)
+
+        #######################################################################
+        # 2. Wrap candidates into EmmentalDataLoader for training.
+        #######################################################################
+
+        # Here we only use the samples that have labels, which we filter out the
+        # samples that don't have significant marginals.
+        diffs = train_marginals.max(axis=1) - train_marginals.min(axis=1)
+        train_idxs = np.where(diffs > 1e-6)[0]
+
+        # Create a dataloader with weakly supervisied samples to learn the model.
+        train_dataloader = EmmentalDataLoader(
+            task_to_label_dict={ATTRIBUTE: "labels"},
+            dataset=FonduerDataset(
+                ATTRIBUTE,
+                train_cands[0],
+                F_train[0],
+                emb_layer.word2id,
+                train_marginals,
+                train_idxs,
+            ),
+            split="train",
+            batch_size=100,
+            shuffle=True,
+        )
+
+
+        # Create test dataloader to do prediction.
+        # Build test dataloader
+        test_dataloader = EmmentalDataLoader(
+            task_to_label_dict={ATTRIBUTE: "labels"},
+            dataset=FonduerDataset(
+                ATTRIBUTE, test_cands[0], F_test[0], emb_layer.word2id, 2
+            ),
+            split="test",
+            batch_size=100,
+            shuffle=False,
+        )
+
+
+        #######################################################################
+        # 3. Training and inference (prediction).
+        #######################################################################
+
+        # Learning those tasks.
+        emmental_learner = EmmentalLearner()
+        emmental_learner.learn(model, [train_dataloader])
+
+        # Predict based the learned model.
+        test_preds = model.predict(test_dataloader, return_preds=True)
+
 * `@HiromuHota`_: Change ABSTAIN to -1 to be compatible with Snorkel of 0.9.X.
   Accordingly, user-defined labels should now be 0-indexed (used to 1-indexed).
   (`#310 <https://github.com/HazyResearch/fonduer/issues/310>`_)

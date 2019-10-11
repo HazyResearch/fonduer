@@ -45,20 +45,11 @@ The default ``.fonduer-config.yaml`` configuration file is shown below::
         attention: True
         dropout: 0.1
         bidirectional: True
-        host_device: "CPU"
-        max_sentence_length: 100
       LogisticRegression:
         bias: False
-      SparseLSTM:
-        emb_dim: 100
-        hidden_dim: 100
-        attention: True
-        dropout: 0.1
-        bidirectional: True
-        host-device: "CPU"
-        max_sentence_length: 100
-        bias: False
-      SparseLogisticRegression:
-        bias: False
+
+About how to customize Emmental, please check here:
+https://emmental.readthedocs.io/en/latest/user/config.html
+
 
 .. _Fonduer: https://github.com/HazyResearch/fonduer

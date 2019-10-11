@@ -1,6 +1,9 @@
+from typing import List
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 
 
 class SoftCrossEntropyLoss(nn.Module):
@@ -16,7 +19,7 @@ class SoftCrossEntropyLoss(nn.Module):
     :type reduction: str
     """
 
-    def __init__(self, weight=None, reduction="mean"):
+    def __init__(self, weight: List[float] = None, reduction: str = "mean"):
         super().__init__()
         if weight is None:
             self.weight = None
@@ -25,7 +28,7 @@ class SoftCrossEntropyLoss(nn.Module):
 
         self.reduction = reduction
 
-    def forward(self, input, target):
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:  # type:ignore
         """
         Calculate the loss
 
