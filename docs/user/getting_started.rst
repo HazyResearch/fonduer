@@ -17,6 +17,7 @@ For OS X using homebrew_::
     $ brew install postgresql
     $ brew install libpng freetype pkg-config
     $ brew install libomp #https://github.com/pytorch/pytorch/issues/20030
+    $ brew install imagemagick@6
 
 On Debian-based distros::
 
@@ -25,6 +26,7 @@ On Debian-based distros::
     $ sudo apt build-dep python-matplotlib
     $ sudo apt install poppler-utils
     $ sudo apt install postgresql
+    $ sudo apt install libmagickwand-dev
 
 .. note::
     Fonduer recommends using PostgreSQL version 9.6 or later.
@@ -33,6 +35,9 @@ On Debian-based distros::
     Fonduer requires ``poppler-utils`` to be version 0.36.0 or later.
     Otherwise, the ``-bbox-layout`` option is not available for ``pdftotext``
     (`see changelog`_).
+
+.. note::
+    Fonduer depends on Wand (>=0.4.4, <0.5.0), which does not support ImageMagick7.
 
 Installing the Fonduer Package
 ------------------------------
