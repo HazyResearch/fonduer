@@ -94,6 +94,8 @@ Fixed
   Also this change allows creating a mention/candidate subclass even before Meta is initialized.
 * `@HiromuHota`_: Create an Engine and open a connection in each child process.
   (`#323 <https://github.com/HazyResearch/fonduer/issues/323>`_)
+* `@HiromuHota`_: Fix ``featurizer.apply(docs=train_docs)`` fails on clearing.
+  (`#250 <https://github.com/HazyResearch/fonduer/issues/250>`_)
 
 0.7.0_ - 2019-06-12
 -------------------
