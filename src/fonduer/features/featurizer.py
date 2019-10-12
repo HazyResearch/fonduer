@@ -259,9 +259,14 @@ class Featurizer(UDFRunner):
         # Clear Features for the candidates in the split passed in.
         logger.info(f"Clearing Features (split {split})")
 
-        sub_query = (
-            self.session.query(Candidate.id).filter(Candidate.split == split).subquery()
-        )
+        if split == ALL_SPLITS:
+            sub_query = self.session.query(Candidate.id).subquery()
+        else:
+            sub_query = (
+                self.session.query(Candidate.id)
+                .filter(Candidate.split == split)
+                .subquery()
+            )
         query = self.session.query(Feature).filter(Feature.candidate_id.in_(sub_query))
         query.delete(synchronize_session="fetch")
 
