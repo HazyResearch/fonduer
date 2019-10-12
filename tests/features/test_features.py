@@ -70,7 +70,7 @@ def test_feature_extraction(caplog):
     featurizer = Featurizer(session, [PartTemp])
 
     # Test that featurization default feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    featurizer.apply(docs=docs, train=True, parallelism=PARALLEL)
     n_default_feats = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
