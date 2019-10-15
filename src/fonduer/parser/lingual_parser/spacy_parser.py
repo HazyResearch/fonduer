@@ -243,7 +243,6 @@ class SpacyParser(LingualParser):
         position = 0
         for sent in doc.sents:
             parts: Dict[str, Any] = defaultdict(list)
-            text = sent.text
 
             for i, token in enumerate(sent):
                 parts["words"].append(str(token))
@@ -260,7 +259,7 @@ class SpacyParser(LingualParser):
                 p - parts["char_offsets"][0] for p in parts["char_offsets"]
             ]
             parts["position"] = position
-            parts["text"] = text
+            parts["text"] = sent.text
 
             position += 1
 
