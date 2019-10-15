@@ -244,7 +244,7 @@ class SpacyParser(LingualParser):
         for sent in doc.sents:
             parts: Dict[str, Any] = defaultdict(list)
 
-            for i, token in enumerate(sent):
+            for token in sent:
                 parts["words"].append(str(token))
                 parts["lemmas"].append(token.lemma_)
                 parts["pos_tags"].append(token.pos_)
