@@ -116,6 +116,12 @@ def test_parse_md_details(caplog):
     assert sent.cell.row_start == 0
     assert sent.cell.col_start == 2
 
+    # Check abs_char_offsets (#332)
+    text = "".join([sent.text for sent in doc.sentences])
+    for sent in doc.sentences:
+        for abs_char_offset, word in zip(sent.abs_char_offsets, sent.words):
+            assert text[abs_char_offset] == word[0]
+
     logger.info(f"Doc: {doc}")
     for i, sentence in enumerate(doc.sentences):
         logger.info(f"    Sentence[{i}]: {sentence.text}")
