@@ -493,6 +493,10 @@ class ParserUDF(UDF):
         # Lingual Parse
         document = state["document"]
         for parts in self.lingual_parser.split_sentences(text):
+            abs_offset = state["sentence"]["abs_offset"]
+            parts["abs_char_offsets"] = [
+                char_offset + abs_offset for char_offset in parts["char_offsets"]
+            ]
             parts["document"] = document
             # NOTE: Why do we overwrite this from the spacy parse?
             parts["position"] = state["sentence"]["idx"]

@@ -250,7 +250,6 @@ class SpacyParser(LingualParser):
                 parts["pos_tags"].append(token.pos_)
                 parts["ner_tags"].append("")  # placeholder for later NLP parsing
                 parts["char_offsets"].append(token.idx)
-                parts["abs_char_offsets"].append(token.idx)
                 parts["dep_parents"].append(0)  # placeholder for later NLP parsing
                 parts["dep_labels"].append("")  # placeholder for later NLP parsing
 
