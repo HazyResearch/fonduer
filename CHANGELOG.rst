@@ -96,6 +96,8 @@ Fixed
   (`#323 <https://github.com/HazyResearch/fonduer/issues/323>`_)
 * `@HiromuHota`_: Fix ``featurizer.apply(docs=train_docs)`` fails on clearing.
   (`#250 <https://github.com/HazyResearch/fonduer/issues/250>`_)
+* `@HiromuHota`_: Correct abs_char_offsets to make it absolute.
+  (`#332 <https://github.com/HazyResearch/fonduer/issues/332>`_)
 
 0.7.0_ - 2019-06-12
 -------------------
