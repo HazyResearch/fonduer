@@ -10,7 +10,6 @@ from typing import (
     Set,
     Tuple,
     Type,
-    Union,
 )
 
 from scipy.sparse import csr_matrix
@@ -220,31 +219,17 @@ def get_mapping(
         }
 
 
-def get_cands_list_from_split(
-    session: Session,
-    candidate_classes: Iterable[Type[Candidate]],
-    doc: Document,
-    split: Union[int, str],
+def get_cands_list_from_doc(
+    session: Session, candidate_classes: Iterable[Type[Candidate]], doc: Document
 ) -> List[List[Candidate]]:
     """Return the list of list of candidates from this document based on the split."""
     cands = []
-    if split == ALL_SPLITS:
-        # Get cands from all splits
-        for candidate_class in candidate_classes:
-            cands.append(
-                session.query(candidate_class)
-                .filter(candidate_class.document_id == doc.id)
-                .all()
-            )
-    else:
-        # Get cands from the specified split
-        for candidate_class in candidate_classes:
-            cands.append(
-                session.query(candidate_class)
-                .filter(candidate_class.document_id == doc.id)
-                .filter(candidate_class.split == split)
-                .all()
-            )
+    for candidate_class in candidate_classes:
+        cands.append(
+            session.query(candidate_class)
+            .filter(candidate_class.document_id == doc.id)
+            .all()
+        )
     return cands
 
 
