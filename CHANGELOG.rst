@@ -98,6 +98,8 @@ Fixed
   (`#250 <https://github.com/HazyResearch/fonduer/issues/250>`_)
 * `@HiromuHota`_: Correct abs_char_offsets to make it absolute.
   (`#332 <https://github.com/HazyResearch/fonduer/issues/332>`_)
+* `@HiromuHota`_: Fix deadlock error during Labeler.apply and Featurizer.apply.
+  (`#328 <https://github.com/HazyResearch/fonduer/issues/328>`_)
 
 0.7.0_ - 2019-06-12
 -------------------
