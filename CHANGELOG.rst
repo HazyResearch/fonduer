@@ -100,6 +100,7 @@ Fixed
   (`#332 <https://github.com/HazyResearch/fonduer/issues/332>`_)
 * `@HiromuHota`_: Fix deadlock error during Labeler.apply and Featurizer.apply.
   (`#328 <https://github.com/HazyResearch/fonduer/issues/328>`_)
+* `@HiromuHota`_: Avoid networkx 2.4 so that snorkel-metal does not use the removed API.
 
 0.7.0_ - 2019-06-12
 -------------------
