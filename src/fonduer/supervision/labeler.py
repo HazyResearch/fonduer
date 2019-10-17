@@ -26,7 +26,7 @@ from fonduer.utils.utils_udf import (
     batch_upsert_records,
     drop_all_keys,
     drop_keys,
-    get_cands_list_from_split,
+    get_cands_list_from_doc,
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
@@ -405,7 +405,6 @@ class LabelerUDF(UDF):
     def apply(  # type: ignore
         self,
         doc: Document,
-        split: int,
         train: bool,
         lfs: List[List[Callable]],
         **kwargs: Any,
@@ -413,7 +412,6 @@ class LabelerUDF(UDF):
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
-        :param split: Which split to use.
         :param train: Whether or not to insert new LabelKeys.
         :param lfs: The list of functions to use to generate labels.
         """
@@ -425,9 +423,7 @@ class LabelerUDF(UDF):
         self.lfs = lfs
 
         # Get all the candidates in this doc that will be labeled
-        cands_list = get_cands_list_from_split(
-            self.session, self.candidate_classes, doc, split
-        )
+        cands_list = get_cands_list_from_doc(self.session, self.candidate_classes, doc)
 
         for cands in cands_list:
             records = list(get_mapping(self.session, Label, cands, self._f_gen))
