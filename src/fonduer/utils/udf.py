@@ -90,9 +90,16 @@ class UDFRunner(object):
             self.logger.debug("Closing progress bar...")
             self.pb.close()
 
+        self.logger.debug("Running after_apply...")
+        self.after_apply(**kwargs)
+
     def clear(self, **kwargs: Any) -> None:
         """Clear the associated data from the database."""
         raise NotImplementedError()
+
+    def after_apply(self, **kwargs: Any) -> None:
+        """This method is executed by a single process after apply."""
+        pass
 
     def _apply_st(self, doc_loader: Collection[Document], **kwargs: Any) -> None:
         """Run the UDF single-threaded, optionally with progress bar"""

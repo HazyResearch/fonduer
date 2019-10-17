@@ -1,5 +1,6 @@
 import itertools
 import logging
+from collections import defaultdict
 from typing import Any, Collection, Dict, Iterable, Iterator, List, Optional, Type
 
 from scipy.sparse import csr_matrix
@@ -281,6 +282,16 @@ class Featurizer(UDFRunner):
         self.session.query(Feature).delete(synchronize_session="fetch")
         self.session.query(FeatureKey).delete(synchronize_session="fetch")
 
+    def after_apply(self, train: bool = False, **kwargs: Any) -> None:
+        # Insert all Feature Keys
+        if train:
+            key_map = defaultdict(set)
+            for feature in self.session.query(Feature).all():
+                cand = feature.candidate
+                for key in feature.keys:
+                    key_map[key].add(cand.__class__.__tablename__)
+            upsert_keys(self.session, FeatureKey, key_map)
+
     def get_feature_matrices(
         self, cand_lists: List[List[Candidate]]
     ) -> List[csr_matrix]:
@@ -346,10 +357,6 @@ class FeaturizerUDF(UDF):
             )
         )
         batch_upsert_records(self.session, Feature, records)
-
-        # Insert all Feature Keys
-        if train:
-            upsert_keys(self.session, FeatureKey, feature_map)
 
         # This return + yield makes a completely empty generator
         return

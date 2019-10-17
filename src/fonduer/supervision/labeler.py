@@ -1,4 +1,6 @@
 import logging
+from collections import defaultdict
+from typing import Any
 
 from fonduer.candidates.models import Candidate
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
@@ -283,6 +285,16 @@ class Labeler(UDFRunner):
         self.session.query(Label).delete(synchronize_session="fetch")
         self.session.query(LabelKey).delete(synchronize_session="fetch")
 
+    def after_apply(self, train: bool = False, **kwargs: Any) -> None:
+        # Insert all Label Keys
+        if train:
+            key_map = defaultdict(set)
+            for label in self.session.query(Label).all():
+                cand = label.candidate
+                for key in label.keys:
+                    key_map[key].add(cand.__class__.__tablename__)
+            upsert_keys(self.session, LabelKey, key_map)
+
     def get_gold_labels(self, cand_lists, annotator=None):
         """Load sparse matrix of GoldLabels for each candidate_class.
 
@@ -376,10 +388,6 @@ class LabelerUDF(UDF):
                 get_mapping(self.session, Label, cands, self._f_gen, label_map)
             )
             batch_upsert_records(self.session, Label, records)
-
-        # Insert all Label Keys
-        if train:
-            upsert_keys(self.session, LabelKey, label_map)
 
         # This return + yield makes a completely empty generator
         return
