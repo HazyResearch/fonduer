@@ -189,7 +189,6 @@ def get_mapping(
     table: Table,
     candidates: Iterable[Candidate],
     generator: Callable[[List[Candidate]], Iterator[Tuple]],
-    key_map: Dict[Any, Any],
 ) -> Iterator[Dict[str, Any]]:
     """Generate map of keys and values for the candidate from the generator.
 
@@ -197,9 +196,6 @@ def get_mapping(
     :param table: The table we will be inserting into (i.e. Feature or Label).
     :param candidates: The candidates to get mappings for.
     :param generator: A generator yielding (candidate_id, key, value) tuples.
-    :param key_map: A mutable dict which values will be added to as {key:
-        [relations]}.
-    :type key_map: Dict
     :return: Generator of dictionaries of {"candidate_id": _, "keys": _, "values": _}
     :rtype: generator of dict
     """
@@ -221,12 +217,6 @@ def get_mapping(
         map_args["keys"] = [*cand_map.keys()]
         map_args["values"] = [*cand_map.values()]
 
-        # Update key_map by adding the candidate class for each key
-        for key in map_args["keys"]:
-            try:
-                key_map[key].add(cand.__class__.__tablename__)
-            except KeyError:
-                key_map[key] = {cand.__class__.__tablename__}
         yield map_args
 
 
