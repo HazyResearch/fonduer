@@ -207,17 +207,17 @@ def get_mapping(
         except NoResultFound:
             cand_map = {}
 
-        map_args = {"candidate_id": cand.id}
         for cid, key, value in generator(cand):
             if value == 0:
                 continue
             cand_map[key] = value
 
         # Assemble label arguments
-        map_args["keys"] = [*cand_map.keys()]
-        map_args["values"] = [*cand_map.values()]
-
-        yield map_args
+        yield {
+            "candidate_id": cand.id,
+            "keys": [*cand_map.keys()],
+            "values": [*cand_map.values()],
+        }
 
 
 def get_cands_list_from_split(
