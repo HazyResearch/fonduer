@@ -14,9 +14,10 @@ from typing import (
     Union,
 )
 
-from scipy.sparse import csr_matrix
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
+
+import numpy as np
 
 from fonduer.candidates.models import Candidate
 from fonduer.parser.models import Document
@@ -361,30 +362,38 @@ class Labeler(UDFRunner):
 
     def get_gold_labels(
         self, cand_lists: List[List[Candidate]], annotator: Optional[str] = None
-    ) -> List[csr_matrix]:
-        """Load sparse matrix of GoldLabels for each candidate_class.
+    ) -> List[np.ndarray]:
+        """Load dense matrix of GoldLabels for each candidate_class.
 
         :param cand_lists: The candidates to get gold labels for.
         :type cand_lists: List of list of candidates.
         :param annotator: A specific annotator key to get labels for. Default
             None.
         :type annotator: str
-        :return: A list of MxN sparse matrix where M are the candidates and N is the
+        :return: A list of MxN dense matrix where M are the candidates and N is the
             annotators. If annotator is provided, return a list of Mx1 matrix.
-        :rtype: list[csr_matrix]
+        :rtype: list[np.ndarray]
         """
-        return get_sparse_matrix(self.session, GoldLabelKey, cand_lists, key=annotator)
+        return [
+            m.toarray() - 1  # convert to {-1, 0, ..., k-1}
+            for m in get_sparse_matrix(
+                self.session, GoldLabelKey, cand_lists, key=annotator
+            )
+        ]
 
-    def get_label_matrices(self, cand_lists: List[List[Candidate]]) -> List[csr_matrix]:
-        """Load sparse matrix of Labels for each candidate_class.
+    def get_label_matrices(self, cand_lists: List[List[Candidate]]) -> List[np.ndarray]:
+        """Load dense matrix of Labels for each candidate_class.
 
         :param cand_lists: The candidates to get labels for.
         :type cand_lists: List of list of candidates.
-        :return: A list of MxN sparse matrix where M are the candidates and N is the
+        :return: A list of MxN dense matrix where M are the candidates and N is the
             labeling functions.
-        :rtype: list[csr_matrix]
+        :rtype: list[np.ndarray]
         """
-        return get_sparse_matrix(self.session, LabelKey, cand_lists)
+        return [
+            m.toarray() - 1  # convert to {-1, 0, ..., k-1}
+            for m in get_sparse_matrix(self.session, LabelKey, cand_lists)
+        ]
 
 
 class LabelerUDF(UDF):
@@ -410,11 +419,11 @@ class LabelerUDF(UDF):
             # Note: We assume if the LF output is an int, it is already
             # mapped correctly
             if isinstance(label, int):
-                yield cid, lf_key, label
+                yield cid, lf_key, label + 1  # convert to {0, 1, ..., k}
             # None is a protected LF output value corresponding to ABSTAIN,
             # representing LF abstaining
             elif label is None:
-                yield cid, lf_key, ABSTAIN
+                yield cid, lf_key, ABSTAIN + 1  # convert to {0, 1, ..., k}
             elif label in c.values:
                 if c.cardinality > 2:
                     yield cid, lf_key, c.values.index(label) + 1
