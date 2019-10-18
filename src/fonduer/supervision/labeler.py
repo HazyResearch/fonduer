@@ -425,13 +425,8 @@ class LabelerUDF(UDF):
             elif label is None:
                 yield cid, lf_key, ABSTAIN + 1  # convert to {0, 1, ..., k}
             elif label in c.values:
-                if c.cardinality > 2:
-                    yield cid, lf_key, c.values.index(label) + 1
-                # Note: Would be nice to not special-case here, but for
-                # consistency we leave binary LF range as {-1,0,1}
-                else:
-                    val = 1 if c.values.index(label) == 0 else -1
-                    yield cid, lf_key, val
+                #  convert to {0, 1, ..., k}
+                yield cid, lf_key, c.values.index(label) + 1
             else:
                 raise ValueError(
                     f"Can't parse label value {label} for candidate values {c.values}"
