@@ -354,11 +354,7 @@ class FeaturizerUDF(UDF):
         # Make a flat list of all candidates from the list of list of
         # candidates. This helps reduce the number of queries needed to update.
         all_cands = itertools.chain.from_iterable(cands_list)
-        records = list(
-            get_mapping(
-                self.session, Feature, all_cands, self.feature_extractors.extract
-            )
-        )
+        records = list(get_mapping(Feature, all_cands, self.feature_extractors.extract))
         batch_upsert_records(self.session, Feature, records)
 
         # This return + yield makes a completely empty generator

@@ -470,7 +470,7 @@ class LabelerUDF(UDF):
         ]
 
         for cands in cands_list:
-            records = list(get_mapping(self.session, table, cands, self._f_gen))
+            records = list(get_mapping(table, cands, self._f_gen))
             batch_upsert_records(self.session, table, records)
 
         # This return + yield makes a completely empty generator

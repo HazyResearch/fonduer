@@ -19,7 +19,6 @@ from scipy.sparse import csr_matrix
 from sqlalchemy import String, Table
 from sqlalchemy.dialects.postgresql import ARRAY, insert
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import cast
 
 from fonduer.candidates.models import Candidate
@@ -197,14 +196,12 @@ def get_docs_from_split(
 
 
 def get_mapping(
-    session: Session,
     table: Table,
     candidates: Iterable[Candidate],
     generator: Callable[[Candidate], Iterator[Tuple]],
 ) -> Iterator[Dict[str, Any]]:
     """Generate map of keys and values for the candidate from the generator.
 
-    :param session: The database session.
     :param table: The table we will be inserting into (i.e. Feature or Label).
     :param candidates: The candidates to get mappings for.
     :param generator: A generator yielding (candidate_id, key, value) tuples.
@@ -212,11 +209,11 @@ def get_mapping(
     :rtype: generator of dict
     """
     for cand in candidates:
-        # Grab the old values currently in the DB
-        try:
-            temp = session.query(table).filter(table.candidate_id == cand.id).one()
+        # Grab the old values
+        if len(getattr(cand, table.__tablename__ + "s")) != 0:
+            temp = getattr(cand, table.__tablename__ + "s")[0]
             cand_map = dict(zip(temp.keys, temp.values))
-        except NoResultFound:
+        else:
             cand_map = {}
 
         for cid, key, value in generator(cand):
