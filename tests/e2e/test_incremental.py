@@ -169,12 +169,27 @@ def test_incremental():
     assert F_train[0].shape == (1502, 2573)
     assert len(featurizer.get_keys()) == 2573
 
+    # Update LF_storage_row. Now it always returns 0 (ABSTAIN).
+    LF_storage_row_updated = lambda c: 0
+    LF_storage_row_updated.__name__ = "LF_storage_row"
+
+    stg_temp_lfs = [
+        LF_storage_row_updated,
+        LF_operating_row,
+        LF_temperature_row,
+        LF_tstg_row,
+        LF_to_left,
+        LF_negative_number_left,
+    ]
+
     # Update Labels
+    labeler.update(docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)
     labeler.update(new_docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)
     assert session.query(Label).count() == 1502
-    assert session.query(LabelKey).count() == 6
+    # Only 5 because LF_storage_row doesn't apply to any doc (always ABSTAIN)
+    assert session.query(LabelKey).count() == 5
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (1502, 6)
+    assert L_train[0].shape == (1502, 5)
 
     # Test clear
     featurizer.clear(train=True)
