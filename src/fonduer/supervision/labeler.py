@@ -403,11 +403,7 @@ class LabelerUDF(UDF):
                 )
 
     def apply(  # type: ignore
-        self,
-        doc: Document,
-        train: bool,
-        lfs: List[List[Callable]],
-        **kwargs: Any,
+        self, doc: Document, train: bool, lfs: List[List[Callable]], **kwargs: Any
     ):
         """Extract candidates from the given Context.
 
