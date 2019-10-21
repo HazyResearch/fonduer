@@ -341,7 +341,6 @@ class FeaturizerUDF(UDF):
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
-        :param split: Which split to use.
         :param train: Whether or not to insert new FeatureKeys.
         """
         logger.debug(f"Document: {doc}")
