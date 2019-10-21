@@ -1,7 +1,16 @@
 import itertools
 import logging
 from collections import defaultdict
-from typing import Any, Collection, Iterable, Iterator, List, Optional, Type
+from typing import (
+    Any,
+    Collection,
+    DefaultDict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Type,
+)
 
 from scipy.sparse import csr_matrix
 from sqlalchemy.orm import Session
@@ -285,7 +294,7 @@ class Featurizer(UDFRunner):
     def after_apply(self, train: bool = False, **kwargs: Any) -> None:
         # Insert all Feature Keys
         if train:
-            key_map = defaultdict(set)
+            key_map: DefaultDict[str, set] = defaultdict(set)
             for feature in self.session.query(Feature).all():
                 cand = feature.candidate
                 for key in feature.keys:
