@@ -301,6 +301,7 @@ class Labeler(UDFRunner):
         train: bool,
         split: int,
         lfs: Optional[List[List[Callable]]] = None,
+        table: Table = Label,
         **kwargs: Any,
     ) -> None:
         """Delete Labels of each class from the database.
@@ -322,29 +323,36 @@ class Labeler(UDFRunner):
                 .filter(Candidate.split == split)
                 .subquery()
             )
-        query = self.session.query(Label).filter(Label.candidate_id.in_(sub_query))
+        query = self.session.query(table).filter(table.candidate_id.in_(sub_query))
         query.delete(synchronize_session="fetch")
 
         # Delete all old annotation keys
         if train:
-            logger.debug(f"Clearing all LabelKeys from {self.candidate_classes}...")
-            drop_all_keys(self.session, LabelKey, self.candidate_classes)
+            key_table = LabelKey if table == Label else GoldLabelKey
+            logger.debug(
+                f"Clearing all {key_table.__name__}s from {self.candidate_classes}..."
+            )
+            drop_all_keys(self.session, key_table, self.candidate_classes)
 
-    def clear_all(self) -> None:
+    def clear_all(self, table: Table = Label) -> None:
         """Delete all Labels."""
-        logger.info("Clearing ALL Labels and LabelKeys.")
-        self.session.query(Label).delete(synchronize_session="fetch")
-        self.session.query(LabelKey).delete(synchronize_session="fetch")
+        key_table = LabelKey if table == Label else GoldLabelKey
+        logger.info(f"Clearing ALL {table.__name__}s and {key_table.__name__}s.")
+        self.session.query(table).delete(synchronize_session="fetch")
+        self.session.query(key_table).delete(synchronize_session="fetch")
 
-    def _after_apply(self, train: bool = False, **kwargs: Any) -> None:
+    def _after_apply(
+        self, train: bool = False, table: Table = Label, **kwargs: Any
+    ) -> None:
         # Insert all Label Keys
         if train:
             key_map: DefaultDict[str, set] = defaultdict(set)
-            for label in self.session.query(Label).all():
+            for label in self.session.query(table).all():
                 cand = label.candidate
                 for key in label.keys:
                     key_map[key].add(cand.__class__.__tablename__)
-            upsert_keys(self.session, LabelKey, key_map)
+            key_table = LabelKey if table == Label else GoldLabelKey
+            upsert_keys(self.session, key_table, key_map)
 
     def get_gold_labels(
         self, cand_lists: List[List[Candidate]], annotator: Optional[str] = None
