@@ -1,8 +1,24 @@
 import logging
 from collections import defaultdict
-from typing import Any
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    DefaultDict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
+
+from scipy.sparse import csr_matrix
+from sqlalchemy.orm import Session
 
 from fonduer.candidates.models import Candidate
+from fonduer.parser.models import Document
 from fonduer.supervision.models import GoldLabelKey, Label, LabelKey
 from fonduer.utils.udf import UDF, UDFRunner
 from fonduer.utils.utils_udf import (
@@ -31,7 +47,12 @@ class Labeler(UDFRunner):
     :type parallelism: int
     """
 
-    def __init__(self, session, candidate_classes, parallelism=1):
+    def __init__(
+        self,
+        session: Session,
+        candidate_classes: List[Type[Candidate]],
+        parallelism: int = 1,
+    ):
         """Initialize the Labeler."""
         super().__init__(
             session,
@@ -40,9 +61,16 @@ class Labeler(UDFRunner):
             candidate_classes=candidate_classes,
         )
         self.candidate_classes = candidate_classes
-        self.lfs = []
+        self.lfs: List[List[Callable]] = []
 
-    def update(self, docs=None, split=0, lfs=None, parallelism=None, progress_bar=True):
+    def update(
+        self,
+        docs: Collection[Document] = None,
+        split: int = 0,
+        lfs: List[List[Callable]] = None,
+        parallelism: int = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Update the labels of the specified candidates based on the provided LFs.
 
         :param docs: If provided, apply the updated LFs to all the candidates
@@ -76,16 +104,16 @@ class Labeler(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def apply(
+    def apply(  # type: ignore
         self,
-        docs=None,
-        split=0,
-        train=False,
-        lfs=None,
-        clear=True,
-        parallelism=None,
-        progress_bar=True,
-    ):
+        docs: Collection[Document] = None,
+        split: int = 0,
+        train: bool = False,
+        lfs: List[List[Callable]] = None,
+        clear: bool = True,
+        parallelism: int = None,
+        progress_bar: bool = True,
+    ) -> None:
         """Apply the labels of the specified candidates based on the provided LFs.
 
         :param docs: If provided, apply the LFs to all the candidates in these
@@ -152,7 +180,7 @@ class Labeler(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
-    def get_keys(self):
+    def get_keys(self) -> List[str]:
         """Return a list of keys for the Labels.
 
         :return: List of LabelKeys.
@@ -160,7 +188,11 @@ class Labeler(UDFRunner):
         """
         return list(get_sparse_matrix_keys(self.session, LabelKey))
 
-    def upsert_keys(self, keys, candidate_classes=None):
+    def upsert_keys(
+        self,
+        keys: Iterable[Union[str, Callable]],
+        candidate_classes: Optional[List[Type[Candidate]]] = None,
+    ) -> None:
         """Upsert the specified keys from LabelKeys.
 
         :param keys: A list of labeling functions to upsert.
@@ -208,7 +240,11 @@ class Labeler(UDFRunner):
 
         upsert_keys(self.session, LabelKey, key_map)
 
-    def drop_keys(self, keys, candidate_classes=None):
+    def drop_keys(
+        self,
+        keys: Iterable[Union[str, Callable]],
+        candidate_classes: Optional[List[Type[Candidate]]] = None,
+    ) -> None:
         """Drop the specified keys from LabelKeys.
 
         :param keys: A list of labeling functions to delete.
@@ -256,7 +292,9 @@ class Labeler(UDFRunner):
 
         drop_keys(self.session, LabelKey, key_map)
 
-    def clear(self, train, split, lfs=None):
+    def clear(  # type: ignore
+        self, train: bool, split: int, lfs: Optional[List[List[Callable]]] = None
+    ) -> None:
         """Delete Labels of each class from the database.
 
         :param train: Whether or not to clear the LabelKeys.
@@ -279,7 +317,7 @@ class Labeler(UDFRunner):
             logger.debug(f"Clearing all LabelKeys from {self.candidate_classes}...")
             drop_all_keys(self.session, LabelKey, self.candidate_classes)
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         """Delete all Labels."""
         logger.info("Clearing ALL Labels and LabelKeys.")
         self.session.query(Label).delete(synchronize_session="fetch")
@@ -288,14 +326,16 @@ class Labeler(UDFRunner):
     def after_apply(self, train: bool = False, **kwargs: Any) -> None:
         # Insert all Label Keys
         if train:
-            key_map = defaultdict(set)
+            key_map: DefaultDict[str, set] = defaultdict(set)
             for label in self.session.query(Label).all():
                 cand = label.candidate
                 for key in label.keys:
                     key_map[key].add(cand.__class__.__tablename__)
             upsert_keys(self.session, LabelKey, key_map)
 
-    def get_gold_labels(self, cand_lists, annotator=None):
+    def get_gold_labels(
+        self, cand_lists: List[List[Candidate]], annotator: Optional[str] = None
+    ) -> List[csr_matrix]:
         """Load sparse matrix of GoldLabels for each candidate_class.
 
         :param cand_lists: The candidates to get gold labels for.
@@ -309,7 +349,7 @@ class Labeler(UDFRunner):
         """
         return get_sparse_matrix(self.session, GoldLabelKey, cand_lists, key=annotator)
 
-    def get_label_matrices(self, cand_lists):
+    def get_label_matrices(self, cand_lists: List[List[Candidate]]) -> List[csr_matrix]:
         """Load sparse matrix of Labels for each candidate_class.
 
         :param cand_lists: The candidates to get labels for.
@@ -324,7 +364,7 @@ class Labeler(UDFRunner):
 class LabelerUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_classes, **kwargs):
+    def __init__(self, candidate_classes: List[Type[Candidate]], **kwargs: Any):
         """Initialize the LabelerUDF."""
         self.candidate_classes = (
             candidate_classes
@@ -333,7 +373,7 @@ class LabelerUDF(UDF):
         )
         super().__init__(**kwargs)
 
-    def _f_gen(self, c):
+    def _f_gen(self, c: Candidate) -> Iterator[Tuple[int, str, int]]:
         """Convert lfs into a generator of id, name, and labels.
 
         In particular, catch verbose values and convert to integer ones.
@@ -362,7 +402,14 @@ class LabelerUDF(UDF):
                     f"Can't parse label value {label} for candidate values {c.values}"
                 )
 
-    def apply(self, doc, split, train, lfs, **kwargs):
+    def apply(  # type: ignore
+        self,
+        doc: Document,
+        split: int,
+        train: bool,
+        lfs: List[List[Callable]],
+        **kwargs: Any,
+    ):
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
