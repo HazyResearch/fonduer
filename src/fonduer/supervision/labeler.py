@@ -15,6 +15,7 @@ from typing import (
 )
 
 from scipy.sparse import csr_matrix
+from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
 from fonduer.candidates.models import Candidate
@@ -113,6 +114,7 @@ class Labeler(UDFRunner):
         clear: bool = True,
         parallelism: int = None,
         progress_bar: bool = True,
+        table: Table = Label,
     ) -> None:
         """Apply the labels of the specified candidates based on the provided LFs.
 
@@ -160,6 +162,7 @@ class Labeler(UDFRunner):
                 clear=clear,
                 parallelism=parallelism,
                 progress_bar=progress_bar,
+                table=table,
             )
             # Needed to sync the bulk operations
             self.session.commit()
@@ -176,6 +179,7 @@ class Labeler(UDFRunner):
                 clear=clear,
                 parallelism=parallelism,
                 progress_bar=progress_bar,
+                table=table,
             )
             # Needed to sync the bulk operations
             self.session.commit()
@@ -408,7 +412,12 @@ class LabelerUDF(UDF):
                 )
 
     def apply(  # type: ignore
-        self, doc: Document, train: bool, lfs: List[List[Callable]], **kwargs: Any
+        self,
+        doc: Document,
+        train: bool,
+        lfs: List[List[Callable]],
+        table: Table = Label,
+        **kwargs: Any,
     ):
         """Extract candidates from the given Context.
 
@@ -427,8 +436,8 @@ class LabelerUDF(UDF):
         cands_list = get_cands_list_from_doc(self.session, self.candidate_classes, doc)
 
         for cands in cands_list:
-            records = list(get_mapping(self.session, Label, cands, self._f_gen))
-            batch_upsert_records(self.session, Label, records)
+            records = list(get_mapping(self.session, table, cands, self._f_gen))
+            batch_upsert_records(self.session, table, records)
 
         # This return + yield makes a completely empty generator
         return
