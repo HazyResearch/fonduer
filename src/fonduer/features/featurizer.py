@@ -291,7 +291,7 @@ class Featurizer(UDFRunner):
         self.session.query(Feature).delete(synchronize_session="fetch")
         self.session.query(FeatureKey).delete(synchronize_session="fetch")
 
-    def after_apply(self, train: bool = False, **kwargs: Any) -> None:
+    def _after_apply(self, train: bool = False, **kwargs: Any) -> None:
         # Insert all Feature Keys
         if train:
             key_map: DefaultDict[str, set] = defaultdict(set)

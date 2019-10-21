@@ -323,7 +323,7 @@ class Labeler(UDFRunner):
         self.session.query(Label).delete(synchronize_session="fetch")
         self.session.query(LabelKey).delete(synchronize_session="fetch")
 
-    def after_apply(self, train: bool = False, **kwargs: Any) -> None:
+    def _after_apply(self, train: bool = False, **kwargs: Any) -> None:
         # Insert all Label Keys
         if train:
             key_map: DefaultDict[str, set] = defaultdict(set)
