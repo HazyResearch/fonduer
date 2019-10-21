@@ -188,7 +188,7 @@ def get_mapping(
     session: Session,
     table: Table,
     candidates: Iterable[Candidate],
-    generator: Callable[[List[Candidate]], Iterator[Tuple]],
+    generator: Callable[[Candidate], Iterator[Tuple]],
 ) -> Iterator[Dict[str, Any]]:
     """Generate map of keys and values for the candidate from the generator.
 
