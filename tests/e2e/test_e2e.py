@@ -52,7 +52,7 @@ from tests.shared.hardware_spaces import (
     MentionNgramsVolt,
 )
 from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
-from tests.shared.hardware_utils import entity_level_f1, load_hardware_labels
+from tests.shared.hardware_utils import entity_level_f1, gold
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
@@ -315,9 +315,16 @@ def test_e2e(caplog):
     assert F_test[1].shape == (1144, 4538)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
-    load_hardware_labels(session, PartTemp, gold_file, ATTRIBUTE, annotator_name="gold")
-    assert session.query(GoldLabel).count() == 3970
-    load_hardware_labels(session, PartVolt, gold_file, ATTRIBUTE, annotator_name="gold")
+
+    labeler = Labeler(session, [PartTemp, PartVolt])
+
+    labeler.apply(
+        docs=last_docs,
+        lfs=[[gold], [gold]],
+        table=GoldLabel,
+        train=True,
+        parallelism=PARALLEL,
+    )
     assert session.query(GoldLabel).count() == 8252
 
     stg_temp_lfs = [
@@ -334,8 +341,6 @@ def test_e2e(caplog):
         LF_current_in_row,
         LF_non_ce_voltages_in_row,
     ]
-
-    labeler = Labeler(session, [PartTemp, PartVolt])
 
     with pytest.raises(ValueError):
         labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)

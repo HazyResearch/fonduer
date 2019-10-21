@@ -297,7 +297,11 @@ class Labeler(UDFRunner):
         drop_keys(self.session, LabelKey, key_map)
 
     def clear(  # type: ignore
-        self, train: bool, split: int, lfs: Optional[List[List[Callable]]] = None
+        self,
+        train: bool,
+        split: int,
+        lfs: Optional[List[List[Callable]]] = None,
+        **kwargs: Any,
     ) -> None:
         """Delete Labels of each class from the database.
 
