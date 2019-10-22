@@ -143,15 +143,15 @@ class UDFRunner(object):
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
-        # Start the UDF processes, and then join on their completion
-        for udf in self.udfs:
-            udf.start()
-
         # Fill input queue with documents
         for doc in doc_loader:
             in_queue.put(doc)
         in_queue.put(UDF.QUEUE_CLOSED)
         total_count = in_queue.qsize()
+
+        # Start the UDF processes, and then join on their completion
+        for udf in self.udfs:
+            udf.start()
 
         count_parsed = 0
         while count_parsed < total_count:
