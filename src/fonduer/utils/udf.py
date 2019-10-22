@@ -146,8 +146,8 @@ class UDFRunner(object):
         # Fill input queue with documents
         for doc in doc_loader:
             in_queue.put(doc)
-        in_queue.put(UDF.QUEUE_CLOSED)
         total_count = in_queue.qsize()
+        in_queue.put(UDF.QUEUE_CLOSED)
 
         # Start the UDF processes, and then join on their completion
         for udf in self.udfs:
