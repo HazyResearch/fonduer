@@ -60,6 +60,30 @@ Added
 * `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
   and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
 * `@HiromuHota`_: Annotate types to some of the classes incl. preprocesssors and parser/models.
+* `@HiromuHota`_: Add table argument to ``Labeler.apply``, which can now be used to annotate gold labels.
+
+.. note::
+
+    Example usage:
+
+    .. code:: python
+
+        # Define a LF for gold labels
+        def gold(c: Candidate) -> int:
+            if some condition:
+                return TRUE
+            else:
+                return FALSE
+
+        labeler = Labeler(session, [PartTemp, PartVolt])
+        # Annotate gold labels
+        labeler.apply(docs=docs, lfs=[[gold], [gold]], table=GoldLabel, train=True)
+        # A label matrix can be obtained using the name of annotator, "gold" in this case
+        L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
+        # Annotate (noisy) labels
+        labeler.apply(split=0, lfs=[[LF1, LF2, LF3], [LF4, LF5]], train=True)
+
+    Note that the method name, "gold" in this example, is referred to as annotator.
 
 Changed
 ^^^^^^^
