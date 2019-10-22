@@ -1,4 +1,5 @@
 import logging
+import pickle
 from sys import platform
 
 import pytest
@@ -647,3 +648,25 @@ def test_subclass_before_meta_init(caplog):
     Meta.init(conn_string).Session()
     Temp = mention_subclass("Temp")
     logger.info(f"Create a mention subclass '{Temp.__tablename__}'")
+
+
+def test_pickle_subclasses(caplog):
+    """Test if it is possible to pickle mention/candidate subclasses and their objects.
+    """
+    caplog.set_level(logging.INFO)
+    Part = mention_subclass("Part")
+    Temp = mention_subclass("Temp")
+    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
+
+    logger.info(f"Test if mention/candidate subclasses are picklable")
+    pickle.loads(pickle.dumps(Part))
+    pickle.loads(pickle.dumps(Temp))
+    pickle.loads(pickle.dumps(PartTemp))
+
+    logger.info(f"Test if their objects are pickable")
+    part = Part()
+    temp = Temp()
+    parttemp = PartTemp()
+    pickle.loads(pickle.dumps(part))
+    pickle.loads(pickle.dumps(temp))
+    pickle.loads(pickle.dumps(parttemp))
