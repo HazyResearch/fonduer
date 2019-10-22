@@ -77,7 +77,7 @@ class UDFRunner(object):
 
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
-        self._apply_mt(doc_loader, parallelism, clear=clear, **kwargs)
+        self._apply(doc_loader, parallelism, clear=clear, **kwargs)
 
         # Close progress bar
         if self.pb is not None:
@@ -95,7 +95,7 @@ class UDFRunner(object):
         """This method is executed by a single process after apply."""
         pass
 
-    def _apply_mt(
+    def _apply(
         self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
     ) -> None:
         """Run the UDF multi-threaded using python multiprocessing"""
