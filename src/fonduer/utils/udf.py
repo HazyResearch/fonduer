@@ -1,5 +1,5 @@
 import logging
-from multiprocessing import JoinableQueue, Manager, Process
+from multiprocessing import Manager, Process
 from queue import Empty, Queue
 from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
 
@@ -129,8 +129,7 @@ class UDFRunner(object):
         manager = Manager()
         in_queue = manager.Queue()
         # Use an output queue to track multiprocess progress
-        # TODO: can out_queue be just Queue instead of JoinableQueue?
-        out_queue: JoinableQueue = JoinableQueue()
+        out_queue = manager.Queue()
 
         # Start UDF Processes
         for i in range(parallelism):
@@ -182,7 +181,7 @@ class UDF(Process):
     def __init__(
         self,
         in_queue: Optional[Queue] = None,
-        out_queue: Optional[JoinableQueue] = None,
+        out_queue: Optional[Queue] = None,
         worker_id: int = 0,
         **udf_init_kwargs: Any,
     ) -> None:
