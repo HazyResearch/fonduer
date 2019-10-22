@@ -125,21 +125,12 @@ class UDFRunner(object):
         if not Meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
-        def fill_input_queue(
-            in_queue: Queue, doc_loader: Collection[Document], terminal_signal: str
-        ) -> None:
-            for doc in doc_loader:
-                in_queue.put(doc)
-            in_queue.put(terminal_signal)
-
         # Create an input queue to feed documents to UDF workers
         manager = Manager()
         in_queue = manager.Queue()
         # Use an output queue to track multiprocess progress
         # TODO: can out_queue be just Queue instead of JoinableQueue?
         out_queue: JoinableQueue = JoinableQueue()
-
-        total_count = len(doc_loader)
 
         # Start UDF Processes
         for i in range(parallelism):
@@ -157,11 +148,10 @@ class UDFRunner(object):
             udf.start()
 
         # Fill input queue with documents
-        terminal_signal = UDF.QUEUE_CLOSED
-        in_queue_filler = Process(
-            target=fill_input_queue, args=(in_queue, doc_loader, terminal_signal)
-        )
-        in_queue_filler.start()
+        for doc in doc_loader:
+            in_queue.put(doc)
+        in_queue.put(UDF.QUEUE_CLOSED)
+        total_count = in_queue.qsize()
 
         count_parsed = 0
         while count_parsed < total_count:
@@ -174,7 +164,6 @@ class UDFRunner(object):
             else:
                 raise ValueError("Got non-sentinal output.")
 
-        in_queue_filler.join()
         in_queue.put(UDF.QUEUE_CLOSED)
 
         for udf in self.udfs:
