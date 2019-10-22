@@ -35,6 +35,8 @@ On Debian-based distros::
     Fonduer requires ``poppler-utils`` to be version 0.36.0 or later.
     Otherwise, the ``-bbox-layout`` option is not available for ``pdftotext``
     (`see changelog`_).
+    It is recommended to use ``poppler-utils`` version 0.48.0 or later
+    to avoid `a known bug <https://bugs.freedesktop.org/show_bug.cgi?id=97399>`_.
 
 .. note::
     Fonduer depends on Wand (>=0.4.4, <0.5.0), which does not support ImageMagick7.
