@@ -26,7 +26,8 @@ notifications:
   email: false
 
 before_install:
-- pip3 install --upgrade pip
+- alias pip=pip3
+- pip install --upgrade pip
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     OS=Linux-x86_64
@@ -66,13 +67,13 @@ before_install:
 - pdfinfo -v
 - psql --version
 - python --version
-- pip3 --version
+- pip --version
 - mecab -D || true
 
 # Install PyTorch for Linux with no CUDA support
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-    pip3 install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
+    pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
   fi
 
 install:
@@ -80,7 +81,7 @@ install:
 - make -s dev_extra
 - make check
 - make docs
-- pip3 install -q coveralls
+- pip install -q coveralls
 - python -m spacy download en
 
 before_script:
