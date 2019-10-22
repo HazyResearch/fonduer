@@ -168,9 +168,7 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.join()
 
-        # Terminate and flush the processes
-        for udf in self.udfs:
-            udf.terminate()
+        # Flush the processes
         self.udfs = []
 
 
