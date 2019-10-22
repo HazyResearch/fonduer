@@ -128,7 +128,12 @@ class UDFRunner(object):
         # Use an output queue to track multiprocess progress
         out_queue = manager.Queue()
 
-        # Start UDF Processes
+        # Fill input queue with documents
+        for doc in doc_loader:
+            in_queue.put(doc)
+        total_count = in_queue.qsize()
+
+        # Create UDF Processes
         for i in range(parallelism):
             udf = self.udf_class(
                 in_queue=in_queue,
@@ -139,12 +144,7 @@ class UDFRunner(object):
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
-        # Fill input queue with documents
-        for doc in doc_loader:
-            in_queue.put(doc)
-        total_count = in_queue.qsize()
-
-        # Start the UDF processes, and then join on their completion
+        # Start the UDF processes
         for udf in self.udfs:
             udf.start()
 
@@ -159,6 +159,7 @@ class UDFRunner(object):
             else:
                 raise ValueError("Got non-sentinal output.")
 
+        # Join the UDF processes
         for udf in self.udfs:
             udf.join()
 
