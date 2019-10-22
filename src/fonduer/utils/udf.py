@@ -77,10 +77,7 @@ class UDFRunner(object):
 
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
-        if parallelism < 2:
-            self._apply_st(doc_loader, clear=clear, **kwargs)
-        else:
-            self._apply_mt(doc_loader, parallelism, clear=clear, **kwargs)
+        self._apply_mt(doc_loader, parallelism, clear=clear, **kwargs)
 
         # Close progress bar
         if self.pb is not None:
@@ -97,23 +94,6 @@ class UDFRunner(object):
     def _after_apply(self, **kwargs: Any) -> None:
         """This method is executed by a single process after apply."""
         pass
-
-    def _apply_st(self, doc_loader: Collection[Document], **kwargs: Any) -> None:
-        """Run the UDF single-threaded, optionally with progress bar"""
-        udf = self.udf_class(**self.udf_init_kwargs)
-        Session = new_sessionmaker()
-        udf.session = Session()
-
-        # Run single-thread
-        for doc in doc_loader:
-            if self.pb is not None:
-                self.pb.update(1)
-
-            udf.session.add_all(y for y in udf.apply(doc, **kwargs))
-
-        # Commit and close session
-        udf.session.commit()
-        udf.session.close()
 
     def _apply_mt(
         self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
