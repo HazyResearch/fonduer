@@ -1,5 +1,3 @@
-language: generic
-dist: xenial
 cache:
   directories:
   - $HOME/.cache/pip
@@ -10,17 +8,12 @@ before_cache:
 matrix:
   include:
   - os: linux
-    env:
-      - PYTHON=3.6
-  - os: linux
-    env:
-      - PYTHON=3.7
+    python: 3.7
+    language: python
+    dist: bionic
   - os: osx
-    env:
-      - PYTHON=3.6
-  - os: osx
-    env:
-      - PYTHON=3.7
+    osx_image: xcode11.2
+    language: shell
   fast_finish: true
 
 services:
@@ -33,10 +26,14 @@ notifications:
   email: false
 
 before_install:
+- pip3 install --upgrade pip
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     OS=Linux-x86_64
-    sudo apt-get install -q -y libmecab-dev swig mecab unidic-mecab
+    sudo apt-get install -q -y libmecab-dev swig mecab
+    # Binary dictionary not included in 2.2.0-1 (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=788822)
+    wget http://launchpadlibrarian.net/326401889/unidic-mecab_2.1.2~dfsg-7_all.deb
+    sudo dpkg -i unidic-mecab_2.1.2~dfsg-7_all.deb
     # Set the max number of connections 100
     # No need to adjust it on Mac as it's 100 by default
     sudo sed -i 's/max_connections = 255/max_connections = 100/g' /etc/postgresql/10/main/postgresql.conf
@@ -44,8 +41,13 @@ before_install:
     # Install ImageMagick library for Wand
     sudo apt-get install libmagickwand-dev ghostscript
     sudo rm -rf /etc/ImageMagick-6/policy.xml
+    # Install poppler-utils
+    sudo apt install -q -y poppler-utils
   else
     OS=MacOSX-x86_64
+    pip install virtualenv
+    virtualenv venv
+    source venv/bin/activate
     brew update
     brew install swig mecab mecab-unidic
     brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
@@ -59,31 +61,18 @@ before_install:
     initdb /usr/local/var/postgres
     pg_ctl -D /usr/local/var/postgres start; sleep 5
     createuser -s postgres
+    # poppler-utils is already installed
   fi
-- wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
-- bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
-- conda config --set always_yes yes --set changeps1 no
-- conda create -q -n test-environment python=${PYTHON}
-- source activate test-environment
-- conda install -q -c conda-forge poppler
-- conda install -q pip
-
 - pdfinfo -v
 - psql --version
 - python --version
-- pip --version
+- pip3 --version
 - mecab -D || true
 
 # Install PyTorch for Linux with no CUDA support
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-    if [ "${PYTHON}" = "3.6" ]; then
-      pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-    fi
-    if [ "${PYTHON}" = "3.7" ]; then
-      pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
-    fi
+    pip3 install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
   fi
 
 install:
@@ -91,7 +80,7 @@ install:
 - make -s dev_extra
 - make check
 - make docs
-- pip install -q coveralls
+- pip3 install -q coveralls
 - python -m spacy download en
 
 before_script:
@@ -120,4 +109,4 @@ deploy:
   on:
     tags: true
     branch: master
-    condition: $TRAVIS_OS_NAME = "linux" && $PYTHON = "3.7"
+    condition: $TRAVIS_OS_NAME = "linux"
