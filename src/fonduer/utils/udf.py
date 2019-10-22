@@ -19,9 +19,6 @@ else:
     from tqdm import tqdm_notebook as tqdm
 
 
-QUEUE_TIMEOUT = 3
-
-
 class UDFRunner(object):
     """
     Class to run UDFs in parallel using simple queue-based multiprocessing
@@ -146,7 +143,6 @@ class UDFRunner(object):
         for doc in doc_loader:
             in_queue.put(doc)
         total_count = in_queue.qsize()
-        in_queue.put(UDF.QUEUE_CLOSED)
 
         # Start the UDF processes, and then join on their completion
         for udf in self.udfs:
@@ -163,8 +159,6 @@ class UDFRunner(object):
             else:
                 raise ValueError("Got non-sentinal output.")
 
-        in_queue.put(UDF.QUEUE_CLOSED)
-
         for udf in self.udfs:
             udf.join()
 
@@ -174,7 +168,6 @@ class UDFRunner(object):
 
 class UDF(Process):
     TASK_DONE = "done"
-    QUEUE_CLOSED = "QUEUECLOSED"
 
     def __init__(
         self,
@@ -207,14 +200,11 @@ class UDF(Process):
         self.session = Session()
         while True:
             try:
-                doc = self.in_queue.get(True, QUEUE_TIMEOUT)
-                if doc == UDF.QUEUE_CLOSED:
-                    self.in_queue.put(UDF.QUEUE_CLOSED)
-                    break
+                doc = self.in_queue.get_nowait()
                 self.session.add_all(y for y in self.apply(doc, **self.apply_kwargs))
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
-                continue
+                break
         self.session.commit()
         self.session.close()
 
