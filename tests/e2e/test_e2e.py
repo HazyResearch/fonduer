@@ -341,7 +341,10 @@ def test_e2e(caplog):
         labeler.apply(split=0, lfs=stg_temp_lfs, train=True, parallelism=PARALLEL)
 
     labeler.apply(
-        split=0, lfs=[stg_temp_lfs, ce_v_max_lfs], train=True, parallelism=PARALLEL
+        docs=train_docs,
+        lfs=[stg_temp_lfs, ce_v_max_lfs],
+        train=True,
+        parallelism=PARALLEL,
     )
     assert session.query(Label).count() == 6478
     assert session.query(LabelKey).count() == 9

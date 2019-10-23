@@ -25,7 +25,7 @@ from fonduer.utils.utils_udf import (
     batch_upsert_records,
     drop_all_keys,
     drop_keys,
-    get_cands_list_from_split,
+    get_cands_list_from_doc,
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
@@ -336,20 +336,17 @@ class FeaturizerUDF(UDF):
         super().__init__(**kwargs)
 
     def apply(  # type: ignore
-        self, doc: Document, split: int, train: bool, **kwargs: Any
+        self, doc: Document, train: bool, **kwargs: Any
     ) -> Iterator[Any]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
-        :param split: Which split to use.
         :param train: Whether or not to insert new FeatureKeys.
         """
         logger.debug(f"Document: {doc}")
 
         # Get all the candidates in this doc that will be featurized
-        cands_list = get_cands_list_from_split(
-            self.session, self.candidate_classes, doc, split
-        )
+        cands_list = get_cands_list_from_doc(self.session, self.candidate_classes, doc)
 
         # Make a flat list of all candidates from the list of list of
         # candidates. This helps reduce the number of queries needed to update.
