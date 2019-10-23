@@ -26,6 +26,9 @@ notifications:
   email: false
 
 before_install:
+# https://github.com/travis-ci/travis-ci/issues/2552#issuecomment-200640335
+- shopt -s expand_aliases
+# Make an alias otherwise pip points to Python 2.7 on macOS
 - alias pip=pip3
 - pip install --upgrade pip
 - |
