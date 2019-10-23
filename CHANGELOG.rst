@@ -103,6 +103,7 @@ Fixed
 * `@HiromuHota`_: Avoid networkx 2.4 so that snorkel-metal does not use the removed API.
 * `@HiromuHota`_: Fix the issue that Labeler.apply with docs instead of split fails.
   (`#340 <https://github.com/HazyResearch/fonduer/pull/340>`_)
+* `@HiromuHota`_: Make mention/candidate_subclasses and their objects picklable.
 
 0.7.0_ - 2019-06-12
 -------------------
