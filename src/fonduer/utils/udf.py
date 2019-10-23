@@ -1,5 +1,5 @@
 import logging
-from multiprocessing import JoinableQueue, Manager, Process
+from multiprocessing import Manager, Process
 from queue import Empty, Queue
 from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
 
@@ -17,9 +17,6 @@ except (AttributeError, ImportError):
     from tqdm import tqdm
 else:
     from tqdm import tqdm_notebook as tqdm
-
-
-QUEUE_TIMEOUT = 3
 
 
 class UDFRunner(object):
@@ -125,23 +122,18 @@ class UDFRunner(object):
         if not Meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
-        def fill_input_queue(
-            in_queue: Queue, doc_loader: Collection[Document], terminal_signal: str
-        ) -> None:
-            for doc in doc_loader:
-                in_queue.put(doc)
-            in_queue.put(terminal_signal)
-
         # Create an input queue to feed documents to UDF workers
         manager = Manager()
         in_queue = manager.Queue()
         # Use an output queue to track multiprocess progress
-        # TODO: can out_queue be just Queue instead of JoinableQueue?
-        out_queue: JoinableQueue = JoinableQueue()
+        out_queue = manager.Queue()
 
-        total_count = len(doc_loader)
+        # Fill input queue with documents
+        for doc in doc_loader:
+            in_queue.put(doc)
+        total_count = in_queue.qsize()
 
-        # Start UDF Processes
+        # Create UDF Processes
         for i in range(parallelism):
             udf = self.udf_class(
                 in_queue=in_queue,
@@ -152,16 +144,9 @@ class UDFRunner(object):
             udf.apply_kwargs = kwargs
             self.udfs.append(udf)
 
-        # Start the UDF processes, and then join on their completion
+        # Start the UDF processes
         for udf in self.udfs:
             udf.start()
-
-        # Fill input queue with documents
-        terminal_signal = UDF.QUEUE_CLOSED
-        in_queue_filler = Process(
-            target=fill_input_queue, args=(in_queue, doc_loader, terminal_signal)
-        )
-        in_queue_filler.start()
 
         count_parsed = 0
         while count_parsed < total_count:
@@ -174,26 +159,21 @@ class UDFRunner(object):
             else:
                 raise ValueError("Got non-sentinal output.")
 
-        in_queue_filler.join()
-        in_queue.put(UDF.QUEUE_CLOSED)
-
+        # Join the UDF processes
         for udf in self.udfs:
             udf.join()
 
-        # Terminate and flush the processes
-        for udf in self.udfs:
-            udf.terminate()
+        # Flush the processes
         self.udfs = []
 
 
 class UDF(Process):
     TASK_DONE = "done"
-    QUEUE_CLOSED = "QUEUECLOSED"
 
     def __init__(
         self,
         in_queue: Optional[Queue] = None,
-        out_queue: Optional[JoinableQueue] = None,
+        out_queue: Optional[Queue] = None,
         worker_id: int = 0,
         **udf_init_kwargs: Any,
     ) -> None:
@@ -221,14 +201,11 @@ class UDF(Process):
         self.session = Session()
         while True:
             try:
-                doc = self.in_queue.get(True, QUEUE_TIMEOUT)
-                if doc == UDF.QUEUE_CLOSED:
-                    self.in_queue.put(UDF.QUEUE_CLOSED)
-                    break
+                doc = self.in_queue.get_nowait()
                 self.session.add_all(y for y in self.apply(doc, **self.apply_kwargs))
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
-                continue
+                break
         self.session.commit()
         self.session.close()
 
