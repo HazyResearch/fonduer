@@ -14,10 +14,9 @@ from typing import (
     Union,
 )
 
+import numpy as np
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
-
-import numpy as np
 
 from fonduer.candidates.models import Candidate
 from fonduer.parser.models import Document
