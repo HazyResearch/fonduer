@@ -32,6 +32,7 @@ from fonduer.utils.utils_udf import (
     get_mapping,
     get_sparse_matrix,
     get_sparse_matrix_keys,
+    unshift_label_matrix,
     upsert_keys,
 )
 
@@ -374,7 +375,7 @@ class Labeler(UDFRunner):
         :rtype: list[np.ndarray]
         """
         return [
-            m.toarray() - 1  # convert to {-1, 0, ..., k-1}
+            unshift_label_matrix(m)
             for m in get_sparse_matrix(
                 self.session, GoldLabelKey, cand_lists, key=annotator
             )
@@ -390,7 +391,7 @@ class Labeler(UDFRunner):
         :rtype: list[np.ndarray]
         """
         return [
-            m.toarray() - 1  # convert to {-1, 0, ..., k-1}
+            unshift_label_matrix(m)
             for m in get_sparse_matrix(self.session, LabelKey, cand_lists)
         ]
 
