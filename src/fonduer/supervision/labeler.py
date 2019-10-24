@@ -37,9 +37,9 @@ from fonduer.utils.utils_udf import (
 
 logger = logging.getLogger(__name__)
 
-# Snorkel standardized ABSTAIN as follows:
-# ABSTAIN is None (LFs), -1 (label matrix), or 0 (LFAnalysis)
-# https://github.com/snorkel-team/snorkel/pull/1309
+# Snorkel changed the label convention: ABSTAIN is now represented by -1 (used to be 0).
+# Accordingly, user-defined labels should now be 0-indexed (used to be 1-indexed).
+# Details can be found at https://github.com/snorkel-team/snorkel/pull/1309
 ABSTAIN = -1
 
 
