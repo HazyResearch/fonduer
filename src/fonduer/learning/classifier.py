@@ -398,12 +398,12 @@ class Classifier(nn.Module):
             else:
                 return Y_pred
 
-        if pos_label not in [1, 2]:
-            raise ValueError("pos_label must have values in {1,2}.")
+        if pos_label not in [0, 1]:
+            raise ValueError("pos_label must have values in {0, 1}.")
         self.logger.info(f"Using positive label class {pos_label} with threshold {b}")
 
         Y_pred = np.array(
-            [pos_label if p[pos_label] > b else pos_label - 1 for p in Y_prob]
+            [pos_label if p[pos_label] > b else 1 - pos_label for p in Y_prob]
         )
         if return_probs:
             return Y_pred, Y_prob
@@ -452,7 +452,7 @@ class Classifier(nn.Module):
         if self.cardinality == 2:
             # Either remap or filter out unlabeled (0-valued) test labels
             if set_unlabeled_as_neg:
-                Y_test[Y_test == 0] = pos_label - 1
+                Y_test[Y_test == 0] = 1 - pos_label
             else:
                 Y_pred = Y_pred[Y_test != 0]
                 Y_test = Y_test[Y_test != 0]
@@ -476,7 +476,7 @@ class Classifier(nn.Module):
             scores["recall"] = rec
             scores[f"f{beta}"] = fbeta
 
-            roc_auc = roc_auc_score(Y_test, Y_prob[:, pos_label - 1])
+            roc_auc = roc_auc_score(Y_test, Y_prob[:, 1 - pos_label])
             scores["roc_auc"] = roc_auc
 
         # Compute accuracy for all settings
