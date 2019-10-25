@@ -98,6 +98,7 @@ Changed
 * `@HiromuHota`_: Use the official name "beautifulsoup4" instead of an alias "bs4".
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 * `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
+* `@HiromuHota`_: Depend on psycopg2 instead of psycopg2-binary as the latter is not recommended for production.
 
 Removed
 ^^^^^^^
