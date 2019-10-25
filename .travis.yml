@@ -66,6 +66,8 @@ before_install:
     pg_ctl -D /usr/local/var/postgres start; sleep 5
     createuser -s postgres
     # poppler-utils is already installed
+    # https://github.com/brianmario/mysql2/issues/795
+    export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib/
   fi
 - pdfinfo -v
 - psql --version
