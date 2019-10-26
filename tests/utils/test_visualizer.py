@@ -14,7 +14,7 @@ from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 
-ATTRIBUTE = "visualizer_test"
+CONN_STRING = "postgresql://127.0.0.1:5432/visualizer_test"
 
 
 def test_visualizer(caplog):
@@ -23,7 +23,7 @@ def test_visualizer(caplog):
     """Unit test of visualizer using the md document.
     """
     caplog.set_level(logging.INFO)
-    session = Meta.init("postgresql://localhost:5432/" + ATTRIBUTE).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     PARALLEL = 1
     max_docs = 1

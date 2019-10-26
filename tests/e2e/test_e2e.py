@@ -56,7 +56,7 @@ from tests.shared.hardware_utils import entity_level_f1, gold
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "e2e_test"
+CONN_STRING = "postgresql://127.0.0.1:5432/e2e_test"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
@@ -74,7 +74,7 @@ def test_e2e(caplog):
         level=logging.INFO,
     )
 
-    session = fonduer.Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = fonduer.Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"

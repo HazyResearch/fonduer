@@ -27,7 +27,7 @@ from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "inc_test"
+CONN_STRING = "postgresql://127.0.0.1:5432/inc_test"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")
@@ -39,7 +39,7 @@ def test_incremental(caplog):
 
     max_docs = 1
 
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/dtc114w.html"
     pdf_path = "tests/data/pdf/dtc114w.pdf"

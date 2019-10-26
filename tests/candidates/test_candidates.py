@@ -45,7 +45,7 @@ from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "cand_test"
+CONN_STRING = "postgresql://127.0.0.1:5432/cand_test"
 
 
 def test_ngram_split(caplog):
@@ -203,7 +203,7 @@ def test_cand_gen_cascading_delete(caplog):
         PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -285,7 +285,7 @@ def test_cand_gen(caplog):
         return True
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -432,7 +432,7 @@ def test_ngrams(caplog):
     PARALLEL = 4
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
@@ -476,7 +476,7 @@ def test_row_col_ngram_extraction(caplog):
     caplog.set_level(logging.INFO)
     PARALLEL = 1
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
     # Parsing
@@ -519,7 +519,7 @@ def test_mention_longest_match(caplog):
     PARALLEL = 1
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
@@ -585,7 +585,7 @@ def test_multimodal_cand(caplog):
     PARALLEL = 4
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/pure_html/radiology.html"
 
@@ -642,10 +642,9 @@ def test_subclass_before_meta_init(caplog):
     """
     caplog.set_level(logging.INFO)
 
-    conn_string = "postgresql://localhost:5432/" + DB
     Part = mention_subclass("Part")
     logger.info(f"Create a mention subclass '{Part.__tablename__}'")
-    Meta.init(conn_string).Session()
+    Meta.init(CONN_STRING).Session()
     Temp = mention_subclass("Temp")
     logger.info(f"Create a mention subclass '{Temp.__tablename__}'")
 
