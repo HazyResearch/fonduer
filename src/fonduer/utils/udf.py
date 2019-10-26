@@ -1,6 +1,4 @@
 import logging
-import multiprocessing as mp
-import platform
 from multiprocessing import Manager, Process
 from queue import Empty, Queue
 from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
@@ -115,9 +113,6 @@ class UDFRunner(object):
             in_queue.put(doc)
         total_count = in_queue.qsize()
 
-        # https://bugs.python.org/issue37677
-        if platform.system() == "Darwin":
-            mp.set_start_method("spawn")
         # Create UDF Processes
         for i in range(parallelism):
             udf = self.udf_class(
