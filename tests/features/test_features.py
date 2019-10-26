@@ -11,7 +11,7 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from tests.shared.hardware_matchers import part_matcher, temp_matcher
 
 logger = logging.getLogger(__name__)
-DB = "feature_test"
+CONN_STRING = "postgresql://127.0.0.1:5432/feature_test"
 
 
 def test_feature_extraction():
@@ -19,7 +19,7 @@ def test_feature_extraction():
     PARALLEL = 1
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
