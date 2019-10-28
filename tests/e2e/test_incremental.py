@@ -27,7 +27,8 @@ from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-CONN_STRING = "postgresql://127.0.0.1:5432/inc_test"
+DB = "inc_test"
+CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")

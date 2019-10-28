@@ -11,7 +11,8 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from tests.shared.hardware_matchers import part_matcher, temp_matcher
 
 logger = logging.getLogger(__name__)
-CONN_STRING = "postgresql://127.0.0.1:5432/feature_test"
+DB = "feature_test"
+CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 def test_feature_extraction():
