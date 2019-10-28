@@ -90,7 +90,6 @@ install:
 - python -m spacy download en
 
 before_script:
-- createdb parser_test -U postgres
 - createdb e2e_test -U postgres
 - createdb visualizer_test -U postgres
 - createdb inc_test -U postgres
