@@ -13,6 +13,7 @@ from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 
 DB = "visualizer_test"
+# Use 127.0.0.1 instead of localhost (#351)
 CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 

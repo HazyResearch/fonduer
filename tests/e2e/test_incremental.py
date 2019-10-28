@@ -28,6 +28,7 @@ from tests.shared.hardware_throttlers import temp_throttler
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "inc_test"
+# Use 127.0.0.1 instead of localhost (#351)
 CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 

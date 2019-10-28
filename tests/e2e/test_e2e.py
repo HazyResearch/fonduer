@@ -57,6 +57,7 @@ from tests.shared.hardware_utils import entity_level_f1, gold
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
+# Use 127.0.0.1 instead of localhost (#351)
 CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
