@@ -12,7 +12,8 @@ from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 
-CONN_STRING = "postgresql://127.0.0.1:5432/visualizer_test"
+DB = "visualizer_test"
+CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 def test_visualizer():
