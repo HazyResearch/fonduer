@@ -14,10 +14,8 @@ logger = logging.getLogger(__name__)
 DB = "feature_test"
 
 
-def test_feature_extraction(caplog):
+def test_feature_extraction():
     """Test extracting candidates from mentions from documents."""
-    caplog.set_level(logging.INFO)
-
     PARALLEL = 1
 
     max_docs = 1

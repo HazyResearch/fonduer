@@ -60,10 +60,8 @@ DB = "e2e_test"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
-def test_e2e(caplog):
+def test_e2e():
     """Run an end-to-end test on documents of the hardware domain."""
-    caplog.set_level(logging.INFO)
-
     PARALLEL = 4
 
     max_docs = 12

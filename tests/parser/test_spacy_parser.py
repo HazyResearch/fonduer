@@ -1,5 +1,3 @@
-import logging
-
 import pytest
 
 from fonduer.parser.lingual_parser.spacy_parser import (
@@ -10,9 +8,7 @@ from fonduer.parser.lingual_parser.spacy_parser import (
 from fonduer.parser.models import Sentence
 
 
-def test_spacy_support(caplog):
-    caplog.set_level(logging.INFO)
-
+def test_spacy_support():
     # Supported language
     lingual_parser = SpacyParser("en")
     assert lingual_parser.has_tokenizer_support()
@@ -33,9 +29,7 @@ def test_spacy_support(caplog):
         lingual_parser = SpacyParser()
 
 
-def test_spacy_split_sentences(caplog):
-    caplog.set_level(logging.INFO)
-
+def test_spacy_split_sentences():
     lingual_parser = SpacyParser("en")
     tokenize_and_split_sentences = lingual_parser.split_sentences
     text = "This is a text. This is another text."
@@ -44,9 +38,7 @@ def test_spacy_split_sentences(caplog):
     assert len(list(iterator)) == 2
 
 
-def test_split_sentences_by_char_limit(caplog):
-    caplog.set_level(logging.INFO)
-
+def test_split_sentences_by_char_limit():
     lingual_parser = SpacyParser("en")
 
     text = "This is a text. This is another text."

@@ -1,13 +1,9 @@
-import logging
-
 from fonduer.candidates.models import Candidate
 from fonduer.learning.utils import confusion_matrix
 
 
-def test_confusion_matrix(caplog):
+def test_confusion_matrix():
     """Test the confusion matrix."""
-    caplog.set_level(logging.INFO)
-
     # Synthesize candidates
     cand1 = Candidate(id=1, type="type")
     cand2 = Candidate(id=2, type="type")
