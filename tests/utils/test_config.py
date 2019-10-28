@@ -1,13 +1,10 @@
-import logging
 import os
 
 from fonduer.utils.config import get_config
 
 
-def test_load_config(caplog):
+def test_load_config():
     """Simple sanity check for loading feature config."""
-    caplog.set_level(logging.INFO)
-
     # Check that default is loaded
     defaults = get_config()
     assert defaults["featurization"]["textual"]["window_feature"]["size"] == 3

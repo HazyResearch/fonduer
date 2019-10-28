@@ -31,10 +31,8 @@ DB = "inc_test"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")
-def test_incremental(caplog):
+def test_incremental():
     """Run an end-to-end test on incremental additions."""
-    caplog.set_level(logging.INFO)
-
     PARALLEL = 1
 
     max_docs = 1

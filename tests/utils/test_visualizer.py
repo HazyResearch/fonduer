@@ -4,8 +4,6 @@ visualizer_test has been created for the purpose of testing.
 
 If you are testing locally, you will need to create this db.
 """
-import logging
-
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionNgrams
 from fonduer.candidates.matchers import OrganizationMatcher
@@ -17,12 +15,11 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 ATTRIBUTE = "visualizer_test"
 
 
-def test_visualizer(caplog):
+def test_visualizer():
     from fonduer.utils.visualizer import Visualizer  # noqa
 
     """Unit test of visualizer using the md document.
     """
-    caplog.set_level(logging.INFO)
     session = Meta.init("postgresql://localhost:5432/" + ATTRIBUTE).Session()
 
     PARALLEL = 1
@@ -69,7 +66,7 @@ def test_visualizer(caplog):
     vis.display_candidates([cands[0]])
 
 
-def test_get_pdf_dim(caplog):
+def test_get_pdf_dim():
     from fonduer.utils.visualizer import get_pdf_dim  # noqa
 
     """Test get_pdf_dim on different pages"""

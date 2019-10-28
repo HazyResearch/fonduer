@@ -18,7 +18,7 @@ def doc_setup():
     return doc
 
 
-def test_union(caplog, doc_setup):
+def test_union(doc_setup):
     doc = doc_setup
     space = MentionNgrams(n_min=1, n_max=2)
     tc: TemporarySpanMention
@@ -64,7 +64,7 @@ def test_union(caplog, doc_setup):
     }
 
 
-def test_intersect(caplog, doc_setup):
+def test_intersect(doc_setup):
     doc = doc_setup
     space = MentionNgrams(n_min=1, n_max=3)
     tc: TemporarySpanMention
@@ -110,7 +110,7 @@ def test_intersect(caplog, doc_setup):
     }
 
 
-def test_inverse(caplog, doc_setup):
+def test_inverse(doc_setup):
     doc = doc_setup
     space = MentionNgrams(n_min=1, n_max=2)
     tc: TemporarySpanMention

@@ -14,7 +14,7 @@ FALSE = 1
 TRUE = 2
 
 
-def test_classifier_predict(caplog):
+def test_classifier_predict():
     """Test Classifier#predict."""
 
     init_logging(log_dir=tempfile.gettempdir())
@@ -49,7 +49,7 @@ def test_classifier_predict(caplog):
         np.testing.assert_array_equal(Y_pred, np.array([FALSE, FALSE, FALSE]))
 
 
-def test_logistic_regression_predict(caplog):
+def test_logistic_regression_predict():
     """Test LogisticRegression#predict."""
 
     init_logging(log_dir=tempfile.gettempdir())
