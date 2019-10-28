@@ -8,7 +8,6 @@ locally.
 In order to run the tests, you will need to create the local databases used
 by the tests::
 
-    $ createdb parser_test
     $ createdb e2e_test
     $ createdb cand_test
     $ createdb feature_test
