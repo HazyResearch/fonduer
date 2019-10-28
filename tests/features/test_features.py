@@ -12,6 +12,7 @@ from tests.shared.hardware_matchers import part_matcher, temp_matcher
 
 logger = logging.getLogger(__name__)
 DB = "feature_test"
+# Use 127.0.0.1 instead of localhost (#351)
 CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
