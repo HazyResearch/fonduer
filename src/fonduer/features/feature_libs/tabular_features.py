@@ -21,7 +21,7 @@ settings = get_config()
 
 
 def extract_tabular_features(
-    candidates: List[Candidate]
+    candidates: List[Candidate],
 ) -> Iterator[Tuple[int, str, int]]:
     """Extract tabular features.
 

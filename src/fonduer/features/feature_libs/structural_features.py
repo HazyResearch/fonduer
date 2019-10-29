@@ -23,7 +23,7 @@ binary_strlib_feats: Dict[str, Set[Tuple[str, int]]] = {}
 
 
 def extract_structural_features(
-    candidates: List[Candidate]
+    candidates: List[Candidate],
 ) -> Iterator[Tuple[int, str, int]]:
     """Extract structural features.
 
