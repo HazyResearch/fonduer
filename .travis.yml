@@ -99,7 +99,7 @@ before_script:
 - cd tests && ./download_data.sh && cd ..
 
 script:
-- travis_wait 50 coverage run --source=fonduer -m pytest tests
+- travis_wait 50 coverage run -m pytest tests
 
 after_success:
 - coverage combine
