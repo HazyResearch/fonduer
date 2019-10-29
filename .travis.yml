@@ -102,6 +102,7 @@ script:
 - travis_wait 50 coverage run --source=fonduer -m pytest tests
 
 after_success:
+- coverage combine
 - coveralls
 
 deploy:
