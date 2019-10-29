@@ -20,7 +20,7 @@ binary_vizlib_feats: Dict[str, Set] = {}
 
 
 def extract_visual_features(
-    candidates: List[Candidate]
+    candidates: List[Candidate],
 ) -> Iterator[Tuple[int, str, int]]:
     """Extract visual features.
 
