@@ -60,7 +60,7 @@ Added
 * `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
   and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
 * `@HiromuHota`_: Annotate types to some of the classes incl. preprocesssors and parser/models.
-* `@HiromuHota`_: Add table argument to ``Labeler.apply``, which can now be used to annotate gold labels.
+* `@HiromuHota`_: Add table argument to ``Labeler.apply`` (and ``Labeler.update``), which can now be used to annotate gold labels.
 
 .. note::
 
@@ -130,6 +130,8 @@ Fixed
   (`#340 <https://github.com/HazyResearch/fonduer/pull/340>`_)
 * `@HiromuHota`_: Make mention/candidate_subclasses and their objects picklable.
 * `@HiromuHota`_: Make Visualizer#display_candidates mention-type argnostic.
+* `@HiromuHota`_: Ensure labels get updated when LFs are updated.
+  (`#336 <https://github.com/HazyResearch/fonduer/issues/336>`_)
 
 0.7.0_ - 2019-06-12
 -------------------
