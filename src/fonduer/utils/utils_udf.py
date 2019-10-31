@@ -208,6 +208,8 @@ def get_mapping(
 
         for cid, key, value in generator(cand):
             if value == 0:
+                # Make sure this key does not exist in cand_map
+                cand_map.pop(key, None)
                 continue
             cand_map[key] = value
 
