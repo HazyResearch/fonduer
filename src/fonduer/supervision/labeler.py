@@ -71,6 +71,7 @@ class Labeler(UDFRunner):
         lfs: List[List[Callable]] = None,
         parallelism: int = None,
         progress_bar: bool = True,
+        table: Table = Label,
     ) -> None:
         """Update the labels of the specified candidates based on the provided LFs.
 
@@ -103,6 +104,7 @@ class Labeler(UDFRunner):
             clear=False,
             parallelism=parallelism,
             progress_bar=progress_bar,
+            table=table,
         )
 
     def apply(  # type: ignore
