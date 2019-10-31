@@ -354,6 +354,8 @@ class Labeler(UDFRunner):
                 for key in label.keys:
                     key_map[key].add(cand.__class__.__tablename__)
             key_table = LabelKey if table == Label else GoldLabelKey
+            self.session.query(key_table).delete(synchronize_session="fetch")
+            # TODO: upsert is too much. insert is fine as all keys are deleted.
             upsert_keys(self.session, key_table, key_map)
 
     def get_gold_labels(
