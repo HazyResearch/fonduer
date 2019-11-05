@@ -457,7 +457,7 @@ def get_head_ngrams(
     :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
-    axes = (axis,) if axis else ("row", "col")
+    axes = (axis,) if axis else ("row", "col")  # type: ignore
     for span in spans:
         if span.sentence.is_tabular():
             for axis in axes:
