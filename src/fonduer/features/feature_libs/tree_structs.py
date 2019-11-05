@@ -25,9 +25,10 @@ class XMLTree:
         self.id = str(abs(hash(self.to_str())))
 
     def _to_json(self, root: _Element) -> Dict:
-        js = {"attrib": dict(root.attrib), "children": []}
-        for i, c in enumerate(root):
-            js["children"].append(self._to_json(c))
+        children: List[Dict] = []
+        for c in root:
+            children.append(self._to_json(c))
+        js = {"attrib": dict(root.attrib), "children": children}
         return js
 
     def to_json(self) -> Dict:
