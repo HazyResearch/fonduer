@@ -250,13 +250,17 @@ def drop_all_keys(
     if not candidate_classes:
         return
 
-    candidate_classes: Set[str] = set([c.__tablename__ for c in candidate_classes])
+    set_of_candidate_classes: Set[str] = set(
+        [c.__tablename__ for c in candidate_classes]
+    )
 
     # Select all rows that contain ANY of the candidate_classes
     all_rows = (
         session.query(key_table)
         .filter(
-            key_table.candidate_classes.overlap(cast(candidate_classes, ARRAY(String)))
+            key_table.candidate_classes.overlap(
+                cast(set_of_candidate_classes, ARRAY(String))
+            )
         )
         .all()
     )
