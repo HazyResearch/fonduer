@@ -239,9 +239,9 @@ class Labeler(UDFRunner):
         key_map = dict()
         for key in keys:
             # Assume key is an LF
-            try:
-                key_map[key.__name__] = set(candidate_classes)
-            except AttributeError:
+            if hasattr(key, "__name__"):
+                key_map[key.__name__] = set(candidate_classes)  # type: ignore
+            else:
                 key_map[key] = set(candidate_classes)
 
         upsert_keys(self.session, LabelKey, key_map)
@@ -291,9 +291,9 @@ class Labeler(UDFRunner):
         key_map = dict()
         for key in keys:
             # Assume key is an LF
-            try:
-                key_map[key.__name__] = set(candidate_classes)
-            except AttributeError:
+            if hasattr(key, "__name__"):
+                key_map[key.__name__] = set(candidate_classes)  # type: ignore
+            else:
                 key_map[key] = set(candidate_classes)
 
         drop_keys(self.session, LabelKey, key_map)
