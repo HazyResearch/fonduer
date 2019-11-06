@@ -271,7 +271,7 @@ def drop_all_keys(
     for row in all_rows:
         # Remove the selected candidate_classes. If empty, mark for deletion.
         row.candidate_classes = list(
-            set(row.candidate_classes) - set(candidate_classes)
+            set(row.candidate_classes) - set_of_candidate_classes
         )
         if len(row.candidate_classes) == 0:
             to_delete.add(row.name)
