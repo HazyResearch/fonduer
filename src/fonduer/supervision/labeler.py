@@ -198,7 +198,9 @@ class Labeler(UDFRunner):
     def upsert_keys(
         self,
         keys: Iterable[Union[str, Callable]],
-        candidate_classes: Optional[List[Type[Candidate]]] = None,
+        candidate_classes: Optional[
+            Union[Type[Candidate], List[Type[Candidate]]]
+        ] = None,
     ) -> None:
         """Upsert the specified keys from LabelKeys.
 
@@ -241,7 +243,7 @@ class Labeler(UDFRunner):
         for key in keys:
             # Assume key is an LF
             if hasattr(key, "__name__"):
-                key_map[key.__name__] = set(candidate_classes)  # type: ignore
+                key_map[key.__name__] = set(candidate_classes)
             else:
                 key_map[key] = set(candidate_classes)
 
@@ -250,7 +252,9 @@ class Labeler(UDFRunner):
     def drop_keys(
         self,
         keys: Iterable[Union[str, Callable]],
-        candidate_classes: Optional[List[Type[Candidate]]] = None,
+        candidate_classes: Optional[
+            Union[Type[Candidate], List[Type[Candidate]]]
+        ] = None,
     ) -> None:
         """Drop the specified keys from LabelKeys.
 
@@ -293,7 +297,7 @@ class Labeler(UDFRunner):
         for key in keys:
             # Assume key is an LF
             if hasattr(key, "__name__"):
-                key_map[key.__name__] = set(candidate_classes)  # type: ignore
+                key_map[key.__name__] = set(candidate_classes)
             else:
                 key_map[key] = set(candidate_classes)
 
@@ -390,7 +394,11 @@ class Labeler(UDFRunner):
 class LabelerUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_classes: List[Type[Candidate]], **kwargs: Any):
+    def __init__(
+        self,
+        candidate_classes: Union[Type[Candidate], List[Type[Candidate]]],
+        **kwargs: Any,
+    ):
         """Initialize the LabelerUDF."""
         self.candidate_classes = (
             candidate_classes

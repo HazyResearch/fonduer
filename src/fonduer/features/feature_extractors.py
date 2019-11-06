@@ -16,6 +16,10 @@ FEATURES: Dict[str, Callable[[List[Candidate]], Iterator[Tuple[int, str, int]]]]
 }
 
 
+# Type alias for feature_func
+Feature_func = Callable[[List[Candidate]], Iterator[Tuple[int, str, int]]]
+
+
 class FeatureExtractor(object):
     """A class to extract features from candidates.
 
@@ -31,9 +35,7 @@ class FeatureExtractor(object):
     def __init__(
         self,
         features: List[str] = ["textual", "structural", "tabular", "visual"],
-        customize_feature_funcs: List[
-            Callable[[List[Candidate]], Iterator[Tuple[int, str, int]]]
-        ] = [],
+        customize_feature_funcs: Union[Feature_func, List[Feature_func]] = [],
     ) -> None:
         if not isinstance(customize_feature_funcs, list):
             customize_feature_funcs = [customize_feature_funcs]
