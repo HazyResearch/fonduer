@@ -141,9 +141,7 @@ def _compile_entity_feature_generator() -> Callable:
 def _get_ddlib_feats(
     span: SpanMention, context: Dict[str, Any], idxs: List[int]
 ) -> Iterator[str]:
-    """
-    Minimalist port of generic mention features from ddlib
-    """
+    """Minimalist port of generic mention features from ddlib."""
 
     if span.stable_id not in unary_ddlib_feats:
         unary_ddlib_feats[span.stable_id] = set()

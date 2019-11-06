@@ -2,8 +2,7 @@ from tensorboardX import SummaryWriter
 
 
 class TensorBoardLogger(object):
-    """A class for logging to Tensorboard during training process.
-    """
+    """A class for logging to Tensorboard during training process."""
 
     def __init__(self, log_dir: str):
         """Create a summary writer logging to log_dir."""

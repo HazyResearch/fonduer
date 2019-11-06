@@ -171,7 +171,9 @@ class UDF(Process):
         **udf_init_kwargs: Any,
     ) -> None:
         """
-        in_queue: A Queue of input objects to process; primarily for running in parallel
+        :param in_queue: A Queue of input objects to processes
+        :param out_queue: A Queue of output objects from processes
+        :param worker_id: An ID of a process
         """
         super().__init__()
         self.daemon = True

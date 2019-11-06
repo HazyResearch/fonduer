@@ -77,9 +77,7 @@ def extract_visual_features(
 
 
 def _vizlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
-    """
-    Visual-related features for a single span
-    """
+    """Visual-related features for a single span."""
     if not span.sentence.is_visual():
         return
 
@@ -93,9 +91,7 @@ def _vizlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
 def _vizlib_binary_features(
     span1: SpanMention, span2: SpanMention
 ) -> Iterator[Tuple[str, int]]:
-    """
-    Visual-related features for a pair of spans
-    """
+    """Visual-related features for a pair of spans."""
     if same_page((span1, span2)):
         yield "SAME_PAGE", DEF_VALUE
 

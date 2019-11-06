@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Visualizer(object):
-    """
-    Object to display bounding boxes on a pdf document
-    """
+    """Object to display bounding boxes on a pdf document."""
 
     def __init__(self, pdf_path: str) -> None:
         """
