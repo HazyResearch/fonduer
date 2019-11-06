@@ -1,5 +1,5 @@
 from builtins import range
-from typing import Any, Callable, Dict, Iterator, List, Set, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Set, Tuple, Union
 
 from treedlib import (
     Children,
@@ -15,8 +15,7 @@ from treedlib import (
     compile_relation_feature_generator,
 )
 
-from fonduer.candidates.models import Candidate, ImplicitSpanMention
-from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
+from fonduer.candidates.models import Candidate, ImplicitSpanMention, SpanMention
 from fonduer.features.feature_libs.tree_structs import corenlp_to_xmltree
 from fonduer.utils.config import get_config
 from fonduer.utils.data_model_utils import get_left_ngrams, get_right_ngrams
@@ -42,14 +41,14 @@ def extract_textual_features(
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
         args = tuple([m.context for m in candidate.get_mentions()])
-        if not (isinstance(args[0], TemporarySpanMention)):
+        if not (isinstance(args[0], (SpanMention, ImplicitSpanMention))):
             raise ValueError(
-                f"Accepts Span-type arguments, {type(candidate)}-type found."
+                f"Accepts Span/ImplicitSpan-type mentions, {type(args[0])}-type found."
             )
 
         # Unary candidates
         if len(args) == 1:
-            span: SpanMention = args[0]
+            span: Union[SpanMention, ImplicitSpanMention] = args[0]
             if span.sentence.is_lingual():
                 get_tdl_feats = _compile_entity_feature_generator()
                 xmltree = corenlp_to_xmltree(span.sentence)
