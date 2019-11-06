@@ -23,8 +23,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ARG FONDUER_VERSION=
 # Install python packages
-# Set --build-arg FONDUER_VERSION=0.7.0 to install a specific version of Fonduer,
-# otherwise the lastest version is installed.
+# Set --build-arg FONDUER_VERSION=X.X.X to install a specific version of
+# Fonduer, otherwise the lastest version is installed.
 RUN pip install \
     https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl \
     fonduer${FONDUER_VERSION:+==${FONDUER_VERSION}}
