@@ -111,7 +111,6 @@ Deprecated
 
 Removed
 ^^^^^^^
-
 * `@HiromuHota`_: Remove __repr__ from each mixin class as the referenced attributes are not available.
 * `@HiromuHota`_: Remove the dependency on nltk, but ``PorterStemmer()`` can still be used,
   if it is provided as ``DictionaryMatch(stemmer=PorterStemmer())``.
