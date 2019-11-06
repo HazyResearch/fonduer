@@ -126,7 +126,8 @@ class Featurizer(UDFRunner):
         """
         if docs:
             # Call apply on the specified docs for all splits
-            split = ALL_SPLITS
+            # TODO: split is int
+            split = ALL_SPLITS  # type: ignore
             super().apply(
                 docs,
                 split=split,
