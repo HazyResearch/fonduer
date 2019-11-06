@@ -77,27 +77,21 @@ def bbox_vert_aligned(box1: Bbox, box2: Bbox) -> bool:
 
 
 def bbox_vert_aligned_left(box1: Bbox, box2: Bbox) -> bool:
-    """
-    Returns true if the left boundary of both boxes is within 2 pts
-    """
+    """Returns true if the left boundary of both boxes is within 2 pts."""
     if not (box1 and box2):
         return False
     return abs(box1.left - box2.left) <= 2
 
 
 def bbox_vert_aligned_right(box1: Bbox, box2: Bbox) -> bool:
-    """
-    Returns true if the right boundary of both boxes is within 2 pts
-    """
+    """Returns true if the right boundary of both boxes is within 2 pts."""
     if not (box1 and box2):
         return False
     return abs(box1.right - box2.right) <= 2
 
 
 def bbox_vert_aligned_center(box1: Bbox, box2: Bbox) -> bool:
-    """
-    Returns true if the center of both boxes is within 5 pts
-    """
+    """Returns true if the center of both boxes is within 5 pts."""
     if not (box1 and box2):
         return False
     return abs(((box1.right + box1.left) / 2.0) - ((box2.right + box2.left) / 2.0)) <= 5

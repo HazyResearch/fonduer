@@ -133,9 +133,7 @@ class MentionNgrams(Ngrams):
     def __init__(
         self, n_min: int = 1, n_max: int = 5, split_tokens: Collection[str] = []
     ) -> None:
-        """
-        Initialize MentionNgrams.
-        """
+        """Initialize MentionNgrams."""
         Ngrams.__init__(self, n_min=n_min, n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, doc: Document) -> Iterator[TemporarySpanMention]:
@@ -461,7 +459,6 @@ class MentionExtractor(UDFRunner):
 
     def clear(self) -> None:  # type: ignore
         """Delete Mentions of each class in the extractor from the given split."""
-
         # Create set of candidate_subclasses associated with each mention_subclass
         cand_subclasses = set()
         for mentions, tablename in [

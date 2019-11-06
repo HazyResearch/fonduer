@@ -78,9 +78,7 @@ def extract_structural_features(
 
 
 def _strlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
-    """
-    Structural-related features for a single span
-    """
+    """Structural-related features for a single span."""
     if not span.sentence.is_structural():
         return
 
@@ -114,9 +112,7 @@ def _strlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
 def _strlib_binary_features(
     span1: SpanMention, span2: SpanMention
 ) -> Iterator[Tuple[str, int]]:
-    """
-    Structural-related features for a pair of spans
-    """
+    """Structural-related features for a pair of spans."""
     yield f"COMMON_ANCESTOR_[{' '.join(common_ancestor((span1, span2)))}]", DEF_VALUE
 
     yield (

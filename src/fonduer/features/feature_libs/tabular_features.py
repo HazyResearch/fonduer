@@ -75,9 +75,7 @@ def extract_tabular_features(
 
 
 def _tablelib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
-    """
-    Table-/structure-related features for a single span
-    """
+    """Table-/structure-related features for a single span."""
     if not span.sentence.is_tabular():
         return
     sentence = span.sentence
@@ -138,9 +136,7 @@ def _tablelib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
 def _tablelib_binary_features(
     span1: SpanMention, span2: SpanMention
 ) -> Iterator[Tuple[str, int]]:
-    """
-    Table-/structure-related features for a pair of spans
-    """
+    """Table-/structure-related features for a pair of spans."""
     binary_features = settings["featurization"]["tabular"]["binary_features"]
     if span1.sentence.is_tabular() and span2.sentence.is_tabular():
         if span1.sentence.table == span2.sentence.table:
