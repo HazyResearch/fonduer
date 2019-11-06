@@ -22,6 +22,7 @@ check:
 	black tests/ --check
 	flake8 src/
 	flake8 tests/
+	mypy src/
 
 docs:
 	sphinx-build -W -b html docs/ _build/html
