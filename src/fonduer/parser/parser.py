@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class Parser(UDFRunner):
-    """Parses into documents into Fonduer's Data Model.
+    r"""Parses into documents into Fonduer's Data Model.
 
     :param session: The database session to use.
     :param parallelism: The number of processes to use in parallel. Default 1.
