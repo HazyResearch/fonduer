@@ -144,7 +144,7 @@ class Meta(object):
 
     @classmethod
     def _init_db(cls) -> None:
-        """ Initialize the storage schema.
+        """Initialize the storage schema.
 
         This call must be performed after all classes that extend
         Base are declared to ensure the storage schema is initialized.

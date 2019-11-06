@@ -73,7 +73,7 @@ class CandidateExtractor(UDFRunner):
         symmetric_relations: bool = True,
         parallelism: int = 1,
     ) -> None:
-        """ Set throttlers match candidate_classes if not provide. """
+        """Set throttlers match candidate_classes if not provide."""
         if throttlers is None:
             throttlers = [None] * len(candidate_classes)
 
