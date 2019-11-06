@@ -100,6 +100,10 @@ Changed
 * `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
 * `@HiromuHota`_: Depend on psycopg2 instead of psycopg2-binary as the latter is not recommended for production.
 
+Deprecated
+^^^^^^^^^^
+* `@HiromuHota`_: Classifier and its subclass disc_models are deprecated, and in v0.8.0 they will be removed.
+
 Removed
 ^^^^^^^
 

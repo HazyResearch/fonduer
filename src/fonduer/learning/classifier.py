@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 from datetime import datetime
 from shutil import copyfile
 from time import time
@@ -17,6 +18,12 @@ from fonduer import Meta
 from fonduer.learning.disc_models.modules.loss import SoftCrossEntropyLoss
 from fonduer.learning.utils import MultiModalDataset, save_marginals
 from fonduer.utils.logging import TensorBoardLogger
+
+warnings.warn(
+    "Classifier and its subclass disc_models are deprecated, \
+        and in v0.8.0 they will be removed. Use Emmental instead.",
+    DeprecationWarning,
+)
 
 
 class Classifier(nn.Module):
