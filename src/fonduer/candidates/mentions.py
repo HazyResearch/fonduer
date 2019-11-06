@@ -12,6 +12,7 @@ from typing import (
     Optional,
     Set,
     Type,
+    Union,
 )
 
 from sqlalchemy.orm import Session
@@ -552,9 +553,9 @@ class MentionExtractorUDF(UDF):
 
     def __init__(
         self,
-        mention_classes: List[Mention],
-        mention_spaces: List[MentionSpace],
-        matchers: List[_Matcher],
+        mention_classes: Union[Mention, List[Mention]],
+        mention_spaces: Union[MentionSpace, List[MentionSpace]],
+        matchers: Union[_Matcher, List[_Matcher]],
         **kwargs: Any,
     ):
         """Initialize the MentionExtractorUDF."""

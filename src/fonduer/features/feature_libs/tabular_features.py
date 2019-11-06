@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List, Set, Tuple
+from typing import Dict, Iterator, List, Set, Tuple, Union
 
 from fonduer.candidates.models import Candidate
 from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
@@ -21,7 +21,7 @@ settings = get_config()
 
 
 def extract_tabular_features(
-    candidates: List[Candidate],
+    candidates: Union[Candidate, List[Candidate]],
 ) -> Iterator[Tuple[int, str, int]]:
     """Extract tabular features.
 

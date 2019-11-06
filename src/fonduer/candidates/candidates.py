@@ -1,7 +1,17 @@
 import logging
 from builtins import range
 from itertools import product
-from typing import Any, Callable, Collection, Iterator, List, Optional, Tuple, Type
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
@@ -215,13 +225,17 @@ class CandidateExtractor(UDFRunner):
         return result
 
 
+# Type alias for throttler
+Throttler = Callable[[Tuple[Mention, ...]], bool]
+
+
 class CandidateExtractorUDF(UDF):
     """UDF for performing candidate extraction."""
 
     def __init__(
         self,
-        candidate_classes: List[Type[Candidate]],
-        throttlers: List[Callable[[Tuple[Mention, ...]], bool]],
+        candidate_classes: Union[Type[Candidate], List[Type[Candidate]]],
+        throttlers: Union[Throttler, List[Throttler]],
         self_relations: bool,
         nested_relations: bool,
         symmetric_relations: bool,

@@ -4,7 +4,17 @@ import re
 import warnings
 from builtins import range
 from collections import defaultdict
-from typing import Any, Collection, Dict, Iterator, List, Optional, Pattern, Tuple
+from typing import (
+    Any,
+    Collection,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Pattern,
+    Tuple,
+    Union,
+)
 
 import lxml.etree
 import lxml.html
@@ -163,8 +173,8 @@ class ParserUDF(UDF):
     def __init__(
         self,
         structural: bool,
-        blacklist: List[str],
-        flatten: List[str],
+        blacklist: Union[str, List[str]],
+        flatten: Union[str, List[str]],
         lingual: bool,
         lingual_parser: Optional[LingualParser],
         strip: bool,

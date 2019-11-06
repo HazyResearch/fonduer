@@ -31,7 +31,7 @@ settings = get_config()
 
 
 def extract_textual_features(
-    candidates: List[Candidate],
+    candidates: Union[Candidate, List[Candidate]],
 ) -> Iterator[Tuple[int, str, int]]:
     """Extract textual features.
 
