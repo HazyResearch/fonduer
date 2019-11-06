@@ -1,6 +1,9 @@
 Unreleased_
 -----------
 
+0.7.1_ - 2019-11-06
+-------------------
+
 Added
 ^^^^^
 * `@senwu`_: Refactor `Featurization` to support user defined customized feature
@@ -933,7 +936,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.7.0...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.7.1...master
+.. _0.7.1: https://github.com/hazyresearch/fonduer/compare/v0.7.0...v0.7.1
 .. _0.7.0: https://github.com/hazyresearch/fonduer/compare/v0.6.2...v0.7.0
 .. _0.6.2: https://github.com/hazyresearch/fonduer/compare/v0.6.1...v0.6.2
 .. _0.6.1: https://github.com/hazyresearch/fonduer/compare/v0.6.0...v0.6.1
