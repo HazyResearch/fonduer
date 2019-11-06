@@ -5,13 +5,13 @@ from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
 
-class FeatureKey(AnnotationKeyMixin, Meta.Base):  # type: ignore
+class FeatureKey(AnnotationKeyMixin, Meta.Base):
     """A feature's key that identifies the definition of the Feature."""
 
     pass
 
 
-class Feature(AnnotationMixin, Meta.Base):  # type: ignore
+class Feature(AnnotationMixin, Meta.Base):
     """An element of a representation of a Candidate in a feature space.
 
     A Feature's annotation key identifies the definition of the Feature, e.g.,
