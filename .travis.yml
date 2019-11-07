@@ -90,7 +90,6 @@ install:
 - python -m spacy download en
 
 before_script:
-- createdb parser_test -U postgres
 - createdb e2e_test -U postgres
 - createdb visualizer_test -U postgres
 - createdb inc_test -U postgres
@@ -100,9 +99,10 @@ before_script:
 - cd tests && ./download_data.sh && cd ..
 
 script:
-- travis_wait 50 coverage run --source=fonduer -m pytest tests
+- travis_wait 50 coverage run -m pytest tests
 
 after_success:
+- coverage combine
 - coveralls
 
 deploy:

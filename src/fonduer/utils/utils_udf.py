@@ -219,6 +219,8 @@ def get_mapping(
 
         for cid, key, value in generator(cand):
             if value == 0:
+                # Make sure this key does not exist in cand_map
+                cand_map.pop(key, None)
                 continue
             cand_map[key] = value
 
@@ -259,13 +261,17 @@ def drop_all_keys(
     if not candidate_classes:
         return
 
-    candidate_classes: Set[str] = set([c.__tablename__ for c in candidate_classes])
+    set_of_candidate_classes: Set[str] = set(
+        [c.__tablename__ for c in candidate_classes]
+    )
 
     # Select all rows that contain ANY of the candidate_classes
     all_rows = (
         session.query(key_table)
         .filter(
-            key_table.candidate_classes.overlap(cast(candidate_classes, ARRAY(String)))
+            key_table.candidate_classes.overlap(
+                cast(set_of_candidate_classes, ARRAY(String))
+            )
         )
         .all()
     )
@@ -276,7 +282,7 @@ def drop_all_keys(
     for row in all_rows:
         # Remove the selected candidate_classes. If empty, mark for deletion.
         row.candidate_classes = list(
-            set(row.candidate_classes) - set(candidate_classes)
+            set(row.candidate_classes) - set_of_candidate_classes
         )
         if len(row.candidate_classes) == 0:
             to_delete.add(row.name)

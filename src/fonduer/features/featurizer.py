@@ -126,7 +126,8 @@ class Featurizer(UDFRunner):
         """
         if docs:
             # Call apply on the specified docs for all splits
-            split = ALL_SPLITS
+            # TODO: split is int
+            split = ALL_SPLITS  # type: ignore
             super().apply(
                 docs,
                 split=split,
@@ -299,6 +300,8 @@ class Featurizer(UDFRunner):
                 cand = feature.candidate
                 for key in feature.keys:
                     key_map[key].add(cand.__class__.__tablename__)
+            self.session.query(FeatureKey).delete(synchronize_session="fetch")
+            # TODO: upsert is too much. insert is fine as all keys are deleted.
             upsert_keys(self.session, FeatureKey, key_map)
 
     def get_feature_matrices(

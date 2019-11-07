@@ -68,9 +68,7 @@ class Visualizer(object):
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         if not pdf_file:
-            pdf_file = os.path.join(
-                self.pdf_path, candidates[0][0].context.sentence.document.name
-            )
+            pdf_file = os.path.join(self.pdf_path, candidates[0].document.name)
             if os.path.isfile(pdf_file + ".pdf"):
                 pdf_file += ".pdf"
             elif os.path.isfile(pdf_file + ".PDF"):

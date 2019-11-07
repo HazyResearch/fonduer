@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 mention_subclasses: Dict[str, Tuple] = {}
 
 
-class Mention(Meta.Base):  # type: ignore
+class Mention(Meta.Base):
     """
     An abstract Mention.
 

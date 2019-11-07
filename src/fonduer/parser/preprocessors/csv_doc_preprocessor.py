@@ -72,7 +72,11 @@ class CSVDocPreprocessor(DocPreprocessor):
                     content_header = (
                         header_names[j] if header_names is not None else None
                     )
-                    context = [build_node(t, n, c) for t, n, c in rule(content)]
+                    context = [
+                        build_node(t, n, c)
+                        # TODO: Fix this type ignore
+                        for t, n, c in rule(content)  # type: ignore
+                    ]
                     sections.append(
                         build_node("section", content_header, "".join(context))
                     )

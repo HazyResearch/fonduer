@@ -46,11 +46,12 @@ from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "cand_test"
+# Use 127.0.0.1 instead of localhost (#351)
+CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
-def test_ngram_split(caplog):
+def test_ngram_split():
     """Test ngram split."""
-    caplog.set_level(logging.INFO)
     ngrams = Ngrams(split_tokens=["-", "/"])
     sent = Sentence()
 
@@ -174,9 +175,8 @@ def test_ngram_split(caplog):
     assert "D" in spans
 
 
-def test_span_char_start_and_char_end(caplog):
+def test_span_char_start_and_char_end():
     """Test chart_start and char_end of TemporarySpan that comes from Ngrams.apply."""
-    caplog.set_level(logging.INFO)
     ngrams = Ngrams()
     sent = Sentence()
     sent.text = "BC548BG"
@@ -191,10 +191,8 @@ def test_span_char_start_and_char_end(caplog):
     assert result[0].char_end == 6
 
 
-def test_cand_gen_cascading_delete(caplog):
+def test_cand_gen_cascading_delete():
     """Test cascading the deletion of candidates."""
-    caplog.set_level(logging.INFO)
-
     if platform == "darwin":
         logger.info("Using single core.")
         PARALLEL = 1
@@ -203,7 +201,7 @@ def test_cand_gen_cascading_delete(caplog):
         PARALLEL = 2  # Travis only gives 2 cores
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -270,10 +268,8 @@ def test_cand_gen_cascading_delete(caplog):
     assert session.query(Candidate).count() == 0
 
 
-def test_cand_gen(caplog):
+def test_cand_gen():
     """Test extracting candidates from mentions from documents."""
-    caplog.set_level(logging.INFO)
-
     if platform == "darwin":
         logger.info("Using single core.")
         PARALLEL = 1
@@ -285,7 +281,7 @@ def test_cand_gen(caplog):
         return True
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -425,14 +421,12 @@ def test_cand_gen(caplog):
     assert session.query(PartVolt).count() == 0
 
 
-def test_ngrams(caplog):
+def test_ngrams():
     """Test ngram limits in mention extraction"""
-    caplog.set_level(logging.INFO)
-
     PARALLEL = 4
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
@@ -471,12 +465,11 @@ def test_ngrams(caplog):
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
 
-def test_row_col_ngram_extraction(caplog):
+def test_row_col_ngram_extraction():
     """Test whether row/column ngrams list is empty, if mention is not in a table."""
-    caplog.set_level(logging.INFO)
     PARALLEL = 1
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
     # Parsing
@@ -512,14 +505,13 @@ def test_row_col_ngram_extraction(caplog):
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
 
-def test_mention_longest_match(caplog):
+def test_mention_longest_match():
     """Test longest match filtering in mention extraction."""
-    caplog.set_level(logging.INFO)
     # SpaCy on mac has issue on parallel parsing
     PARALLEL = 1
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/pure_html/lincoln_short.html"
 
@@ -578,14 +570,12 @@ def test_mention_longest_match(caplog):
     assert len(mention_spans) == 4
 
 
-def test_multimodal_cand(caplog):
+def test_multimodal_cand():
     """Test multimodal candidate generation"""
-    caplog.set_level(logging.INFO)
-
     PARALLEL = 4
 
     max_docs = 1
-    session = Meta.init("postgresql://localhost:5432/" + DB).Session()
+    session = Meta.init(CONN_STRING).Session()
 
     docs_path = "tests/data/pure_html/radiology.html"
 
@@ -636,24 +626,20 @@ def test_multimodal_cand(caplog):
     assert session.query(ms_cell).count() == 21
 
 
-def test_subclass_before_meta_init(caplog):
+def test_subclass_before_meta_init():
     """Test if it is possible to create a mention (candidate) subclass even before Meta
     is initialized.
     """
-    caplog.set_level(logging.INFO)
-
-    conn_string = "postgresql://localhost:5432/" + DB
     Part = mention_subclass("Part")
     logger.info(f"Create a mention subclass '{Part.__tablename__}'")
-    Meta.init(conn_string).Session()
+    Meta.init(CONN_STRING).Session()
     Temp = mention_subclass("Temp")
     logger.info(f"Create a mention subclass '{Temp.__tablename__}'")
 
 
-def test_pickle_subclasses(caplog):
+def test_pickle_subclasses():
     """Test if it is possible to pickle mention/candidate subclasses and their objects.
     """
-    caplog.set_level(logging.INFO)
     Part = mention_subclass("Part")
     Temp = mention_subclass("Temp")
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])

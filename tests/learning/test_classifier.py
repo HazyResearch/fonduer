@@ -11,7 +11,7 @@ from fonduer.learning.disc_models.logistic_regression import LogisticRegression
 from tests.shared.hardware_utils import FALSE, TRUE
 
 
-def test_classifier_predict(caplog):
+def test_classifier_predict():
     """Test Classifier#predict."""
 
     init_logging(log_dir=tempfile.gettempdir())
@@ -46,7 +46,7 @@ def test_classifier_predict(caplog):
         np.testing.assert_array_equal(Y_pred, np.array([FALSE, FALSE, FALSE]))
 
 
-def test_logistic_regression_predict(caplog):
+def test_logistic_regression_predict():
     """Test LogisticRegression#predict."""
 
     init_logging(log_dir=tempfile.gettempdir())

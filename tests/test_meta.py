@@ -5,7 +5,7 @@ from fonduer import Meta
 DB = "meta_test"
 
 
-def test_meta_connection_strings(caplog):
+def test_meta_connection_strings():
     """Simple sanity checks for validating postgres connection strings."""
 
     with pytest.raises(ValueError):

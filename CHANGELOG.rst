@@ -1,6 +1,16 @@
 Unreleased_
 -----------
 
+Changed
+^^^^^^^
+* `@HiromuHota`_: Change ABSTAIN to -1 to be compatible with Snorkel of 0.9.X.
+  Accordingly, user-defined labels should now be 0-indexed (used to 1-indexed).
+  (`#310 <https://github.com/HazyResearch/fonduer/issues/310>`_)
+  (`#320 <https://github.com/HazyResearch/fonduer/pull/320>`_)
+
+0.7.1_ - 2019-11-06
+-------------------
+
 Added
 ^^^^^
 * `@senwu`_: Refactor `Featurization` to support user defined customized feature
@@ -60,7 +70,7 @@ Added
 * `@HiromuHota`_: Add `LingualParser`, which any lingual parser like `Spacy` should inherit from,
   and add `lingual_parser` as an argument to `Parser` to be able to plug a custom lingual parser.
 * `@HiromuHota`_: Annotate types to some of the classes incl. preprocesssors and parser/models.
-* `@HiromuHota`_: Add table argument to ``Labeler.apply``, which can now be used to annotate gold labels.
+* `@HiromuHota`_: Add table argument to ``Labeler.apply`` (and ``Labeler.update``), which can now be used to annotate gold labels.
 
 .. note::
 
@@ -99,14 +109,15 @@ Changed
   (`#306 <https://github.com/HazyResearch/fonduer/issues/306>`_)
 * `@HiromuHota`_: Pin PyTorch on 1.1.0 to align with Snorkel of 0.9.X.
 * `@HiromuHota`_: Depend on psycopg2 instead of psycopg2-binary as the latter is not recommended for production.
-* `@HiromuHota`_: Change ABSTAIN to -1 to be compatible with Snorkel of 0.9.X.
-  Accordingly, user-defined labels should now be 0-indexed (used to 1-indexed).
-  (`#310 <https://github.com/HazyResearch/fonduer/issues/310>`_)
-  (`#320 <https://github.com/HazyResearch/fonduer/pull/320>`_)
+* `@HiromuHota`_: Change the default value for ``delim`` of ``SimpleParser`` from "<NB>" to ".".
+  (`#272 <https://github.com/HazyResearch/fonduer/pull/272>`_)
+
+Deprecated
+^^^^^^^^^^
+* `@HiromuHota`_: Classifier and its subclass disc_models are deprecated, and in v0.8.0 they will be removed.
 
 Removed
 ^^^^^^^
-
 * `@HiromuHota`_: Remove __repr__ from each mixin class as the referenced attributes are not available.
 * `@HiromuHota`_: Remove the dependency on nltk, but ``PorterStemmer()`` can still be used,
   if it is provided as ``DictionaryMatch(stemmer=PorterStemmer())``.
@@ -133,6 +144,9 @@ Fixed
 * `@HiromuHota`_: Fix the issue that Labeler.apply with docs instead of split fails.
   (`#340 <https://github.com/HazyResearch/fonduer/pull/340>`_)
 * `@HiromuHota`_: Make mention/candidate_subclasses and their objects picklable.
+* `@HiromuHota`_: Make Visualizer#display_candidates mention-type argnostic.
+* `@HiromuHota`_: Ensure labels get updated when LFs are updated.
+  (`#336 <https://github.com/HazyResearch/fonduer/issues/336>`_)
 
 0.7.0_ - 2019-06-12
 -------------------
@@ -930,7 +944,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.7.0...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.7.1...master
+.. _0.7.1: https://github.com/hazyresearch/fonduer/compare/v0.7.0...v0.7.1
 .. _0.7.0: https://github.com/hazyresearch/fonduer/compare/v0.6.2...v0.7.0
 .. _0.6.2: https://github.com/hazyresearch/fonduer/compare/v0.6.1...v0.6.2
 .. _0.6.1: https://github.com/hazyresearch/fonduer/compare/v0.6.0...v0.6.1

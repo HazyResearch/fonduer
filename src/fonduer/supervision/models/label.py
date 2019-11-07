@@ -5,26 +5,26 @@ from fonduer.meta import Meta
 from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
 
-class GoldLabelKey(AnnotationKeyMixin, Meta.Base):  # type: ignore
+class GoldLabelKey(AnnotationKeyMixin, Meta.Base):
     """A gold label's key that identifies the annotator of the gold label."""
 
     pass
 
 
-class GoldLabel(AnnotationMixin, Meta.Base):  # type: ignore
+class GoldLabel(AnnotationMixin, Meta.Base):
     """A separate class for labels from human annotators or other gold standards."""
 
     #: A list of integer values for each Key.
     values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
-class LabelKey(AnnotationKeyMixin, Meta.Base):  # type: ignore
+class LabelKey(AnnotationKeyMixin, Meta.Base):
     """A label's key that identifies the labeling function."""
 
     pass
 
 
-class Label(AnnotationMixin, Meta.Base):  # type: ignore
+class Label(AnnotationMixin, Meta.Base):
     """
     A discrete label associated with a Candidate, indicating a target prediction value.
 
@@ -36,7 +36,7 @@ class Label(AnnotationMixin, Meta.Base):  # type: ignore
     values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
-class StableLabel(Meta.Base):  # type: ignore
+class StableLabel(Meta.Base):
     """
     A special secondary table for preserving labels created by *human
     annotators* in a stable format that does not cascade, and is independent of

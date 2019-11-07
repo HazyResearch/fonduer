@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 candidate_subclasses: Dict[str, Tuple] = {}
 
 
-class Candidate(Meta.Base):  # type: ignore
+class Candidate(Meta.Base):
     """
     An abstract candidate relation.
 

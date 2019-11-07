@@ -5,7 +5,7 @@ import pytest
 
 from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
-from fonduer.parser.parser import ParserUDF
+from fonduer.parser.parser import ParserUDF, SimpleParser
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
     HTMLDocPreprocessor,
@@ -46,9 +46,8 @@ def get_parser_udf(
     return parser_udf
 
 
-def test_parse_md_details(caplog):
+def test_parse_md_details():
     """Test the parser with the md document."""
-    caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/md.html"
@@ -152,10 +151,8 @@ def test_parse_md_details(caplog):
         assert len(sent.words) == len(sent.dep_labels)
 
 
-def test_parse_wo_tabular(caplog):
+def test_parse_wo_tabular():
     """Test the parser without extracting tabular information."""
-    caplog.set_level(logging.INFO)
-
     docs_path = "tests/data/html_simple/md.html"
     pdf_path = "tests/data/pdf_simple/md.pdf"
 
@@ -194,10 +191,8 @@ def test_parse_wo_tabular(caplog):
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run spacy non English test on Travis"
 )
-def test_spacy_german(caplog):
+def test_spacy_german():
     """Test the parser with the md document."""
-    caplog.set_level(logging.INFO)
-
     docs_path = "tests/data/pure_html/brot.html"
 
     # Preprocessor for the Docs
@@ -253,10 +248,8 @@ def test_spacy_german(caplog):
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run spacy non English test on Travis"
 )
-def test_spacy_japanese(caplog):
+def test_spacy_japanese():
     """Test the parser with the md document."""
-    caplog.set_level(logging.INFO)
-
     # Test Japanese alpha tokenization
     docs_path = "tests/data/pure_html/japan.html"
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -303,10 +296,8 @@ def test_spacy_japanese(caplog):
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run spacy non English test on Travis"
 )
-def test_spacy_chinese(caplog):
+def test_spacy_chinese():
     """Test the parser with the md document."""
-    caplog.set_level(logging.INFO)
-
     # Test Chinese alpha tokenization
     docs_path = "tests/data/pure_html/chinese.html"
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -326,10 +317,8 @@ def test_spacy_chinese(caplog):
     assert sent.dep_labels == ["", "", "", "", "", "", "", ""]
 
 
-def test_warning_on_missing_pdf(caplog):
+def test_warning_on_missing_pdf():
     """Test that a warning is issued on invalid pdf."""
-    caplog.set_level(logging.INFO)
-
     docs_path = "tests/data/html_simple/md_para.html"
     pdf_path = "tests/data/pdf_simple/md_para_nonexistant.pdf"
 
@@ -348,10 +337,8 @@ def test_warning_on_missing_pdf(caplog):
     assert "Visual parse failed" in record[0].message.args[0]
 
 
-def test_warning_on_incorrect_filename(caplog):
+def test_warning_on_incorrect_filename():
     """Test that a warning is issued on invalid pdf."""
-    caplog.set_level(logging.INFO)
-
     docs_path = "tests/data/html_simple/md_para.html"
     pdf_path = "tests/data/html_simple/md_para.html"
 
@@ -370,10 +357,8 @@ def test_warning_on_incorrect_filename(caplog):
     assert "Visual parse failed" in record[0].message.args[0]
 
 
-def test_parse_md_paragraphs(caplog):
+def test_parse_md_paragraphs():
     """Unit test of Paragraph parsing."""
-    caplog.set_level(logging.INFO)
-
     docs_path = "tests/data/html_simple/md_para.html"
     pdf_path = "tests/data/pdf_simple/md_para.pdf"
 
@@ -457,9 +442,8 @@ def test_parse_md_paragraphs(caplog):
     assert len(doc.paragraphs[2].sentences) == 1
 
 
-def test_simple_parser(caplog):
+def test_simple_parser():
     """Unit test of Parser on a single document with lingual features off."""
-    caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/md.html"
@@ -474,7 +458,11 @@ def test_simple_parser(caplog):
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, lingual=False, visual=True, pdf_path=pdf_path, language=None
+        structural=True,
+        lingual=False,
+        visual=True,
+        pdf_path=pdf_path,
+        lingual_parser=SimpleParser(delim="NoDelim"),
     )
     for _ in parser_udf.apply(doc):
         pass
@@ -499,7 +487,7 @@ def test_simple_parser(caplog):
     assert len(doc.sentences) == 44
 
 
-def test_custom_parser(caplog):
+def test_custom_parser():
     lingual_parser = SpacyParser("en")
     parser_udf = get_parser_udf(
         language="de", lingual=True, lingual_parser=lingual_parser
@@ -509,8 +497,7 @@ def test_custom_parser(caplog):
     assert parser_udf.lingual_parser.lang == "en"
 
 
-def test_parse_table_span(caplog):
-    caplog.set_level(logging.INFO)
+def test_parse_table_span():
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/table_span.html"
@@ -534,12 +521,11 @@ def test_parse_table_span(caplog):
         logger.info(f"    Sentence: {sentence.text}")
 
 
-def test_parse_document_diseases(caplog):
+def test_parse_document_diseases():
     """Unit test of Parser on a single document.
 
     This tests both the structural and visual parse of the document.
     """
-    caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/diseases.html"
@@ -608,9 +594,8 @@ def test_parse_document_diseases(caplog):
     assert len(doc.sentences) == 37
 
 
-def test_parse_style(caplog):
+def test_parse_style():
     """Test style tag parsing."""
-    caplog.set_level(logging.INFO)
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_extended/ext_diseases.html"
@@ -653,10 +638,8 @@ def test_parse_style(caplog):
     assert all(sentences[p["index"]].html_attrs == p["attr"] for p in sub_sentences)
 
 
-def test_parse_error_doc_skipping(caplog):
+def test_parse_error_doc_skipping():
     """Test skipping of faulty htmls."""
-    caplog.set_level(logging.INFO)
-
     faulty_doc_path = "tests/data/html_faulty/ext_diseases_missing_table_tag.html"
     preprocessor = HTMLDocPreprocessor(faulty_doc_path)
     doc = next(
@@ -675,10 +658,8 @@ def test_parse_error_doc_skipping(caplog):
     assert len(sentence_lists) == 37
 
 
-def test_parse_multi_sections(caplog):
+def test_parse_multi_sections():
     """Test the parser with the radiology document."""
-    caplog.set_level(logging.INFO)
-
     # Test multi-section html
     docs_path = "tests/data/pure_html/radiology.html"
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -705,10 +686,8 @@ def test_parse_multi_sections(caplog):
     assert doc.sections[2].paragraphs[3].name == "IMPRESSION"
 
 
-def test_text_doc_preprocessor(caplog):
+def test_text_doc_preprocessor():
     """Test ``TextDocPreprocessor`` with text document."""
-    caplog.set_level(logging.INFO)
-
     # Test text document
     docs_path = "tests/data/various_format/text_format.txt"
     preprocessor = TextDocPreprocessor(docs_path)
@@ -725,10 +704,8 @@ def test_text_doc_preprocessor(caplog):
     assert len(doc.sentences) == 57
 
 
-def test_tsv_doc_preprocessor(caplog):
+def test_tsv_doc_preprocessor():
     """Test ``TSVDocPreprocessor`` with tsv document."""
-    caplog.set_level(logging.INFO)
-
     # Test tsv document
     docs_path = "tests/data/various_format/tsv_format.tsv"
     preprocessor = TSVDocPreprocessor(docs_path, header=True)
@@ -750,10 +727,8 @@ def test_tsv_doc_preprocessor(caplog):
     assert len(doc.sentences) == 33
 
 
-def test_csv_doc_preprocessor(caplog):
+def test_csv_doc_preprocessor():
     """Test ``CSVDocPreprocessor`` with csv document."""
-    caplog.set_level(logging.INFO)
-
     # Test csv document
     docs_path = "tests/data/various_format/csv_format.csv"
     preprocessor = CSVDocPreprocessor(docs_path, header=True)
@@ -774,10 +749,8 @@ def test_csv_doc_preprocessor(caplog):
     assert len(doc.sentences) == 17
 
 
-def test_parser_skips_and_flattens(caplog):
+def test_parser_skips_and_flattens():
     """Test if ``Parser`` skips/flattens elements."""
-    caplog.set_level(logging.INFO)
-
     parser_udf = get_parser_udf()
 
     # Test if a parser skips comments

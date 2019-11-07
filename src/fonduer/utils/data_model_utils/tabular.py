@@ -5,7 +5,7 @@ from builtins import range
 from collections import defaultdict
 from functools import lru_cache
 from itertools import chain
-from typing import DefaultDict, Iterator, List, Optional, Tuple, Union
+from typing import DefaultDict, Iterator, List, Optional, Set, Tuple, Union
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
@@ -457,7 +457,7 @@ def get_head_ngrams(
     :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
-    axes = (axis,) if axis else ("row", "col")
+    axes: Set[str] = (axis,) if axis else ("row", "col")  # type: ignore
     for span in spans:
         if span.sentence.is_tabular():
             for axis in axes:

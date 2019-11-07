@@ -77,6 +77,7 @@ class Labeler(UDFRunner):
         lfs: List[List[Callable]] = None,
         parallelism: int = None,
         progress_bar: bool = True,
+        table: Table = Label,
     ) -> None:
         """Update the labels of the specified candidates based on the provided LFs.
 
@@ -109,6 +110,7 @@ class Labeler(UDFRunner):
             clear=False,
             parallelism=parallelism,
             progress_bar=progress_bar,
+            table=table,
         )
 
     def apply(  # type: ignore
@@ -159,7 +161,8 @@ class Labeler(UDFRunner):
         self.lfs = lfs
         if docs:
             # Call apply on the specified docs for all splits
-            split = ALL_SPLITS
+            # TODO: split is int
+            split = ALL_SPLITS  # type: ignore
             super().apply(
                 docs,
                 split=split,
@@ -201,7 +204,9 @@ class Labeler(UDFRunner):
     def upsert_keys(
         self,
         keys: Iterable[Union[str, Callable]],
-        candidate_classes: Optional[List[Type[Candidate]]] = None,
+        candidate_classes: Optional[
+            Union[Type[Candidate], List[Type[Candidate]]]
+        ] = None,
     ) -> None:
         """Upsert the specified keys from LabelKeys.
 
@@ -243,9 +248,9 @@ class Labeler(UDFRunner):
         key_map = dict()
         for key in keys:
             # Assume key is an LF
-            try:
+            if hasattr(key, "__name__"):
                 key_map[key.__name__] = set(candidate_classes)
-            except AttributeError:
+            else:
                 key_map[key] = set(candidate_classes)
 
         upsert_keys(self.session, LabelKey, key_map)
@@ -253,7 +258,9 @@ class Labeler(UDFRunner):
     def drop_keys(
         self,
         keys: Iterable[Union[str, Callable]],
-        candidate_classes: Optional[List[Type[Candidate]]] = None,
+        candidate_classes: Optional[
+            Union[Type[Candidate], List[Type[Candidate]]]
+        ] = None,
     ) -> None:
         """Drop the specified keys from LabelKeys.
 
@@ -295,9 +302,9 @@ class Labeler(UDFRunner):
         key_map = dict()
         for key in keys:
             # Assume key is an LF
-            try:
+            if hasattr(key, "__name__"):
                 key_map[key.__name__] = set(candidate_classes)
-            except AttributeError:
+            else:
                 key_map[key] = set(candidate_classes)
 
         drop_keys(self.session, LabelKey, key_map)
@@ -358,6 +365,8 @@ class Labeler(UDFRunner):
                 for key in label.keys:
                     key_map[key].add(cand.__class__.__tablename__)
             key_table = LabelKey if table == Label else GoldLabelKey
+            self.session.query(key_table).delete(synchronize_session="fetch")
+            # TODO: upsert is too much. insert is fine as all keys are deleted.
             upsert_keys(self.session, key_table, key_map)
 
     def get_gold_labels(
@@ -399,7 +408,11 @@ class Labeler(UDFRunner):
 class LabelerUDF(UDF):
     """UDF for performing candidate extraction."""
 
-    def __init__(self, candidate_classes: List[Type[Candidate]], **kwargs: Any):
+    def __init__(
+        self,
+        candidate_classes: Union[Type[Candidate], List[Type[Candidate]]],
+        **kwargs: Any,
+    ):
         """Initialize the LabelerUDF."""
         self.candidate_classes = (
             candidate_classes

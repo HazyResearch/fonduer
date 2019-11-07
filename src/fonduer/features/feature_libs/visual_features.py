@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List, Set, Tuple
+from typing import Dict, Iterator, List, Set, Tuple, Union
 
 from fonduer.candidates.models import Candidate
 from fonduer.candidates.models.span_mention import SpanMention, TemporarySpanMention
@@ -20,7 +20,7 @@ binary_vizlib_feats: Dict[str, Set] = {}
 
 
 def extract_visual_features(
-    candidates: List[Candidate]
+    candidates: Union[Candidate, List[Candidate]],
 ) -> Iterator[Tuple[int, str, int]]:
     """Extract visual features.
 
