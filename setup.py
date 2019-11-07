@@ -22,7 +22,7 @@ setup(
         "scipy>=1.1.0, <2.0.0",
         "snorkel>=0.9.2, <0.10.0",
         "spacy>=2.1.3, <2.2.0",
-        "sqlalchemy[postgresql]>=1.2.12, <2.0.0",
+        "sqlalchemy[postgresql]>=1.3.7, <2.0.0",
         "tensorboardX>=1.6, <2.0",
         "torch>=1.1.0,<1.2.0",
         "tqdm>=4.26.0, <5.0.0",

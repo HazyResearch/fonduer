@@ -7,6 +7,8 @@ Changed
   Accordingly, user-defined labels should now be 0-indexed (used to 1-indexed).
   (`#310 <https://github.com/HazyResearch/fonduer/issues/310>`_)
   (`#320 <https://github.com/HazyResearch/fonduer/pull/320>`_)
+* `@HiromuHota`_: Use executemany_mode="batch" instead of deprecated use_batch_mode=True.
+  (`#358 <https://github.com/HazyResearch/fonduer/issues/358>`_)
 
 0.7.1_ - 2019-11-06
 -------------------
