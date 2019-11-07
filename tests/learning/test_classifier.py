@@ -8,10 +8,7 @@ from fonduer import init_logging
 from fonduer.candidates.candidates import Candidate
 from fonduer.learning.classifier import Classifier
 from fonduer.learning.disc_models.logistic_regression import LogisticRegression
-
-ABSTAIN = 0
-FALSE = 1
-TRUE = 2
+from tests.shared.hardware_utils import FALSE, TRUE
 
 
 def test_classifier_predict():

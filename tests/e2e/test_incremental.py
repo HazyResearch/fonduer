@@ -12,6 +12,7 @@ from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.supervision import Labeler
+from fonduer.supervision.labeler import ABSTAIN
 from fonduer.supervision.models import Label, LabelKey
 from tests.shared.hardware_lfs import (
     LF_negative_number_left,
@@ -169,8 +170,8 @@ def test_incremental():
     assert F_train[0].shape == (1502, 2573)
     assert len(featurizer.get_keys()) == 2573
 
-    # Update LF_storage_row. Now it always returns 0 (ABSTAIN).
-    LF_storage_row_updated = lambda c: 0
+    # Update LF_storage_row. Now it always returns ABSTAIN.
+    LF_storage_row_updated = lambda c: ABSTAIN
     LF_storage_row_updated.__name__ = "LF_storage_row"
 
     stg_temp_lfs = [

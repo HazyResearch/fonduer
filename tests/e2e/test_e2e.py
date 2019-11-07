@@ -4,7 +4,7 @@ import pickle
 
 import numpy as np
 import pytest
-from metal.label_model import LabelModel
+from snorkel.labeling import LabelModel
 
 import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
@@ -372,8 +372,8 @@ def test_e2e():
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
     assert L_train_gold[0].shape == (3493, 1)
 
-    gen_model = LabelModel(k=2)
-    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
+    gen_model = LabelModel()
+    gen_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
 
     train_marginals = gen_model.predict_proba(L_train[0])
 
@@ -382,7 +382,7 @@ def test_e2e():
         (train_cands[0], F_train[0]),
         train_marginals,
         X_dev=(train_cands[0], F_train[0]),
-        Y_dev=np.array(L_train_gold[0].todense()).reshape(-1),
+        Y_dev=L_train_gold[0].reshape(-1),
         b=0.6,
         pos_label=TRUE,
         n_epochs=5,
@@ -433,8 +433,8 @@ def test_e2e():
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3493, 16)
 
-    gen_model = LabelModel(k=2)
-    gen_model.train_model(L_train[0], n_epochs=500, print_every=100)
+    gen_model = LabelModel()
+    gen_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
 
     train_marginals = gen_model.predict_proba(L_train[0])
 
@@ -543,7 +543,7 @@ def test_e2e():
 
     # Evaluate mention level scores
     L_test_gold = labeler.get_gold_labels(test_cands, annotator="gold")
-    Y_test = np.array(L_test_gold[0].todense()).reshape(-1)
+    Y_test = L_test_gold[0].reshape(-1)
 
     scores = disc_model.score((test_cands[0], F_test[0]), Y_test, b=0.6, pos_label=TRUE)
 
