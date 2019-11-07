@@ -68,7 +68,7 @@ def new_sessionmaker() -> sessionmaker:
         engine = create_engine(
             Meta.conn_string,
             client_encoding="utf8",
-            use_batch_mode=True,
+            executemany_mode="batch",
             isolation_level="AUTOCOMMIT",
         )
         engine.connect()
