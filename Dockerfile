@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     postgresql-client \
     libmagickwand-dev \
+    libpq-dev \
+    build-essential \
  && rm /etc/ImageMagick-6/policy.xml \
  && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
