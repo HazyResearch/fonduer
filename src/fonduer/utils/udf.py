@@ -16,7 +16,7 @@ try:
 except (AttributeError, ImportError):
     from tqdm import tqdm
 else:
-    from tqdm import tqdm_notebook as tqdm
+    from tqdm.notebook import tqdm
 
 
 class UDFRunner(object):
