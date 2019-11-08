@@ -129,15 +129,22 @@ class UDFRunner(object):
             udf.start()
 
         count_parsed = 0
-        while count_parsed < total_count:
-            y = out_queue.get()
-            # Update progress bar whenever an item has been processed
-            if y == UDF.TASK_DONE:
-                count_parsed += 1
-                if self.pb is not None:
-                    self.pb.update(1)
-            else:
-                raise ValueError("Got non-sentinal output.")
+        while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
+            try:
+                y = out_queue.get(timeout=1)
+                # Update progress bar whenever an item has been processed
+                if y == UDF.TASK_DONE:
+                    count_parsed += 1
+                    if self.pb is not None:
+                        self.pb.update(1)
+                else:
+                    raise ValueError("Got non-sentinal output.")
+            except Empty:
+                # This happens when any child process is alive and still processing.
+                pass
+            except Exception as e:
+                # Raise an error for all the other exceptions.
+                raise (e)
 
         # Join the UDF processes
         for udf in self.udfs:
