@@ -9,6 +9,8 @@ Changed
   (`#320 <https://github.com/HazyResearch/fonduer/pull/320>`_)
 * `@HiromuHota`_: Use executemany_mode="batch" instead of deprecated use_batch_mode=True.
   (`#358 <https://github.com/HazyResearch/fonduer/issues/358>`_)
+* `@HiromuHota`_: Use tqdm.notebook.tqdm instead of deprecated tqdm.tqdm_notebook.
+  (`#360 <https://github.com/HazyResearch/fonduer/issues/360>`_)
 
 0.7.1_ - 2019-11-06
 -------------------
