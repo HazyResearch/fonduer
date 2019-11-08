@@ -89,6 +89,19 @@ def test_feature_extraction():
     n_default_w_customized_features = session.query(FeatureKey).count()
     featurizer.clear(train=True)
 
+    # Example spurious feature extractor
+    def bad_feat_ext(candidates):
+        raise RuntimeError()
+
+    # Featurization with a spurious feature extractor
+    feature_extractors = FeatureExtractor(customize_feature_funcs=[bad_feat_ext])
+    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+
+    # Test that featurization default feature library with one extra feature extractor
+    logger.info("Featurizing with a spurious feature extractor...")
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    featurizer.clear(train=True)
+
     # Featurization with only textual feature
     feature_extractors = FeatureExtractor(features=["textual"])
     featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
