@@ -42,9 +42,7 @@ def test_unary_relation_feature_extraction():
 
     Part = mention_subclass("Part")
 
-    mention_extractor = MentionExtractor(
-        session, [Part], [part_ngrams], [part_matcher]
-    )
+    mention_extractor = MentionExtractor(session, [Part], [part_ngrams], [part_matcher])
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert docs[0].name == "112823"
@@ -58,8 +56,6 @@ def test_unary_relation_feature_extraction():
     candidate_extractor = CandidateExtractor(session, [PartRel])
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
-
-    n_cands = session.query(PartRel).count()
 
     # Featurization based on default feature library
     featurizer = Featurizer(session, [PartRel])
