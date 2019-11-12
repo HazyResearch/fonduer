@@ -40,7 +40,7 @@ Data <https://arxiv.org/abs/1703.05028>`__::
 Acknowledgements
 ----------------
 
-Fonduer leverages the work of Snorkel_ and MeTaL_.
+Fonduer leverages the work of Emmental_ and Snorkel_.
 
 
 .. |CodeClimate| image:: https://img.shields.io/codeclimate/maintainability/HazyResearch/fonduer.svg
@@ -65,7 +65,7 @@ Fonduer leverages the work of Snorkel_ and MeTaL_.
 .. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
 
-.. _MeTaL: https://github.com/HazyResearch/metal/
+.. _Emmental: https://github.com/senwu/emmental/
 .. _Snorkel: https://hazyresearch.github.io/snorkel/
 .. _Issues: https://github.com/HazyResearch/fonduer/issues/
 .. _Getting Started Guide: https://fonduer.readthedocs.io/en/latest/user/getting_started.html
