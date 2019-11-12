@@ -16,7 +16,105 @@ DB = "feature_test"
 CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
-def test_feature_extraction():
+def test_unary_relation_feature_extraction():
+    """Test extracting unary candidates from mentions from documents."""
+    PARALLEL = 1
+
+    max_docs = 1
+    session = Meta.init(CONN_STRING).Session()
+
+    docs_path = "tests/data/html/"
+    pdf_path = "tests/data/pdf/"
+
+    # Parsing
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    corpus_parser = Parser(
+        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
+    )
+    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
+    assert session.query(Document).count() == max_docs
+    assert session.query(Sentence).count() == 799
+    docs = session.query(Document).order_by(Document.name).all()
+
+    # Mention Extraction
+    part_ngrams = MentionNgrams(n_max=1)
+
+    Part = mention_subclass("Part")
+
+    mention_extractor = MentionExtractor(
+        session, [Part], [part_ngrams], [part_matcher]
+    )
+    mention_extractor.apply(docs, parallelism=PARALLEL)
+
+    assert docs[0].name == "112823"
+    assert session.query(Part).count() == 58
+    part = session.query(Part).order_by(Part.id).all()[0]
+    logger.info(f"Part: {part.context}")
+
+    # Candidate Extraction
+    PartRel = candidate_subclass("PartRel", [Part])
+
+    candidate_extractor = CandidateExtractor(session, [PartRel])
+
+    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+    n_cands = session.query(PartRel).count()
+
+    # Featurization based on default feature library
+    featurizer = Featurizer(session, [PartRel])
+
+    # Test that featurization default feature library
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    n_default_feats = session.query(FeatureKey).count()
+    featurizer.clear(train=True)
+
+    # Featurization with only textual feature
+    feature_extractors = FeatureExtractor(features=["textual"])
+    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+
+    # Test that featurization textual feature library
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    n_textual_features = session.query(FeatureKey).count()
+    featurizer.clear(train=True)
+
+    # Featurization with only tabular feature
+    feature_extractors = FeatureExtractor(features=["tabular"])
+    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+
+    # Test that featurization tabular feature library
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    n_tabular_features = session.query(FeatureKey).count()
+    featurizer.clear(train=True)
+
+    # Featurization with only structural feature
+    feature_extractors = FeatureExtractor(features=["structural"])
+    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+
+    # Test that featurization structural feature library
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    n_structural_features = session.query(FeatureKey).count()
+    featurizer.clear(train=True)
+
+    # Featurization with only visual feature
+    feature_extractors = FeatureExtractor(features=["visual"])
+    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+
+    # Test that featurization visual feature library
+    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
+    n_visual_features = session.query(FeatureKey).count()
+    featurizer.clear(train=True)
+
+    assert (
+        n_default_feats
+        == n_textual_features
+        + n_tabular_features
+        + n_structural_features
+        + n_visual_features
+    )
+
+
+def test_binary_relation_feature_extraction():
     """Test extracting candidates from mentions from documents."""
     PARALLEL = 1
 
