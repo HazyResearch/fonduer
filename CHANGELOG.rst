@@ -1,6 +1,10 @@
 Unreleased_
 -----------
 
+Added
+^^^^^
+* `@senwu`_: Add test for unary relation featurization.
+
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Change ABSTAIN to -1 to be compatible with Snorkel of 0.9.X.
