@@ -81,7 +81,9 @@ def create_task(
 
     if not isinstance(task_names, list):
         task_names = [task_names]
+    if not isinstance(n_arities, list):
         n_arities = [n_arities]
+    if not isinstance(n_classes, list):
         n_classes = [n_classes]
 
     tasks = []
