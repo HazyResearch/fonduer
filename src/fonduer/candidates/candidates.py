@@ -5,6 +5,7 @@ from typing import (
     Any,
     Callable,
     Collection,
+    Iterable,
     Iterator,
     List,
     Optional,
@@ -161,7 +162,7 @@ class CandidateExtractor(UDFRunner):
 
     def get_candidates(
         self,
-        docs: Optional[Collection[Document]] = None,
+        docs: Union[Document, Iterable[Document], None] = None,
         split: int = 0,
         sort: bool = False,
     ) -> List[List[Candidate]]:
@@ -183,7 +184,7 @@ class CandidateExtractor(UDFRunner):
         """
         result = []
         if docs:
-            docs = docs if isinstance(docs, (list, tuple)) else [docs]
+            docs = docs if isinstance(docs, Iterable) else [docs]
             # Get cands from all splits
             for candidate_class in self.candidate_classes:
                 cands = (

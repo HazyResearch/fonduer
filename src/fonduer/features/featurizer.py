@@ -10,6 +10,7 @@ from typing import (
     List,
     Optional,
     Type,
+    Union,
 )
 
 from scipy.sparse import csr_matrix
@@ -157,7 +158,7 @@ class Featurizer(UDFRunner):
     def upsert_keys(
         self,
         keys: Iterable[str],
-        candidate_classes: Optional[Iterable[Candidate]] = None,
+        candidate_classes: Union[Candidate, Iterable[Candidate], None] = None,
     ) -> None:
         """Upsert the specified keys to FeatureKey.
 
@@ -175,7 +176,7 @@ class Featurizer(UDFRunner):
         if candidate_classes:
             candidate_classes = (
                 candidate_classes
-                if isinstance(candidate_classes, (list, tuple))
+                if isinstance(candidate_classes, Iterable)
                 else [candidate_classes]
             )
 
@@ -205,7 +206,7 @@ class Featurizer(UDFRunner):
     def drop_keys(
         self,
         keys: Iterable[str],
-        candidate_classes: Optional[Iterable[Candidate]] = None,
+        candidate_classes: Union[Candidate, Iterable[Candidate], None] = None,
     ) -> None:
         """Drop the specified keys from FeatureKeys.
 
@@ -223,7 +224,7 @@ class Featurizer(UDFRunner):
         if candidate_classes:
             candidate_classes = (
                 candidate_classes
-                if isinstance(candidate_classes, (list, tuple))
+                if isinstance(candidate_classes, Iterable)
                 else [candidate_classes]
             )
 

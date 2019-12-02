@@ -7,6 +7,7 @@ from typing import (
     Collection,
     DefaultDict,
     Dict,
+    Iterable,
     Iterator,
     List,
     Optional,
@@ -509,7 +510,7 @@ class MentionExtractor(UDFRunner):
         logger.info("Cleared ALL Mentions (and Candidates).")
 
     def get_mentions(
-        self, docs: Optional[Collection[Document]] = None, sort: bool = False
+        self, docs: Union[Document, Iterable[Document], None] = None, sort: bool = False
     ) -> List[List[Mention]]:
         """Return a list of lists of the mentions associated with this extractor.
 
@@ -525,7 +526,7 @@ class MentionExtractor(UDFRunner):
         """
         result = []
         if docs:
-            docs = docs if isinstance(docs, (list, tuple)) else [docs]
+            docs = docs if isinstance(docs, Iterable) else [docs]
             # Get cands from all splits
             for mention_class in self.mention_classes:
                 mentions = (
