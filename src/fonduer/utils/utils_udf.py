@@ -7,9 +7,11 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Type,
+    Union,
 )
 
 import numpy as np
@@ -123,7 +125,7 @@ def batch_upsert_records(
 def get_sparse_matrix(
     session: Session,
     key_table: Table,
-    cand_lists: Iterable[Iterable[Candidate]],
+    cand_lists: Union[Sequence[Candidate], Iterable[Sequence[Candidate]]],
     key: Optional[str] = None,
 ) -> List[csr_matrix]:
     """Load sparse matrix of GoldLabels for each candidate_class."""
