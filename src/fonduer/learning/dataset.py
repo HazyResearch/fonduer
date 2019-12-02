@@ -99,13 +99,14 @@ class FonduerDataset(EmmentalDataset):
                 ]
                 s = mark_sentence(mention_to_tokens(candidate[i]), args)
                 self.X_dict[f"m{i}"].append(
-                    torch.LongTensor(
+                    torch.tensor(
                         [
                             self.word2id[w]
                             if w in self.word2id
                             else self.word2id["<unk>"]
                             for w in s
-                        ]
+                        ],
+                        dtype=torch.long,
                     )
                 )
 
@@ -113,15 +114,16 @@ class FonduerDataset(EmmentalDataset):
         self.X_dict.update({"feature_index": [], "feature_weight": []})
         for i in range(len(self.candidates)):
             self.X_dict["feature_index"].append(
-                torch.LongTensor(
+                torch.tensor(
                     self.features.indices[
                         self.features.indptr[i] : self.features.indptr[i + 1]
-                    ]
+                    ],
+                    dtype=torch.long,
                 )
                 + 1
             )
             self.X_dict["feature_weight"].append(
-                torch.Tensor(
+                torch.tensor(
                     self.features.data[
                         self.features.indptr[i] : self.features.indptr[i + 1]
                     ]
@@ -138,4 +140,4 @@ class FonduerDataset(EmmentalDataset):
                 }
             )
         else:
-            self.Y_dict.update({"labels": torch.Tensor(np.array(self.labels))})
+            self.Y_dict.update({"labels": torch.tensor(np.array(self.labels))})

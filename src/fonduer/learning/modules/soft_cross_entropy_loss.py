@@ -24,7 +24,7 @@ class SoftCrossEntropyLoss(nn.Module):
         if weight is None:
             self.weight = None
         else:
-            self.register_buffer("weight", torch.Tensor(weight))
+            self.register_buffer("weight", torch.tensor(weight))
 
         self.reduction = reduction
 
