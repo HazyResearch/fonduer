@@ -126,7 +126,8 @@ class FonduerDataset(EmmentalDataset):
                 torch.tensor(
                     self.features.data[
                         self.features.indptr[i] : self.features.indptr[i + 1]
-                    ]
+                    ],
+                    dtype=torch.float,
                 )
             )
 
