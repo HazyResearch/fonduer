@@ -448,7 +448,6 @@ class LabelerUDF(UDF):
     def apply(  # type: ignore
         self,
         doc: Document,
-        train: bool,
         lfs: List[List[Callable]],
         table: Table = Label,
         **kwargs: Any,
@@ -456,7 +455,6 @@ class LabelerUDF(UDF):
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
-        :param train: Whether or not to insert new LabelKeys.
         :param lfs: The list of functions to use to generate labels.
         """
         logger.debug(f"Document: {doc}")

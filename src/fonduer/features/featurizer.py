@@ -339,13 +339,10 @@ class FeaturizerUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(  # type: ignore
-        self, doc: Document, train: bool, **kwargs: Any
-    ) -> Iterator[Any]:
+    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Any]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
-        :param train: Whether or not to insert new FeatureKeys.
         """
         logger.debug(f"Document: {doc}")
 
