@@ -65,6 +65,7 @@ before_install:
     # Install PostgreSQL 10 (12 not compatible with Fonduer)
     # See https://github.com/HazyResearch/fonduer/issues/371
     brew uninstall --ignore-dependencies postgresql
+    sudo chown -R $(whoami):admin /usr/local/var
     brew install postgresql@10
     brew switch postgresql 10
     brew info postgres
