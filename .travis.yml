@@ -66,9 +66,9 @@ before_install:
     # See https://github.com/HazyResearch/fonduer/issues/371
     brew install postgresql@10
     # Start postgresql for osx
-    rm -rf /usr/local/var/postgres
-    initdb /usr/local/var/postgres
-    pg_ctl -D /usr/local/var/postgres start; sleep 5
+    rm -rf /usr/local/var/postgresql@10
+    initdb /usr/local/var/postgresql@10
+    pg_ctl -D /usr/local/var/postgresql@10 start; sleep 5
     createuser -s postgres
     # poppler-utils is already installed
     # https://github.com/brianmario/mysql2/issues/795
