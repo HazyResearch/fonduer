@@ -64,8 +64,11 @@ before_install:
     ln -s `brew info imagemagick@6 | grep ^/usr | awk '{print $1}'`/lib/libMagickWand-6.Q16.dylib /usr/local/lib/libMagickWand.dylib
     # Install PostgreSQL 10 (12 not compatible with Fonduer)
     # See https://github.com/HazyResearch/fonduer/issues/371
-    brew uninstall postgresql
+    brew services stop postgres
+    brew uninstall --ignore-dependencies postgresql
     brew install postgresql@10
+    brew switch postgresql 10
+    brew info postgres
     # Start postgresql for osx
     rm -rf /usr/local/var/postgresql@10
     initdb /usr/local/var/postgresql@10
