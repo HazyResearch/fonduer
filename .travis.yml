@@ -62,10 +62,15 @@ before_install:
     brew install freetype imagemagick@6 ghostscript
     # https://stackoverflow.com/a/41772062
     ln -s `brew info imagemagick@6 | grep ^/usr | awk '{print $1}'`/lib/libMagickWand-6.Q16.dylib /usr/local/lib/libMagickWand.dylib
+    # Install PostgreSQL 10 (12 not compatible with Fonduer)
+    # See https://github.com/HazyResearch/fonduer/issues/371
+    brew uninstall --ignore-dependencies postgresql
+    brew install postgresql@10
+    export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
     # Start postgresql for osx
-    rm -rf /usr/local/var/postgres
-    initdb /usr/local/var/postgres
-    pg_ctl -D /usr/local/var/postgres start; sleep 5
+    rm -rf /usr/local/var/postgresql@10
+    initdb /usr/local/var/postgresql@10
+    pg_ctl -D /usr/local/var/postgresql@10 start; sleep 5
     createuser -s postgres
     # poppler-utils is already installed
     # https://github.com/brianmario/mysql2/issues/795
