@@ -17,7 +17,7 @@ For OS X using homebrew_::
     $ brew install postgresql@10
     $ brew install libpng freetype pkg-config
     $ brew install libomp #https://github.com/pytorch/pytorch/issues/20030
-    $ brew install imagemagick@6
+    $ brew install imagemagick
 
 On Debian-based distros::
 
@@ -39,7 +39,7 @@ On Debian-based distros::
     to avoid `a known bug <https://bugs.freedesktop.org/show_bug.cgi?id=97399>`_.
 
 .. note::
-    Fonduer depends on Wand (>=0.4.4, <0.5.0), which does not support ImageMagick7.
+    Use Wand (>=0.5.0) with ImageMagick7 as Wand (<0.5.0) does not support ImageMagick7.
 
 Installing the Fonduer Package
 ------------------------------

@@ -59,9 +59,7 @@ before_install:
     brew install swig mecab mecab-unidic
     sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc
     # Install ImageMagick library for Wand
-    brew install freetype imagemagick@6 ghostscript
-    # https://stackoverflow.com/a/41772062
-    ln -s `brew info imagemagick@6 | grep ^/usr | awk '{print $1}'`/lib/libMagickWand-6.Q16.dylib /usr/local/lib/libMagickWand.dylib
+    brew install freetype imagemagick ghostscript
     # Install PostgreSQL 10 (12 not compatible with Fonduer)
     # See https://github.com/HazyResearch/fonduer/issues/371
     brew uninstall --ignore-dependencies postgresql

@@ -27,7 +27,7 @@ setup(
         "torch>=1.1.0,<1.2.0",
         "tqdm>=4.36.0, <5.0.0",
         "treedlib>=0.1.1, <0.2.0",
-        "wand>=0.4.4, <0.5.0",
+        "wand>=0.4.4, <0.6.0",
         "ipython",
     ],
     extras_require={
