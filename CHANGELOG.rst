@@ -122,6 +122,7 @@ Changed
   (`#358 <https://github.com/HazyResearch/fonduer/issues/358>`_)
 * `@HiromuHota`_: Use tqdm.notebook.tqdm instead of deprecated tqdm.tqdm_notebook.
   (`#360 <https://github.com/HazyResearch/fonduer/issues/360>`_)
+* `@HiromuHota`_: To support ImageMagick7, expand the version range of Wand.
 
 0.7.1_ - 2019-11-06
 -------------------
