@@ -67,10 +67,7 @@ before_install:
     brew uninstall --ignore-dependencies postgresql
     sudo chown -R $(whoami):admin /usr/local/var
     brew install postgresql@10
-    brew postinstall postgresql@10 --debug
-    ls -la /usr/local/var
-    brew switch postgresql 10
-    brew info postgres
+    export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
     # Start postgresql for osx
     rm -rf /usr/local/var/postgresql@10
     initdb /usr/local/var/postgresql@10
