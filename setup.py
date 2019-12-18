@@ -35,7 +35,7 @@ setup(
         "spacy_zh": ["jieba>=0.39, <0.40"],
     },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
-    include_package_data=True,
+    package_data={"fonduer": ["py.typed"]},
     url="https://github.com/HazyResearch/fonduer",
     classifiers=[  # https://pypi.python.org/pypi?:action=list_classifiers
         "Development Status :: 3 - Alpha",

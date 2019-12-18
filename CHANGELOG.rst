@@ -123,6 +123,8 @@ Changed
 * `@HiromuHota`_: Use tqdm.notebook.tqdm instead of deprecated tqdm.tqdm_notebook.
   (`#360 <https://github.com/HazyResearch/fonduer/issues/360>`_)
 * `@HiromuHota`_: To support ImageMagick7, expand the version range of Wand.
+  (`#373 <https://github.com/HazyResearch/fonduer/pull/373>`_)
+* `@HiromuHota`_: Comply with PEP 561 for type-checking codes that use Fonduer.
 
 0.7.1_ - 2019-11-06
 -------------------
