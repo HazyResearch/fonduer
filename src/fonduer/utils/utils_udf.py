@@ -234,20 +234,6 @@ def get_mapping(
         }
 
 
-def get_cands_list_from_doc(
-    session: Session, candidate_classes: Iterable[Type[Candidate]], doc: Document
-) -> List[List[Candidate]]:
-    """Return the list of list of candidates from this document."""
-    cands = []
-    for candidate_class in candidate_classes:
-        cands.append(
-            session.query(candidate_class)
-            .filter(candidate_class.document_id == doc.id)
-            .all()
-        )
-    return cands
-
-
 def drop_all_keys(
     session: Session, key_table: Table, candidate_classes: Iterable[Type[Candidate]]
 ) -> None:
