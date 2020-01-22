@@ -27,7 +27,6 @@ from fonduer.utils.utils_udf import (
     batch_upsert_records,
     drop_all_keys,
     drop_keys,
-    get_cands_list_from_doc,
     get_docs_from_split,
     get_mapping,
     get_sparse_matrix,
@@ -465,7 +464,10 @@ class LabelerUDF(UDF):
         self.lfs = lfs
 
         # Get all the candidates in this doc that will be labeled
-        cands_list = get_cands_list_from_doc(self.session, self.candidate_classes, doc)
+        cands_list = [
+            getattr(doc, candidate_class.__tablename__ + "s")
+            for candidate_class in self.candidate_classes
+        ]
 
         for cands in cands_list:
             records = list(get_mapping(self.session, table, cands, self._f_gen))
