@@ -3,6 +3,7 @@ from multiprocessing import Manager, Process
 from queue import Empty, Queue
 from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
 
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from fonduer.meta import Meta, new_sessionmaker
@@ -189,6 +190,13 @@ class UDF(Process):
         while True:
             try:
                 doc = self.in_queue.get_nowait()
+                # Merge the object with the session owned by the current child process.
+                # If transient (ie not saved), save the object to the database.
+                # If not, load it from the database w/o the overhead of reconciliation.
+                if inspect(doc).transient:  # This only happens during parser.apply
+                    doc = self.session.merge(doc, load=True)
+                else:
+                    doc = self.session.merge(doc, load=False)
                 self.session.add_all(y for y in self.apply(doc, **self.apply_kwargs))
                 self.out_queue.put(UDF.TASK_DONE)
             except Empty:
