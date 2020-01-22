@@ -585,9 +585,6 @@ class MentionExtractorUDF(UDF):
         :param doc: A document to process.
         :param clear: Whether or not to clear the existing database entries.
         """
-
-        # Reattach doc with the current session or DetachedInstanceError happens
-        doc = self.session.merge(doc)
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
             tc_to_insert: DefaultDict[Type, List[Dict[str, Any]]] = defaultdict(list)
