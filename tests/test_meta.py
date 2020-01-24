@@ -23,8 +23,6 @@ def test_meta_connection_strings():
 
     Meta.init("postgresql://localhost:5432/" + DB).Session()
     assert Meta.DBNAME == DB
-    Meta.init("postgresql://localhost:5432/" + "cand_test").Session()
-    assert Meta.DBNAME == "cand_test"
 
 
 def test_subclass_before_meta_init():
