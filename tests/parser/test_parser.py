@@ -75,8 +75,7 @@ def test_parse_md_details():
         pdf_path=pdf_path,
         language="en",
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     # Check that doc has a figure
     assert len(doc.figures) == 1
@@ -169,8 +168,7 @@ def test_parse_wo_tabular():
         pdf_path=pdf_path,
         language="en",
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     # Check that doc has neither table nor cell
     assert len(doc.sections) == 1
@@ -203,8 +201,7 @@ def test_spacy_german():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="de"
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     # Check that doc has sentences
     assert len(doc.sentences) == 841
@@ -257,8 +254,7 @@ def test_spacy_japanese():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="ja"
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     assert len(doc.sentences) == 289
     sent = doc.sentences[42]
@@ -305,8 +301,7 @@ def test_spacy_chinese():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False, language="zh"
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     print(doc.sentences)
     assert len(doc.sentences) == 8
     sent = doc.sentences[1]
@@ -331,8 +326,7 @@ def test_warning_on_missing_pdf():
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     with pytest.warns(RuntimeWarning) as record:
-        for _ in parser_udf.apply(doc):
-            pass
+        doc = parser_udf.apply(doc)
     assert len(record) == 1
     assert "Visual parse failed" in record[0].message.args[0]
 
@@ -351,8 +345,7 @@ def test_warning_on_incorrect_filename():
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
     with pytest.warns(RuntimeWarning) as record:
-        for _ in parser_udf.apply(doc):
-            pass
+        doc = parser_udf.apply(doc)
     assert len(record) == 1
     assert "Visual parse failed" in record[0].message.args[0]
 
@@ -373,8 +366,7 @@ def test_parse_md_paragraphs():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     # Check that doc has a figure
     assert len(doc.figures) == 6
@@ -464,8 +456,7 @@ def test_simple_parser():
         pdf_path=pdf_path,
         lingual_parser=SimpleParser(delim="NoDelim"),
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     logger.info(f"Doc: {doc}")
     for i, sentence in enumerate(doc.sentences):
@@ -511,8 +502,7 @@ def test_parse_table_span():
 
     # Create an Parser and parse the document
     parser_udf = get_parser_udf(structural=True, lingual=True, visual=False)
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     logger.info(f"Doc: {doc}")
 
@@ -542,8 +532,7 @@ def test_parse_document_diseases():
     parser_udf = get_parser_udf(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     logger.info(f"Doc: {doc}")
     for sentence in doc.sentences:
@@ -609,8 +598,7 @@ def test_parse_style():
     parser_udf = get_parser_udf(
         structural=True, lingual=True, visual=True, pdf_path=pdf_path
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     # Grab the sentences parsed by the Parser
     sentences = doc.sentences
@@ -646,16 +634,16 @@ def test_parse_error_doc_skipping():
         preprocessor._parse_file(faulty_doc_path, "ext_diseases_missing_table_tag")
     )
     parser_udf = get_parser_udf(structural=True, lingual=True)
-    sentence_lists = [x for x in parser_udf.apply(doc)]
-    # No sentences are yielded for faulty document
-    assert len(sentence_lists) == 0
+    doc = parser_udf.apply(doc)
+    # No document is returned for faulty document
+    assert doc is None
 
     valid_doc_path = "tests/data/html_extended/ext_diseases.html"
     preprocessor = HTMLDocPreprocessor(valid_doc_path)
     doc = next(preprocessor._parse_file(valid_doc_path, "ext_diseases"))
     parser_udf = get_parser_udf(structural=True, lingual=True)
-    sentence_lists = [x for x in parser_udf.apply(doc)]
-    assert len(sentence_lists) == 37
+    doc = parser_udf.apply(doc)
+    assert len(doc.sentences) == 37
 
 
 def test_parse_multi_sections():
@@ -667,8 +655,7 @@ def test_parse_multi_sections():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     assert len(doc.sections) == 5
     assert len(doc.paragraphs) == 30
@@ -695,8 +682,7 @@ def test_text_doc_preprocessor():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     assert len(preprocessor) == 1
     assert len(doc.sections) == 1
@@ -717,8 +703,7 @@ def test_tsv_doc_preprocessor():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     assert len(preprocessor) == 1
     assert doc.name == "9b28e780-ba48-4a53-8682-7c58c141a1b6"
@@ -740,8 +725,7 @@ def test_csv_doc_preprocessor():
     parser_udf = get_parser_udf(
         structural=True, tabular=True, lingual=True, visual=False
     )
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
 
     assert len(preprocessor) == 1
     assert len(doc.sections) == 12
@@ -756,22 +740,19 @@ def test_parser_skips_and_flattens():
     # Test if a parser skips comments
     doc = Document(id=1, name="test", stable_id="1::document:0:0")
     doc.text = "<html><body>Hello!<!-- comment --></body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello!"
 
     # Test if a parser skips blacklisted elements
     doc = Document(id=2, name="test2", stable_id="2::document:0:0")
     doc.text = "<html><body><script>alert('Hello');</script><p>Hello!</p></body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello!"
 
     # Test if a parser flattens elements
     doc = Document(id=3, name="test3", stable_id="3::document:0:0")
     doc.text = "<html><body><span>Hello, <br>world!</span></body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello, world!"
 
     # Now with different blacklist and flatten
@@ -780,29 +761,25 @@ def test_parser_skips_and_flattens():
     # Test if a parser does not skip non-blacklisted element
     doc = Document(id=4, name="test4", stable_id="4::document:0:0")
     doc.text = "<html><body><script>alert('Hello');</script><p>Hello!</p></body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "alert('Hello');"
     assert doc.sentences[1].text == "Hello!"
 
     # Test if a parser skips blacklisted elements
     doc = Document(id=5, name="test5", stable_id="5::document:0:0")
     doc.text = "<html><head><meta name='keywords'></head><body>Hello!</body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello!"
 
     # Test if a parser does not flatten elements
     doc = Document(id=6, name="test6", stable_id="6::document:0:0")
     doc.text = "<html><body><span>Hello, <br>world!</span></body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello,"
     assert doc.sentences[1].text == "world!"
 
     # Test if a parser flattens elements
     doc = Document(id=7, name="test7", stable_id="7::document:0:0")
     doc.text = "<html><body><word>Hello, </word><word>world!</word></body></html>"
-    for _ in parser_udf.apply(doc):
-        pass
+    doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello, world!"

@@ -249,13 +249,13 @@ class ParserUDF(UDF):
 
     def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
-    ) -> Iterator[Sentence]:
+    ) -> Document:
         # The document is the Document model
         text = document.text
 
         # Only return sentences, if no exceptions occur during parsing
         try:
-            return_sentences = [y for y in self.parse(document, text)]
+            [y for y in self.parse(document, text)]
             if self.visual:
                 # Use the provided pdf_path if present
                 self.pdf_path = pdf_path if pdf_path else self.pdf_path
@@ -270,13 +270,13 @@ class ParserUDF(UDF):
                     )
                 else:
                     # Add visual attributes
-                    return_sentences = [
+                    [
                         y
                         for y in self.vizlink.link(
                             document.name, document.sentences, self.pdf_path
                         )
                     ]
-            yield from return_sentences
+            return document
         except Exception as e:
             warnings.warn(
                 (
