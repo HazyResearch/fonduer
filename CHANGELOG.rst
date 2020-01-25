@@ -125,6 +125,10 @@ Changed
 * `@HiromuHota`_: To support ImageMagick7, expand the version range of Wand.
   (`#373 <https://github.com/HazyResearch/fonduer/pull/373>`_)
 * `@HiromuHota`_: Comply with PEP 561 for type-checking codes that use Fonduer.
+* `@HiromuHota`_: Make UDF.apply of all child classes unaware of the database backend,
+  meaning PostgreSQL is not required if UDF.apply is directly used instead of UDFRunner.apply.
+  (`#316 <https://github.com/HazyResearch/fonduer/issues/316>`_)
+  (`#368 <https://github.com/HazyResearch/fonduer/pull/368>`_)
 
 0.7.1_ - 2019-11-06
 -------------------
