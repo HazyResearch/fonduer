@@ -5,8 +5,8 @@ from typing import (
     Any,
     Collection,
     DefaultDict,
+    Dict,
     Iterable,
-    Iterator,
     List,
     Optional,
     Type,
@@ -259,6 +259,12 @@ class Featurizer(UDFRunner):
         """
         return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
+    def _add(self, records_list: List[List[Dict[str, Any]]]) -> None:
+        # Make a flat list of all records from the list of list of records.
+        # This helps reduce the number of queries needed to update.
+        all_records = list(itertools.chain.from_iterable(records_list))
+        batch_upsert_records(self.session, Feature, all_records)
+
     def clear(self, train: bool = False, split: int = 0) -> None:  # type: ignore
         """Delete Features of each class from the database.
 
@@ -338,7 +344,9 @@ class FeaturizerUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Any]:
+    def apply(  # type: ignore
+        self, doc: Document, **kwargs: Any
+    ) -> List[List[Dict[str, Any]]]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
@@ -351,12 +359,8 @@ class FeaturizerUDF(UDF):
             for candidate_class in self.candidate_classes
         ]
 
-        # Make a flat list of all candidates from the list of list of
-        # candidates. This helps reduce the number of queries needed to update.
-        all_cands = itertools.chain.from_iterable(cands_list)
-        records = list(get_mapping(Feature, all_cands, self.feature_extractors.extract))
-        batch_upsert_records(self.session, Feature, records)
-
-        # This return + yield makes a completely empty generator
-        return
-        yield
+        records_list = [
+            list(get_mapping(Feature, cands, self.feature_extractors.extract))
+            for cands in cands_list
+        ]
+        return records_list

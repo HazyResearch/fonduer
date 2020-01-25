@@ -5,6 +5,7 @@ from typing import (
     Callable,
     Collection,
     DefaultDict,
+    Dict,
     Iterable,
     Iterator,
     List,
@@ -101,6 +102,8 @@ class Labeler(UDFRunner):
         if len(lfs) != len(self.candidate_classes):
             raise ValueError("Please provide LFs for each candidate class.")
 
+        self.table = table
+
         self.apply(
             docs=docs,
             split=split,
@@ -158,6 +161,7 @@ class Labeler(UDFRunner):
             raise ValueError("Please provide LFs for each candidate class.")
 
         self.lfs = lfs
+        self.table = table
         if docs:
             # Call apply on the specified docs for all splits
             # TODO: split is int
@@ -308,6 +312,10 @@ class Labeler(UDFRunner):
 
         drop_keys(self.session, LabelKey, key_map)
 
+    def _add(self, records_list: List[List[Dict[str, Any]]]) -> None:
+        for records in records_list:
+            batch_upsert_records(self.session, self.table, records)
+
     def clear(  # type: ignore
         self,
         train: bool,
@@ -450,7 +458,7 @@ class LabelerUDF(UDF):
         lfs: List[List[Callable]],
         table: Table = Label,
         **kwargs: Any,
-    ):
+    ) -> List[List[Dict[str, Any]]]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
@@ -469,10 +477,7 @@ class LabelerUDF(UDF):
             for candidate_class in self.candidate_classes
         ]
 
-        for cands in cands_list:
-            records = list(get_mapping(table, cands, self._f_gen))
-            batch_upsert_records(self.session, table, records)
-
-        # This return + yield makes a completely empty generator
-        return
-        yield
+        records_list = [
+            list(get_mapping(table, cands, self._f_gen)) for cands in cands_list
+        ]
+        return records_list
