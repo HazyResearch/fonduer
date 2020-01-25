@@ -133,7 +133,9 @@ class UDFRunner(object):
             udf.start()
 
         count_parsed = 0
-        while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
+        while (
+            any([udf.is_alive() for udf in self.udfs]) or not out_queue.empty()
+        ) and count_parsed < total_count:
             try:
                 y = out_queue.get(timeout=1)
                 self._add(y)
