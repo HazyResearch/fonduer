@@ -191,7 +191,7 @@ class UDF(Process):
         # Each UDF starts its own Engine
         # See SQLalchemy, using connection pools with multiprocessing.
         Session = new_sessionmaker()
-        self.session = Session()
+        session = Session()
         while True:
             try:
                 doc = self.in_queue.get_nowait()
@@ -199,15 +199,15 @@ class UDF(Process):
                 # If transient (ie not saved), save the object to the database.
                 # If not, load it from the database w/o the overhead of reconciliation.
                 if inspect(doc).transient:  # This only happens during parser.apply
-                    doc = self.session.merge(doc, load=True)
+                    doc = session.merge(doc, load=True)
                 else:
-                    doc = self.session.merge(doc, load=False)
+                    doc = session.merge(doc, load=False)
                 y = self.apply(doc, **self.apply_kwargs)
                 self.out_queue.put(y)
             except Empty:
                 break
-        self.session.commit()
-        self.session.close()
+        session.commit()
+        session.close()
 
     def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
         """This function takes in an object, and returns a generator / set / list"""
