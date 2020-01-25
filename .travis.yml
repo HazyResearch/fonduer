@@ -99,7 +99,6 @@ install:
 
 before_script:
 - createdb e2e_test -U postgres
-- createdb visualizer_test -U postgres
 - createdb inc_test -U postgres
 - createdb cand_test -U postgres
 - createdb feature_test -U postgres
