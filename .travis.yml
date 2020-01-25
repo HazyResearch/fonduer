@@ -100,8 +100,8 @@ install:
 before_script:
 - createdb e2e_test -U postgres
 - createdb inc_test -U postgres
-- createdb cand_test -U postgres
 - createdb meta_test -U postgres
+- createdb pg_test -U postgres
 - cd tests && ./download_data.sh && cd ..
 
 script:
