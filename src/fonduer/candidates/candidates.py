@@ -6,7 +6,6 @@ from typing import (
     Callable,
     Collection,
     Iterable,
-    Iterator,
     List,
     Optional,
     Tuple,
@@ -259,7 +258,7 @@ class CandidateExtractorUDF(UDF):
 
     def apply(  # type: ignore
         self, doc: Document, split: int, **kwargs: Any
-    ) -> Iterator[Candidate]:
+    ) -> Document:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
@@ -336,4 +335,5 @@ class CandidateExtractorUDF(UDF):
                     continue
 
                 # Add Candidate to session
-                yield candidate_class(**candidate_args)
+                candidate_class(**candidate_args)
+        return doc

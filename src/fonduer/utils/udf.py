@@ -96,6 +96,9 @@ class UDFRunner(object):
         """This method is executed by a single process after apply."""
         pass
 
+    def _add(self, instance: Any) -> None:
+        self.session.add(instance)
+
     def _apply(
         self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
     ) -> None:
@@ -132,14 +135,12 @@ class UDFRunner(object):
         count_parsed = 0
         while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
             try:
-                y = out_queue.get(timeout=1)
+                out_queue.get(timeout=1)
+                # self._add(y)
                 # Update progress bar whenever an item has been processed
-                if y == UDF.TASK_DONE:
-                    count_parsed += 1
-                    if self.pb is not None:
-                        self.pb.update(1)
-                else:
-                    raise ValueError("Got non-sentinal output.")
+                count_parsed += 1
+                if self.pb is not None:
+                    self.pb.update(1)
             except Empty:
                 # This happens when any child process is alive and still processing.
                 pass
@@ -197,8 +198,8 @@ class UDF(Process):
                     doc = self.session.merge(doc, load=True)
                 else:
                     doc = self.session.merge(doc, load=False)
-                self.session.add_all(y for y in self.apply(doc, **self.apply_kwargs))
-                self.out_queue.put(UDF.TASK_DONE)
+                y = self.apply(doc, **self.apply_kwargs)
+                self.out_queue.put(y)
             except Empty:
                 break
         self.session.commit()

@@ -563,7 +563,7 @@ class MentionExtractorUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Mention]:
+    def apply(self, doc: Document, **kwargs: Any) -> Document:
         """Extract mentions from the given Document.
 
         :param doc: A document to process.
@@ -619,4 +619,5 @@ class MentionExtractorUDF(UDF):
                 mention_args = {"document": doc, "context": context}
 
                 # Add Mention to session
-                yield mention_class(**mention_args)
+                mention_class(**mention_args)
+        return doc
