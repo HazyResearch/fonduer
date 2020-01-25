@@ -1,105 +1,96 @@
+import itertools
 import logging
 
-from fonduer import Meta
-from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionNgrams
+import pytest
+
+from fonduer.candidates import MentionNgrams
+from fonduer.candidates.candidates import CandidateExtractorUDF
+from fonduer.candidates.mentions import MentionExtractorUDF
 from fonduer.candidates.models import candidate_subclass, mention_subclass
-from fonduer.features import FeatureExtractor, Featurizer
-from fonduer.features.models import FeatureKey
-from fonduer.parser import Parser
-from fonduer.parser.models import Document, Sentence
-from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.features import FeatureExtractor
+from fonduer.features.featurizer import FeaturizerUDF
+from tests.candidates.test_candidates import parse_doc
 from tests.shared.hardware_matchers import part_matcher, temp_matcher
 
 logger = logging.getLogger(__name__)
-DB = "feature_test"
-# Use 127.0.0.1 instead of localhost (#351)
-CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 def test_unary_relation_feature_extraction():
     """Test extracting unary candidates from mentions from documents."""
-    PARALLEL = 1
-
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/html/"
-    pdf_path = "tests/data/pdf/"
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/112823.pdf"
 
     # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 799
-    docs = session.query(Document).order_by(Document.name).all()
+    doc = parse_doc(docs_path, "112823", pdf_path)
+    assert len(doc.sentences) == 799
 
     # Mention Extraction
     part_ngrams = MentionNgrams(n_max=1)
 
     Part = mention_subclass("Part")
 
-    mention_extractor = MentionExtractor(session, [Part], [part_ngrams], [part_matcher])
-    mention_extractor.apply(docs, parallelism=PARALLEL)
+    mention_extractor_udf = MentionExtractorUDF([Part], [part_ngrams], [part_matcher])
+    doc = mention_extractor_udf.apply(doc)
 
-    assert docs[0].name == "112823"
-    assert session.query(Part).count() == 58
-    part = session.query(Part).order_by(Part.id).all()[0]
+    assert doc.name == "112823"
+    assert len(doc.parts) == 58
+    part = doc.parts[0]
     logger.info(f"Part: {part.context}")
 
     # Candidate Extraction
     PartRel = candidate_subclass("PartRel", [Part])
 
-    candidate_extractor = CandidateExtractor(session, [PartRel])
-
-    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+    candidate_extractor_udf = CandidateExtractorUDF([PartRel], None, False, False, True)
+    doc = candidate_extractor_udf.apply(doc, split=0)
 
     # Featurization based on default feature library
-    featurizer = Featurizer(session, [PartRel])
+    featurizer_udf = FeaturizerUDF([PartRel], FeatureExtractor())
 
     # Test that featurization default feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_default_feats = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_default_feats = len(key_set)
 
     # Featurization with only textual feature
     feature_extractors = FeatureExtractor(features=["textual"])
-    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartRel], feature_extractors=feature_extractors)
 
     # Test that featurization textual feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_textual_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_textual_features = len(key_set)
 
     # Featurization with only tabular feature
     feature_extractors = FeatureExtractor(features=["tabular"])
-    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartRel], feature_extractors=feature_extractors)
 
     # Test that featurization tabular feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_tabular_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_tabular_features = len(key_set)
 
     # Featurization with only structural feature
     feature_extractors = FeatureExtractor(features=["structural"])
-    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartRel], feature_extractors=feature_extractors)
 
     # Test that featurization structural feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_structural_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_structural_features = len(key_set)
 
     # Featurization with only visual feature
     feature_extractors = FeatureExtractor(features=["visual"])
-    featurizer = Featurizer(session, [PartRel], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartRel], feature_extractors=feature_extractors)
 
     # Test that featurization visual feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_visual_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_visual_features = len(key_set)
 
     assert (
         n_default_feats
@@ -112,24 +103,12 @@ def test_unary_relation_feature_extraction():
 
 def test_binary_relation_feature_extraction():
     """Test extracting candidates from mentions from documents."""
-    PARALLEL = 1
-
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/html/"
-    pdf_path = "tests/data/pdf/"
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/112823.pdf"
 
     # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 799
-    docs = session.query(Document).order_by(Document.name).all()
+    doc = parse_doc(docs_path, "112823", pdf_path)
+    assert len(doc.sentences) == 799
 
     # Mention Extraction
     part_ngrams = MentionNgrams(n_max=1)
@@ -138,35 +117,43 @@ def test_binary_relation_feature_extraction():
     Part = mention_subclass("Part")
     Temp = mention_subclass("Temp")
 
-    mention_extractor = MentionExtractor(
-        session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
+    mention_extractor_udf = MentionExtractorUDF(
+        [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
-    mention_extractor.apply(docs, parallelism=PARALLEL)
+    doc = mention_extractor_udf.apply(doc)
 
-    assert docs[0].name == "112823"
-    assert session.query(Part).count() == 58
-    assert session.query(Temp).count() == 16
-    part = session.query(Part).order_by(Part.id).all()[0]
-    temp = session.query(Temp).order_by(Temp.id).all()[0]
+    assert len(doc.parts) == 58
+    assert len(doc.temps) == 16
+    part = doc.parts[0]
+    temp = doc.temps[0]
     logger.info(f"Part: {part.context}")
     logger.info(f"Temp: {temp.context}")
 
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    candidate_extractor = CandidateExtractor(session, [PartTemp])
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [PartTemp], None, False, False, True
+    )
 
-    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+    doc = candidate_extractor_udf.apply(doc, split=0)
 
-    n_cands = session.query(PartTemp).count()
+    # Manually set id as it is not set automatically b/c a database is not used.
+    i = 0
+    for cand in doc.part_temps:
+        cand.id = i
+        i = i + 1
+
+    n_cands = len(doc.part_temps)
 
     # Featurization based on default feature library
-    featurizer = Featurizer(session, [PartTemp])
+    featurizer_udf = FeaturizerUDF([PartTemp], FeatureExtractor())
 
     # Test that featurization default feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_default_feats = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_default_feats = len(key_set)
 
     # Example feature extractor
     def feat_ext(candidates):
@@ -176,12 +163,13 @@ def test_binary_relation_feature_extraction():
 
     # Featurization with one extra feature extractor
     feature_extractors = FeatureExtractor(customize_feature_funcs=[feat_ext])
-    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartTemp], feature_extractors=feature_extractors)
 
     # Test that featurization default feature library with one extra feature extractor
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_default_w_customized_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_default_w_customized_features = len(key_set)
 
     # Example spurious feature extractor
     def bad_feat_ext(candidates):
@@ -189,48 +177,52 @@ def test_binary_relation_feature_extraction():
 
     # Featurization with a spurious feature extractor
     feature_extractors = FeatureExtractor(customize_feature_funcs=[bad_feat_ext])
-    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartTemp], feature_extractors=feature_extractors)
 
     # Test that featurization default feature library with one extra feature extractor
     logger.info("Featurizing with a spurious feature extractor...")
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    featurizer.clear(train=True)
+    with pytest.raises(RuntimeError):
+        features = featurizer_udf.apply(doc)
 
     # Featurization with only textual feature
     feature_extractors = FeatureExtractor(features=["textual"])
-    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartTemp], feature_extractors=feature_extractors)
 
     # Test that featurization textual feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_textual_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_textual_features = len(key_set)
 
     # Featurization with only tabular feature
     feature_extractors = FeatureExtractor(features=["tabular"])
-    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartTemp], feature_extractors=feature_extractors)
 
     # Test that featurization tabular feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_tabular_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_tabular_features = len(key_set)
 
     # Featurization with only structural feature
     feature_extractors = FeatureExtractor(features=["structural"])
-    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartTemp], feature_extractors=feature_extractors)
 
     # Test that featurization structural feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_structural_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_structural_features = len(key_set)
 
     # Featurization with only visual feature
     feature_extractors = FeatureExtractor(features=["visual"])
-    featurizer = Featurizer(session, [PartTemp], feature_extractors=feature_extractors)
+    featurizer_udf = FeaturizerUDF([PartTemp], feature_extractors=feature_extractors)
 
     # Test that featurization visual feature library
-    featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    n_visual_features = session.query(FeatureKey).count()
-    featurizer.clear(train=True)
+    features_list = featurizer_udf.apply(doc)
+    features = itertools.chain.from_iterable(features_list)
+    key_set = set([key for feature in features for key in feature["keys"]])
+    n_visual_features = len(key_set)
 
     assert (
         n_default_feats

@@ -101,7 +101,6 @@ before_script:
 - createdb e2e_test -U postgres
 - createdb inc_test -U postgres
 - createdb cand_test -U postgres
-- createdb feature_test -U postgres
 - createdb meta_test -U postgres
 - cd tests && ./download_data.sh && cd ..
 
