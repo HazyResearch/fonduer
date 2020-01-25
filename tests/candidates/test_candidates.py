@@ -1,10 +1,9 @@
 import logging
 import pickle
-from sys import platform
+from typing import Optional
 
 import pytest
 
-from fonduer import Meta
 from fonduer.candidates import (
     CandidateExtractor,
     MentionCaptions,
@@ -18,23 +17,19 @@ from fonduer.candidates import (
     MentionSentences,
     MentionTables,
 )
+from fonduer.candidates.candidates import CandidateExtractorUDF
 from fonduer.candidates.matchers import (
     DoNothingMatcher,
     LambdaFunctionFigureMatcher,
     LambdaFunctionMatcher,
     PersonMatcher,
 )
-from fonduer.candidates.mentions import Ngrams
-from fonduer.candidates.models import (
-    Candidate,
-    Mention,
-    candidate_subclass,
-    mention_subclass,
-)
-from fonduer.parser import Parser
-from fonduer.parser.models import Document, Sentence
+from fonduer.candidates.mentions import MentionExtractorUDF, Ngrams
+from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.parser.models import Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.utils.data_model_utils import get_col_ngrams, get_row_ngrams
+from tests.parser.test_parser import get_parser_udf
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,
@@ -44,10 +39,26 @@ from tests.shared.hardware_spaces import (
 from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 
 logger = logging.getLogger(__name__)
-ATTRIBUTE = "stg_temp_max"
-DB = "cand_test"
-# Use 127.0.0.1 instead of localhost (#351)
-CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
+
+
+def parse_doc(docs_path: str, file_name: str, pdf_path: Optional[str] = None):
+    max_docs = 1
+
+    logger.info("Parsing...")
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    doc = next(doc_preprocessor._parse_file(docs_path, file_name))
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
+        language="en",
+    )
+    doc = parser_udf.apply(doc)
+    return doc
 
 
 def test_ngram_split():
@@ -191,111 +202,15 @@ def test_span_char_start_and_char_end():
     assert result[0].char_end == 6
 
 
-def test_cand_gen_cascading_delete():
-    """Test cascading the deletion of candidates."""
-    if platform == "darwin":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        logger.info("Using two cores.")
-        PARALLEL = 2  # Travis only gives 2 cores
-
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/html/"
-    pdf_path = "tests/data/pdf/"
-
-    # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 799
-    docs = session.query(Document).order_by(Document.name).all()
-
-    # Mention Extraction
-    part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
-    temp_ngrams = MentionNgramsTemp(n_max=2)
-
-    Part = mention_subclass("Part")
-    Temp = mention_subclass("Temp")
-
-    mention_extractor = MentionExtractor(
-        session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
-    )
-    mention_extractor.clear_all()
-    mention_extractor.apply(docs, parallelism=PARALLEL)
-
-    assert session.query(Mention).count() == 93
-    assert session.query(Part).count() == 70
-    assert session.query(Temp).count() == 23
-    part = session.query(Part).order_by(Part.id).all()[0]
-    temp = session.query(Temp).order_by(Temp.id).all()[0]
-    logger.info(f"Part: {part.context}")
-    logger.info(f"Temp: {temp.context}")
-
-    # Candidate Extraction
-    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
-
-    candidate_extractor = CandidateExtractor(
-        session, [PartTemp], throttlers=[temp_throttler]
-    )
-
-    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
-
-    assert session.query(PartTemp).count() == 1432
-    assert session.query(Candidate).count() == 1432
-    assert docs[0].name == "112823"
-    assert len(docs[0].parts) == 70
-    assert len(docs[0].temps) == 23
-
-    # Delete from parent class should cascade to child
-    x = session.query(Candidate).first()
-    session.query(Candidate).filter_by(id=x.id).delete(synchronize_session="fetch")
-    assert session.query(Candidate).count() == 1431
-    assert session.query(PartTemp).count() == 1431
-
-    # Clearing Mentions should also delete Candidates
-    mention_extractor.clear()
-    assert session.query(Mention).count() == 0
-    assert session.query(Part).count() == 0
-    assert session.query(Temp).count() == 0
-    assert session.query(PartTemp).count() == 0
-    assert session.query(Candidate).count() == 0
-
-
 def test_cand_gen():
     """Test extracting candidates from mentions from documents."""
-    if platform == "darwin":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        logger.info("Using as many cores as available (PARALLEL=32)")
-        PARALLEL = 32
 
     def do_nothing_matcher(fig):
         return True
 
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/html/"
-    pdf_path = "tests/data/pdf/"
-
-    # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
-    )
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 799
-    docs = session.query(Document).order_by(Document.name).all()
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/112823.pdf"
+    doc = parse_doc(docs_path, "112823", pdf_path)
 
     # Mention Extraction
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
@@ -311,35 +226,34 @@ def test_cand_gen():
     fig_matcher = LambdaFunctionFigureMatcher(func=do_nothing_matcher)
 
     with pytest.raises(ValueError):
-        mention_extractor = MentionExtractor(
-            session,
+        MentionExtractor(
+            "dummy",
             [Part, Temp, Volt],
             [part_ngrams, volt_ngrams],  # Fail, mismatched arity
             [part_matcher, temp_matcher, volt_matcher],
         )
     with pytest.raises(ValueError):
-        mention_extractor = MentionExtractor(
-            session,
+        MentionExtractor(
+            "dummy",
             [Part, Temp, Volt],
             [part_ngrams, temp_matcher, volt_ngrams],
             [part_matcher, temp_matcher],  # Fail, mismatched arity
         )
 
-    mention_extractor = MentionExtractor(
-        session,
+    mention_extractor_udf = MentionExtractorUDF(
         [Part, Temp, Volt, Fig],
         [part_ngrams, temp_ngrams, volt_ngrams, figs],
         [part_matcher, temp_matcher, volt_matcher, fig_matcher],
     )
-    mention_extractor.apply(docs, parallelism=PARALLEL)
+    doc = mention_extractor_udf.apply(doc)
 
-    assert session.query(Part).count() == 70
-    assert session.query(Volt).count() == 33
-    assert session.query(Temp).count() == 23
-    assert session.query(Fig).count() == 31
-    part = session.query(Part).order_by(Part.id).all()[0]
-    volt = session.query(Volt).order_by(Volt.id).all()[0]
-    temp = session.query(Temp).order_by(Temp.id).all()[0]
+    assert len(doc.parts) == 70
+    assert len(doc.volts) == 33
+    assert len(doc.temps) == 23
+    assert len(doc.figs) == 31
+    part = doc.parts[0]
+    volt = doc.volts[0]
+    temp = doc.temps[0]
     logger.info(f"Part: {part.context}")
     logger.info(f"Volt: {volt.context}")
     logger.info(f"Temp: {temp.context}")
@@ -349,8 +263,8 @@ def test_cand_gen():
     PartVolt = candidate_subclass("PartVolt", [Part, Volt])
 
     with pytest.raises(ValueError):
-        candidate_extractor = CandidateExtractor(
-            session,
+        CandidateExtractor(
+            "dummy",
             [PartTemp, PartVolt],
             throttlers=[
                 temp_throttler,
@@ -360,124 +274,94 @@ def test_cand_gen():
         )
 
     with pytest.raises(ValueError):
-        candidate_extractor = CandidateExtractor(
-            session,
+        CandidateExtractor(
+            "dummy",
             [PartTemp],  # Fail, mismatched arity
             throttlers=[temp_throttler, volt_throttler],
         )
 
     # Test that no throttler in candidate extractor
-    candidate_extractor = CandidateExtractor(
-        session, [PartTemp, PartVolt]
-    )  # Pass, no throttler
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [PartTemp, PartVolt], [None, None], False, False, True  # Pass, no throttler
+    )
 
-    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+    doc = candidate_extractor_udf.apply(doc, split=0)
 
-    assert session.query(PartTemp).count() == 1610
-    assert session.query(PartVolt).count() == 2310
-    assert session.query(Candidate).count() == 3920
-    candidate_extractor.clear_all(split=0)
-    assert session.query(Candidate).count() == 0
-    assert session.query(PartTemp).count() == 0
-    assert session.query(PartVolt).count() == 0
+    assert len(doc.part_temps) == 1610
+    assert len(doc.part_volts) == 2310
+
+    # Clear
+    doc.part_temps = []
+    doc.part_volts = []
 
     # Test with None in throttlers in candidate extractor
-    candidate_extractor = CandidateExtractor(
-        session, [PartTemp, PartVolt], throttlers=[temp_throttler, None]
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [PartTemp, PartVolt], [temp_throttler, None], False, False, True
     )
 
-    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
-    assert session.query(PartTemp).count() == 1432
-    assert session.query(PartVolt).count() == 2310
-    assert session.query(Candidate).count() == 3742
-    candidate_extractor.clear_all(split=0)
-    assert session.query(Candidate).count() == 0
+    doc = candidate_extractor_udf.apply(doc, split=0)
+    assert len(doc.part_temps) == 1432
+    assert len(doc.part_volts) == 2310
 
-    candidate_extractor = CandidateExtractor(
-        session, [PartTemp, PartVolt], throttlers=[temp_throttler, volt_throttler]
+    # Clear
+    doc.part_temps = []
+    doc.part_volts = []
+
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [PartTemp, PartVolt], [temp_throttler, volt_throttler], False, False, True
     )
 
-    candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+    doc = candidate_extractor_udf.apply(doc, split=0)
 
-    assert session.query(PartTemp).count() == 1432
-    assert session.query(PartVolt).count() == 1993
-    assert session.query(Candidate).count() == 3425
-    assert docs[0].name == "112823"
-    assert len(docs[0].parts) == 70
-    assert len(docs[0].volts) == 33
-    assert len(docs[0].temps) == 23
-
-    # Test that deletion of a Candidate does not delete the Mention
-    session.query(PartTemp).delete(synchronize_session="fetch")
-    assert session.query(PartTemp).count() == 0
-    assert session.query(Temp).count() == 23
-    assert session.query(Part).count() == 70
-
-    # Test deletion of Candidate if Mention is deleted
-    assert session.query(PartVolt).count() == 1993
-    assert session.query(Volt).count() == 33
-    session.query(Volt).delete(synchronize_session="fetch")
-    assert session.query(Volt).count() == 0
-    assert session.query(PartVolt).count() == 0
+    assert len(doc.part_temps) == 1432
+    assert len(doc.part_volts) == 1993
+    assert len(doc.parts) == 70
+    assert len(doc.volts) == 33
+    assert len(doc.temps) == 23
 
 
 def test_ngrams():
     """Test ngram limits in mention extraction"""
-    PARALLEL = 4
-
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/pure_html/lincoln_short.html"
-
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(session, structural=True, lingual=True)
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-    assert session.query(Sentence).count() == 503
-    docs = session.query(Document).order_by(Document.name).all()
+    file_name = "lincoln_short"
+    docs_path = f"tests/data/pure_html/{file_name}.html"
+    doc = parse_doc(docs_path, file_name)
 
     # Mention Extraction
     Person = mention_subclass("Person")
     person_ngrams = MentionNgrams(n_max=3)
     person_matcher = PersonMatcher()
 
-    mention_extractor = MentionExtractor(
-        session, [Person], [person_ngrams], [person_matcher]
+    mention_extractor_udf = MentionExtractorUDF(
+        [Person], [person_ngrams], [person_matcher]
     )
-    mention_extractor.apply(docs, parallelism=PARALLEL)
+    doc = mention_extractor_udf.apply(doc)
 
-    assert session.query(Person).count() == 118
-    mentions = session.query(Person).all()
+    assert len(doc.persons) == 118
+    mentions = doc.persons
     assert len([x for x in mentions if x.context.get_num_words() == 1]) == 49
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
+    for mention in doc.persons[:]:
+        doc.persons.remove(mention)
+    assert len(doc.persons) == 0
+
     person_ngrams = MentionNgrams(n_min=2, n_max=3)
-    mention_extractor = MentionExtractor(
-        session, [Person], [person_ngrams], [person_matcher]
+    mention_extractor_udf = MentionExtractorUDF(
+        [Person], [person_ngrams], [person_matcher]
     )
-    mention_extractor.apply(docs, parallelism=PARALLEL)
-    assert session.query(Person).count() == 69
-    mentions = session.query(Person).all()
+    doc = mention_extractor_udf.apply(doc)
+    assert len(doc.persons) == 69
+    mentions = doc.persons
     assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
 
 def test_row_col_ngram_extraction():
     """Test whether row/column ngrams list is empty, if mention is not in a table."""
-    PARALLEL = 1
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-    docs_path = "tests/data/pure_html/lincoln_short.html"
-
-    # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(session, structural=True, lingual=True)
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    docs = session.query(Document).order_by(Document.name).all()
+    file_name = "lincoln_short"
+    docs_path = f"tests/data/pure_html/{file_name}.html"
+    doc = parse_doc(docs_path, file_name)
 
     # Mention Extraction
     place_ngrams = MentionNgramsTemp(n_max=4)
@@ -498,29 +382,19 @@ def test_row_col_ngram_extraction():
             return False
 
     birthplace_matcher = LambdaFunctionMatcher(func=get_row_and_column_ngrams)
-    mention_extractor = MentionExtractor(
-        session, [Place], [place_ngrams], [birthplace_matcher]
+    mention_extractor_udf = MentionExtractorUDF(
+        [Place], [place_ngrams], [birthplace_matcher]
     )
 
-    mention_extractor.apply(docs, parallelism=PARALLEL)
+    doc = mention_extractor_udf.apply(doc)
 
 
 def test_mention_longest_match():
     """Test longest match filtering in mention extraction."""
-    # SpaCy on mac has issue on parallel parsing
-    PARALLEL = 1
+    file_name = "lincoln_short"
+    docs_path = f"tests/data/pure_html/{file_name}.html"
+    doc = parse_doc(docs_path, file_name)
 
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/pure_html/lincoln_short.html"
-
-    # Parsing
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(session, structural=True, lingual=True)
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    docs = session.query(Document).order_by(Document.name).all()
     # Mention Extraction
     name_ngrams = MentionNgramsPart(n_max=3)
     place_ngrams = MentionNgramsTemp(n_max=4)
@@ -540,30 +414,32 @@ def test_mention_longest_match():
     birthplace_matcher = LambdaFunctionMatcher(
         func=is_birthplace_table_row, longest_match_only=False
     )
-    mention_extractor = MentionExtractor(
-        session,
+    mention_extractor_udf = MentionExtractorUDF(
         [Name, Place],
         [name_ngrams, place_ngrams],
         [PersonMatcher(), birthplace_matcher],
     )
-    mention_extractor.apply(docs, parallelism=PARALLEL)
-    mentions = session.query(Place).all()
+    doc = mention_extractor_udf.apply(doc)
+    mentions = doc.places
     mention_spans = [x.context.get_span() for x in mentions]
     assert "Sinking Spring Farm" in mention_spans
     assert "Farm" in mention_spans
     assert len(mention_spans) == 23
 
+    # Clear manually
+    for mention in doc.places[:]:
+        doc.places.remove(mention)
+
     birthplace_matcher = LambdaFunctionMatcher(
         func=is_birthplace_table_row, longest_match_only=True
     )
-    mention_extractor = MentionExtractor(
-        session,
+    mention_extractor_udf = MentionExtractorUDF(
         [Name, Place],
         [name_ngrams, place_ngrams],
         [PersonMatcher(), birthplace_matcher],
     )
-    mention_extractor.apply(docs, parallelism=PARALLEL)
-    mentions = session.query(Place).all()
+    doc = mention_extractor_udf.apply(doc)
+    mentions = doc.places
     mention_spans = [x.context.get_span() for x in mentions]
     assert "Sinking Spring Farm" in mention_spans
     assert "Farm" not in mention_spans
@@ -572,21 +448,11 @@ def test_mention_longest_match():
 
 def test_multimodal_cand():
     """Test multimodal candidate generation"""
-    PARALLEL = 4
+    file_name = "radiology"
+    docs_path = f"tests/data/pure_html/{file_name}.html"
+    doc = parse_doc(docs_path, file_name)
 
-    max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
-
-    docs_path = "tests/data/pure_html/radiology.html"
-
-    logger.info("Parsing...")
-    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
-    corpus_parser = Parser(session, structural=True, lingual=True)
-    corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
-    assert session.query(Document).count() == max_docs
-
-    assert session.query(Sentence).count() == 35
-    docs = session.query(Document).order_by(Document.name).all()
+    assert len(doc.sentences) == 35
 
     # Mention Extraction
 
@@ -612,18 +478,18 @@ def test_multimodal_cand():
     m = [m_doc, m_cap, m_sec, m_tab, m_fig, m_para, m_sent, m_cell]
     matchers = [DoNothingMatcher()] * 8
 
-    mention_extractor = MentionExtractor(session, ms, m, matchers, parallelism=PARALLEL)
+    mention_extractor_udf = MentionExtractorUDF(ms, m, matchers)
 
-    mention_extractor.apply(docs)
+    doc = mention_extractor_udf.apply(doc)
 
-    assert session.query(ms_doc).count() == 1
-    assert session.query(ms_cap).count() == 2
-    assert session.query(ms_sec).count() == 5
-    assert session.query(ms_tab).count() == 2
-    assert session.query(ms_fig).count() == 2
-    assert session.query(ms_para).count() == 30
-    assert session.query(ms_sent).count() == 35
-    assert session.query(ms_cell).count() == 21
+    assert len(doc.m_docs) == 1
+    assert len(doc.m_caps) == 2
+    assert len(doc.m_secs) == 5
+    assert len(doc.m_tabs) == 2
+    assert len(doc.m_figs) == 2
+    assert len(doc.m_paras) == 30
+    assert len(doc.m_sents) == 35
+    assert len(doc.m_cells) == 21
 
 
 def test_pickle_subclasses():
