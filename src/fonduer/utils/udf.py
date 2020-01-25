@@ -97,7 +97,7 @@ class UDFRunner(object):
         pass
 
     def _add(self, instance: Any) -> None:
-        self.session.add(instance)
+        pass
 
     def _apply(
         self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
@@ -135,8 +135,8 @@ class UDFRunner(object):
         count_parsed = 0
         while any([udf.is_alive() for udf in self.udfs]) and count_parsed < total_count:
             try:
-                out_queue.get(timeout=1)
-                # self._add(y)
+                y = out_queue.get(timeout=1)
+                self._add(y)
                 # Update progress bar whenever an item has been processed
                 count_parsed += 1
                 if self.pb is not None:
@@ -154,6 +154,8 @@ class UDFRunner(object):
 
         # Flush the processes
         self.udfs = []
+
+        self.session.commit()
 
 
 class UDF(Process):
