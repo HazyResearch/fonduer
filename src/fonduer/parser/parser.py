@@ -250,12 +250,13 @@ class ParserUDF(UDF):
     def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
     ) -> Document:
-        # The document is the Document model
-        text = document.text
+        """Parse a text in an instance of Document.
 
-        # Only return sentences, if no exceptions occur during parsing
+        :param document: document to parse.
+        :param pdf_path: path of a pdf file that the document is visually linked with.
+        """
         try:
-            [y for y in self.parse(document, text)]
+            [y for y in self.parse(document, document.text)]
             if self.visual:
                 # Use the provided pdf_path if present
                 self.pdf_path = pdf_path if pdf_path else self.pdf_path
