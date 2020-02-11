@@ -374,10 +374,10 @@ def test_e2e():
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
     assert L_train_gold[0].shape == (3493, 1)
 
-    gen_model = LabelModel()
-    gen_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
+    label_model = LabelModel()
+    label_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
 
-    train_marginals = gen_model.predict_proba(L_train[0])
+    train_marginals = label_model.predict_proba(L_train[0])
 
     # Collect word counter
     word_counter = collect_word_counter(train_cands)
@@ -504,10 +504,10 @@ def test_e2e():
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3493, 16)
 
-    gen_model = LabelModel()
-    gen_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
+    label_model = LabelModel()
+    label_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
 
-    train_marginals = gen_model.predict_proba(L_train[0])
+    train_marginals = label_model.predict_proba(L_train[0])
 
     diffs = train_marginals.max(axis=1) - train_marginals.min(axis=1)
     train_idxs = np.where(diffs > 1e-6)[0]
