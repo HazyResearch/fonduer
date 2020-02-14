@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.parser.models.document import Document
 from fonduer.utils.udf import UDF, UDFRunner
+from fonduer.utils.utils import get_set_of_stable_ids
 
 logger = logging.getLogger(__name__)
 
@@ -280,17 +281,9 @@ class CandidateExtractorUDF(UDF):
                     for mention in candidate_class.mentions
                 ]
             )
-            # Construct a set of stable ids of candidates.
-            set_of_stable_ids = set()
-            if hasattr(doc, candidate_class.__tablename__ + "s"):
-                set_of_stable_ids.update(
-                    set(
-                        [
-                            tuple(m.context.get_stable_id() for m in c)
-                            for c in getattr(doc, candidate_class.__tablename__ + "s")
-                        ]
-                    )
-                )
+            # Get a set of stable_ids of candidates.
+            set_of_stable_ids = get_set_of_stable_ids(doc, candidate_class)
+
             for cand in cands:
 
                 # Apply throttler if one was given.

@@ -1,8 +1,8 @@
 import re
 from builtins import range
-from typing import Dict, Iterator, List, Union
+from typing import Dict, Iterator, List, Set, Tuple, Union
 
-from fonduer.parser.models import Sentence
+from fonduer.parser.models import Context, Document, Sentence
 
 
 def camel_to_under(name: str) -> str:
@@ -41,3 +41,47 @@ def tokens_to_ngrams(
     for root in range(N):
         for n in range(max(n_min - 1, 0), min(n_max, N - root)):
             yield f(delim.join(tokens[root : root + n + 1]))
+
+
+def get_set_of_stable_ids(doc: Document, candidate_class) -> Set[Tuple[str, ...]]:
+    """Returns a set of stable_ids of candidates.
+    A stable_ids of a candidate is a tuple of stable_id of the constituent context.
+    """
+    set_of_stable_ids = set()
+    # "s" is required due to the relationship between Document and candidate_class.
+    if hasattr(doc, candidate_class.__tablename__ + "s"):
+        set_of_stable_ids.update(
+            set(
+                [
+                    tuple(m.context.get_stable_id() for m in c)
+                    for c in getattr(doc, candidate_class.__tablename__ + "s")
+                ]
+            )
+        )
+    return set_of_stable_ids
+
+
+def get_dict_of_stable_id(doc: Document) -> Dict[str, Context]:
+    """Returns a mapping of a stable_id to its context."""
+    return {
+        doc.stable_id: doc,
+        **{
+            c.stable_id: c
+            for a in [
+                "sentences",
+                "paragraphs",
+                "captions",
+                "cells",
+                "tables",
+                "sections",
+                "figures",
+            ]
+            for c in getattr(doc, a)
+        },
+        **{
+            c.stable_id: c
+            for s in doc.sentences
+            for a in ["spans", "implicit_spans"]
+            for c in getattr(s, a)
+        },
+    }
