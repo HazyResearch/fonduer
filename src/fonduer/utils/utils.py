@@ -1,8 +1,11 @@
 import re
 from builtins import range
-from typing import Dict, Iterator, List, Set, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Type, Union
 
 from fonduer.parser.models import Context, Document, Sentence
+
+if TYPE_CHECKING:  # to prevent circular imports
+    from fonduer.candidates.models import Candidate
 
 
 def camel_to_under(name: str) -> str:
@@ -43,7 +46,9 @@ def tokens_to_ngrams(
             yield f(delim.join(tokens[root : root + n + 1]))
 
 
-def get_set_of_stable_ids(doc: Document, candidate_class) -> Set[Tuple[str, ...]]:
+def get_set_of_stable_ids(
+    doc: Document, candidate_class: "Type[Candidate]"
+) -> Set[Tuple[str, ...]]:
     """Returns a set of stable_ids of candidates.
     A stable_ids of a candidate is a tuple of stable_id of the constituent context.
     """
