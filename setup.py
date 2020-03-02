@@ -16,7 +16,7 @@ setup(
     install_requires=[
         "beautifulsoup4==4.7.1",
         "editdistance>=0.5.2, <0.6.0",
-        "emmental==0.0.4",
+        "emmental==0.0.5",
         "lxml>=4.2.5, <5.0.0",
         "numpy>=1.11, <2.0",
         "pyyaml>=5.1, <6.0",
