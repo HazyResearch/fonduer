@@ -302,7 +302,7 @@ def test_spacy_chinese():
         structural=True, tabular=True, lingual=True, visual=False, language="zh"
     )
     doc = parser_udf.apply(doc)
-    print(doc.sentences)
+
     assert len(doc.sentences) == 8
     sent = doc.sentences[1]
     assert sent.text == "我们和他对比谁更厉害!"

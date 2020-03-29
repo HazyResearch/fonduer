@@ -92,7 +92,8 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
 
         :rtype: string
         """
-        doc_id, _, parent_doc_char_start, _ = split_stable_id(self.sentence.stable_id)
+        doc_id, _, idx = split_stable_id(self.sentence.stable_id)
+        parent_doc_char_start = idx[0]
         return (
             f"{self.sentence.document.name}"
             f"::"

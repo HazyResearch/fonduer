@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Section
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporarySectionMention(TemporaryContext):
@@ -43,8 +44,12 @@ class TemporarySectionMention(TemporaryContext):
         return hash(self.section)
 
     def get_stable_id(self) -> str:
-        """Return a stable id for the ``SectionMention``."""
-        return self.section.stable_id
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
+        return construct_stable_id(self.section, self._get_polymorphic_identity(), 0, 0)
 
     def _get_table(self) -> Type["SectionMention"]:
         return SectionMention
@@ -88,3 +93,7 @@ class SectionMention(Context, TemporarySectionMention):
         "polymorphic_identity": "section_mention",
         "inherit_condition": (id == Context.id),
     }
+
+    def __init__(self, tc: TemporarySectionMention):
+        self.stable_id = tc.get_stable_id()
+        self.section = tc.section

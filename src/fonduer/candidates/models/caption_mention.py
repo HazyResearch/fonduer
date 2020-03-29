@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Caption
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporaryCaptionMention(TemporaryContext):
@@ -43,8 +44,12 @@ class TemporaryCaptionMention(TemporaryContext):
         return hash(self.caption)
 
     def get_stable_id(self) -> str:
-        """Return a stable id for the ``CaptionMention``."""
-        return self.caption.stable_id
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
+        return construct_stable_id(self.caption, self._get_polymorphic_identity(), 0, 0)
 
     def _get_table(self) -> Type["CaptionMention"]:
         return CaptionMention
@@ -87,3 +92,7 @@ class CaptionMention(Context, TemporaryCaptionMention):
         "polymorphic_identity": "caption_mention",
         "inherit_condition": (id == Context.id),
     }
+
+    def __init__(self, tc: TemporaryCaptionMention):
+        self.stable_id = tc.get_stable_id()
+        self.caption = tc.caption
