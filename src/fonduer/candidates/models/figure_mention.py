@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Figure
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporaryFigureMention(TemporaryContext):
@@ -43,8 +44,12 @@ class TemporaryFigureMention(TemporaryContext):
         return hash(self.figure)
 
     def get_stable_id(self) -> str:
-        """Return a stable id for the ``FigureMention``."""
-        return self.figure.stable_id
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
+        return construct_stable_id(self.figure, self._get_polymorphic_identity(), 0, 0)
 
     def _get_table(self) -> Type["FigureMention"]:
         return FigureMention

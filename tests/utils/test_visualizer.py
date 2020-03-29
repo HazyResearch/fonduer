@@ -1,9 +1,3 @@
-"""
-These tests expect that postgres is installed and that a database named
-visualizer_test has been created for the purpose of testing.
-
-If you are testing locally, you will need to create this db.
-"""
 from fonduer.candidates import MentionNgrams
 from fonduer.candidates.candidates import CandidateExtractorUDF
 from fonduer.candidates.matchers import OrganizationMatcher

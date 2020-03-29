@@ -2,7 +2,7 @@ import re
 from builtins import range
 from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Type, Union
 
-from fonduer.parser.models import Context, Document, Sentence
+from fonduer.parser.models import Document, Sentence
 
 if TYPE_CHECKING:  # to prevent circular imports
     from fonduer.candidates.models import Candidate
@@ -64,29 +64,3 @@ def get_set_of_stable_ids(
             )
         )
     return set_of_stable_ids
-
-
-def get_dict_of_stable_id(doc: Document) -> Dict[str, Context]:
-    """Returns a mapping of a stable_id to its context."""
-    return {
-        doc.stable_id: doc,
-        **{
-            c.stable_id: c
-            for a in [
-                "sentences",
-                "paragraphs",
-                "captions",
-                "cells",
-                "tables",
-                "sections",
-                "figures",
-            ]
-            for c in getattr(doc, a)
-        },
-        **{
-            c.stable_id: c
-            for s in doc.sentences
-            for a in ["spans", "implicit_spans"]
-            for c in getattr(s, a)
-        },
-    }

@@ -119,7 +119,7 @@ def create_task(
                 }
             )
 
-            task_flow = []  # type:ignore
+            task_flow = []
             task_flow += [
                 {"name": f"emb{i}", "module": "emb", "inputs": [("_input_", f"m{i}")]}
                 for i in range(n_arity)

@@ -8,12 +8,10 @@ locally.
 In order to run the tests, you will need to create the local databases used
 by the tests::
 
-    $ createdb e2e_test
-    $ createdb cand_test
-    $ createdb feature_test
     $ createdb meta_test
+    $ createdb e2e_test
     $ createdb inc_test
-    $ createdb visualizer_test
+    $ createdb pg_test
 
 You'll also need to download the external test data::
 

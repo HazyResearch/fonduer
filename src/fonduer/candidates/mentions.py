@@ -1,7 +1,7 @@
 import logging
 import re
 from builtins import map, range
-from typing import Any, Collection, Iterable, Iterator, List, Optional, Set, Union
+from typing import Any, Collection, Dict, Iterable, Iterator, List, Optional, Set, Union
 
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,6 @@ from fonduer.candidates.models.table_mention import TemporaryTableMention
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Context, Document, Sentence
 from fonduer.utils.udf import UDF, UDFRunner
-from fonduer.utils.utils import get_dict_of_stable_id
 
 logger = logging.getLogger(__name__)
 
@@ -567,7 +566,8 @@ class MentionExtractorUDF(UDF):
         :param doc: A document to process.
         """
         # Get a dict of stable_id of contexts.
-        dict_of_stable_id = get_dict_of_stable_id(doc)
+        dict_of_stable_id: Dict[str, Context] = {}
+
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
             # Generate TemporaryContexts that are children of the context using

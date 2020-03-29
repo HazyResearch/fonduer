@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Table
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporaryTableMention(TemporaryContext):
@@ -43,8 +44,12 @@ class TemporaryTableMention(TemporaryContext):
         return hash(self.table)
 
     def get_stable_id(self) -> str:
-        """Return a stable id for the ``TableMention``."""
-        return self.table.stable_id
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
+        return construct_stable_id(self.table, self._get_polymorphic_identity(), 0, 0)
 
     def _get_table(self) -> Type["TableMention"]:
         return TableMention
@@ -88,3 +93,7 @@ class TableMention(Context, TemporaryTableMention):
         "polymorphic_identity": "table_mention",
         "inherit_condition": (id == Context.id),
     }
+
+    def __init__(self, tc: TemporaryTableMention):
+        self.stable_id = tc.get_stable_id()
+        self.table = tc.table

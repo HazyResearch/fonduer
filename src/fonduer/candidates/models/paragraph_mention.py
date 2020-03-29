@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Paragraph
 from fonduer.parser.models.context import Context
+from fonduer.parser.models.utils import construct_stable_id
 
 
 class TemporaryParagraphMention(TemporaryContext):
@@ -43,8 +44,14 @@ class TemporaryParagraphMention(TemporaryContext):
         return hash(self.paragraph)
 
     def get_stable_id(self) -> str:
-        """Return a stable id for the ``ParagraphMention``."""
-        return self.paragraph.stable_id
+        """
+        Return a stable id.
+
+        :rtype: string
+        """
+        return construct_stable_id(
+            self.paragraph, self._get_polymorphic_identity(), 0, 0
+        )
 
     def _get_table(self) -> Type["ParagraphMention"]:
         return ParagraphMention
@@ -88,3 +95,7 @@ class ParagraphMention(Context, TemporaryParagraphMention):
         "polymorphic_identity": "paragraph_mention",
         "inherit_condition": (id == Context.id),
     }
+
+    def __init__(self, tc: TemporaryParagraphMention):
+        self.stable_id = tc.get_stable_id()
+        self.paragraph = tc.paragraph

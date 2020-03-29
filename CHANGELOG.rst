@@ -130,6 +130,11 @@ Changed
   (`#316 <https://github.com/HazyResearch/fonduer/issues/316>`_)
   (`#368 <https://github.com/HazyResearch/fonduer/pull/368>`_)
 
+Fixed
+^^^^^
+* `@senwu`_: Fix mention extraction to return mention classes instead of data model
+  classes.
+
 0.7.1_ - 2019-11-06
 -------------------
 
