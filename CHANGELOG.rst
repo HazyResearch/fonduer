@@ -132,7 +132,8 @@ Changed
 
 Fixed
 ^^^^^
-* `@senwu`_: Fix multimodal mention doesn't return mention class.
+* `@senwu`_: Fix mention extraction to return mention classes instead of data model
+  classes.
 
 0.7.1_ - 2019-11-06
 -------------------

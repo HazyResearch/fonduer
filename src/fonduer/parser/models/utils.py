@@ -16,26 +16,31 @@ def construct_stable_id(
     offsets relative to the parent.
     """
 
-    doc_id, _, idx = split_stable_id(parent_context.stable_id)
+    doc_id, type, idx = split_stable_id(parent_context.stable_id)
 
-    # Caption, document, figure, paragraph, section, table
-    if len(idx) == 1:
+    if polymorphic_type in [
+        "section_mention",
+        "figure_mention",
+        "table_mention",
+        "paragraph_mention",
+        "caption_mention",
+    ]:
         parent_doc_start = idx[0]
         return f"{doc_id}::{polymorphic_type}:{parent_doc_start}"
-    # Cell
-    elif len(idx) == 3:
+    elif polymorphic_type in ["cell_mention"]:
         cell_pos = idx[0]
         cell_row_start = idx[1]
         cell_col_start = idx[2]
         return (
             f"{doc_id}::{polymorphic_type}:{cell_pos}:{cell_row_start}:{cell_col_start}"
         )
+    elif polymorphic_type in ["sentence", "document_mention", "span_mention"]:
+        parent_doc_char_start = idx[0]
+        start = parent_doc_char_start + relative_char_offset_start
+        end = parent_doc_char_start + relative_char_offset_end
+        return f"{doc_id}::{polymorphic_type}:{start}:{end}"
 
-    # Span
-    parent_doc_char_start = idx[0]
-    start = parent_doc_char_start + relative_char_offset_start
-    end = parent_doc_char_start + relative_char_offset_end
-    return f"{doc_id}::{polymorphic_type}:{start}:{end}"
+    raise ValueError(f"Unrecognized context type:\t{polymorphic_type}")
 
 
 def split_stable_id(stable_id: str,) -> Tuple[str, str, List[int]]:
