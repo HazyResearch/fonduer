@@ -491,6 +491,35 @@ def test_multimodal_cand():
     assert len(doc.m_sents) == 35
     assert len(doc.m_cells) == 21
 
+    # Candidate Extraction
+    cs_doc = candidate_subclass("cs_doc", [ms_doc])
+    cs_sec = candidate_subclass("cs_sec", [ms_sec])
+    cs_tab = candidate_subclass("cs_tab", [ms_tab])
+    cs_fig = candidate_subclass("cs_fig", [ms_fig])
+    cs_cell = candidate_subclass("cs_cell", [ms_cell])
+    cs_para = candidate_subclass("cs_para", [ms_para])
+    cs_cap = candidate_subclass("cs_cap", [ms_cap])
+    cs_sent = candidate_subclass("cs_sent", [ms_sent])
+
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [cs_doc, cs_sec, cs_tab, cs_fig, cs_cell, cs_para, cs_cap, cs_sent],
+        [None, None, None, None, None, None, None, None],
+        False,
+        False,
+        True,
+    )
+
+    doc = candidate_extractor_udf.apply(doc, split=0)
+
+    assert len(doc.cs_docs) == 1
+    assert len(doc.cs_caps) == 2
+    assert len(doc.cs_secs) == 5
+    assert len(doc.cs_tabs) == 2
+    assert len(doc.cs_figs) == 2
+    assert len(doc.cs_paras) == 30
+    assert len(doc.cs_sents) == 35
+    assert len(doc.cs_cells) == 21
+
 
 def test_pickle_subclasses():
     """Test if it is possible to pickle mention/candidate subclasses and their objects.
