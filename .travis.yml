@@ -33,45 +33,68 @@ before_install:
 - |
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     OS=Linux-x86_64
+
     sudo apt-get install -q -y libmecab-dev swig mecab
+    # In Ubuntu 18.04, unidic-mecab is too old, so we install it manually. Note
+    # that this automatically sets the dictionary to unidic.
     # Binary dictionary not included in 2.2.0-1 (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=788822)
     wget http://launchpadlibrarian.net/326401889/unidic-mecab_2.1.2~dfsg-7_all.deb
     sudo dpkg -i unidic-mecab_2.1.2~dfsg-7_all.deb
+
     # Set the max number of connections 100
     # No need to adjust it on Mac as it's 100 by default
     sudo sed -i 's/max_connections = 255/max_connections = 100/g' /etc/postgresql/10/main/postgresql.conf
     sudo service postgresql restart
+
     # Install ImageMagick library for Wand
     sudo apt-get install libmagickwand-dev ghostscript
+
+    # Remove the policy file to allow the visualizer test to open the PDF.
+    # See: https://github.com/HazyResearch/fonduer/issues/170
     sudo rm -rf /etc/ImageMagick-6/policy.xml
+
     # Install poppler-utils
-    sudo apt install -q -y poppler-utils
+    sudo apt-get install -q -y poppler-utils
+
     # Install travis-wait-enhanced
     wget -qO- "https://github.com/crazy-max/travis-wait-enhanced/releases/download/v1.1.0/travis-wait-enhanced_1.1.0_linux_x86_64.tar.gz" | tar -zxvf - travis-wait-enhanced
     sudo mv travis-wait-enhanced /usr/local/bin/
-  else
+
+    # Install PyTorch for Linux with no CUDA support
+    pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
+
+  else  # macOS
     OS=MacOSX-x86_64
+
     pip install virtualenv
     virtualenv venv
     source venv/bin/activate
+
     brew update
     brew install swig mecab mecab-unidic
+    # Use unidic-mecab dictionary
     sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc
+
     # Install ImageMagick library for Wand
     brew install freetype imagemagick ghostscript
+
     # Install PostgreSQL 10 (12 not compatible with Fonduer)
     # See https://github.com/HazyResearch/fonduer/issues/371
     brew uninstall --ignore-dependencies postgresql
     brew install postgresql@10
     export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
+
     # Start postgresql for osx
     rm -rf /usr/local/var/postgresql@10
     initdb /usr/local/var/postgresql@10
     pg_ctl -D /usr/local/var/postgresql@10 start; sleep 5
     createuser -s postgres
+
     # poppler-utils is already installed
+
     # https://github.com/brianmario/mysql2/issues/795
     export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib/
+
     # Install travis-wait-enhanced
     wget -qO- "https://github.com/crazy-max/travis-wait-enhanced/releases/download/v1.1.0/travis-wait-enhanced_1.1.0_darwin_x86_64.tar.gz" | tar -zxvf - travis-wait-enhanced
     mv travis-wait-enhanced /usr/local/bin/
@@ -81,12 +104,6 @@ before_install:
 - python --version
 - pip --version
 - mecab -D || true
-
-# Install PyTorch for Linux with no CUDA support
-- |
-  if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-    pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
-  fi
 
 install:
 # Install fonduer dev deps and check code style
