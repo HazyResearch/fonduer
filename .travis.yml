@@ -47,7 +47,7 @@ before_install:
     # Install poppler-utils
     sudo apt install -q -y poppler-utils
     # Install travis-wait-enhanced
-    wget -qO- "https://github.com/crazy-max/travis-wait-enhanced/releases/download/v1.0.0/travis-wait-enhanced_1.0.0_linux_x86_64.tar.gz" | tar -zxvf - travis-wait-enhanced
+    wget -qO- "https://github.com/crazy-max/travis-wait-enhanced/releases/download/v1.1.0/travis-wait-enhanced_1.1.0_linux_x86_64.tar.gz" | tar -zxvf - travis-wait-enhanced
     sudo mv travis-wait-enhanced /usr/local/bin/
   else
     OS=MacOSX-x86_64
@@ -73,7 +73,7 @@ before_install:
     # https://github.com/brianmario/mysql2/issues/795
     export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib/
     # Install travis-wait-enhanced
-    wget -qO- "https://github.com/crazy-max/travis-wait-enhanced/releases/download/v1.0.0/travis-wait-enhanced_1.0.0_darwin_x86_64.tar.gz" | tar -zxvf - travis-wait-enhanced
+    wget -qO- "https://github.com/crazy-max/travis-wait-enhanced/releases/download/v1.1.0/travis-wait-enhanced_1.1.0_darwin_x86_64.tar.gz" | tar -zxvf - travis-wait-enhanced
     mv travis-wait-enhanced /usr/local/bin/
   fi
 - pdfinfo -v
