@@ -53,7 +53,7 @@ def parse_doc(docs_path: str, file_name: str, pdf_path: Optional[str] = None):
         structural=True,
         tabular=True,
         lingual=True,
-        visual=True,
+        visual=True if pdf_path else False,
         pdf_path=pdf_path,
         language="en",
     )
