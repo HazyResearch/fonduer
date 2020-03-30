@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from fonduer.parser.lingual_parser.spacy_parser import (
@@ -8,6 +10,9 @@ from fonduer.parser.lingual_parser.spacy_parser import (
 from fonduer.parser.models import Sentence
 
 
+@pytest.mark.skipif(
+    "CI" not in os.environ, reason="Only run non-English tests on Travis"
+)
 def test_spacy_support():
     # Supported language
     lingual_parser = SpacyParser("en")
