@@ -1,4 +1,5 @@
 import logging
+import os
 from sys import platform
 
 from fonduer import Meta
@@ -23,8 +24,13 @@ from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
 DB = "pg_test"
-# Use 127.0.0.1 instead of localhost (#351)
-CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
+if os.environ["CI"]:
+    CONN_STRING = (
+        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
+        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
+    )
+else:
+    CONN_STRING = f"postgresql://120.0.0.1:5432/{DB}"
 
 
 def test_cand_gen_cascading_delete():
