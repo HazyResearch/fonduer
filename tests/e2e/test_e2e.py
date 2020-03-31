@@ -59,8 +59,13 @@ from tests.shared.hardware_utils import entity_level_f1, gold
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
-# Use 127.0.0.1 instead of localhost (#351)
-CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
+if os.environ["CI"]:
+    CONN_STRING = (
+        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
+        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
+    )
+else:
+    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
