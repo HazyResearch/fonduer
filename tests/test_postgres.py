@@ -1,6 +1,5 @@
 import logging
 import os
-from sys import platform
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionFigures
@@ -35,12 +34,10 @@ else:
 
 def test_cand_gen_cascading_delete():
     """Test cascading the deletion of candidates."""
-    if platform == "darwin":
-        logger.info("Using single core.")
-        PARALLEL = 1
-    else:
-        logger.info("Using two cores.")
-        PARALLEL = 2  # Travis only gives 2 cores
+    logger.info("Using two cores.")
+    # GitHub Actions gives 2 cores
+    # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+    PARALLEL = 2
 
     max_docs = 1
     session = Meta.init(CONN_STRING).Session()
@@ -119,10 +116,7 @@ def test_cand_gen_cascading_delete():
 
 def test_too_many_clients_error_should_not_happen():
     """Too many clients error should not happens."""
-    if platform == "darwin":
-        PARALLEL = 1
-    else:
-        PARALLEL = 32
+    PARALLEL = 32
     logger.info("Parallel: {PARALLEL}")
 
     def do_nothing_matcher(fig):

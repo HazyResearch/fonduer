@@ -71,7 +71,9 @@ else:
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
 def test_e2e():
     """Run an end-to-end test on documents of the hardware domain."""
-    PARALLEL = 4
+    # GitHub Actions gives 2 cores
+    # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+    PARALLEL = 2
 
     max_docs = 12
 
