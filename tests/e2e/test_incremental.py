@@ -41,7 +41,9 @@ else:
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")
 def test_incremental():
     """Run an end-to-end test on incremental additions."""
-    PARALLEL = 1
+    # GitHub Actions gives 2 cores
+    # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+    PARALLEL = 2
 
     max_docs = 1
 
