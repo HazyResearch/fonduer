@@ -146,7 +146,9 @@ jobs:
         neofetch
     - name: Install Fonduer
       run: |
-        make dev_extra
+        python -m pip install -r requirements-dev.txt
+        python -m pip install -e .[spacy_ja]
+        python -m pip install -e .[spacy_zh]
     - name: Run preliminary checks
       run: |
         make check
@@ -156,7 +158,7 @@ jobs:
     - name: Test with pytest
       run: |
         python -m spacy download en
-        pytest tests
+        python -m pytest tests
       env:
         CI: true
         PGPASSWORD: postgres
