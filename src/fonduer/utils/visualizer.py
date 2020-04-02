@@ -39,24 +39,26 @@ class Visualizer(object):
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         imgs = []
-        colors = [Color("blue"), Color("red")]
-        boxes_per_page: DefaultDict[int, int] = defaultdict(int)
-        boxes_by_page: DefaultDict[int, List[Tuple[int, int, int, int]]] = defaultdict(
-            list
-        )
-        for i, (page, top, left, bottom, right) in enumerate(boxes):
-            boxes_per_page[page] += 1
-            boxes_by_page[page].append((top, left, bottom, right))
-        for i, page_num in enumerate(boxes_per_page.keys()):
-            img = pdf_to_img(pdf_file, page_num)
-            draw = Drawing()
-            draw.fill_color = Color("rgba(0, 0, 0, 0.0)")
-            for j, (top, left, bottom, right) in enumerate(boxes_by_page[page_num]):
-                draw.stroke_color = colors[j % 2] if alternate_colors else colors[0]
-                draw.rectangle(left=left, top=top, right=right, bottom=bottom)
-            draw(img)
-            imgs.append(img)
-        return imgs
+        with Color("blue") as blue, Color("red") as red, Color(
+            "rgba(0, 0, 0, 0.0)"
+        ) as transparent, Drawing() as draw:
+            colors = [blue, red]
+            boxes_per_page: DefaultDict[int, int] = defaultdict(int)
+            boxes_by_page: DefaultDict[
+                int, List[Tuple[int, int, int, int]]
+            ] = defaultdict(list)
+            for i, (page, top, left, bottom, right) in enumerate(boxes):
+                boxes_per_page[page] += 1
+                boxes_by_page[page].append((top, left, bottom, right))
+            for i, page_num in enumerate(boxes_per_page.keys()):
+                img = pdf_to_img(pdf_file, page_num)
+                draw.fill_color = transparent
+                for j, (top, left, bottom, right) in enumerate(boxes_by_page[page_num]):
+                    draw.stroke_color = colors[j % 2] if alternate_colors else colors[0]
+                    draw.rectangle(left=left, top=top, right=right, bottom=bottom)
+                draw(img)
+                imgs.append(img)
+            return imgs
 
     def display_candidates(
         self, candidates: List[Candidate], pdf_file: Optional[str] = None
