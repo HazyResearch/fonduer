@@ -135,6 +135,8 @@ jobs:
         pip3 --version
         mecab -D || true
         neofetch
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
     - name: Install Fonduer
       run: |
         make dev_extra
