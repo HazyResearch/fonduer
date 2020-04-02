@@ -95,6 +95,10 @@ jobs:
         os: [macos-latest]
     steps:
     - uses: actions/checkout@v2
+    - name: Alias for pip and python for macOS
+      run: |
+        alias pip=pip3
+        alias python=python3
     - name: Install dependencies for macOS
       run: |
         brew update
