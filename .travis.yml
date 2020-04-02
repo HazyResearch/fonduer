@@ -84,6 +84,10 @@ before_install:
     brew install postgresql@10
     export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
 
+    # https://stackoverflow.com/questions/53014306/error-15-initializing-
+    # libiomp5-dylib-but-found-libiomp5-dylib-already-initial
+    export KMP_DUPLICATE_LIB_OK=true
+
     # Start postgresql for osx
     rm -rf /usr/local/var/postgresql@10
     initdb /usr/local/var/postgresql@10
