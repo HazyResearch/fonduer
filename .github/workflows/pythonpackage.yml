@@ -118,23 +118,34 @@ jobs:
         initdb /usr/local/var/postgresql@10
         pg_ctl -D /usr/local/var/postgresql@10 start; sleep 5
         createuser -s postgres
-        # - name: Set up test databases and test data
-        #   run: |
+    - name: Set up test databases and test data
+      run: |
         createdb e2e_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb inc_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb meta_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb pg_test -p 5432 -h 127.0.0.1 -w -U postgres
         cd tests && ./download_data.sh && cd ..
-        # - name: Print Version Info
-        #   run: |
+    - name: Print Version Info
+      run: |
         pdfinfo -v
         psql --version
         python --version
         pip --version
         mecab -D || true
         neofetch
-    - name: Debugging with tmate
-      uses: mxschmitt/action-tmate@v2
+    - name: Install Fonduer
+      run: |
+        make dev_extra
+    - name: Run preliminary checks
+      run: |
+        make check
+        make docs
+      env:
+        PGPASSWORD: postgres
+    - name: Test with pytest
+      run: |
+        python -m spacy download en
+        pytest tests
       env:
         CI: true
         PGPASSWORD: postgres
@@ -142,27 +153,7 @@ jobs:
         POSTGRES_PORT: 5432
         # Use 127.0.0.1 instead of localhost (#351)
         POSTGRES_HOST: 127.0.0.1
-    # - name: Install Fonduer
-    #   run: |
-    #     pip3 install virtualenv
-    #     virtualenv -p python${{ matrix.python-version }} venv
-    #     source venv/bin/activate
-    #     make dev_extra
-    #     # - name: Run preliminary checks
-    #     #   run: |
-    #     make check
-    #     make docs
-    #   env:
-    #     PGPASSWORD: postgres
-    # - name: Test with pytest
-    #   run: |
-    #     python -m spacy download en
-    #     pytest tests
-    #   env:
-    #     CI: true
-    #     PGPASSWORD: postgres
-    #     PGUSER: postgres
-    #     POSTGRES_PORT: 5432
-    #     # Use 127.0.0.1 instead of localhost (#351)
-    #     POSTGRES_HOST: 127.0.0.1
+        # https://stackoverflow.com/questions/53014306/error-15-initializing-
+        # libiomp5-dylib-but-found-libiomp5-dylib-already-initial
+        KMP_DUPLICATE_LIB_OK: true
 
