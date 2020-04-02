@@ -1,18 +1,18 @@
 TESTDATA=tests/input
 
 dev:
-	pip install -r requirements-dev.txt
-	pip install -e .
+	pip3 install -r requirements-dev.txt
+	pip3 install -e .
 	pre-commit install
 
 dev_extra:
-	pip install -r requirements-dev.txt
-	pip install -e .[spacy_ja]
-	pip install -e .[spacy_zh]
+	pip3 install -r requirements-dev.txt
+	pip3 install -e .[spacy_ja]
+	pip3 install -e .[spacy_zh]
 	pre-commit install
 
 test: dev check docs
-	pip install -e .
+	pip3 install -e .
 	pytest tests
 
 check:
@@ -28,7 +28,7 @@ docs:
 	sphinx-build -W -b html docs/ _build/html
 
 clean:
-	pip uninstall -y fonduer
+	pip3 uninstall -y fonduer
 	rm -rf src/fonduer.egg-info
 	rm -rf _build/
 

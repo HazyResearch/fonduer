@@ -131,14 +131,14 @@ jobs:
       run: |
         pdfinfo -v
         psql --version
-        python --version
-        pip --version
+        python3 --version
+        pip3 --version
         mecab -D || true
         neofetch
     - name: Install Fonduer
       run: |
         make dev_extra
-        pip install -q coveralls
+        pip3 install -q coveralls
     - name: Run preliminary checks
       run: |
         make check
@@ -147,8 +147,8 @@ jobs:
         PGPASSWORD: postgres
     - name: Test with pytest
       run: |
-        python -m spacy download en
-        python -m pytest tests
+        python3 -m spacy download en
+        python3 -m pytest tests
       env:
         CI: true
         PGPASSWORD: postgres
