@@ -55,6 +55,7 @@ jobs:
     - name: Install Fonduer
       run: |
         make dev_extra
+        pip install -q coveralls
     - name: Run preliminary checks
       run: |
         make check
@@ -71,7 +72,7 @@ jobs:
         PGPASSWORD: postgres
     - name: Test with pytest
       run: |
-        pytest tests
+        coverage run -m pytest tests
       env:
         CI: true
         PGPASSWORD: postgres
@@ -79,6 +80,16 @@ jobs:
         POSTGRES_PORT: 5432
         # Use 127.0.0.1 instead of localhost (#351)
         POSTGRES_HOST: 127.0.0.1
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel: true
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: true
   macos-test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -156,4 +167,3 @@ jobs:
         # https://stackoverflow.com/questions/53014306/error-15-initializing-
         # libiomp5-dylib-but-found-libiomp5-dylib-already-initial
         KMP_DUPLICATE_LIB_OK: true
-
