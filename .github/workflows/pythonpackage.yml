@@ -139,7 +139,9 @@ jobs:
       uses: mxschmitt/action-tmate@v2
     - name: Install Fonduer
       run: |
-        make dev_extra
+        pip3 install -r requirements-dev.txt
+        pip3 install .[spacy_ja]
+        pip3 install .[spacy_zh]
         pip3 install -q coveralls
     - name: Run preliminary checks
       run: |
