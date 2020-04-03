@@ -21,7 +21,7 @@ setup(
         "numpy>=1.11, <2.0",
         "pyyaml>=5.1, <6.0",
         "scipy>=1.1.0, <2.0.0",
-        "snorkel @ git+https://github.com/lukehsiao/snorkel.git@luke-patch",
+        "snorkel>=0.9.2, <0.10.0",
         "spacy>=2.1.3, <2.2.0",
         "sqlalchemy[postgresql]>=1.3.7, <2.0.0",
         "torch>=1.3.1,<2.0.0",
