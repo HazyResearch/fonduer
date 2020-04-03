@@ -77,16 +77,12 @@ jobs:
         POSTGRES_PORT: 5432
         # Use 127.0.0.1 instead of localhost (#351)
         POSTGRES_HOST: 127.0.0.1
-    - name: Coveralls Parallel
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        parallel: true
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        parallel-finished: true
+    - name: Upload to coveralls.io
+      run: |
+          coverage combine
+          coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.coveralls_repo_token }}
   macos-test:
     runs-on: macos-latest
     strategy:
@@ -159,7 +155,7 @@ jobs:
     - name: Test with pytest
       run: |
         python -m spacy download en
-        python -m pytest tests
+        coverage run -m pytest tests
       env:
         CI: true
         PGPASSWORD: postgres
@@ -170,3 +166,9 @@ jobs:
         # https://stackoverflow.com/questions/53014306/error-15-initializing-
         # libiomp5-dylib-but-found-libiomp5-dylib-already-initial
         KMP_DUPLICATE_LIB_OK: true
+    - name: Upload to coveralls.io
+      run: |
+          coverage combine
+          coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.coveralls_repo_token }}
