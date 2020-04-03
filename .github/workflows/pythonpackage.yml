@@ -99,7 +99,9 @@ jobs:
       run: |
         pip3 install virtualenv
         virtualenv venv
-        source venv/bin/activate
+        VIRTUAL_ENV=`pwd`/venv
+        echo "::set-env name=VIRTUAL_ENV::$VIRTUAL_ENV"
+        echo "::add-path::$VIRTUAL_ENV/bin"
 
         brew update
         brew install swig mecab mecab-unidic
@@ -133,30 +135,26 @@ jobs:
         cd tests && ./download_data.sh && cd ..
     - name: Print Version Info
       run: |
-        source venv/bin/activate
         pdfinfo -v
         psql --version
-        python3 --version
-        pip3 --version
+        python --version
+        pip --version
         mecab -D || true
         neofetch
     - name: Install Fonduer
       run: |
-        source venv/bin/activate
         make dev_extra
-        pip3 install coveralls
+        pip install coveralls
     - name: Run preliminary checks
       run: |
-        source venv/bin/activate
         make check
         make docs
       env:
         PGPASSWORD: postgres
     - name: Test with pytest
       run: |
-        source venv/bin/activate
-        python3 -m spacy download en
-        python3 -m pytest tests
+        python -m spacy download en
+        python -m pytest tests
       env:
         CI: true
         PGPASSWORD: postgres
