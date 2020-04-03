@@ -124,6 +124,10 @@ jobs:
         brew install postgresql@10
         export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
         echo "::add-path::/usr/local/opt/postgresql@10/bin"
+
+        # https://github.com/brianmario/mysql2/issues/795
+        echo "::set-env name=LIBRARY_PATH::$LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib/"
+
         # Start postgresql for osx
         rm -rf /usr/local/var/postgresql@10
         initdb /usr/local/var/postgresql@10
