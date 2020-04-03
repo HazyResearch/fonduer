@@ -95,6 +95,12 @@ jobs:
         os: [macos-latest]
     steps:
     - uses: actions/checkout@v2
+# actions/setup-python@v1 cannot be used on macos because
+# "Can't connect to HTTPS URL because the SSL module is not available."
+# error happens when trying to pip install
+# This is probably because brew install openssl@1.1 as imagemagick dependency
+# and breaks a link Python installed actions/setup-python@v1 and openssl.
+# Instead Python installed by default is used.
     - name: Install dependencies for macOS
       run: |
         pip3 install virtualenv
