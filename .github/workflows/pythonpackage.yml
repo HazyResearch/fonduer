@@ -93,17 +93,19 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
+        python-version: [3.6.10, 3.7.7]
     steps:
     - uses: actions/checkout@v2
     # actions/setup-python@v1 cannot be used on macos (see #386)
+    - name: Install python version ${{ matrix.python-version }}
+      uses: gabrielfalcao/pyenv-action@v5
+      with:
+        default: "${{ matrix.python-version }}"
+        command: |
+          pip install -U pip  # upgrade pip after installing python
+          echo "::add-path::`pyenv root`/shims"
     - name: Install dependencies for macOS
       run: |
-        pip3 install virtualenv
-        virtualenv venv
-        VIRTUAL_ENV=`pwd`/venv
-        echo "::set-env name=VIRTUAL_ENV::$VIRTUAL_ENV"
-        echo "::add-path::$VIRTUAL_ENV/bin"
-
         brew update
         brew install swig mecab mecab-unidic
         # Use unidic-mecab dictionary
