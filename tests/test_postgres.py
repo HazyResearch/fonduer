@@ -34,7 +34,6 @@ else:
 
 def test_cand_gen_cascading_delete():
     """Test cascading the deletion of candidates."""
-    logger.info("Using two cores.")
     # GitHub Actions gives 2 cores
     # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
     PARALLEL = 2
