@@ -38,7 +38,7 @@ jobs:
         # See: https://github.com/HazyResearch/fonduer/issues/170
         sudo rm -rf /etc/ImageMagick-6/policy.xml
         sudo apt-get install -q -y poppler-utils
-        pip install --upgrade pip
+        pip install --upgrade pip setuptools
         # Install PyTorch for Linux with no CUDA support
         pip install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
     - name: Print Version Info
