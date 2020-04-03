@@ -4,10 +4,9 @@ on: [push, pull_request]
 
 jobs:
   ubuntu-test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         python-version: [3.6, 3.7]
     services:
       postgres:
@@ -89,10 +88,9 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         parallel-finished: true
   macos-test:
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     strategy:
       matrix:
-        os: [macos-latest]
         python-version: [3.6.10, 3.7.7]
     steps:
     - uses: actions/checkout@v2
