@@ -97,6 +97,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install dependencies for macOS
       run: |
+        pip3 install virtualenv
+        virtualenv venv
+        source venv/bin/activate
+
         brew update
         brew install swig mecab mecab-unidic
         # Use unidic-mecab dictionary
@@ -135,14 +139,10 @@ jobs:
         pip3 --version
         mecab -D || true
         neofetch
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
     - name: Install Fonduer
       run: |
-        pip3 install -r requirements-dev.txt
-        pip3 install .[spacy_ja]
-        pip3 install .[spacy_zh]
-        pip3 install -q coveralls
+        make dev_extra
+        pip3 install coveralls
     - name: Run preliminary checks
       run: |
         make check
