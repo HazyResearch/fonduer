@@ -133,6 +133,7 @@ jobs:
         cd tests && ./download_data.sh && cd ..
     - name: Print Version Info
       run: |
+        source venv/bin/activate
         pdfinfo -v
         psql --version
         python3 --version
@@ -141,16 +142,19 @@ jobs:
         neofetch
     - name: Install Fonduer
       run: |
+        source venv/bin/activate
         make dev_extra
         pip3 install coveralls
     - name: Run preliminary checks
       run: |
+        source venv/bin/activate
         make check
         make docs
       env:
         PGPASSWORD: postgres
     - name: Test with pytest
       run: |
+        source venv/bin/activate
         python3 -m spacy download en
         python3 -m pytest tests
       env:
