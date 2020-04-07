@@ -188,13 +188,13 @@ jobs:
       run: |
         pip install -U setuptools wheel pip
         python setup.py sdist bdist_wheel
-    - name: Publish distribution to Test PyPi
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        password: ${{ secrets.test_pypi_password }}
-        repository_url: https://test.pypi.org/legacy/
-    # - name: Publish distribution 📦 to PyPI
-    #   if: startsWith(github.event.ref, 'refs/tags')
+    # - name: Publish distribution to Test PyPi
     #   uses: pypa/gh-action-pypi-publish@master
     #   with:
-    #     password: ${{ secrets.pypi_password }}
+    #     password: ${{ secrets.test_pypi_password }}
+    #     repository_url: https://test.pypi.org/legacy/
+    - name: Publish distribution 📦 to PyPI
+      if: startsWith(github.event.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.pypi_password }}
