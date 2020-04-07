@@ -9,7 +9,7 @@ from emmental.data import EmmentalDataLoader
 from emmental.learner import EmmentalLearner
 from emmental.model import EmmentalModel
 from emmental.modules.embedding_module import EmbeddingModule
-from snorkel.labeling import LabelModel
+from snorkel.labeling.model import LabelModel
 
 import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
