@@ -38,7 +38,9 @@ else:
     CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run incremental on Travis")
+@pytest.mark.skipif(
+    "CI" not in os.environ, reason="Only run incremental on GitHub Actions"
+)
 def test_incremental():
     """Run an end-to-end test on incremental additions."""
     # GitHub Actions gives 2 cores
