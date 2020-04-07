@@ -69,7 +69,7 @@ else:
     CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
-@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on Travis")
+@pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on GitHub Actions")
 def test_e2e():
     """Run an end-to-end test on documents of the hardware domain."""
     # GitHub Actions gives 2 cores

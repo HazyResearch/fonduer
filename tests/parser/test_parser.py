@@ -187,7 +187,7 @@ def test_parse_wo_tabular():
 
 
 @pytest.mark.skipif(
-    "CI" not in os.environ, reason="Only run spacy non English test on Travis"
+    "CI" not in os.environ, reason="Only run spacy non English test on GitHub Actions"
 )
 def test_spacy_german():
     """Test the parser with the md document."""
@@ -243,7 +243,7 @@ def test_spacy_german():
 
 
 @pytest.mark.skipif(
-    "CI" not in os.environ, reason="Only run spacy non English test on Travis"
+    "CI" not in os.environ, reason="Only run spacy non English test on GitHub Actions"
 )
 def test_spacy_japanese():
     """Test the parser with the md document."""
@@ -290,7 +290,7 @@ def test_spacy_japanese():
 
 
 @pytest.mark.skipif(
-    "CI" not in os.environ, reason="Only run spacy non English test on Travis"
+    "CI" not in os.environ, reason="Only run spacy non English test on GitHub Actions"
 )
 def test_spacy_chinese():
     """Test the parser with the md document."""
