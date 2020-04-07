@@ -60,7 +60,7 @@ from tests.shared.hardware_utils import entity_level_f1, gold
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "e2e_test"
-if os.environ["CI"]:
+if "CI" in os.environ:
     CONN_STRING = (
         f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
         + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
