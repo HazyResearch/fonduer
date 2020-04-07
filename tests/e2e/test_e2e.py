@@ -78,7 +78,6 @@ def test_e2e():
     max_docs = 12
 
     fonduer.init_logging(
-        log_dir="log_folder",
         format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
         level=logging.INFO,
     )
@@ -534,6 +533,21 @@ def test_e2e():
         shuffle=True,
     )
 
+    valid_dataloader = EmmentalDataLoader(
+        task_to_label_dict={ATTRIBUTE: "labels"},
+        dataset=FonduerDataset(
+            ATTRIBUTE,
+            train_cands[0],
+            F_train[0],
+            emb_layer.word2id,
+            np.argmax(train_marginals, axis=1),
+            train_idxs,
+        ),
+        split="valid",
+        batch_size=100,
+        shuffle=False,
+    )
+
     emmental.Meta.reset()
     emmental.init(fonduer.Meta.log_path)
     emmental.Meta.update_config(config=config)
@@ -548,7 +562,7 @@ def test_e2e():
         model.add_task(task)
 
     emmental_learner = EmmentalLearner()
-    emmental_learner.learn(model, [train_dataloader])
+    emmental_learner.learn(model, [train_dataloader, valid_dataloader])
 
     test_preds = model.predict(test_dataloader, return_preds=True)
     positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
