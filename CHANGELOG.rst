@@ -1,6 +1,9 @@
 Unreleased_
 -----------
 
+0.8.0_ - 2020-04-07
+-------------------
+
 Changed
 ^^^^^^^
 * `@senwu`_: Switch to Emmental as the default learning engine.
@@ -1072,7 +1075,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.7.1...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.0...master
+.. _0.8.0: https://github.com/hazyresearch/fonduer/compare/v0.7.1...v0.8.0
 .. _0.7.1: https://github.com/hazyresearch/fonduer/compare/v0.7.0...v0.7.1
 .. _0.7.0: https://github.com/hazyresearch/fonduer/compare/v0.6.2...v0.7.0
 .. _0.6.2: https://github.com/hazyresearch/fonduer/compare/v0.6.1...v0.6.2
