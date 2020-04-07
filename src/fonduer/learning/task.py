@@ -31,7 +31,7 @@ def loss(
         label = intermediate_output_dict[module_name][0].new_zeros(
             intermediate_output_dict[module_name][0].size()
         )
-        label.scatter_(1, (Y - 1).view(Y.size()[0], 1), 1.0)
+        label.scatter_(1, Y.view(Y.size()[0], 1), 1.0)
     else:
         label = Y
 
