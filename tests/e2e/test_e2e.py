@@ -392,7 +392,7 @@ def test_e2e():
 
     # Training config
     config = {
-        "meta_config": {"verbose": True},
+        "meta_config": {"verbose": False},
         "model_config": {"model_path": None, "device": 0, "dataparallel": False},
         "learner_config": {
             "n_epochs": 5,
