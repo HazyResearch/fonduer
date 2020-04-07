@@ -136,7 +136,7 @@ class FonduerDataset(EmmentalDataset):
             self.Y_dict.update(
                 {
                     "labels": torch.from_numpy(
-                        np.random.randint(self.labels, size=len(self.candidates)) + 1
+                        np.random.randint(self.labels, size=len(self.candidates))
                     )
                 }
             )
