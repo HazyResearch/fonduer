@@ -23,7 +23,7 @@ Changed
         # Collect word counter from candidates which is used in LSTM model.
         word_counter = collect_word_counter(train_cands)
 
-        # Initialize Emmental. For customize Emmental, please check here: 
+        # Initialize Emmental. For customize Emmental, please check here:
         # https://emmental.readthedocs.io/en/latest/user/config.html
         emmental.init(fonduer.Meta.log_path)
 
@@ -115,7 +115,8 @@ Changed
         test_preds = model.predict(test_dataloader, return_preds=True)
 
 * `@HiromuHota`_: Change ABSTAIN to -1 to be compatible with Snorkel of 0.9.X.
-  Accordingly, user-defined labels should now be 0-indexed (used to 1-indexed).
+  Accordingly, user-defined labels should now be 0-indexed (used to be
+  1-indexed).
   (`#310 <https://github.com/HazyResearch/fonduer/issues/310>`_)
   (`#320 <https://github.com/HazyResearch/fonduer/pull/320>`_)
 * `@HiromuHota`_: Use executemany_mode="batch" instead of deprecated use_batch_mode=True.
