@@ -76,10 +76,8 @@ def test_e2e():
     PARALLEL = 2
 
     max_docs = 12
-    dirpath = "temp_test_e2e"
 
     fonduer.init_logging(
-        log_dir=dirpath,
         format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
         level=logging.INFO,
     )
