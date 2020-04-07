@@ -11,7 +11,7 @@ from fonduer.parser.models import Sentence
 
 
 @pytest.mark.skipif(
-    "CI" not in os.environ, reason="Only run non-English tests on Travis"
+    "CI" not in os.environ, reason="Only run non-English tests on GitHub Actions"
 )
 def test_spacy_support():
     # Supported language
