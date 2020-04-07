@@ -1,7 +1,6 @@
 import logging
 import os
 import pickle
-import shutil
 
 import emmental
 import numpy as np
@@ -623,5 +622,3 @@ def test_e2e():
     logger.info(f"f1: {f1}")
 
     assert f1 > 0.7
-
-    shutil.rmtree(dirpath)
