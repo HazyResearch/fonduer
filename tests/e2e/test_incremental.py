@@ -29,7 +29,7 @@ from tests.shared.hardware_throttlers import temp_throttler
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
 DB = "inc_test"
-if os.environ["CI"]:
+if "CI" in os.environ:
     CONN_STRING = (
         f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
         + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
