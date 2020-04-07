@@ -29,7 +29,7 @@ if "CI" in os.environ:
         + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
     )
 else:
-    CONN_STRING = f"postgresql://120.0.0.1:5432/{DB}"
+    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 def test_cand_gen_cascading_delete():
