@@ -78,6 +78,7 @@ jobs:
         # Use 127.0.0.1 instead of localhost (#351)
         POSTGRES_HOST: 127.0.0.1
     - name: Upload to coveralls.io
+      if: github.event_name == 'push' && github.repository == 'HazyResearch/fonduer'
       run: |
           coverage combine
           coveralls
@@ -166,6 +167,7 @@ jobs:
         # libiomp5-dylib-but-found-libiomp5-dylib-already-initial
         KMP_DUPLICATE_LIB_OK: true
     - name: Upload to coveralls.io
+      if: github.event_name == 'push' && github.repository == 'HazyResearch/fonduer'
       run: |
           coverage combine
           coveralls
