@@ -3,6 +3,8 @@
 
 |CI-CD| |CodeClimate| |Coveralls| |ReadTheDocs| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
+test_test
+
 Fonduer is a Python package and framework for building knowledge base
 construction (KBC) applications from **richly formatted data**.
 
