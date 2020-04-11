@@ -29,7 +29,7 @@ On Debian-based distros::
     $ sudo apt install libmagickwand-dev
 
 .. note::
-    Fonduer is compatible with PostgreSQL version 9.6, 10, and 11 (12 is not compatible as of v0.7.1).
+    Fonduer requires PostgreSQL version 9.6 or higher.
 
 .. note::
     Fonduer requires ``poppler-utils`` to be version 0.36.0 or later.
