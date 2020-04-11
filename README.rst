@@ -50,7 +50,7 @@ Fonduer leverages the work of Emmental_ and Snorkel_.
    :target: https://github.com/HazyResearch/fonduer
 .. |CI-CD| image:: https://img.shields.io/github/workflow/status/HazyResearch/fonduer/ci.svg
    :target: https://github.com/HazyResearch/fonduer/actions
-.. |Codecov| image:: https://codecov.io/gh/HazyResearch/fonduer/branch/master/graph/badge.svg
+.. |Codecov| image:: https://img.shields.io/codecov/c/github/HazyResearch/fonduer
    :target: https://codecov.io/gh/HazyResearch/fonduer
 .. |ReadTheDocs| image:: https://img.shields.io/readthedocs/fonduer.svg
    :target: https://fonduer.readthedocs.io/
