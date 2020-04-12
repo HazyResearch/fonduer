@@ -11,8 +11,8 @@ from emmental.scorer import Scorer
 from emmental.task import EmmentalTask
 from torch import Tensor
 
+from fonduer.learning.modules.concat_linear import ConcatLinear
 from fonduer.learning.modules.soft_cross_entropy_loss import SoftCrossEntropyLoss
-from fonduer.learning.modules.sum_module import Sum_module
 from fonduer.utils.config import get_config
 
 logger = logging.getLogger(__name__)
@@ -94,15 +94,15 @@ def create_task(
                 {
                     "emb": emb_layer,
                     "feature": SparseLinear(
-                        n_features + 1, n_class, bias=config["bias"]
+                        n_features + 1, config["hidden_dim"], bias=config["bias"]
                     ),
                 }
             )
             for i in range(n_arity):
                 module_pool.update(
                     {
-                        f"lstm{i}": RNN(
-                            num_classes=n_class,
+                        f"{task_name}_lstm{i}": RNN(
+                            num_classes=0,
                             emb_size=emb_layer.dim,
                             lstm_hidden=config["hidden_dim"],
                             attention=config["attention"],
@@ -113,22 +113,30 @@ def create_task(
                 )
             module_pool.update(
                 {
-                    f"{task_name}_pred_head": Sum_module(
-                        [f"lstm{i}" for i in range(n_arity)] + ["feature"]
+                    f"{task_name}_pred_head": ConcatLinear(
+                        [f"{task_name}_lstm{i}" for i in range(n_arity)] + ["feature"],
+                        config["hidden_dim"] * 3
+                        if config["bidirectional"]
+                        else config["hidden_dim"] * 2,
+                        n_class,
                     )
                 }
             )
 
             task_flow = []
             task_flow += [
-                {"name": f"emb{i}", "module": "emb", "inputs": [("_input_", f"m{i}")]}
+                {
+                    "name": f"{task_name}_emb{i}",
+                    "module": "emb",
+                    "inputs": [("_input_", f"m{i}")],
+                }
                 for i in range(n_arity)
             ]
             task_flow += [
                 {
-                    "name": f"lstm{i}",
-                    "module": f"lstm{i}",
-                    "inputs": [(f"emb{i}", 0), ("_input_", f"m{i}_mask")],
+                    "name": f"{task_name}_lstm{i}",
+                    "module": f"{task_name}_lstm{i}",
+                    "inputs": [(f"{task_name}_emb{i}", 0), ("_input_", f"m{i}_mask")],
                 }
                 for i in range(n_arity)
             ]
@@ -155,7 +163,9 @@ def create_task(
                     "feature": SparseLinear(
                         n_features + 1, config["hidden_dim"], bias=config["bias"]
                     ),
-                    f"{task_name}_pred_head": nn.Linear(config["hidden_dim"], n_class),
+                    f"{task_name}_pred_head": ConcatLinear(
+                        ["feature"], config["hidden_dim"], n_class
+                    ),
                 }
             )
 
@@ -171,7 +181,7 @@ def create_task(
                 {
                     "name": f"{task_name}_pred_head",
                     "module": f"{task_name}_pred_head",
-                    "inputs": [("feature", 0)],
+                    "inputs": None,
                 },
             ]
         else:
