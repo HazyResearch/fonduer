@@ -115,9 +115,9 @@ def create_task(
                 {
                     f"{task_name}_pred_head": ConcatLinear(
                         [f"{task_name}_lstm{i}" for i in range(n_arity)] + ["feature"],
-                        config["hidden_dim"] * 3
+                        config["hidden_dim"] * (2 * n_arity + 1)
                         if config["bidirectional"]
-                        else config["hidden_dim"] * 2,
+                        else config["hidden_dim"] * (n_arity + 1),
                         n_class,
                     )
                 }
