@@ -1,7 +1,7 @@
 |Fonduer|
 =========
 
-|CI-CD| |CodeClimate| |Coveralls| |ReadTheDocs| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
+|CI-CD| |CodeClimate| |Codecov| |ReadTheDocs| |PyPI| |PyPIVersion| |GitHubStars| |License| |CodeStyle|
 
 Fonduer is a Python package and framework for building knowledge base
 construction (KBC) applications from **richly formatted data**.
@@ -50,8 +50,8 @@ Fonduer leverages the work of Emmental_ and Snorkel_.
    :target: https://github.com/HazyResearch/fonduer
 .. |CI-CD| image:: https://img.shields.io/github/workflow/status/HazyResearch/fonduer/ci.svg
    :target: https://github.com/HazyResearch/fonduer/actions
-.. |Coveralls| image:: https://img.shields.io/coveralls/github/HazyResearch/fonduer.svg
-   :target: https://coveralls.io/github/HazyResearch/fonduer
+.. |Codecov| image:: https://img.shields.io/codecov/c/github/HazyResearch/fonduer
+   :target: https://codecov.io/gh/HazyResearch/fonduer
 .. |ReadTheDocs| image:: https://img.shields.io/readthedocs/fonduer.svg
    :target: https://fonduer.readthedocs.io/
 .. |PyPI| image:: https://img.shields.io/pypi/v/fonduer.svg

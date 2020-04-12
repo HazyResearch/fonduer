@@ -53,7 +53,7 @@ jobs:
     - name: Install Fonduer
       run: |
         make dev_extra
-        pip install -q coveralls
+        pip install -q pytest-cov
     - name: Run preliminary checks
       run: |
         make check
@@ -70,20 +70,20 @@ jobs:
         PGPASSWORD: postgres
     - name: Test with pytest
       run: |
-        coverage run -m pytest tests
+        pytest --cov=./ --cov-report=xml
       env:
         PGPASSWORD: postgres
         PGUSER: postgres
         POSTGRES_PORT: 5432
         # Use 127.0.0.1 instead of localhost (#351)
         POSTGRES_HOST: 127.0.0.1
-    - name: Upload to coveralls.io
-      if: github.event_name == 'push' && github.repository == 'HazyResearch/fonduer'
-      run: |
-          coverage combine
-          coveralls
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.coveralls_repo_token }}
+    - name: Upload to codecov.io
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
   macos-test:
     runs-on: macos-latest
     strategy:
@@ -146,7 +146,7 @@ jobs:
     - name: Install Fonduer
       run: |
         make dev_extra
-        pip install coveralls
+        pip install -q pytest-cov
     - name: Run preliminary checks
       run: |
         make check
@@ -156,7 +156,7 @@ jobs:
     - name: Test with pytest
       run: |
         python -m spacy download en
-        coverage run -m pytest tests
+        pytest --cov=./ --cov-report=xml
       env:
         PGPASSWORD: postgres
         PGUSER: postgres
@@ -166,13 +166,13 @@ jobs:
         # https://stackoverflow.com/questions/53014306/error-15-initializing-
         # libiomp5-dylib-but-found-libiomp5-dylib-already-initial
         KMP_DUPLICATE_LIB_OK: true
-    - name: Upload to coveralls.io
-      if: github.event_name == 'push' && github.repository == 'HazyResearch/fonduer'
-      run: |
-          coverage combine
-          coveralls
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.coveralls_repo_token }}
+    - name: Upload to codecov.io
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
   build-and-publish:
     name: Build and Publish Fonduer to PyPI
     runs-on: ubuntu-latest
