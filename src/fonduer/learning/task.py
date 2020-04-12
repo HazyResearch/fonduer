@@ -153,9 +153,9 @@ def create_task(
             module_pool = nn.ModuleDict(
                 {
                     "feature": SparseLinear(
-                        n_features + 1, n_class, bias=config["bias"]
+                        n_features + 1, config["hidden_dim"], bias=config["bias"]
                     ),
-                    f"{task_name}_pred_head": Sum_module(["feature"]),
+                    f"{task_name}_pred_head": nn.Linear(config["hidden_dim"], n_class),
                 }
             )
 
@@ -171,7 +171,7 @@ def create_task(
                 {
                     "name": f"{task_name}_pred_head",
                     "module": f"{task_name}_pred_head",
-                    "inputs": None,
+                    "inputs": [("feature", 0)],
                 },
             ]
         else:
