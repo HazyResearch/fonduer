@@ -1,6 +1,26 @@
 Unreleased_
 -----------
 
+Added
+^^^^^
+* `@senwu`_: Add `mode` argument in create_task to support `STL` and `MTL`.
+
+.. note::
+    Fonduer add `mode` argument to support switch betwee different learning mode
+    (e.g., STL or MLT). Example usage:
+
+    .. code:: python
+        # Create task for each relation.
+        tasks = create_task(
+            task_names = TASK_NAMES,
+            n_arities = N_ARITIES,
+            n_features = N_FEATURES,
+            n_classes = N_CLASSES,
+            emb_layer = EMB_LAYER,
+            model="LogisticRegression",
+            mode = MODE,
+        )
+
 0.8.0_ - 2020-04-07
 -------------------
 
@@ -56,7 +76,6 @@ Changed
             F_train[0].shape[1],
             2,
             emb_layer,
-            mode="mtl",
             model="LogisticRegression",
         )
 

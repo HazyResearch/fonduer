@@ -46,6 +46,7 @@ The default ``.fonduer-config.yaml`` configuration file is shown below::
         dropout: 0.1
         bidirectional: True
       LogisticRegression:
+        hidden_dim: 100
         bias: False
 
 About how to customize Emmental, please check here:
