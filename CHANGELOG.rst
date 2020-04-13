@@ -6,7 +6,7 @@ Added
 * `@senwu`_: Add `mode` argument in create_task to support `STL` and `MTL`.
 
 .. note::
-    Fonduer add `mode` argument to support switch betwee different learning mode
+    Fonduer has a new `mode` argument to support switching between different learning modes
     (e.g., STL or MLT). Example usage:
 
     .. code:: python
