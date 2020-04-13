@@ -11,8 +11,8 @@ from emmental.scorer import Scorer
 from emmental.task import EmmentalTask
 from torch import Tensor
 
+from fonduer.learning.modules.concat_linear import ConcatLinear
 from fonduer.learning.modules.soft_cross_entropy_loss import SoftCrossEntropyLoss
-from fonduer.learning.modules.sum_module import Sum_module
 from fonduer.utils.config import get_config
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ def create_task(
     n_classes: Union[int, List[int]],
     emb_layer: Optional[EmbeddingModule],
     model: str = "LSTM",
+    mode: str = "MTL",
 ) -> List[EmmentalTask]:
     """Create task from relation(s).
 
@@ -68,6 +69,9 @@ def create_task(
     :param model: Model name (available models: "LSTM", "LogisticRegression"),
         defaults to "LSTM".
     :type model: str
+    :param mode: Learning mode (available modes: "STL", "MTL"),
+        defaults to "MTL".
+    :type mode: str
 
     """
 
@@ -75,6 +79,9 @@ def create_task(
         raise ValueError(
             f"Unrecognized model {model}. Only support {['LSTM', 'LogisticRegression']}"
         )
+
+    if mode not in ["STL", "MTL"]:
+        raise ValueError(f"Unrecognized mode {mode}. Only support {['STL', 'MTL']}")
 
     config = get_config()["learning"][model]
     logger.info(f"{model} model config: {config}")
@@ -89,20 +96,25 @@ def create_task(
     tasks = []
 
     for task_name, n_arity, n_class in zip(task_names, n_arities, n_classes):
+        if mode == "MTL":
+            feature_module_name = "shared_feature"
+        else:
+            feature_module_name = f"{task_name}_feature"
+
         if model == "LSTM":
             module_pool = nn.ModuleDict(
                 {
                     "emb": emb_layer,
-                    "feature": SparseLinear(
-                        n_features + 1, n_class, bias=config["bias"]
+                    feature_module_name: SparseLinear(
+                        n_features + 1, config["hidden_dim"], bias=config["bias"]
                     ),
                 }
             )
             for i in range(n_arity):
                 module_pool.update(
                     {
-                        f"lstm{i}": RNN(
-                            num_classes=n_class,
+                        f"{task_name}_lstm{i}": RNN(
+                            num_classes=0,
                             emb_size=emb_layer.dim,
                             lstm_hidden=config["hidden_dim"],
                             attention=config["attention"],
@@ -113,29 +125,38 @@ def create_task(
                 )
             module_pool.update(
                 {
-                    f"{task_name}_pred_head": Sum_module(
-                        [f"lstm{i}" for i in range(n_arity)] + ["feature"]
+                    f"{task_name}_pred_head": ConcatLinear(
+                        [f"{task_name}_lstm{i}" for i in range(n_arity)]
+                        + [feature_module_name],
+                        config["hidden_dim"] * (2 * n_arity + 1)
+                        if config["bidirectional"]
+                        else config["hidden_dim"] * (n_arity + 1),
+                        n_class,
                     )
                 }
             )
 
             task_flow = []
             task_flow += [
-                {"name": f"emb{i}", "module": "emb", "inputs": [("_input_", f"m{i}")]}
-                for i in range(n_arity)
-            ]
-            task_flow += [
                 {
-                    "name": f"lstm{i}",
-                    "module": f"lstm{i}",
-                    "inputs": [(f"emb{i}", 0), ("_input_", f"m{i}_mask")],
+                    "name": f"{task_name}_emb{i}",
+                    "module": "emb",
+                    "inputs": [("_input_", f"m{i}")],
                 }
                 for i in range(n_arity)
             ]
             task_flow += [
                 {
-                    "name": "feature",
-                    "module": "feature",
+                    "name": f"{task_name}_lstm{i}",
+                    "module": f"{task_name}_lstm{i}",
+                    "inputs": [(f"{task_name}_emb{i}", 0), ("_input_", f"m{i}_mask")],
+                }
+                for i in range(n_arity)
+            ]
+            task_flow += [
+                {
+                    "name": feature_module_name,
+                    "module": feature_module_name,
                     "inputs": [
                         ("_input_", "feature_index"),
                         ("_input_", "feature_weight"),
@@ -152,17 +173,19 @@ def create_task(
         elif model == "LogisticRegression":
             module_pool = nn.ModuleDict(
                 {
-                    "feature": SparseLinear(
-                        n_features + 1, n_class, bias=config["bias"]
+                    feature_module_name: SparseLinear(
+                        n_features + 1, config["hidden_dim"], bias=config["bias"]
                     ),
-                    f"{task_name}_pred_head": Sum_module(["feature"]),
+                    f"{task_name}_pred_head": ConcatLinear(
+                        [feature_module_name], config["hidden_dim"], n_class
+                    ),
                 }
             )
 
             task_flow = [
                 {
-                    "name": "feature",
-                    "module": "feature",
+                    "name": feature_module_name,
+                    "module": feature_module_name,
                     "inputs": [
                         ("_input_", "feature_index"),
                         ("_input_", "feature_weight"),

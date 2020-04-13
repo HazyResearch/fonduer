@@ -36,7 +36,7 @@ default = {
             "bidirectional": True,
             "bias": False,
         },
-        "LogisticRegression": {"bias": False},
+        "LogisticRegression": {"hidden_dim": 100, "bias": False},
     },
 }
 

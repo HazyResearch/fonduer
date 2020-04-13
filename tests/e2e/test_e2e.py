@@ -548,12 +548,101 @@ def test_e2e():
         shuffle=False,
     )
 
+    # Testing STL LogisticRegression
     emmental.Meta.reset()
     emmental.init(fonduer.Meta.log_path)
     emmental.Meta.update_config(config=config)
 
     tasks = create_task(
-        ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LogisticRegression"
+        ATTRIBUTE,
+        2,
+        F_train[0].shape[1],
+        2,
+        emb_layer,
+        model="LogisticRegression",
+        mode="STL",
+    )
+
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+
+    for task in tasks:
+        model.add_task(task)
+
+    emmental_learner = EmmentalLearner()
+    emmental_learner.learn(model, [train_dataloader, valid_dataloader])
+
+    test_preds = model.predict(test_dataloader, return_preds=True)
+    positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
+    true_pred = [test_cands[0][_] for _ in positive[0]]
+
+    (TP, FP, FN) = entity_level_f1(
+        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+    )
+
+    tp_len = len(TP)
+    fp_len = len(FP)
+    fn_len = len(FN)
+    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
+    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
+
+    assert f1 > 0.7
+
+    # Testing STL LSTM
+    emmental.Meta.reset()
+    emmental.init(fonduer.Meta.log_path)
+    emmental.Meta.update_config(config=config)
+
+    tasks = create_task(
+        ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LSTM", mode="STL"
+    )
+
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+
+    for task in tasks:
+        model.add_task(task)
+
+    emmental_learner = EmmentalLearner()
+    emmental_learner.learn(model, [train_dataloader])
+
+    test_preds = model.predict(test_dataloader, return_preds=True)
+    positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
+    true_pred = [test_cands[0][_] for _ in positive[0]]
+
+    (TP, FP, FN) = entity_level_f1(
+        true_pred, gold_file, ATTRIBUTE, test_docs, parts_by_doc=parts_by_doc
+    )
+
+    tp_len = len(TP)
+    fp_len = len(FP)
+    fn_len = len(FN)
+    prec = tp_len / (tp_len + fp_len) if tp_len + fp_len > 0 else float("nan")
+    rec = tp_len / (tp_len + fn_len) if tp_len + fn_len > 0 else float("nan")
+    f1 = 2 * (prec * rec) / (prec + rec) if prec + rec > 0 else float("nan")
+
+    logger.info(f"prec: {prec}")
+    logger.info(f"rec: {rec}")
+    logger.info(f"f1: {f1}")
+
+    assert f1 > 0.7
+
+    # Testing MTL LogisticRegression
+    emmental.Meta.reset()
+    emmental.init(fonduer.Meta.log_path)
+    emmental.Meta.update_config(config=config)
+
+    tasks = create_task(
+        ATTRIBUTE,
+        2,
+        F_train[0].shape[1],
+        2,
+        emb_layer,
+        model="LogisticRegression",
+        mode="MTL",
     )
 
     model = EmmentalModel(name=f"{ATTRIBUTE}_task")
@@ -590,7 +679,9 @@ def test_e2e():
     emmental.init(fonduer.Meta.log_path)
     emmental.Meta.update_config(config=config)
 
-    tasks = create_task(ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LSTM")
+    tasks = create_task(
+        ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LSTM", mode="MTL"
+    )
 
     model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 

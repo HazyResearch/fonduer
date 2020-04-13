@@ -65,6 +65,8 @@ The learning parameters of different models are described below::
         bidirectional: True
       # Logistic Regression model
       LogisticRegression:
+        # The number of features in the LogisticRegression hidden state
+        hidden_dim: 100
         # bias term
         bias: False
 
