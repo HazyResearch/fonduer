@@ -20,4 +20,4 @@ automatically using `GitHub Actions`_.
 .. _PyPI: https://pypi.org/project/fonduer/
 .. _Semantic Versioning 2.0.0: https://semver.org/
 .. _GitHub Actions: https://github.com/HazyResearch/fonduer/actions
-.. _fonduer/\_version.py: https://github.com/HazyResearch/fonduer/blob/master/fonduer/_version.py
+.. _fonduer/\_version.py: https://github.com/HazyResearch/fonduer/blob/master/src/fonduer/_version.py
