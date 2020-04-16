@@ -1,6 +1,8 @@
 import re
 from itertools import chain
 
+from snorkel.labeling import labeling_function
+
 from fonduer.utils.data_model_utils import (
     get_aligned_ngrams,
     get_left_ngrams,
@@ -10,18 +12,22 @@ from fonduer.utils.data_model_utils import (
 from tests.shared.hardware_utils import ABSTAIN, FALSE, TRUE
 
 
+@labeling_function()
 def LF_storage_row(c):
     return TRUE if "storage" in get_row_ngrams(c.temp) else ABSTAIN
 
 
+@labeling_function()
 def LF_temperature_row(c):
     return TRUE if "temperature" in get_row_ngrams(c.temp) else ABSTAIN
 
 
+@labeling_function()
 def LF_operating_row(c):
     return TRUE if "operating" in get_row_ngrams(c.temp) else ABSTAIN
 
 
+@labeling_function()
 def LF_tstg_row(c):
     return (
         TRUE
@@ -30,10 +36,12 @@ def LF_tstg_row(c):
     )
 
 
+@labeling_function()
 def LF_to_left(c):
     return TRUE if "to" in get_left_ngrams(c.temp, window=2) else ABSTAIN
 
 
+@labeling_function()
 def LF_negative_number_left(c):
     return (
         TRUE
@@ -44,6 +52,7 @@ def LF_negative_number_left(c):
     )
 
 
+@labeling_function()
 def LF_test_condition_aligned(c):
     return (
         FALSE
@@ -52,6 +61,7 @@ def LF_test_condition_aligned(c):
     )
 
 
+@labeling_function()
 def LF_collector_aligned(c):
     return (
         FALSE
@@ -63,6 +73,7 @@ def LF_collector_aligned(c):
     )
 
 
+@labeling_function()
 def LF_current_aligned(c):
     return (
         FALSE
@@ -71,6 +82,7 @@ def LF_current_aligned(c):
     )
 
 
+@labeling_function()
 def LF_voltage_row_temp(c):
     return (
         FALSE
@@ -81,6 +93,7 @@ def LF_voltage_row_temp(c):
     )
 
 
+@labeling_function()
 def LF_voltage_row_part(c):
     return (
         FALSE
@@ -91,10 +104,12 @@ def LF_voltage_row_part(c):
     )
 
 
+@labeling_function()
 def LF_typ_row(c):
     return FALSE if overlap(["typ", "typ."], list(get_row_ngrams(c.temp))) else ABSTAIN
 
 
+@labeling_function()
 def LF_complement_left_row(c):
     return (
         FALSE
@@ -110,19 +125,23 @@ def LF_complement_left_row(c):
     )
 
 
+@labeling_function()
 def LF_too_many_numbers_row(c):
     num_numbers = list(get_row_ngrams(c.temp, attrib="ner_tags")).count("number")
     return FALSE if num_numbers >= 3 else ABSTAIN
 
 
+@labeling_function()
 def LF_temp_on_high_page_num(c):
     return FALSE if c.temp.context.get_attrib_tokens("page")[0] > 2 else ABSTAIN
 
 
+@labeling_function()
 def LF_temp_outside_table(c):
     return FALSE if not c.temp.context.sentence.is_tabular() is None else ABSTAIN
 
 
+@labeling_function()
 def LF_not_temp_relevant(c):
     return (
         FALSE
@@ -137,6 +156,7 @@ def LF_not_temp_relevant(c):
 # Voltage LFS
 
 
+@labeling_function()
 def LF_bad_keywords_in_row(c):
     return (
         FALSE
@@ -147,6 +167,7 @@ def LF_bad_keywords_in_row(c):
     )
 
 
+@labeling_function()
 def LF_current_in_row(c):
     return FALSE if overlap(["i", "ic", "mA"], get_row_ngrams(c.volt)) else ABSTAIN
 
@@ -172,6 +193,7 @@ non_ce_voltage_keywords = set(
 )
 
 
+@labeling_function()
 def LF_non_ce_voltages_in_row(c):
     return (
         FALSE
