@@ -1,6 +1,18 @@
 Unreleased_
 -----------
 
+Deprecated
+^^^^^^^^^^
+
+* `@HiromuHota`_: Use of undecorated labeling functions is deprecated and will not be supported as of v0.9.0.
+  Please decorate them with ``snorkel.labeling.labeling_function``.
+
+Fixed
+^^^^^
+* `@HiromuHota`_: Labeling functions can now be decorated with ``snorkel.labeling.labeling_function``.
+  (`#400 <https://github.com/HazyResearch/fonduer/issues/400>`_)
+  (`#401 <https://github.com/HazyResearch/fonduer/pull/401>`_)
+
 0.8.1_ - 2020-04-13
 -------------------
 
