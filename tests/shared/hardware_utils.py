@@ -3,8 +3,6 @@ import csv
 import logging
 from builtins import range
 
-from snorkel.labeling import labeling_function
-
 from fonduer.candidates.models import Candidate
 from fonduer.learning.utils import confusion_matrix
 
@@ -56,7 +54,6 @@ gold_dict = get_gold_dict(
 )
 
 
-@labeling_function()
 def gold(c: Candidate) -> int:
     doc = (c[0].context.sentence.document.name).upper()
     part = (c[0].context.get_span()).upper()
