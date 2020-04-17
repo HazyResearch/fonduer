@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from typing import (
     Any,
+    Callable,
     Collection,
     DefaultDict,
     Dict,
@@ -15,7 +16,6 @@ from typing import (
 )
 
 import numpy as np
-from snorkel.labeling import LabelingFunction
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
@@ -68,13 +68,13 @@ class Labeler(UDFRunner):
             candidate_classes=candidate_classes,
         )
         self.candidate_classes = candidate_classes
-        self.lfs: List[List[LabelingFunction]] = []
+        self.lfs: List[List[Callable]] = []
 
     def update(
         self,
         docs: Collection[Document] = None,
         split: int = 0,
-        lfs: List[List[LabelingFunction]] = None,
+        lfs: List[List[Callable]] = None,
         parallelism: int = None,
         progress_bar: bool = True,
         table: Table = Label,
@@ -120,7 +120,7 @@ class Labeler(UDFRunner):
         docs: Collection[Document] = None,
         split: int = 0,
         train: bool = False,
-        lfs: List[List[LabelingFunction]] = None,
+        lfs: List[List[Callable]] = None,
         clear: bool = True,
         parallelism: int = None,
         progress_bar: bool = True,
@@ -206,7 +206,7 @@ class Labeler(UDFRunner):
 
     def upsert_keys(
         self,
-        keys: Iterable[Union[str, LabelingFunction]],
+        keys: Iterable[Union[str, Callable]],
         candidate_classes: Optional[
             Union[Type[Candidate], List[Type[Candidate]]]
         ] = None,
@@ -262,7 +262,7 @@ class Labeler(UDFRunner):
 
     def drop_keys(
         self,
-        keys: Iterable[Union[str, LabelingFunction]],
+        keys: Iterable[Union[str, Callable]],
         candidate_classes: Optional[
             Union[Type[Candidate], List[Type[Candidate]]]
         ] = None,
@@ -324,7 +324,7 @@ class Labeler(UDFRunner):
         self,
         train: bool,
         split: int,
-        lfs: Optional[List[List[LabelingFunction]]] = None,
+        lfs: Optional[List[List[Callable]]] = None,
         table: Table = Label,
         **kwargs: Any,
     ) -> None:
@@ -462,7 +462,7 @@ class LabelerUDF(UDF):
     def apply(  # type: ignore
         self,
         doc: Document,
-        lfs: List[List[LabelingFunction]],
+        lfs: List[List[Callable]],
         table: Table = Label,
         **kwargs: Any,
     ) -> List[List[Dict[str, Any]]]:
