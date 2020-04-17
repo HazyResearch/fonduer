@@ -439,7 +439,11 @@ class LabelerUDF(UDF):
         """
         lf_idx = self.candidate_classes.index(c.__class__)
         labels = lambda c: [
-            (c.id, lf.__name__ if hasattr(lf, "__name__") else lf.name, lf(c))
+            (
+                c.id,
+                lf.__name__ if hasattr(lf, "__name__") else lf.name,  # type: ignore
+                lf(c),
+            )
             for lf in self.lfs[lf_idx]
         ]
         for cid, lf_key, label in labels(c):
