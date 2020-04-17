@@ -2,6 +2,7 @@ import logging
 import os
 
 import pytest
+from snorkel.labeling import labeling_function
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
@@ -190,8 +191,9 @@ def test_incremental():
     assert len(featurizer.get_keys()) == 2573
 
     # Update LF_storage_row. Now it always returns ABSTAIN.
-    LF_storage_row_updated = lambda c: ABSTAIN
-    LF_storage_row_updated.__name__ = "LF_storage_row"
+    @labeling_function(name="LF_storage_row")
+    def LF_storage_row_updated(c):
+        return ABSTAIN
 
     stg_temp_lfs = [
         LF_storage_row_updated,
