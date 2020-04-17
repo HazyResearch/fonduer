@@ -1,6 +1,8 @@
 import logging
 from functools import lru_cache
-from typing import Callable, Iterable, List, Set, Union
+from typing import Iterable, List, Set, Union
+
+from snorkel.labeling import LabelingFunction
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
@@ -63,7 +65,9 @@ def overlap(a: Iterable, b: Iterable) -> bool:
 
 
 def get_matches(
-    lf: Callable, candidate_set: Set[Candidate], match_values: List[int] = [1, -1]
+    lf: LabelingFunction,
+    candidate_set: Set[Candidate],
+    match_values: List[int] = [1, -1],
 ) -> List[Candidate]:
     """Return a list of candidates that are matched by a particular LF.
 

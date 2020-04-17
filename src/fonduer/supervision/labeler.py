@@ -2,7 +2,6 @@ import logging
 from collections import defaultdict
 from typing import (
     Any,
-    Callable,
     Collection,
     DefaultDict,
     Dict,
@@ -16,6 +15,7 @@ from typing import (
 )
 
 import numpy as np
+from snorkel.labeling import LabelingFunction
 from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
@@ -68,13 +68,13 @@ class Labeler(UDFRunner):
             candidate_classes=candidate_classes,
         )
         self.candidate_classes = candidate_classes
-        self.lfs: List[List[Callable]] = []
+        self.lfs: List[List[LabelingFunction]] = []
 
     def update(
         self,
         docs: Collection[Document] = None,
         split: int = 0,
-        lfs: List[List[Callable]] = None,
+        lfs: List[List[LabelingFunction]] = None,
         parallelism: int = None,
         progress_bar: bool = True,
         table: Table = Label,
@@ -120,7 +120,7 @@ class Labeler(UDFRunner):
         docs: Collection[Document] = None,
         split: int = 0,
         train: bool = False,
-        lfs: List[List[Callable]] = None,
+        lfs: List[List[LabelingFunction]] = None,
         clear: bool = True,
         parallelism: int = None,
         progress_bar: bool = True,
@@ -206,7 +206,7 @@ class Labeler(UDFRunner):
 
     def upsert_keys(
         self,
-        keys: Iterable[Union[str, Callable]],
+        keys: Iterable[Union[str, LabelingFunction]],
         candidate_classes: Optional[
             Union[Type[Candidate], List[Type[Candidate]]]
         ] = None,
@@ -251,8 +251,8 @@ class Labeler(UDFRunner):
         key_map = dict()
         for key in keys:
             # Assume key is an LF
-            if hasattr(key, "__name__"):
-                key_map[key.__name__] = set(candidate_classes)
+            if hasattr(key, "name"):
+                key_map[key.name] = set(candidate_classes)
             else:
                 key_map[key] = set(candidate_classes)
 
@@ -260,7 +260,7 @@ class Labeler(UDFRunner):
 
     def drop_keys(
         self,
-        keys: Iterable[Union[str, Callable]],
+        keys: Iterable[Union[str, LabelingFunction]],
         candidate_classes: Optional[
             Union[Type[Candidate], List[Type[Candidate]]]
         ] = None,
@@ -305,8 +305,8 @@ class Labeler(UDFRunner):
         key_map = dict()
         for key in keys:
             # Assume key is an LF
-            if hasattr(key, "__name__"):
-                key_map[key.__name__] = set(candidate_classes)
+            if hasattr(key, "name"):
+                key_map[key.name] = set(candidate_classes)
             else:
                 key_map[key] = set(candidate_classes)
 
@@ -320,7 +320,7 @@ class Labeler(UDFRunner):
         self,
         train: bool,
         split: int,
-        lfs: Optional[List[List[Callable]]] = None,
+        lfs: Optional[List[List[LabelingFunction]]] = None,
         table: Table = Label,
         **kwargs: Any,
     ) -> None:
@@ -434,7 +434,7 @@ class LabelerUDF(UDF):
         In particular, catch verbose values and convert to integer ones.
         """
         lf_idx = self.candidate_classes.index(c.__class__)
-        labels = lambda c: [(c.id, lf.__name__, lf(c)) for lf in self.lfs[lf_idx]]
+        labels = lambda c: [(c.id, lf.name, lf(c)) for lf in self.lfs[lf_idx]]
         for cid, lf_key, label in labels(c):
             # Note: We assume if the LF output is an int, it is already
             # mapped correctly
@@ -455,7 +455,7 @@ class LabelerUDF(UDF):
     def apply(  # type: ignore
         self,
         doc: Document,
-        lfs: List[List[Callable]],
+        lfs: List[List[LabelingFunction]],
         table: Table = Label,
         **kwargs: Any,
     ) -> List[List[Dict[str, Any]]]:
