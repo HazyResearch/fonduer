@@ -253,6 +253,8 @@ class Labeler(UDFRunner):
             # Assume key is an LF
             if hasattr(key, "__name__"):
                 key_map[key.__name__] = set(candidate_classes)
+            elif hasattr(key, "name"):
+                key_map[key.name] = set(candidate_classes)
             else:
                 key_map[key] = set(candidate_classes)
 
@@ -307,6 +309,8 @@ class Labeler(UDFRunner):
             # Assume key is an LF
             if hasattr(key, "__name__"):
                 key_map[key.__name__] = set(candidate_classes)
+            elif hasattr(key, "name"):
+                key_map[key.name] = set(candidate_classes)
             else:
                 key_map[key] = set(candidate_classes)
 
@@ -434,7 +438,14 @@ class LabelerUDF(UDF):
         In particular, catch verbose values and convert to integer ones.
         """
         lf_idx = self.candidate_classes.index(c.__class__)
-        labels = lambda c: [(c.id, lf.__name__, lf(c)) for lf in self.lfs[lf_idx]]
+        labels = lambda c: [
+            (
+                c.id,
+                lf.__name__ if hasattr(lf, "__name__") else lf.name,  # type: ignore
+                lf(c),
+            )
+            for lf in self.lfs[lf_idx]
+        ]
         for cid, lf_key, label in labels(c):
             # Note: We assume if the LF output is an int, it is already
             # mapped correctly
