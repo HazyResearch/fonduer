@@ -95,6 +95,9 @@ class Labeler(UDFRunner):
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
         :type progress_bar: bool
+        :param table: A (database) table labels are written to.
+            Takes `Label` (by default) or `GoldLabel`.
+        :type table: Table
         """
         if lfs is None:
             raise ValueError("Please provide a list of lists of labeling functions.")
@@ -150,6 +153,9 @@ class Labeler(UDFRunner):
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
         :type progress_bar: bool
+        :param table: A (database) table labels are written to.
+            Takes `Label` (by default) or `GoldLabel`.
+        :type table: Table
 
         :raises ValueError: If labeling functions are not provided for each
             candidate class.
@@ -335,6 +341,9 @@ class Labeler(UDFRunner):
         :param split: Which split of candidates to clear labels from.
         :type split: int
         :param lfs: This parameter is ignored.
+        :param table: A (database) table labels are cleared from.
+            Takes `Label` (by default) or `GoldLabel`.
+        :type table: Table
         """
         # Clear Labels for the candidates in the split passed in.
         logger.info(f"Clearing Labels (split {split})")
@@ -359,7 +368,12 @@ class Labeler(UDFRunner):
             drop_all_keys(self.session, key_table, self.candidate_classes)
 
     def clear_all(self, table: Table = Label) -> None:
-        """Delete all Labels."""
+        """Delete all Labels.
+
+        :param table: A (database) table labels are cleared from.
+            Takes `Label` (by default) or `GoldLabel`.
+        :type table: Table
+        """
         key_table = LabelKey if table == Label else GoldLabelKey
         logger.info(f"Clearing ALL {table.__name__}s and {key_table.__name__}s.")
         self.session.query(table).delete(synchronize_session="fetch")
