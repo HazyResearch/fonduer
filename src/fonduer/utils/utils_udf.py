@@ -169,12 +169,12 @@ def get_sparse_matrix(
 
 
 def unshift_label_matrix(L_sparse: csr_matrix) -> np.ndarray:
-    """Unshift a sparse label matrix (ABATAIN as 0) to a dense one (ABSTAIN as -1)."""
+    """Unshift a sparse label matrix (ABSTAIN as 0) to a dense one (ABSTAIN as -1)."""
     return L_sparse.toarray() - 1
 
 
 def shift_label_matrix(L: np.ndarray) -> csr_matrix:
-    """Shift a dense label matrix (ABATAIN as -1) to a sparse one (ABSTAIN as 0)."""
+    """Shift a dense label matrix (ABSTAIN as -1) to a sparse one (ABSTAIN as 0)."""
     return csr_matrix(L + 1)
 
 
