@@ -195,8 +195,8 @@ class CandidateExtractor(UDFRunner):
                 if sort:
                     cands = sorted(
                         cands,
-                        key=lambda x: " ".join(
-                            [x[i][0].get_stable_id() for i in range(len(x))]
+                        key=lambda x: "_".join(
+                            [x[i].context.get_stable_id() for i in range(len(x))]
                         ),
                     )
                 result.append(cands)
@@ -217,8 +217,8 @@ class CandidateExtractor(UDFRunner):
                 if sort:
                     cands = sorted(
                         cands,
-                        key=lambda x: " ".join(
-                            [x[i][0].get_stable_id() for i in range(len(x))]
+                        key=lambda x: "_".join(
+                            [x[i].context.get_stable_id() for i in range(len(x))]
                         ),
                     )
                 result.append(cands)

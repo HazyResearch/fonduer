@@ -243,6 +243,17 @@ def test_e2e():
     train_cands = candidate_extractor.get_candidates(split=0, sort=True)
     dev_cands = candidate_extractor.get_candidates(split=1, sort=True)
     test_cands = candidate_extractor.get_candidates(split=2, sort=True)
+
+    # Candidate lists should be deterministically sorted.
+    assert (
+        "112823::implicit_span_mention:11059:11065:part_expander:0"
+        == train_cands[0][0][0].context.get_stable_id()
+    )
+    assert (
+        "112823::implicit_span_mention:2752:2754:temp_expander:0"
+        == train_cands[0][0][1].context.get_stable_id()
+    )
+
     assert len(train_cands) == 2
     assert len(train_cands[0]) == 3493
     assert (
