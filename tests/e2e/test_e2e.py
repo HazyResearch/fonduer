@@ -391,8 +391,8 @@ def test_e2e():
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
     assert L_train_gold[0].shape == (3493, 1)
 
-    label_model = LabelModel()
-    label_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
+    label_model = LabelModel(cardinality=2)
+    label_model.fit(L_train=L_train[0], n_epochs=500, seed=1234, log_freq=100)
 
     train_marginals = label_model.predict_proba(L_train[0])
 
@@ -521,8 +521,8 @@ def test_e2e():
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (3493, 16)
 
-    label_model = LabelModel()
-    label_model.fit(L_train=L_train[0], n_epochs=500, log_freq=100)
+    label_model = LabelModel(cardinality=2)
+    label_model.fit(L_train=L_train[0], n_epochs=500, seed=1234, log_freq=100)
 
     train_marginals = label_model.predict_proba(L_train[0])
 
