@@ -28,7 +28,7 @@ class SoftCrossEntropyLoss(nn.Module):
 
         self.reduction = reduction
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:  # type:ignore
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
         """
         Calculate the loss
 
