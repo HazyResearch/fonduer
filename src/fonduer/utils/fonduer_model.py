@@ -259,7 +259,6 @@ def save_model(
     with open(os.path.join(path, conda_env_subpath), "w") as f:
         yaml.safe_dump(conda_env, stream=f, default_flow_style=False)
 
-    _copy_file_or_tree(src=__file__, dst=model_code_path)
     if code_paths is not None:
         for code_path in code_paths:
             _copy_file_or_tree(src=code_path, dst=model_code_path)
