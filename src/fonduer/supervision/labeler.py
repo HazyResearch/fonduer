@@ -202,7 +202,7 @@ class Labeler(UDFRunner):
             # Needed to sync the bulk operations
             self.session.commit()
 
-    def get_keys(self) -> List[str]:
+    def get_keys(self) -> List[LabelKey]:
         """Return a list of keys for the Labels.
 
         :return: List of LabelKeys.
