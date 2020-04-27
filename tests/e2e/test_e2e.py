@@ -13,7 +13,7 @@ from snorkel.labeling.model import LabelModel
 
 import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
-from fonduer.candidates.models import candidate_subclass, mention_subclass
+from fonduer.candidates.models import candidate_subclass
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.learning.dataset import FonduerDataset
@@ -53,6 +53,7 @@ from tests.shared.hardware_spaces import (
     MentionNgramsTemp,
     MentionNgramsVolt,
 )
+from tests.shared.hardware_subclasses import Part, Temp, Volt
 from tests.shared.hardware_throttlers import temp_throttler, volt_throttler
 from tests.shared.hardware_utils import entity_level_f1, gold
 
@@ -195,10 +196,6 @@ def test_e2e():
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
     temp_ngrams = MentionNgramsTemp(n_max=2)
     volt_ngrams = MentionNgramsVolt(n_max=1)
-
-    Part = mention_subclass("Part")
-    Temp = mention_subclass("Temp")
-    Volt = mention_subclass("Volt")
 
     mention_extractor = MentionExtractor(
         session,
