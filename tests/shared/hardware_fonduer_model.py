@@ -1,12 +1,13 @@
-from emmental.data import EmmentalDataLoader
-import numpy as np
-from pandas import DataFrame
 import pickle
 
+import numpy as np
+from emmental.data import EmmentalDataLoader
+from pandas import DataFrame
+
+import tests.shared.hardware_subclasses  # noqa
 from fonduer.learning.dataset import FonduerDataset
 from fonduer.parser.models import Document
-from fonduer.utils.fonduer_model import F_matrix, FonduerModel, L_matrix
-from tests.shared.hardware_subclasses import Part, PartTemp, PartVolt, Temp, Volt
+from fonduer.utils.fonduer_model import F_matrix, FonduerModel
 from tests.shared.hardware_lfs import TRUE
 from tests.shared.hardware_utils import get_implied_parts
 
@@ -25,9 +26,7 @@ class HardwareFonduerModel(FonduerModel):
 
         test_dataloader = EmmentalDataLoader(
             task_to_label_dict={ATTRIBUTE: "labels"},
-            dataset=FonduerDataset(
-                ATTRIBUTE, test_cands, F_test, self.word2id, 2
-            ),
+            dataset=FonduerDataset(ATTRIBUTE, test_cands, F_test, self.word2id, 2),
             split="test",
             batch_size=100,
             shuffle=False,
@@ -49,8 +48,6 @@ class HardwareFonduerModel(FonduerModel):
             for p in get_implied_parts(part, doc, parts_by_doc):
                 entity_relation = (doc, p, val)
                 df = df.append(
-                    DataFrame([entity_relation],
-                    columns=["doc", "part", "val"]
-                    )
+                    DataFrame([entity_relation], columns=["doc", "part", "val"])
                 )
         return df
