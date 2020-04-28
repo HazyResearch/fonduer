@@ -337,6 +337,10 @@ def test_e2e():
 
     labeler = Labeler(session, [PartTemp, PartVolt])
 
+    # This should raise an error, since gold labels are not yet loaded.
+    with pytest.raises(ValueError):
+        _ = labeler.get_gold_labels(train_cands, annotator="gold")
+
     labeler.apply(
         docs=last_docs,
         lfs=[[gold], [gold]],

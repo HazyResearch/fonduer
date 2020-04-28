@@ -404,16 +404,28 @@ class Labeler(UDFRunner):
         :param annotator: A specific annotator key to get labels for. Default
             None.
         :type annotator: str
+        :raises ValueError: If get_gold_labels is called before gold labels are
+            loaded, the result will contain ABSTAIN values. We raise a
+            ValueError to help indicate this potential mistake to the user.
         :return: A list of MxN dense matrix where M are the candidates and N is the
             annotators. If annotator is provided, return a list of Mx1 matrix.
         :rtype: list[np.ndarray]
         """
-        return [
+        gold_labels = [
             unshift_label_matrix(m)
             for m in get_sparse_matrix(
                 self.session, GoldLabelKey, cand_lists, key=annotator
             )
         ]
+
+        for cand_labels in gold_labels:
+            if ABSTAIN in cand_labels:
+                raise ValueError(
+                    "Gold labels contain ABSTAIN labels. "
+                    "Did you load gold labels beforehand?"
+                )
+
+        return gold_labels
 
     def get_label_matrices(self, cand_lists: List[List[Candidate]]) -> List[np.ndarray]:
         """Load dense matrix of Labels for each candidate_class.
