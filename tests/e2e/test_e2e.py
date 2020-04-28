@@ -600,6 +600,35 @@ def test_e2e():
 
     assert f1 > 0.7
 
+    # MLflow model
+    from tests.shared.hardware_fonduer_model import HardwareFonduerModel
+
+    code_paths = [
+        "hardware_fonduer_model.py",
+        "hardware_lfs.py",
+        "hardware_matchers.py",
+        "hardware_spaces.py",
+        "hardware_subclasses.py",
+        "hardware_throttlers.py",
+        "hardware_utils.py",
+    ]
+    code_paths = ["tests/shared/" + path for path in code_paths]
+
+    from fonduer.utils import fonduer_model
+
+    fonduer_model.save_model(
+        HardwareFonduerModel(),
+        "fonduer_disc_model",
+        code_paths=code_paths,
+        preprocessor=doc_preprocessor,
+        parser=corpus_parser,
+        mention_extractor=mention_extractor,
+        candidate_extractor=candidate_extractor,
+        featurizer=featurizer,
+        disc_model=model,
+        word2id=emb_layer.word2id,
+    )
+
     # Testing STL LSTM
     emmental.Meta.reset()
     emmental.init(fonduer.Meta.log_path)
