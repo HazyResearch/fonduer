@@ -67,29 +67,30 @@ class FonduerModel(pyfunc.PythonModel):
     def predict(self, model_input: DataFrame) -> DataFrame:
         df = DataFrame()
         for index, row in model_input.iterrows():
-            df = df.append(self._process(row["path"]))
+            df = df.append(self._process(row["html_path"], row["pdf_path"] if "pdf_path" in row.keys() else None))
         return df
 
-    def _process(self, path: str) -> DataFrame:
+    def _process(self, html_path: str, pdf_path: Optional[str] = None) -> DataFrame:
         """Run the whole pipeline of Fonduer.
 
-        :param path: a file/directory path.
+        :param html_path: a path of an HTML file or a directory containing files.
+        :param pdf_path: a path of a PDF file or a directory containing files.
         """
-        if not os.path.exists(path):
-            raise RuntimeError("path should be a file/directory path")
+        if not os.path.exists(html_path):
+            raise RuntimeError("html_path should be a file/directory path")
         # Parse docs
-        doc = next(self.preprocessor._parse_file(path, os.path.basename(path)))
+        doc = next(self.preprocessor._parse_file(html_path, os.path.basename(html_path)))
 
-        logger.info(f"Parsing {path}")
-        doc = self.parser.apply(doc, pdf_path=path)
+        logger.info(f"Parsing {html_path}")
+        doc = self.parser.apply(doc, pdf_path=pdf_path)
 
-        logger.info(f"Extracting mentions from {path}")
+        logger.info(f"Extracting mentions from {html_path}")
         doc = self.mention_extractor.apply(doc)
 
-        logger.info(f"Extracting candidates from {path}")
+        logger.info(f"Extracting candidates from {html_path}")
         doc = self.candidate_extractor.apply(doc, split=2)
 
-        logger.info(f"Classifying candidates from {path}")
+        logger.info(f"Classifying candidates from {html_path}")
         df = self._classify(doc)
         return df
 
