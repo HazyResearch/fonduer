@@ -4,7 +4,6 @@ from pandas import DataFrame
 from fonduer.learning.dataset import FonduerDataset
 from fonduer.parser.models import Document
 from fonduer.utils.fonduer_model import F_matrix, FonduerModel, L_matrix
-
 from tests.shared.hardware_subclasses import Part, PartTemp, PartVolt, Temp, Volt
 
 ATTRIBUTE = "stg_temp_max"

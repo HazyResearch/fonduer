@@ -67,7 +67,12 @@ class FonduerModel(pyfunc.PythonModel):
     def predict(self, model_input: DataFrame) -> DataFrame:
         df = DataFrame()
         for index, row in model_input.iterrows():
-            df = df.append(self._process(row["html_path"], row["pdf_path"] if "pdf_path" in row.keys() else None))
+            df = df.append(
+                self._process(
+                    row["html_path"],
+                    row["pdf_path"] if "pdf_path" in row.keys() else None,
+                )
+            )
         return df
 
     def _process(self, html_path: str, pdf_path: Optional[str] = None) -> DataFrame:
@@ -79,7 +84,9 @@ class FonduerModel(pyfunc.PythonModel):
         if not os.path.exists(html_path):
             raise RuntimeError("html_path should be a file/directory path")
         # Parse docs
-        doc = next(self.preprocessor._parse_file(html_path, os.path.basename(html_path)))
+        doc = next(
+            self.preprocessor._parse_file(html_path, os.path.basename(html_path))
+        )
 
         logger.info(f"Parsing {html_path}")
         doc = self.parser.apply(doc, pdf_path=pdf_path)
