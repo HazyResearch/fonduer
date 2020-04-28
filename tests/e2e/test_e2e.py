@@ -604,15 +604,8 @@ def test_e2e():
     from tests.shared.hardware_fonduer_model import HardwareFonduerModel
 
     code_paths = [
-        "hardware_fonduer_model.py",
-        "hardware_lfs.py",
-        "hardware_matchers.py",
-        "hardware_spaces.py",
-        "hardware_subclasses.py",
-        "hardware_throttlers.py",
-        "hardware_utils.py",
+        "tests",
     ]
-    code_paths = ["tests/shared/" + path for path in code_paths]
 
     from fonduer.utils import fonduer_model
 
