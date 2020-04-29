@@ -1,6 +1,9 @@
 Unreleased_
 -----------
 
+0.8.2_ - 2020-04-28
+-------------------
+
 Deprecated
 ^^^^^^^^^^
 
@@ -1110,7 +1113,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.1...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.2...master
+.. _0.8.2: https://github.com/hazyresearch/fonduer/compare/v0.8.0...v0.8.2
 .. _0.8.1: https://github.com/hazyresearch/fonduer/compare/v0.8.0...v0.8.1
 .. _0.8.0: https://github.com/hazyresearch/fonduer/compare/v0.7.1...v0.8.0
 .. _0.7.1: https://github.com/hazyresearch/fonduer/compare/v0.7.0...v0.7.1
