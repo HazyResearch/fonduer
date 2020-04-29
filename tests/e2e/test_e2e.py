@@ -628,7 +628,7 @@ def test_e2e():
         }
     )
     output = reloaded_model.predict(input)
-    assert all(output.columns == ["doc", "part", "val"])
+    assert all(output.columns == ["doc", "part", "val", "html_path"])
     assert len(output.index) >= 1
 
     # Testing STL LSTM

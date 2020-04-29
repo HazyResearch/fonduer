@@ -67,12 +67,11 @@ class FonduerModel(pyfunc.PythonModel):
     def predict(self, model_input: DataFrame) -> DataFrame:
         df = DataFrame()
         for index, row in model_input.iterrows():
-            df = df.append(
-                self._process(
-                    row["html_path"],
-                    row["pdf_path"] if "pdf_path" in row.keys() else None,
-                )
+            output = self._process(
+                row["html_path"], row["pdf_path"] if "pdf_path" in row.keys() else None
             )
+            output["html_path"] = row["html_path"]
+            df = df.append(output)
         return df
 
     def _process(self, html_path: str, pdf_path: Optional[str] = None) -> DataFrame:
