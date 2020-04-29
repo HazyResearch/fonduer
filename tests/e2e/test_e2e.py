@@ -3,7 +3,9 @@ import os
 import pickle
 
 import emmental
+import mlflow.pyfunc
 import numpy as np
+import pandas as pd
 import pytest
 from emmental.data import EmmentalDataLoader
 from emmental.learner import EmmentalLearner
@@ -600,19 +602,14 @@ def test_e2e():
 
     assert f1 > 0.7
 
-    # MLflow model
+    # Save a fonduer model
     from tests.shared.hardware_fonduer_model import HardwareFonduerModel
-
-    code_paths = [
-        "tests",
-    ]
-
     from fonduer.utils import fonduer_model
 
     fonduer_model.save_model(
         HardwareFonduerModel(),
         "fonduer_disc_model",
-        code_paths=code_paths,
+        code_paths=["tests"],
         preprocessor=doc_preprocessor,
         parser=corpus_parser,
         mention_extractor=mention_extractor,
@@ -621,6 +618,18 @@ def test_e2e():
         disc_model=model,
         word2id=emb_layer.word2id,
     )
+
+    # Load the saved model
+    reloaded_model = mlflow.pyfunc.load_model("fonduer_disc_model")
+    input = pd.DataFrame(
+        data={
+            "html_path": ["tests/data/html/112823.html"],
+            "pdf_path": ["tests/data/pdf/112823.pdf"],
+        }
+    )
+    output = reloaded_model.predict(input)
+    assert all(output.columns == ["doc", "part", "val"])
+    assert len(output.index) >= 1
 
     # Testing STL LSTM
     emmental.Meta.reset()
