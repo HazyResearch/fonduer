@@ -8,10 +8,7 @@ from fonduer.utils.utils_parser import build_node
 
 
 class TextDocPreprocessor(DocPreprocessor):
-    """A ``Document`` generator for plain text files.
-
-    Assumes one ``Document`` per file.
-    """
+    """A ``Document`` generator for plain text files."""
 
     def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         with codecs.open(fp, encoding=self.encoding) as f:

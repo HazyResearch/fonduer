@@ -10,6 +10,7 @@ from fonduer.utils.utils_parser import build_node
 class TSVDocPreprocessor(DocPreprocessor):
     """A ``Document`` generator for TSV files.
 
+    It treats each line in the input file as a ``Document``.
     The TSV file should have one (doc_name <tab> doc_text) per line.
     """
 

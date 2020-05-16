@@ -7,7 +7,10 @@ from fonduer.parser.models.document import Document
 
 
 class DocPreprocessor(object):
-    """An abstract class of a ``Document`` generator."""
+    """An abstract class of a ``Document`` generator.
+
+    Unless otherwise stated by a subclass, it's assumed that one ``Document`` per file.
+    """
 
     def __init__(
         self, path: str, encoding: str = "utf-8", max_docs: int = sys.maxsize
