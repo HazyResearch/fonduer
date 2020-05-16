@@ -528,12 +528,12 @@ def test_pickle_subclasses():
     Temp = mention_subclass("Temp")
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
-    logger.info(f"Test if mention/candidate subclasses are picklable")
+    logger.info("Test if mention/candidate subclasses are picklable")
     pickle.loads(pickle.dumps(Part))
     pickle.loads(pickle.dumps(Temp))
     pickle.loads(pickle.dumps(PartTemp))
 
-    logger.info(f"Test if their objects are pickable")
+    logger.info("Test if their objects are pickable")
     part = Part()
     temp = Temp()
     parttemp = PartTemp()

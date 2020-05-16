@@ -1,5 +1,5 @@
 black>=18.9b0
-flake8
+flake8>=3.8.0
 mypy
 isort
 pre-commit
