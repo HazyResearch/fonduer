@@ -25,6 +25,7 @@ submit your contributions as a pull request.
     user/features
     user/supervision
     user/learning
+    user/packaging
     user/config
     user/faqs
 

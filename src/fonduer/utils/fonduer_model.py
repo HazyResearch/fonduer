@@ -57,14 +57,52 @@ def _get_default_conda_env() -> Optional[Dict[str, Any]]:
 
 
 class FonduerModel(pyfunc.PythonModel):
-    """
-    A custom MLflow model for Fonduer.
+    """A custom MLflow model for Fonduer.
+
+    This class is intended to be subclassed. Example:
+
+    .. code-block:: python
+        :caption: your_fonduer_model.py
+
+        class YourFonduerModel(FonduerModel):
+            def _classify(self, doc: Document) -> DataFrame:
+                # Your implementation
+
+    >>> from your_fonduer_model import YourFonduerModel
+    >>> from fonduer.utils import fonduer_model
+    >>> fonduer_model.save_model(
+            fonduer_model=YourFonduerModel(),
+            path="fonduer_disc_model",
+            code_paths=["tests"],
+            preprocessor=preprocessor,
+            parser=parser,
+            mention_extractor=mention_extractor,
+            candidate_extractor=candidate_extractor,
+            featurizer=featurizer,
+            disc_model=model,
+            word2id=emb_layer.word2id,
+        )
+
     """
 
     def _classify(self, doc: Document) -> DataFrame:
+        """Classify candidates by a discriminative model (or by a generative model)."""
         raise NotImplementedError()
 
     def predict(self, model_input: DataFrame) -> DataFrame:
+        """Take html_path (and pdf_path) as input and return extracted information.
+
+        This method is required and its signature is defined by the MLflow's convention.
+        See MLflow_ for more details.
+
+        .. _MLflow:
+            https://www.mlflow.org/docs/latest/models.html#python-function-python-function
+
+        :param model_input: Pandas DataFrame with rows as docs and colums as params.
+            params should include "html_path" and can optionally include "pdf_path".
+        :return: Pandas DataFrame containing the output from :func:`_classify`, which
+            depends on how it is implemented by a subclass.
+        """
         df = DataFrame()
         for index, row in model_input.iterrows():
             output = self._process(
@@ -102,9 +140,7 @@ class FonduerModel(pyfunc.PythonModel):
 
 
 def _load_pyfunc(model_path: str) -> Any:
-    """
-    Load PyFunc implementation. Called by ``pyfunc.load_pyfunc``.
-    """
+    """Load PyFunc implementation. Called by ``pyfunc.load_pyfunc``."""
     model = pickle.load(open(os.path.join(model_path, "model.pkl"), "rb"))
     fonduer_model = model["fonduer_model"]
     fonduer_model.preprocessor = model["preprosessor"]
@@ -165,6 +201,27 @@ def log_model(
     disc_model: Optional[EmmentalModel] = None,
     word2id: Optional[Dict] = None,
 ) -> None:
+    """Log a Fonduer model as an MLflow artifact for the current run.
+
+    :param fonduer_model: Fonduer model to be saved.
+    :param artifact_path: Run-relative artifact path.
+    :param preprocessor: the doc preprocessor.
+    :param parser: self-explanatory
+    :param mention_extractor: self-explanatory
+    :param candidate_extractor: self-explanatory
+    :param conda_env: A dictionary representation of a Conda environment.
+    :param code_paths: A list of local filesystem paths to Python file dependencies,
+        or directories containing file dependencies. These files are prepended to the
+        system path when the model is loaded.
+    :param model_type: the model type, either "discriminative" or "generative",
+        defaults to "discriminative".
+    :param labeler: a labeler, defaults to None.
+    :param lfs: a list of list of labeling functions.
+    :param gen_models: a list of generative models, defaults to None.
+    :param featurizer: a featurizer, defaults to None.
+    :param disc_model: a discriminative model, defaults to None.
+    :param word2id: a word embedding map.
+    """
     Model.log(
         artifact_path=artifact_path,
         flavor=sys.modules[__name__],
@@ -203,15 +260,16 @@ def save_model(
     disc_model: Optional[EmmentalModel] = None,
     word2id: Optional[Dict] = None,
 ) -> None:
-    """Save a custom MLflow model to a path on the local file system.
+    """Save a Fonduer model to a path on the local file system.
 
-    :param fonduer_model: the model to be saved.
+    :param fonduer_model: Fonduer model to be saved.
     :param path: the path on the local file system.
     :param preprocessor: the doc preprocessor.
     :param parser: self-explanatory
     :param mention_extractor: self-explanatory
     :param candidate_extractor: self-explanatory
     :param mlflow_model: model configuration.
+    :param conda_env: A dictionary representation of a Conda environment.
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
@@ -281,8 +339,8 @@ def save_model(
 
 
 class _FonduerWrapper(object):
-    """
-    Wrapper class that creates a predict function such that
+    """Wrapper class that creates a predict function.
+
     predict(data: pd.DataFrame) -> model's output as pd.DataFrame (pandas DataFrame)
     """
 
@@ -300,9 +358,12 @@ class _FonduerWrapper(object):
 def F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix:
     """Convert features (the output from FeaturizerUDF.apply) into a sparse matrix.
 
-    Note that FeaturizerUDF.apply returns list of features: List[List[Dict[str, Any]]],
-    where the outer list represents candidate_classes.
-    Meanwhile this method takes features: List[Dict[str, Any]] of each candidate_class.
+    Note that :func:`FeaturizerUDF.apply` returns a list of list of feature mapping,
+    where the outer list represents candidate_classes, while this method takes a list
+    of feature mapping of each candidate_class.
+
+    :param features: a list of feature mapping (key: key_name, value=feature).
+    :param key_names: a list of all key_names.
     """
     keys_map = {}
     for (i, k) in enumerate(key_names):
@@ -324,11 +385,14 @@ def F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix
 def L_matrix(labels: List[Dict[str, Any]], key_names: List[str]) -> np.ndarray:
     """Convert labels (the output from LabelerUDF.apply) into a dense matrix.
 
-    Note that LabelerUDF.apply returns list of labels: List[List[Dict[str, Any]]],
-    where the outer list represents candidate_classes.
-    Meanwhile this method takes labels: List[Dict[str, Any]] of each candidate_class.
+    Note that :func:`LabelerUDF.apply` returns a list of list of label mapping,
+    where the outer list represents candidate_classes, while this method takes a list
+    of label mapping of each candidate_class.
 
-    Also note that the input labels are 0-indexed ({0, 1, ..., k}),
-    while the output labels are -1-indexed ({-1, 0, ..., k-1}).
+    Also note that the input labels are 0-indexed (``{0, 1, ..., k}``),
+    while the output labels are -1-indexed (``{-1, 0, ..., k-1}``).
+
+    :param labels: a list of label mapping (key: key_name, value=label).
+    :param key_names: a list of all key_names.
     """
     return unshift_label_matrix(F_matrix(labels, key_names))
