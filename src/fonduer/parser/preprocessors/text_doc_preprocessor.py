@@ -8,18 +8,9 @@ from fonduer.utils.utils_parser import build_node
 
 
 class TextDocPreprocessor(DocPreprocessor):
-    """A generator which processes a text file or directory of text files into
-    a set of Document objects.
+    """A ``Document`` generator for plain text files.
 
-    Assumes one document per file.
-
-    :param encoding: file encoding to use (e.g. "utf-8").
-    :type encoding: str
-    :param path: filesystem path to file or directory to parse.
-    :type path: str
-    :param max_docs: the maximum number of ``Documents`` to produce.
-    :type max_docs: int
-    :rtype: A generator of ``Documents``.
+    Assumes one ``Document`` per file.
     """
 
     def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
