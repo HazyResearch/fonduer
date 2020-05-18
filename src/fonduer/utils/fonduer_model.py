@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 MODEL_TYPE = "model_type"
 
 
-def get_default_conda_env() -> Optional[Dict[str, Any]]:
+def _get_default_conda_env() -> Optional[Dict[str, Any]]:
     """
     :return: The default Conda environment for MLflow Models produced by calls to
              :func:`save_model()` and :func:`log_model()`.
@@ -259,7 +259,7 @@ def save_model(
 
     conda_env_subpath = "conda.yaml"
     if conda_env is None:
-        conda_env = get_default_conda_env()
+        conda_env = _get_default_conda_env()
     elif not isinstance(conda_env, dict):
         with open(conda_env, "r") as f:
             conda_env = yaml.safe_load(f)
