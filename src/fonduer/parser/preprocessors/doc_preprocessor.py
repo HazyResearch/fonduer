@@ -9,7 +9,8 @@ from fonduer.parser.models.document import Document
 class DocPreprocessor(object):
     """An abstract class of a ``Document`` generator.
 
-    Unless otherwise stated by a subclass, it's assumed that there is one ``Document`` per file.
+    Unless otherwise stated by a subclass, it's assumed that there is one ``Document``
+    per file.
     """
 
     def __init__(
