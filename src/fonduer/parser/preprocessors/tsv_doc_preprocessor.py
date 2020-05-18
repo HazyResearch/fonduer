@@ -8,20 +8,10 @@ from fonduer.utils.utils_parser import build_node
 
 
 class TSVDocPreprocessor(DocPreprocessor):
-    """A generator which processes a TSV file or directory of TSV files into
-    a set of Document objects.
+    """A ``Document`` generator for TSV files.
 
+    It treats each line in the input file as a ``Document``.
     The TSV file should have one (doc_name <tab> doc_text) per line.
-
-    :param path: filesystem path to file or directory to parse.
-    :type path: str
-    :param encoding: file encoding to use (e.g. "utf-8").
-    :type encoding: str
-    :param max_docs: the maximum number of ``Documents`` to produce.
-    :type max_docs: int
-    :param header: if the TSV file contain header or not. default = False
-    :type header: bool
-    :rtype: A generator of ``Documents``.
     """
 
     def __init__(
@@ -31,6 +21,18 @@ class TSVDocPreprocessor(DocPreprocessor):
         max_docs: int = sys.maxsize,
         header: bool = False,
     ) -> None:
+        """
+        :param path: a path to file or directory, or a glob pattern. The basename
+            (as returned by ``os.path.basename``) should be unique among all files.
+        :type path: str
+        :param encoding: file encoding to use (e.g. "utf-8").
+        :type encoding: str
+        :param max_docs: the maximum number of ``Documents`` to produce.
+        :type max_docs: int
+        :param header: if the TSV file contain header or not. default = False
+        :type header: bool
+        :rtype: A generator of ``Documents``.
+        """
         super().__init__(path, encoding, max_docs)
         self.header = header
 

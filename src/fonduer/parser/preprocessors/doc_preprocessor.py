@@ -7,22 +7,26 @@ from fonduer.parser.models.document import Document
 
 
 class DocPreprocessor(object):
-    """
-    A generator which processes a file or directory of files into a set of
-    Document objects.
+    """An abstract class of a ``Document`` generator.
 
-    :param path: filesystem path to file or directory to parse.
-    :type path: str
-    :param encoding: file encoding to use (e.g. "utf-8").
-    :type encoding: str
-    :param max_docs: the maximum number of ``Documents`` to produce.
-    :type max_docs: int
-    :rtype: A generator of ``Documents``.
+    Unless otherwise stated by a subclass, it's assumed that there is one ``Document``
+    per file.
     """
 
     def __init__(
         self, path: str, encoding: str = "utf-8", max_docs: int = sys.maxsize
     ) -> None:
+        """
+        :param path: a path to file or directory, or a glob pattern. The basename
+            (as returned by ``os.path.basename``) should be unique among all files.
+        :type path: str
+        :param encoding: file encoding to use, defaults to "utf-8".
+        :type encoding: str, optional
+        :param max_docs: the maximum number of ``Documents`` to produce,
+            defaults to sys.maxsize.
+        :type max_docs: int, optional
+        :rtype: A generator of ``Documents``.
+        """
         self.path = path
         self.encoding = encoding
         self.max_docs = max_docs
