@@ -23,7 +23,8 @@ def _min_range_diff(
             for ii in itertools.product(
                 list(range(a_start, a_end + 1)), list(range(b_start, b_end + 1))
             )
-        ]
+        ],
+        key=abs
     )
 
 
