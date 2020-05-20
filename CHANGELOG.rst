@@ -1,6 +1,10 @@
 Unreleased_
 -----------
 
+Changed
+^^^^^^^
+* `@HiromuHota`_: Enabled "Type hints (PEP 484) support for the Sphinx autodoc extension."
+
 0.8.2_ - 2020-04-28
 -------------------
 
