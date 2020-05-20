@@ -5,6 +5,11 @@ Changed
 ^^^^^^^
 * `@HiromuHota`_: Enabled "Type hints (PEP 484) support for the Sphinx autodoc extension."
 
+Fixed
+^^^^^
+* `@kaikun213`_: Fix bug in table range difference calculations.
+  (`#420 <https://github.com/HazyResearch/fonduer/pull/420>`_)
+
 0.8.2_ - 2020-04-28
 -------------------
 
@@ -1149,9 +1154,10 @@ Added
 ..
   For convenience, all username links for contributors can be listed here
 
-.. _@lukehsiao: https://github.com/lukehsiao
-.. _@senwu: https://github.com/senwu
-.. _@prabh06: https://github.com/Prabh06
 .. _@HiromuHota: https://github.com/HiromuHota
-.. _@j-rausch: https://github.com/j-rausch
 .. _@KenSugimoto: https://github.com/KenSugimoto
+.. _@j-rausch: https://github.com/j-rausch
+.. _@kaikun213: https://github.com/kaikun213
+.. _@lukehsiao: https://github.com/lukehsiao
+.. _@prabh06: https://github.com/Prabh06
+.. _@senwu: https://github.com/senwu
