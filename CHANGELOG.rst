@@ -5,6 +5,10 @@ Added
 ^^^^^
 * `@HiromuHota`_: Add get_bbox() to :class:`Sentence` and :class:`SpanMention`.
   (`#429 <https://github.com/HazyResearch/fonduer/pull/429>`_)
+* `@HiromuHota`_: Add a custom MLflow model that allows you to package a Fonduer model.
+  See `here <../user/packaging.html>`_ for how to use it.
+  (`#259 <https://github.com/HazyResearch/fonduer/issues/259>`_)
+  (`#407 <https://github.com/HazyResearch/fonduer/pull/407>`_)
 
 Changed
 ^^^^^^^
