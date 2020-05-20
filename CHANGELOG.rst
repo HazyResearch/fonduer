@@ -27,6 +27,9 @@ Changed
   Since the Japanese tokenizer remains the same, there should be no impact on users.
   (`#384 <https://github.com/HazyResearch/fonduer/issues/384>`_)
   (`#432 <https://github.com/HazyResearch/fonduer/pull/432>`_)
+* `@HiromuHota`_: Log a stack trace on parsing error for better debug experience.
+  (`#478 <https://github.com/HazyResearch/fonduer/issues/478>`_)
+  (`#479 <https://github.com/HazyResearch/fonduer/pull/479>`_)
 
 Deprecated
 ^^^^^^^^^^
