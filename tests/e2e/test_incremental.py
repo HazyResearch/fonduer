@@ -92,6 +92,12 @@ def test_incremental():
     assert session.query(Part).count() == 11
     assert session.query(Temp).count() == 8
 
+    # Test if clear=True works
+    mention_extractor.apply(docs, parallelism=PARALLEL, clear=True)
+
+    assert session.query(Part).count() == 11
+    assert session.query(Temp).count() == 8
+
     # Candidate Extraction
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
 
