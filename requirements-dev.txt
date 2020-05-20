@@ -6,3 +6,4 @@ pre-commit
 pytest
 sphinx
 sphinx_rtd_theme
+sphinx_autodoc_typehints
