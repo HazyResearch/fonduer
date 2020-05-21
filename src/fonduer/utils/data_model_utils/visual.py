@@ -182,13 +182,16 @@ def get_horz_ngrams(
     Note that if a candidate is passed in, all of its Mentions will be searched.
 
     :param mention: The Mention to evaluate
-    :param attrib: The token attribute type (e.g. words, lemmas, poses)
+    :param attrib: The token attribute type (e.g. words, lemmas, pos_tags).
+        This option is valid only when ``from_sentence==True``.
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :param from_sentence: If True, returns ngrams from any horizontally aligned
-        Sentences, rather than just horizontally aligned ngrams themselves.
-    :rtype: a *generator* of ngrams
+    :param from_sentence: If True, return ngrams of any ``Sentence`` that is
+        horizontally aligned (in the same page) with the mention's ``Sentence``.
+        If False, return ngrams that are horizontally aligned with the mention
+        no matter which ``Sentence`` they are from.
+    :return: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -211,13 +214,16 @@ def get_vert_ngrams(
     Note that if a candidate is passed in, all of its Mentions will be searched.
 
     :param mention: The Mention to evaluate
-    :param attrib: The token attribute type (e.g. words, lemmas, poses)
+    :param attrib: The token attribute type (e.g. words, lemmas, pos_tags).
+        This option is valid only when ``from_sentence==True``.
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :param from_sentence: If True, returns ngrams from any horizontally aligned
-        Sentences, rather than just horizontally aligned ngrams themselves.
-    :rtype: a *generator* of ngrams
+    :param from_sentence: If True, return ngrams of any ``Sentence`` that is
+        vertically aligned (in the same page) with the mention's ``Sentence``.
+        If False, return ngrams that are vertically aligned with the mention
+        no matter which ``Sentence`` they are from.
+    :return: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -236,8 +242,6 @@ def _get_direction_ngrams(
     lower: bool,
     from_sentence: bool,
 ) -> Iterator[str]:
-    # TODO: this currently looks only in current table;
-    #   precompute over the whole document/page instead
     bbox_direction_aligned = (
         bbox_vert_aligned if direction == "vert" else bbox_horz_aligned
     )
@@ -245,15 +249,21 @@ def _get_direction_ngrams(
     f = (lambda w: w.lower()) if lower else (lambda w: w)
     spans = _to_spans(c)
     for span in spans:
-        if not span.sentence.is_tabular() or not span.sentence.is_visual():
+        if not span.sentence.is_visual():
             continue
-        for sentence in span.sentence.table.sentences:
+        for sentence in span.sentence.document.sentences:
+            # Skip if not in the same page.
+            if (
+                bbox_from_sentence(span.sentence).page
+                != bbox_from_sentence(sentence).page
+            ):
+                continue
             if from_sentence:
                 if (
                     bbox_direction_aligned(
                         bbox_from_sentence(sentence), bbox_from_span(span)
                     )
-                    and sentence is not span.sentence
+                    and sentence is not span.sentence  # not from its Sentence
                 ):
                     for ngram in tokens_to_ngrams(
                         getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
@@ -261,10 +271,10 @@ def _get_direction_ngrams(
                         yield ngram
             else:
                 for ts in ngrams_space.apply(sentence):
-                    if bbox_direction_aligned(
-                        bbox_from_span(ts), bbox_from_span(span)
-                    ) and not (
-                        sentence == span.sentence and ts.get_span() in span.get_span()
+                    if (  # True if visually aligned AND not from itself.
+                        bbox_direction_aligned(bbox_from_span(ts), bbox_from_span(span))
+                        and ts not in span
+                        and span not in ts
                     ):
                         yield f(ts.get_span())
 

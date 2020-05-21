@@ -11,6 +11,10 @@ Fixed
   (`#420 <https://github.com/HazyResearch/fonduer/pull/420>`_)
 * `@HiromuHota`_: mention_extractor.apply with clear=True now works even if it's not the first run.
   (`#424 <https://github.com/HazyResearch/fonduer/pull/424>`_)
+* `@HiromuHota`_: Fix :func:`get_horz_ngrams` and :func:`get_vert_ngrams` so that they
+  work even when the input mention is not tabular.
+  (`#425 <https://github.com/HazyResearch/fonduer/issues/425>`_)
+  (`#426 <https://github.com/HazyResearch/fonduer/pull/426>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
