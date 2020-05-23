@@ -9,6 +9,8 @@ Fixed
 ^^^^^
 * `@kaikun213`_: Fix bug in table range difference calculations.
   (`#420 <https://github.com/HazyResearch/fonduer/pull/420>`_)
+* `@HiromuHota`_: mention_extractor.apply with clear=True now works even if it's not the first run.
+  (`#424 <https://github.com/HazyResearch/fonduer/pull/424>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
