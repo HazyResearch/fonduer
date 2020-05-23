@@ -27,7 +27,6 @@ def get_between_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If 'True', all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     if len(c) != 2:
         raise ValueError("Only applicable to binary Candidates")
@@ -81,7 +80,6 @@ def get_left_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     span = _to_span(mention)
     i = span.get_word_start_index()
@@ -114,7 +112,6 @@ def get_right_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     span = _to_span(mention, idx=-1)
     i = span.get_word_end_index()

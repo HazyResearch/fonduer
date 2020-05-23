@@ -41,9 +41,7 @@ class Featurizer(UDFRunner):
 
     :param session: The database session to use.
     :param candidate_classes: A list of candidate_subclasses to featurize.
-    :type candidate_classes: list
     :param parallelism: The number of processes to use in parallel. Default 1.
-    :type parallelism: int
     """
 
     def __init__(
@@ -76,14 +74,11 @@ class Featurizer(UDFRunner):
             documents.
         :param split: If docs is None, apply features to the candidates in this
             particular split.
-        :type split: int
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the Featurizer if
             it is provided.
-        :type parallelism: int
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
-        :type progress_bar: bool
         """
         self.apply(
             docs=docs,
@@ -109,20 +104,15 @@ class Featurizer(UDFRunner):
             documents.
         :param split: If docs is None, apply features to the candidates in this
             particular split.
-        :type split: int
         :param train: Whether or not to update the global key set of features
             and the features of candidates.
-        :type train: bool
         :param clear: Whether or not to clear the features table before
             applying features.
-        :type clear: bool
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the Featurizer if
             it is provided.
-        :type parallelism: int
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
-        :type progress_bar: bool
         """
         if docs:
             # Call apply on the specified docs for all splits
@@ -162,11 +152,9 @@ class Featurizer(UDFRunner):
         """Upsert the specified keys to FeatureKey.
 
         :param keys: A list of FeatureKey names to upsert.
-        :type keys: list | tuple
         :param candidate_classes: A list of the Candidates to upsert the key for.
             If None, upsert the keys for all candidate classes associated with
             this Featurizer.
-        :type candidate_classes: list | tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
@@ -210,11 +198,9 @@ class Featurizer(UDFRunner):
         """Drop the specified keys from FeatureKeys.
 
         :param keys: A list of FeatureKey names to delete.
-        :type keys: list, tuple
         :param candidate_classes: A list of the Candidates to drop the key for.
             If None, drops the keys for all candidate classes associated with
             this Featurizer.
-        :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
@@ -255,7 +241,6 @@ class Featurizer(UDFRunner):
         """Return a list of keys for the Features.
 
         :return: List of FeatureKeys.
-        :rtype: list
         """
         return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
@@ -269,9 +254,7 @@ class Featurizer(UDFRunner):
         """Delete Features of each class from the database.
 
         :param train: Whether or not to clear the FeatureKeys
-        :type train: bool
         :param split: Which split of candidates to clear features from.
-        :type split: int
         """
         # Clear Features for the candidates in the split passed in.
         logger.info(f"Clearing Features (split {split})")
@@ -316,10 +299,8 @@ class Featurizer(UDFRunner):
         """Load sparse matrix of Features for each candidate_class.
 
         :param cand_lists: The candidates to get features for.
-        :type cand_lists: List of list of candidates.
         :return: A list of MxN sparse matrix where M are the candidates and N is the
             features.
-        :rtype: list[csr_matrix]
         """
         return get_sparse_matrix(self.session, FeatureKey, cand_lists)
 

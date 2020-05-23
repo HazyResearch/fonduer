@@ -23,8 +23,8 @@ def get_tag(mention: Union[Candidate, Mention, TemporarySpanMention]) -> str:
     If a candidate is passed in, only the tag of its first Mention is returned.
 
     These may be tags such as 'p', 'h2', 'table', 'div', etc.
+
     :param mention: The Mention to evaluate
-    :rtype: string
     """
     span = _to_span(mention)
     return str(span.sentence.html_tag)
@@ -41,7 +41,7 @@ def get_attributes(
     [u'style=padding-top: 8pt;padding-left: 20pt;text-indent: 0pt;text-align: left;']
 
     :param mention: The Mention to evaluate
-    :rtype: list of strings representing HTML attributes
+    :return: list of strings representing HTML attributes
     """
     span = _to_span(mention)
     return span.sentence.html_attrs
@@ -67,7 +67,6 @@ def get_parent_tag(
     If a candidate is passed in, only the tag of its first Mention is returned.
 
     :param mention: The Mention to evaluate
-    :rtype: string
     """
     span = _to_span(mention)
     i = _get_node(span.sentence)
@@ -85,7 +84,6 @@ def get_prev_sibling_tags(
     considered in the calculation.
 
     :param mention: The Mention to evaluate
-    :rtype: list of strings
     """
     span = _to_span(mention)
     prev_sibling_tags: List[str] = []
@@ -107,7 +105,6 @@ def get_next_sibling_tags(
     are considered in the calculation.
 
     :param mention: The Mention to evaluate
-    :rtype: list of strings
     """
     span = _to_span(mention)
     next_sibling_tags = []
@@ -127,7 +124,6 @@ def get_ancestor_class_names(
     returned.
 
     :param mention: The Mention to evaluate
-    :rtype: list of strings
     """
     span = _to_span(mention)
     class_names: List[str] = []
@@ -147,7 +143,6 @@ def get_ancestor_tag_names(
     If a candidate is passed in, only the ancestors of its first Mention are returned.
 
     :param mention: The Mention to evaluate
-    :rtype: list of strings
     """
     span = _to_span(mention)
     tag_names: List[str] = []
@@ -167,7 +162,6 @@ def get_ancestor_id_names(
     returned.
 
     :param mention: The Mention to evaluate
-    :rtype: list of strings
     """
     span = _to_span(mention)
     id_names: List[str] = []
@@ -184,7 +178,6 @@ def common_ancestor(c: Tuple[SpanMention, SpanMention]) -> List[str]:
     In particular, this is the common path of HTML tags.
 
     :param c: The binary-Mention Candidate to evaluate
-    :rtype: list of strings
     """
     span1 = _to_span(c[0])
     span2 = _to_span(c[1])
@@ -212,7 +205,6 @@ def lowest_common_ancestor_depth(c: Tuple[SpanMention, SpanMention]) -> int:
     document.
 
     :param c: The binary-Mention Candidate to evaluate
-    :rtype: integer
     """
     span1 = _to_span(c[0])
     span2 = _to_span(c[1])

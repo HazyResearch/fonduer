@@ -80,11 +80,8 @@ def confusion_matrix(pred: Set, gold: Set) -> Tuple[Set, Set, Set]:
     This can be used for both entity-level and mention-level
 
     :param pred: a set of predicted entities/candidates
-    :type pred: set
     :param gold: a set of golden entities/candidates
-    :type gold: set
     :return: a tuple of TP, FP, and FN
-    :rtype: (set, set, set)
     """
     if not isinstance(pred, set):
         pred = set(pred)
@@ -104,11 +101,8 @@ def mention_to_tokens(
 
     :param mention: mention object.
     :param token_type: token type that wants to extract (e.g. words, lemmas, poses).
-    :type token_type: str
     :param lowercase: use lowercase or not.
-    :type lowercase: bool
     :return: The token list.
-    :rtype: list
     """
 
     tokens = getattr(mention.context.sentence, token_type)
@@ -120,13 +114,9 @@ def mark(l: int, h: int, idx: int) -> List[Tuple[int, str]]:
     Produce markers based on argument positions
 
     :param l: sentence position of first word in argument.
-    :type l: int
     :param h: sentence position of last word in argument.
-    :type h: int
     :param idx: argument index (1 or 2).
-    :type idx: int
     :return: markers.
-    :rtype: list of markers
     """
 
     return [(l, f"~~[[{idx}"), (h + 1, f"{idx}]]~~")]
@@ -136,15 +126,14 @@ def mark_sentence(s: List[str], args: List[Tuple[int, int, int]]) -> List[str]:
     """Insert markers around relation arguments in word sequence
 
     :param s: list of tokens in sentence.
-    :type s: list
     :param args: list of triples (l, h, idx) as per @_mark(...) corresponding
                to relation arguments
-    :type args: list
     :return: The marked sentence.
-    :rtype: list
 
-    Example: Then Barack married Michelle.
+    Example:
+         Then Barack married Michelle.
          ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
+
     """
 
     marks = sorted([y for m in args for y in mark(*m)], reverse=True)
@@ -160,9 +149,7 @@ def collect_word_counter(
     """Collect word counter from candidates
 
     :param candidates: The candidates used to collect word counter.
-    :type candidates: list (of list) of candidates
     :return: The word counter.
-    :rtype: collections.Counter
     """
     word_counter: Counter = Counter()
 

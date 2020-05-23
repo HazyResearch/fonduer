@@ -24,14 +24,10 @@ class TSVDocPreprocessor(DocPreprocessor):
         """
         :param path: a path to file or directory, or a glob pattern. The basename
             (as returned by ``os.path.basename``) should be unique among all files.
-        :type path: str
         :param encoding: file encoding to use (e.g. "utf-8").
-        :type encoding: str
         :param max_docs: the maximum number of ``Documents`` to produce.
-        :type max_docs: int
         :param header: if the TSV file contain header or not. default = False
-        :type header: bool
-        :rtype: A generator of ``Documents``.
+        :return: A generator of ``Documents``.
         """
         super().__init__(path, encoding, max_docs)
         self.header = header

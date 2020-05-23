@@ -51,11 +51,7 @@ class TemporarySpanMention(TemporaryContext):
         return hash(self.sentence) + hash(self.char_start) + hash(self.char_end)
 
     def get_stable_id(self) -> str:
-        """
-        Return a stable id.
-
-        :rtype: string
-        """
+        """Return a stable id."""
         return construct_stable_id(
             self.sentence,
             self._get_polymorphic_identity(),
@@ -81,7 +77,6 @@ class TemporarySpanMention(TemporaryContext):
         """Get the index of the starting word of the span.
 
         :return: The word-index of the start of the span.
-        :rtype: int
         """
         return self._char_to_word_index(self.char_start)
 
@@ -89,7 +84,6 @@ class TemporarySpanMention(TemporaryContext):
         """Get the index of the ending word of the span.
 
         :return: The word-index of the last word of the span.
-        :rtype: int
         """
         return self._char_to_word_index(self.char_end)
 
@@ -97,7 +91,6 @@ class TemporarySpanMention(TemporaryContext):
         """Get the number of words in the span.
 
         :return: The number of words in the span (n of the ngrams).
-        :rtype: int
         """
         return self.get_word_end_index() - self.get_word_start_index() + 1
 
@@ -105,9 +98,7 @@ class TemporarySpanMention(TemporaryContext):
         """Return the index of the **word this char is in**.
 
         :param ci: The character-level index of the char.
-        :type ci: int
         :return: The word-level index the char was in.
-        :rtype: int
         """
         i = None
         for i, co in enumerate(self.sentence.char_offsets):
@@ -121,9 +112,7 @@ class TemporarySpanMention(TemporaryContext):
         """Return the character-level index (offset) of the word's start.
 
         :param wi: The word-index.
-        :type wi: int
         :return: The character-level index of the word's start.
-        :rtype: int
         """
         return self.sentence.char_offsets[wi]
 
@@ -136,9 +125,7 @@ class TemporarySpanMention(TemporaryContext):
 
 
         :param a: The attribute to get tokens for.
-        :type a: str
         :return: The tokens of sentence attribute defined by *a* for the span.
-        :rtype: list
         """
         return self.sentence.__getattribute__(a)[
             self.get_word_start_index() : self.get_word_end_index() + 1
@@ -152,11 +139,8 @@ class TemporarySpanMention(TemporaryContext):
             sep.join(span.a)
 
         :param a: The attribute to get a span for.
-        :type a: str
         :param sep: The separator to use for the join.
-        :type sep: str
         :return: The joined tokens, or text if a="words".
-        :rtype: str
         """
         # NOTE: Special behavior for words currently (due to correspondence
         # with char_offsets)
@@ -169,7 +153,6 @@ class TemporarySpanMention(TemporaryContext):
         """Return the text of the ``Span``.
 
         :return: The text of the ``Span``.
-        :rtype: str
         """
         return self.get_attrib_span("words")
 

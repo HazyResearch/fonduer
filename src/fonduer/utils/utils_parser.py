@@ -6,11 +6,8 @@ def build_node(type: str, name: str, content: str) -> str:
     Wrap up content in to a html node.
 
     :param type: content type (e.g., doc, section, text, figure)
-    :type path: str
     :param name: content name (e.g., the name of the section)
-    :type path: str
     :param name: actual content
-    :type path: str
     :return: new String with content in html format
     """
     if type == "doc":
@@ -35,13 +32,9 @@ def column_constructor(
         (type, name, content).
 
     :param text: content to be converted ()
-    :type path: str
     :param type: content name (default: None)
-    :type path: str
     :param type: content type (default: text)
-    :type path: str
     :param delim: delimiter to split the content
-    :type path: str
     :return: A list of tuple where each tuple contains
         (content type, content name, content)
     """

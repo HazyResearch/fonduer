@@ -36,7 +36,6 @@ def extract_textual_features(
     """Extract textual features.
 
     :param candidates: A list of candidates to extract features from
-    :type candidates: list
     """
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:

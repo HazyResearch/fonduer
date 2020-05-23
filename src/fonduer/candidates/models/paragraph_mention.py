@@ -44,11 +44,7 @@ class TemporaryParagraphMention(TemporaryContext):
         return hash(self.paragraph)
 
     def get_stable_id(self) -> str:
-        """
-        Return a stable id.
-
-        :rtype: string
-        """
+        """Return a stable id."""
         return construct_stable_id(
             self.paragraph, self._get_polymorphic_identity(), 0, 0
         )

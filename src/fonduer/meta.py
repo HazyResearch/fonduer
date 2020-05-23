@@ -24,9 +24,7 @@ def init_logging(
     Will use a nested directory whose name is the current timestamp.
 
     :param log_dir: The directory to store logs in.
-    :type log_dir: str
     :param format: The logging format string to use.
-    :type format: str
     :param level: The logging level to use, e.g., logging.INFO.
     """
 

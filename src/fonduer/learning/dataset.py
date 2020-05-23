@@ -18,20 +18,13 @@ class FonduerDataset(EmmentalDataset):
     list of candidates and corresponding feature matrix as input and wraps them.
 
     :param name: The name of the dataset.
-    :type name: str
     :param candidates: The list of candidates.
-    :type candidates: List[Candidate]
     :param features: The corresponding feature matrix.
-    :type features: csr_matrix
     :param word2id: The name of the dataset.
-    :type word2id: dict
     :param labels: If np.array, it's the label for all candidates; If int, it's
         the number of classes of label and we will create placeholder labels
         (mainly used for inference).
-    :type labels: np.array or int
     :param labels: Which candidates to use. If None, use all candidates.
-    :type labels: List[int]
-
     """
 
     def __init__(

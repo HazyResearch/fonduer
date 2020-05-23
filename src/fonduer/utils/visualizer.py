@@ -123,7 +123,6 @@ def get_pdf_dim(pdf_file: str, page: int = 1) -> Tuple[int, int]:
     :param pdf_file: path to the pdf file
     :param page: page number (starting from 1) to get a dimension for
     :return: width, height
-    :rtype: (int, int)
     """
     html_content = subprocess.check_output(
         f"pdftotext -f {page} -l {page} -bbox '{pdf_file}' -", shell=True

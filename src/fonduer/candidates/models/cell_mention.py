@@ -44,11 +44,7 @@ class TemporaryCellMention(TemporaryContext):
         return hash(self.cell)
 
     def get_stable_id(self) -> str:
-        """
-        Return a stable id.
-
-        :rtype: string
-        """
+        """Return a stable id."""
         return construct_stable_id(self.cell, self._get_polymorphic_identity(), 0, 0)
 
     def _get_table(self) -> Type["CellMention"]:

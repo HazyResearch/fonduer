@@ -57,7 +57,6 @@ def _batch_postgres_query(
      length-constraint-for-a-postgres-query
 
     :param records: The full list of records to batch.
-    :type records: iterable
     :param table: The sqlalchemy table.
     :return: A generator of lists of records.
     """
@@ -206,7 +205,6 @@ def get_mapping(
     :param candidates: The candidates to get mappings for.
     :param generator: A generator yielding (candidate_id, key, value) tuples.
     :return: Generator of dictionaries of {"candidate_id": _, "keys": _, "values": _}
-    :rtype: generator of dict
     """
     for cand in candidates:
         # Grab the old values

@@ -57,13 +57,10 @@ class VisualLinker(object):
         """Link visual information with sentences.
 
         :param document_name: the document name.
-        :type document_name: str
         :param sentences: sentences to be linked with visual information.
-        :type sentences: Iterable[Sentence]
         :param pdf_path: The path to the PDF documents, if any. This path will
             override the one used in initialization, if provided.
-        :type pdf_path: str
-        :rtype: A generator of ``Sentence``.
+        :return: A generator of ``Sentence``.
         """
         self.sentences = sentences
         self.pdf_file = (
@@ -123,8 +120,6 @@ class VisualLinker(object):
         """Verify that the file exists and has a PDF extension.
 
         :param filename: The path to the PDF document.
-        :type filename: str
-        :rtype: boolean
         """
         path = self.pdf_path
         # If path is file, but not PDF.

@@ -44,11 +44,7 @@ class TemporaryTableMention(TemporaryContext):
         return hash(self.table)
 
     def get_stable_id(self) -> str:
-        """
-        Return a stable id.
-
-        :rtype: string
-        """
+        """Return a stable id."""
         return construct_stable_id(self.table, self._get_polymorphic_identity(), 0, 0)
 
     def _get_table(self) -> Type["TableMention"]:

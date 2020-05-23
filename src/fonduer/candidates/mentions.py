@@ -44,9 +44,7 @@ class Ngrams(MentionSpace):
     Sentence *x*, indexing by **character offset**.
 
     :param n_min: Lower limit for the generated n_grams.
-    :type n_min: int
     :param n_max: Upper limit for the generated n_grams.
-    :type n_max: int
     :param split_tokens: Tokens, on which unigrams are split into two separate
         unigrams.
     :type split_tokens: tuple, list of str.
@@ -122,9 +120,7 @@ class MentionNgrams(Ngrams):
     cells).
 
     :param n_min: Lower limit for the generated n_grams.
-    :type n_min: int
     :param n_max: Upper limit for the generated n_grams.
-    :type n_max: int
     :param split_tokens: Tokens, on which unigrams are split into two separate
         unigrams.
     :type split_tokens: tuple, list of str.
@@ -140,7 +136,6 @@ class MentionNgrams(Ngrams):
         """Generate MentionNgrams from a Document by parsing all of its Sentences.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -174,7 +169,6 @@ class MentionFigures(MentionSpace):
         Generate MentionFigures from a Document by parsing all of its Figures.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -201,7 +195,6 @@ class MentionSentences(MentionSpace):
         Generate MentionSentences from a Document by parsing all of its Sentences.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -227,7 +220,6 @@ class MentionParagraphs(MentionSpace):
         Generate MentionParagraphs from a Document by parsing all of its Paragraphs.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -251,7 +243,6 @@ class MentionCaptions(MentionSpace):
         Generate MentionCaptions from a Document by parsing all of its Captions.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -275,7 +266,6 @@ class MentionCells(MentionSpace):
         Generate MentionCells from a Document by parsing all of its Cells.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -299,7 +289,6 @@ class MentionTables(MentionSpace):
         Generate MentionTables from a Document by parsing all of its Tables.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -323,7 +312,6 @@ class MentionSections(MentionSpace):
         Generate MentionSections from a Document by parsing all of its Sections.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -347,7 +335,6 @@ class MentionDocuments(MentionSpace):
         Generate MentionDocuments from a Document by using document.
 
         :param doc: The ``Document`` to parse.
-        :type doc: ``Document``
         :raises TypeError: If the input doc is not of type ``Document``.
         """
         if not isinstance(doc, Document):
@@ -382,18 +369,14 @@ class MentionExtractor(UDFRunner):
     :param session: An initialized database session.
     :param mention_classes: The type of relation to extract, defined using
         :func: fonduer.mentions.mention_subclass.
-    :type mention_classes: list
     :param mention_spaces: one or list of :class:`MentionSpace` objects, one for
         each relation argument. Defines space of Contexts to consider
-    :type mention_spaces: list
     :param matchers: one or list of :class:`fonduer.matchers.Matcher` objects,
         one for each relation argument. Only tuples of Contexts for which each
         element is accepted by the corresponding Matcher will be returned as
         Mentions
-    :type matchers: list
     :param parallelism: The number of processes to use in parallel for calls
         to apply().
-    :type parallelism: int
     :raises ValueError: If mention classes, spaces, and matchers are not the
         same length.
     """
@@ -444,14 +427,11 @@ class MentionExtractor(UDFRunner):
         :param docs: Set of documents to extract from.
         :param clear: Whether or not to clear the existing Mentions
             beforehand.
-        :type clear: bool
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the
             MentionExtractor if it is provided.
-        :type parallelism: int
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
-        :type progress_bar: bool
         """
         super().apply(
             docs, clear=clear, parallelism=parallelism, progress_bar=progress_bar
@@ -504,9 +484,7 @@ class MentionExtractor(UDFRunner):
         :param docs: If provided, return Mentions from these documents. Else,
             return all Mentions.
         :param sort: If sort is True, then return all Mentions sorted by stable_id.
-        :type sort: bool
         :return: Mentions for each mention_class.
-        :rtype: List of lists.
         """
         result = []
         if docs:

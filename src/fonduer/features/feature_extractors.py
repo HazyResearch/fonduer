@@ -25,11 +25,9 @@ class FeatureExtractor(object):
 
     :param features: a list of which Fonduer feature types to extract, defaults
         to ["textual", "structural", "tabular", "visual"]
-    :type features: list, optional
     :param customize_feature_funcs: a list of customized feature extractors where the
         extractor takes a list of candidates as input and yield tuples
         of (candidate_id, feature, value), defaults to []
-    :type customize_feature_funcs: list, optional
     """
 
     def __init__(
@@ -56,7 +54,6 @@ class FeatureExtractor(object):
         """Extract features from candidates.
 
         :param candidates: A list of candidates to extract features from
-        :type candidates: list
         """
         candidates = candidates if isinstance(candidates, list) else [candidates]
 

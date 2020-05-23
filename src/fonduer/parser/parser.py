@@ -125,14 +125,11 @@ class Parser(UDFRunner):
             override the one used in initialization, if provided.
         :param clear: Whether or not to clear the labels table before applying
             these LFs.
-        :type clear: bool
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the Labeler if
             it is provided.
-        :type parallelism: int
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
-        :type progress_bar: bool
         """
         super().apply(
             doc_loader,
@@ -152,7 +149,7 @@ class Parser(UDFRunner):
     def get_last_documents(self) -> List[Document]:
         """Return the most recently parsed list of ``Documents``.
 
-        :rtype: A list of the most recently parsed ``Documents`` ordered by name.
+        :return: A list of the most recently parsed ``Documents`` ordered by name.
         """
         return (
             self.session.query(Document)
@@ -164,7 +161,7 @@ class Parser(UDFRunner):
     def get_documents(self) -> List[Document]:
         """Return all the parsed ``Documents`` in the database.
 
-        :rtype: A list of all ``Documents`` in the database ordered by name.
+        :return: A list of all ``Documents`` in the database ordered by name.
         """
         return self.session.query(Document).order_by(Document.name).all()
 
@@ -764,7 +761,7 @@ class ParserUDF(UDF):
         :param node: The lxml HTML node to parse
         :param state: The global state necessary to place the node in context
             of the document as a whole.
-        :rtype: a *generator* of Sentences
+        :return: a *generator* of Sentences
         """
         # Processing on entry of node
         state = self._parse_section(node, state)
@@ -786,7 +783,7 @@ class ParserUDF(UDF):
 
         :param document: the Document context
         :param text: the structured text of the document (e.g. HTML)
-        :rtype: a *generator* of Sentences.
+        :return: a *generator* of Sentences.
         """
         stack = []
 

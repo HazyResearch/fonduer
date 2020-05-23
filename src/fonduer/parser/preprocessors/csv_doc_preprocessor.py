@@ -32,21 +32,16 @@ class CSVDocPreprocessor(DocPreprocessor):
         """
         :param path: a path to file or directory, or a glob pattern. The basename
             (as returned by ``os.path.basename``) should be unique among all files.
-        :type path: str
         :param encoding: file encoding to use (e.g. "utf-8").
-        :type encoding: str
         :param max_docs: the maximum number of ``Documents`` to produce.
-        :type max_docs: int
         :param header: if the CSV file contain header or not, if yes, the header
             will be used as Section name. default = False
-        :type header: bool
         :param delim: delimiter to be used to separate columns when file has
             more than one column. It is active only when ``column is not
             None``. default=','
-        :type delim: int
         :param parser_rule: The parser rule to be used to parse the specific column.
             default = None
-        :rtype: A generator of ``Documents``.
+        :return: A generator of ``Documents``.
         """
         super().__init__(path, encoding, max_docs)
         self.header = header

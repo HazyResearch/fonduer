@@ -26,7 +26,6 @@ def extract_tabular_features(
     """Extract tabular features.
 
     :param candidates: A list of candidates to extract features from
-    :type candidates: list
     """
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
