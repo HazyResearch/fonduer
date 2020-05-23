@@ -19,6 +19,7 @@ from fonduer.candidates.models.table_mention import TemporaryTableMention
 from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models import Context, Document, Sentence
 from fonduer.utils.udf import UDF, UDFRunner
+from fonduer.utils.utils import get_dict_of_stable_id
 
 logger = logging.getLogger(__name__)
 
@@ -566,7 +567,7 @@ class MentionExtractorUDF(UDF):
         :param doc: A document to process.
         """
         # Get a dict of stable_id of contexts.
-        dict_of_stable_id: Dict[str, Context] = {}
+        dict_of_stable_id: Dict[str, Context] = get_dict_of_stable_id(doc)
 
         # Iterate over each mention class
         for i, mention_class in enumerate(self.mention_classes):
