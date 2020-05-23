@@ -25,7 +25,6 @@ def save_marginals(
 
     Note: The marginals for k=0 are not stored, only for k = 1,...,K
     """
-
     logger = logging.getLogger(__name__)
     # Make sure that we are working with a numpy array
     try:
@@ -104,7 +103,6 @@ def mention_to_tokens(
     :param lowercase: use lowercase or not.
     :return: The token list.
     """
-
     tokens = getattr(mention.context.sentence, token_type)
     return [w.lower() if lowercase else w for w in tokens]
 
@@ -118,7 +116,6 @@ def mark(l: int, h: int, idx: int) -> List[Tuple[int, str]]:
     :param idx: argument index (1 or 2).
     :return: markers.
     """
-
     return [(l, f"~~[[{idx}"), (h + 1, f"{idx}]]~~")]
 
 
@@ -135,7 +132,6 @@ def mark_sentence(s: List[str], args: List[Tuple[int, int, int]]) -> List[str]:
          ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
 
     """
-
     marks = sorted([y for m in args for y in mark(*m)], reverse=True)
     x = list(s)
     for k, v in marks:

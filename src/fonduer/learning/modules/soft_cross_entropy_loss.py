@@ -34,7 +34,6 @@ class SoftCrossEntropyLoss(nn.Module):
         :param target: target probabilities
         :return: loss
         """
-
         n, k = input.shape
         losses = input.new_zeros(n)
 

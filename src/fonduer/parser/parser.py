@@ -601,7 +601,6 @@ class ParserUDF(UDF):
         :param state: The global state necessary to place the node in context
             of the document as a whole.
         """
-
         # Both Paragraphs will share the same parent
         parent = (
             state["context"][node]

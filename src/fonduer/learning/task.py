@@ -66,7 +66,6 @@ def create_task(
     :param mode: Learning mode (available modes: "STL", "MTL"),
         defaults to "MTL".
     """
-
     if model not in ["LSTM", "LogisticRegression"]:
         raise ValueError(
             f"Unrecognized model {model}. Only support {['LSTM', 'LogisticRegression']}"

@@ -27,7 +27,6 @@ def init_logging(
     :param format: The logging format string to use.
     :param level: The logging level to use, e.g., logging.INFO.
     """
-
     if not Meta.log_path:
         # Generate a new directory using the log_dir, if it doesn't exist
         dt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
