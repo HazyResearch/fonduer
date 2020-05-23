@@ -118,8 +118,8 @@ def get_box(span: SpanMention) -> Tuple[int, int, int, int, int]:
 
 
 def get_pdf_dim(pdf_file: str, page: int = 1) -> Tuple[int, int]:
-    """
-    Get the dimension of a pdf
+    """Get the dimension of a pdf.
+
     :param pdf_file: path to the pdf file
     :param page: page number (starting from 1) to get a dimension for
     :return: width, height
@@ -139,8 +139,8 @@ def get_pdf_dim(pdf_file: str, page: int = 1) -> Tuple[int, int]:
 def pdf_to_img(
     pdf_file: str, page_num: int, pdf_dim: Optional[Tuple[int, int]] = None
 ) -> Image:
-    """
-    Converts pdf file into image
+    """Converts pdf file into image.
+
     :param pdf_file: path to the pdf file
     :param page_num: page number to convert (index starting at 1)
     :return: wand image object

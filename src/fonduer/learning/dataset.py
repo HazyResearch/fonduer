@@ -14,8 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class FonduerDataset(EmmentalDataset):
-    """A FonduerDataset class which is inherited from EmmentalDataset, which takes
-    list of candidates and corresponding feature matrix as input and wraps them.
+    """A FonduerDataset class which is inherited from EmmentalDataset.
+
+    This class takes list of candidates and corresponding feature matrix as input and
+    wraps them.
 
     :param name: The name of the dataset.
     :param candidates: The list of candidates.

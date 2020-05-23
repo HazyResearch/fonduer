@@ -166,8 +166,7 @@ class TemporarySpanMention(TemporaryContext):
         )
 
     def __getitem__(self, key: slice) -> "TemporarySpanMention":
-        """
-        Slice operation returns a new candidate sliced according to **char index**
+        """Slice operation returns a new candidate sliced according to **char index**.
 
         Note that the slicing is w.r.t. the candidate range (not the abs.
         sentence char indexing).

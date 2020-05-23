@@ -95,8 +95,7 @@ def confusion_matrix(pred: Set, gold: Set) -> Tuple[Set, Set, Set]:
 def mention_to_tokens(
     mention: Mention, token_type: str = "words", lowercase: bool = False
 ) -> List[str]:
-    """
-    Extract tokens from the mention
+    """Extract tokens from the mention.
 
     :param mention: mention object.
     :param token_type: token type that wants to extract (e.g. words, lemmas, poses).
@@ -108,8 +107,7 @@ def mention_to_tokens(
 
 
 def mark(l: int, h: int, idx: int) -> List[Tuple[int, str]]:
-    """
-    Produce markers based on argument positions
+    """Produce markers based on argument positions.
 
     :param l: sentence position of first word in argument.
     :param h: sentence position of last word in argument.
@@ -120,7 +118,7 @@ def mark(l: int, h: int, idx: int) -> List[Tuple[int, str]]:
 
 
 def mark_sentence(s: List[str], args: List[Tuple[int, int, int]]) -> List[str]:
-    """Insert markers around relation arguments in word sequence
+    """Insert markers around relation arguments in word sequence.
 
     :param s: list of tokens in sentence.
     :param args: list of triples (l, h, idx) as per @_mark(...) corresponding
@@ -142,7 +140,7 @@ def mark_sentence(s: List[str], args: List[Tuple[int, int, int]]) -> List[str]:
 def collect_word_counter(
     candidates: Union[List[Candidate], List[List[Candidate]]]
 ) -> Dict[str, int]:
-    """Collect word counter from candidates
+    """Collect word counter from candidates.
 
     :param candidates: The candidates used to collect word counter.
     :return: The word counter.
