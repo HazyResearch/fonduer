@@ -1,9 +1,17 @@
-from collections import namedtuple
+from typing import NamedTuple
 
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.parser.models import Sentence
 
-Bbox = namedtuple("bbox", ["page", "top", "bottom", "left", "right"])
+
+class Bbox(NamedTuple):
+    """Bounding box."""
+
+    page: int
+    top: int
+    bottom: int
+    left: int
+    right: int
 
 
 def bbox_from_span(span: TemporarySpanMention) -> Bbox:
