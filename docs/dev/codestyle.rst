@@ -35,3 +35,47 @@ your local machine by running our checks::
 .. _isort: https://github.com/timothycrosley/isort
 .. _black editor integrations: https://github.com/ambv/black#editor-integration
 .. _black: https://github.com/ambv/black
+
+
+Docstring format
+^^^^^^^^^^^^^^^^
+
+We use Sphinx_ to build documentation.
+While Sphinx's ``autodoc`` extension, which automatically generates documentation from
+docstring, supports several docstring formats, we use `Sphinx docstring format`_.
+A typical Sphinx docsting looks like the following:
+
+.. code-block:: python
+    :caption: A typical Sphinx docsting
+
+    """[Summary]
+
+    :param [ParamName]: [ParamDescription], defaults to [DefaultParamVal]
+    :type [ParamName]: [ParamType](, optional)
+    ...
+    :raises [ErrorType]: [ErrorDescription]
+    ...
+    :return: [ReturnDescription]
+    :rtype: [ReturnType]
+    """
+
+where `:type` and `:rtype` can be omitted.
+Since we annotate functions with types (`PEP 484`_), `:type` and `:rtype` in the docstring
+are redundant and hence not allowed in Fonduer. An example Fonduer docstring looks like:
+
+.. code-block:: python
+    :caption: An example Fonduer docsting
+
+    def greeting(name: str) -> str:
+        """Return a greeting to a person.
+
+        :param name: a person's name to greet.
+        :return: a greeting string.
+        """
+        return 'Hello ' + name
+
+Note that `:type` and `:rtype` are omitted and that the function is annotated with types.
+
+.. _Sphinx: https://www.sphinx-doc.org
+.. _Sphinx docstring format: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html#the-sphinx-docstring-format
+.. _PEP 484: https://www.python.org/dev/peps/pep-0484/
