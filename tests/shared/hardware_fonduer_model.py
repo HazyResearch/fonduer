@@ -32,7 +32,7 @@ class HardwareFonduerModel(FonduerModel):
             shuffle=False,
         )
 
-        test_preds = self.disc_model.predict(test_dataloader, return_preds=True)
+        test_preds = self.emmental_model.predict(test_dataloader, return_preds=True)
         positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
         true_preds = [test_cands[_] for _ in positive[0]]
 
