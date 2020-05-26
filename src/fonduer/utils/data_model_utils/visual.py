@@ -436,10 +436,10 @@ def _preprocess_visual_features(doc: Document) -> None:
         x1_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
         for sentence in sentences:
             sentence.bbox = bbox_from_sentence(sentence)
-            sentence.yc = (sentence.bbox.top + sentence.bbox.bottom) / 2
+            sentence.yc = int((sentence.bbox.top + sentence.bbox.bottom) / 2)
             sentence.x0 = sentence.bbox.left
             sentence.x1 = sentence.bbox.right
-            sentence.xc = (sentence.x0 + sentence.x1) / 2
+            sentence.xc = int((sentence.x0 + sentence.x1) / 2)
             # index current sentence by different alignment keys
             yc_aligned[sentence.yc].append(sentence)
             x0_aligned[sentence.x0].append(sentence)
