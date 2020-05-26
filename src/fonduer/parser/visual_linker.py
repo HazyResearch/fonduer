@@ -13,6 +13,7 @@ from bs4.element import Tag
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
 
 from fonduer.parser.models import Sentence
+from fonduer.utils.utils_visual import Bbox
 
 
 class VisualLinker(object):
@@ -26,9 +27,7 @@ class VisualLinker(object):
         self.pdf_file: Optional[str] = None
         self.verbose = verbose
         self.time = time
-        self.coordinate_map: Optional[
-            Dict[Tuple[int, int], Tuple[int, int, int, int, int]]
-        ] = None
+        self.coordinate_map: Optional[Dict[Tuple[int, int], Bbox]] = None
         self.pdf_word_list: Optional[List[Tuple[Tuple[int, int], str]]] = None
         self.html_word_list: Optional[List[Tuple[Tuple[str, int], str]]] = None
         self.links: Optional[OrderedDict[Tuple[str, int], Tuple[int, int]]] = None
@@ -90,7 +89,7 @@ class VisualLinker(object):
             shell=True,
         )
         pdf_word_list: List[Tuple[Tuple[int, int], str]] = []
-        coordinate_map: Dict[Tuple[int, int], Tuple[int, int, int, int, int]] = {}
+        coordinate_map: Dict[Tuple[int, int], Bbox] = {}
         for i in range(1, int(num_pages) + 1):
             self.logger.debug(
                 f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -"
@@ -144,11 +143,10 @@ class VisualLinker(object):
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
     ) -> Tuple[
-        List[Tuple[Tuple[int, int], str]],
-        Dict[Tuple[int, int], Tuple[int, int, int, int, int]],
+        List[Tuple[Tuple[int, int], str]], Dict[Tuple[int, int], Bbox],
     ]:
         pdf_word_list: List[Tuple[Tuple[int, int], str]] = []
-        coordinate_map: Dict[Tuple[int, int], Tuple[int, int, int, int, int]] = {}
+        coordinate_map: Dict[Tuple[int, int], Bbox] = {}
         block_coordinates = {}
         blocks = page.find_all("block")
         i = 0  # counter for word_id in page_num
@@ -167,12 +165,8 @@ class VisualLinker(object):
                         if len(content) > 0:  # Ignore empty characters
                             word_id = (page_num, i)
                             pdf_word_list.append((word_id, content))
-                            coordinate_map[word_id] = (
-                                page_num,
-                                y_min_line,
-                                xmin,
-                                y_max_line,
-                                xmax,
+                            coordinate_map[word_id] = Bbox(
+                                page_num, y_min_line, xmin, y_max_line, xmax,
                             )
                             block_coordinates[word_id] = (y_min_block, x_min_block)
                             i += 1
