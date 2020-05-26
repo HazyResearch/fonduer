@@ -9,7 +9,7 @@ To this end, we use `MLflow Model`_ as a storage format.
 MLflow model for Fonduer
 ------------------------
 
-.. automodule:: fonduer.utils.fonduer_model
+.. automodule:: fonduer.packaging.fonduer_model
     :members:
     :inherited-members:
     :show-inheritance:

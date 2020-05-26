@@ -604,7 +604,7 @@ def test_e2e():
 
     # Save a fonduer model
     from tests.shared.hardware_fonduer_model import HardwareFonduerModel
-    from fonduer.utils import fonduer_model
+    from fonduer.packaging import fonduer_model
 
     fonduer_model.save_model(
         HardwareFonduerModel(),
