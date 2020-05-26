@@ -608,19 +608,19 @@ def test_e2e():
 
     fonduer_model.save_model(
         HardwareFonduerModel(),
-        "fonduer_disc_model",
+        "fonduer_model",
         code_paths=["tests"],
         preprocessor=doc_preprocessor,
         parser=corpus_parser,
         mention_extractor=mention_extractor,
         candidate_extractor=candidate_extractor,
         featurizer=featurizer,
-        disc_model=model,
+        emmental_model=model,
         word2id=emb_layer.word2id,
     )
 
     # Load the saved model
-    reloaded_model = mlflow.pyfunc.load_model("fonduer_disc_model")
+    reloaded_model = mlflow.pyfunc.load_model("fonduer_model")
     input = pd.DataFrame(
         data={
             "html_path": ["tests/data/html/112823.html"],
