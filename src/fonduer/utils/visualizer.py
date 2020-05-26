@@ -13,6 +13,7 @@ from wand.image import Image
 
 from fonduer.candidates.models import Candidate, SpanMention
 from fonduer.parser.models import Sentence
+from fonduer.utils.utils_visual import Bbox
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +29,7 @@ class Visualizer(object):
         self.pdf_path = pdf_path
 
     def display_boxes(
-        self,
-        pdf_file: str,
-        boxes: List[Tuple[int, int, int, int, int]],
-        alternate_colors: bool = False,
+        self, pdf_file: str, boxes: List[Bbox], alternate_colors: bool = False,
     ) -> List[Image]:
         """
         Displays each of the bounding boxes passed in 'boxes' on images of the pdf
@@ -94,7 +92,7 @@ class Visualizer(object):
             for i, word in enumerate(sentence.words):
                 if target is None or word == target:
                     boxes.append(
-                        (
+                        Bbox(
                             sentence.page[i],
                             sentence.top[i],
                             sentence.left[i],
@@ -106,15 +104,15 @@ class Visualizer(object):
         return display(*imgs)
 
 
-def get_box(span: SpanMention) -> Tuple[int, int, int, int, int]:
-    box = (
+def get_box(span: SpanMention) -> Bbox:
+    """Get the bounding box."""
+    return Bbox(
         min(span.get_attrib_tokens("page")),
         min(span.get_attrib_tokens("top")),
         min(span.get_attrib_tokens("left")),
         max(span.get_attrib_tokens("bottom")),
         max(span.get_attrib_tokens("right")),
     )
-    return box
 
 
 def get_pdf_dim(pdf_file: str, page: int = 1) -> Tuple[int, int]:
