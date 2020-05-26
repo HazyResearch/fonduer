@@ -69,24 +69,24 @@ class FonduerModel(pyfunc.PythonModel):
                 # Your implementation
 
     >>> from your_fonduer_model import YourFonduerModel
-    >>> from fonduer.utils import fonduer_model
+    >>> from fonduer.packaging import fonduer_model
     >>> fonduer_model.save_model(
             fonduer_model=YourFonduerModel(),
-            path="fonduer_disc_model",
+            path="fonduer_model",
             code_paths=["tests"],
             preprocessor=preprocessor,
             parser=parser,
             mention_extractor=mention_extractor,
             candidate_extractor=candidate_extractor,
             featurizer=featurizer,
-            disc_model=model,
+            emmental_model=emmental_model,
             word2id=emb_layer.word2id,
         )
 
     """
 
     def _classify(self, doc: Document) -> DataFrame:
-        """Classify candidates by a discriminative model (or by a label model)."""
+        """Classify candidates by an Emmental model (or by a label model)."""
         raise NotImplementedError()
 
     def predict(self, model_input: DataFrame) -> DataFrame:
@@ -158,18 +158,18 @@ def _load_pyfunc(model_path: str) -> Any:
     )
     candidate_classes = fonduer_model.candidate_extractor.candidate_classes
 
-    fonduer_model.model_type = pyfunc_conf.get(MODEL_TYPE, "discriminative")
-    if fonduer_model.model_type == "discriminative":
+    fonduer_model.model_type = pyfunc_conf.get(MODEL_TYPE, "emmental")
+    if fonduer_model.model_type == "emmental":
         emmental.init()
         fonduer_model.featurizer = FeaturizerUDF(candidate_classes, FeatureExtractor())
         fonduer_model.key_names = model["feature_keys"]
         fonduer_model.word2id = model["word2id"]
 
-        # Load the disc_model
+        # Load the emmental_model
         buffer = BytesIO()
-        buffer.write(model["disc_model"])
+        buffer.write(model["emmental_model"])
         buffer.seek(0)
-        fonduer_model.disc_model = torch.load(buffer)
+        fonduer_model.emmental_model = torch.load(buffer)
     else:
         fonduer_model.labeler = LabelerUDF(candidate_classes)
         fonduer_model.key_names = model["labeler_keys"]
@@ -193,12 +193,12 @@ def log_model(
     candidate_extractor: CandidateExtractor,
     conda_env: Optional[Dict] = None,
     code_paths: Optional[List[str]] = None,
-    model_type: Optional[str] = "discriminative",
+    model_type: Optional[str] = "emmental",
     labeler: Optional[Labeler] = None,
     lfs: Optional[List[List[Callable]]] = None,
     label_models: Optional[List[LabelModel]] = None,
     featurizer: Optional[Featurizer] = None,
-    disc_model: Optional[EmmentalModel] = None,
+    emmental_model: Optional[EmmentalModel] = None,
     word2id: Optional[Dict] = None,
 ) -> None:
     """Log a Fonduer model as an MLflow artifact for the current run.
@@ -213,13 +213,13 @@ def log_model(
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
-    :param model_type: the model type, either "discriminative" or "label",
-        defaults to "discriminative".
+    :param model_type: the model type, either "emmental" or "label",
+        defaults to "emmental".
     :param labeler: a labeler, defaults to None.
     :param lfs: a list of list of labeling functions.
     :param label_models: a list of label models, defaults to None.
     :param featurizer: a featurizer, defaults to None.
-    :param disc_model: a discriminative model, defaults to None.
+    :param emmental_model: an Emmental model, defaults to None.
     :param word2id: a word embedding map.
     """
     Model.log(
@@ -237,7 +237,7 @@ def log_model(
         lfs=lfs,
         label_models=label_models,
         featurizer=featurizer,
-        disc_model=disc_model,
+        emmental_model=emmental_model,
         word2id=word2id,
     )
 
@@ -252,12 +252,12 @@ def save_model(
     mlflow_model: Model = Model(),
     conda_env: Optional[Dict] = None,
     code_paths: Optional[List[str]] = None,
-    model_type: Optional[str] = "discriminative",
+    model_type: Optional[str] = "emmental",
     labeler: Optional[Labeler] = None,
     lfs: Optional[List[List[Callable]]] = None,
     label_models: Optional[List[LabelModel]] = None,
     featurizer: Optional[Featurizer] = None,
-    disc_model: Optional[EmmentalModel] = None,
+    emmental_model: Optional[EmmentalModel] = None,
     word2id: Optional[Dict] = None,
 ) -> None:
     """Save a Fonduer model to a path on the local file system.
@@ -273,13 +273,13 @@ def save_model(
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
-    :param model_type: the model type, either "discriminative" or "label",
-        defaults to "discriminative".
+    :param model_type: the model type, either "emmental" or "label",
+        defaults to "emmental".
     :param labeler: a labeler, defaults to None.
     :param lfs: a list of list of labeling functions.
     :param label_models: a list of label models, defaults to None.
     :param featurizer: a featurizer, defaults to None.
-    :param disc_model: a discriminative model, defaults to None.
+    :param emmental_model: an Emmental model, defaults to None.
     :param word2id: a word embedding map.
     """
     os.makedirs(path)
@@ -295,16 +295,16 @@ def save_model(
         "mention_extractor": mention_extractor.udf_init_kwargs,
         "candidate_extractor": candidate_extractor.udf_init_kwargs,
     }
-    if model_type == "discriminative":
+    if model_type == "emmental":
         key_names = [key.name for key in featurizer.get_keys()]
         model["feature_keys"] = key_names
         model["word2id"] = word2id
 
-        # Save the disc_model
+        # Save the emmental_model
         buffer = BytesIO()
-        torch.save(disc_model, buffer)
+        torch.save(emmental_model, buffer)
         buffer.seek(0)
-        model["disc_model"] = buffer.read()
+        model["emmental_model"] = buffer.read()
     else:
         key_names = [key.name for key in labeler.get_keys()]
         model["labeler_keys"] = key_names
