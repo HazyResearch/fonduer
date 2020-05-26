@@ -86,7 +86,7 @@ class FonduerModel(pyfunc.PythonModel):
     """
 
     def _classify(self, doc: Document) -> DataFrame:
-        """Classify candidates by a discriminative model (or by a generative model)."""
+        """Classify candidates by a discriminative model (or by a label model)."""
         raise NotImplementedError()
 
     def predict(self, model_input: DataFrame) -> DataFrame:
@@ -176,11 +176,11 @@ def _load_pyfunc(model_path: str) -> Any:
 
         fonduer_model.lfs = model["lfs"]
 
-        fonduer_model.gen_models = []
-        for state_dict in model["gen_models_state_dict"]:
-            gen_model = LabelModel()
-            gen_model.__dict__.update(state_dict)
-            fonduer_model.gen_models.append(gen_model)
+        fonduer_model.label_models = []
+        for state_dict in model["label_models_state_dict"]:
+            label_model = LabelModel()
+            label_model.__dict__.update(state_dict)
+            fonduer_model.label_models.append(label_model)
     return _FonduerWrapper(fonduer_model)
 
 
@@ -196,7 +196,7 @@ def log_model(
     model_type: Optional[str] = "discriminative",
     labeler: Optional[Labeler] = None,
     lfs: Optional[List[List[Callable]]] = None,
-    gen_models: Optional[List[LabelModel]] = None,
+    label_models: Optional[List[LabelModel]] = None,
     featurizer: Optional[Featurizer] = None,
     disc_model: Optional[EmmentalModel] = None,
     word2id: Optional[Dict] = None,
@@ -213,11 +213,11 @@ def log_model(
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
-    :param model_type: the model type, either "discriminative" or "generative",
+    :param model_type: the model type, either "discriminative" or "label",
         defaults to "discriminative".
     :param labeler: a labeler, defaults to None.
     :param lfs: a list of list of labeling functions.
-    :param gen_models: a list of generative models, defaults to None.
+    :param label_models: a list of label models, defaults to None.
     :param featurizer: a featurizer, defaults to None.
     :param disc_model: a discriminative model, defaults to None.
     :param word2id: a word embedding map.
@@ -235,7 +235,7 @@ def log_model(
         model_type=model_type,
         labeler=labeler,
         lfs=lfs,
-        gen_models=gen_models,
+        label_models=label_models,
         featurizer=featurizer,
         disc_model=disc_model,
         word2id=word2id,
@@ -255,7 +255,7 @@ def save_model(
     model_type: Optional[str] = "discriminative",
     labeler: Optional[Labeler] = None,
     lfs: Optional[List[List[Callable]]] = None,
-    gen_models: Optional[List[LabelModel]] = None,
+    label_models: Optional[List[LabelModel]] = None,
     featurizer: Optional[Featurizer] = None,
     disc_model: Optional[EmmentalModel] = None,
     word2id: Optional[Dict] = None,
@@ -273,11 +273,11 @@ def save_model(
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
-    :param model_type: the model type, either "discriminative" or "generative",
+    :param model_type: the model type, either "discriminative" or "label",
         defaults to "discriminative".
     :param labeler: a labeler, defaults to None.
     :param lfs: a list of list of labeling functions.
-    :param gen_models: a list of generative models, defaults to None.
+    :param label_models: a list of label models, defaults to None.
     :param featurizer: a featurizer, defaults to None.
     :param disc_model: a discriminative model, defaults to None.
     :param word2id: a word embedding map.
@@ -309,8 +309,8 @@ def save_model(
         key_names = [key.name for key in labeler.get_keys()]
         model["labeler_keys"] = key_names
         model["lfs"] = lfs
-        model["gen_models_state_dict"] = [
-            gen_model.__dict__ for gen_model in gen_models
+        model["label_models_state_dict"] = [
+            label_model.__dict__ for label_model in label_models
         ]
 
     pickle.dump(model, open(os.path.join(path, "model.pkl"), "wb"))
