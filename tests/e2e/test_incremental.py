@@ -6,7 +6,7 @@ from snorkel.labeling import labeling_function
 
 from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
-from fonduer.candidates.models import Candidate, candidate_subclass, mention_subclass
+from fonduer.candidates.models import Candidate
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
@@ -25,6 +25,7 @@ from tests.shared.hardware_lfs import (
 )
 from tests.shared.hardware_matchers import part_matcher, temp_matcher
 from tests.shared.hardware_spaces import MentionNgramsPart, MentionNgramsTemp
+from tests.shared.hardware_subclasses import Part, PartTemp, Temp
 from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
@@ -80,9 +81,6 @@ def test_incremental():
     part_ngrams = MentionNgramsPart(parts_by_doc=None, n_max=3)
     temp_ngrams = MentionNgramsTemp(n_max=2)
 
-    Part = mention_subclass("Part")
-    Temp = mention_subclass("Temp")
-
     mention_extractor = MentionExtractor(
         session, [Part, Temp], [part_ngrams, temp_ngrams], [part_matcher, temp_matcher]
     )
@@ -99,8 +97,6 @@ def test_incremental():
     assert session.query(Temp).count() == 8
 
     # Candidate Extraction
-    PartTemp = candidate_subclass("PartTemp", [Part, Temp])
-
     candidate_extractor = CandidateExtractor(
         session, [PartTemp], throttlers=[temp_throttler]
     )
