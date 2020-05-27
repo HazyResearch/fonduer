@@ -18,6 +18,18 @@ def test_F_matrix():
     assert (F.todense() == D).all()
 
 
+def test_F_matrix_limited_keys():
+    """Test F_matrix with limited keys."""
+    features: List[Dict[str, Any]] = [
+        {"keys": ["key1", "key2"], "values": [0.0, 0.1]},
+        {"keys": ["key1", "key2"], "values": [1.0, 1.1]},
+    ]
+
+    F = F_matrix(features, ["key1"])
+    D = np.array([[0.0], [1.0]])
+    assert (F.todense() == D).all()
+
+
 def test_L_matrix():
     """Test L_matrix."""
     labels: List[Dict[str, Any]] = [
