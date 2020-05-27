@@ -41,10 +41,7 @@ class Candidate(Meta.Base):
     # __table_args__ = {"extend_existing" : True}
 
     def get_mentions(self) -> Tuple[Mention, ...]:
-        """Return a tuple of the constituent ``Mentions`` making up this ``Candidate``.
-
-        :rtype: tuple
-        """
+        """Get a tuple of the constituent ``Mentions`` making up this ``Candidate``."""
         return tuple(getattr(self, name) for name in self.__argnames__)
 
     def __len__(self) -> int:

@@ -17,7 +17,7 @@ class XMLTree:
     """
 
     def __init__(self, xml_root: _Element, words: Optional[List[str]] = None) -> None:
-        """Calls subroutines to generate JSON form of XML input"""
+        """Calls subroutines to generate JSON form of XML input."""
         self.root = xml_root
         self.words = words
 
@@ -119,5 +119,5 @@ def corenlp_to_xmltree_sub(
 
 
 def singular(s: str) -> str:
-    """Get singular form of word s (crudely)"""
+    """Get singular form of word s (crudely)."""
     return re.sub(r"e?s$", "", s, flags=re.I)

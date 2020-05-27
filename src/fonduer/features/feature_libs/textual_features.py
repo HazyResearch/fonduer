@@ -36,7 +36,6 @@ def extract_textual_features(
     """Extract textual features.
 
     :param candidates: A list of candidates to extract features from
-    :type candidates: list
     """
     candidates = candidates if isinstance(candidates, list) else [candidates]
     for candidate in candidates:
@@ -117,7 +116,6 @@ def _compile_entity_feature_generator() -> Callable:
     root and a list of indexes for a mention, and will generate relation
     features for this entity.
     """
-
     BASIC_ATTRIBS_REL = ["lemma", "dep_label"]
 
     m = Mention(0)
@@ -142,7 +140,6 @@ def _get_ddlib_feats(
     span: SpanMention, context: Dict[str, Any], idxs: List[int]
 ) -> Iterator[str]:
     """Minimalist port of generic mention features from ddlib."""
-
     if span.stable_id not in unary_ddlib_feats:
         unary_ddlib_feats[span.stable_id] = set()
 

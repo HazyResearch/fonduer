@@ -87,11 +87,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         )
 
     def get_stable_id(self) -> str:
-        """
-        Return a stable id.
-
-        :rtype: string
-        """
+        """Return a stable id."""
         doc_id, _, idx = split_stable_id(self.sentence.stable_id)
         parent_doc_char_start = idx[0]
         return (
@@ -145,9 +141,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
 
 
         :param a: The attribute to get tokens for.
-        :type a: str
         :return: The tokens of sentence attribute defined by *a* for the span.
-        :rtype: list
         """
         return self.__getattribute__(a)
 
@@ -159,11 +153,8 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             sep.join(implicit_span.a)
 
         :param a: The attribute to get a span for.
-        :type a: str
         :param sep: The separator to use for the join.
-        :type sep: str
         :return: The joined tokens, or text if a="words".
-        :rtype: str
         """
         if a == "words":
             return self.text

@@ -58,10 +58,7 @@ class LingualMixin(object):
         return Column(STR_ARRAY_TYPE)
 
     def is_lingual(self) -> bool:
-        """Whether or not the ``Sentence`` contains NLP information.
-
-        :rtype: bool
-        """
+        """Whether or not the ``Sentence`` contains NLP information."""
         return self.lemmas is not None
 
 
@@ -117,17 +114,11 @@ class TabularMixin(object):
         return Column(Integer)
 
     def is_tabular(self) -> bool:
-        """Whether or not the ``Sentence`` contains tabular information.
-
-        :rtype: bool
-        """
+        """Whether or not the ``Sentence`` contains tabular information."""
         return self.table is not None
 
     def is_cellular(self) -> bool:
-        """Whether or not the ``Sentence`` contains information about its table cell.
-
-        :rtype: bool
-        """
+        """Whether or not the ``Sentence`` contains information about its table cell."""
         return self.cell is not None
 
 
@@ -163,10 +154,7 @@ class VisualMixin(object):
         return Column(INT_ARRAY_TYPE)
 
     def is_visual(self) -> bool:
-        """Whether or not the ``Sentence`` contains visual information.
-
-        :rtype: bool
-        """
+        """Whether or not the ``Sentence`` contains visual information."""
         return self.page is not None and self.page[0] is not None
 
     def get_bbox(self) -> Bbox:
@@ -205,10 +193,7 @@ class StructuralMixin(object):
         return Column(STR_ARRAY_TYPE)
 
     def is_structural(self) -> bool:
-        """Whether or not the ``Sentence`` contains structural information.
-
-        :rtype: bool
-        """
+        """Whether or not the ``Sentence`` contains structural information."""
         return self.html_tag is not None
 
 

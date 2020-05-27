@@ -10,7 +10,6 @@ class SimpleParser(LingualParser):
     """Tokenizes text on whitespace only using split().
 
     :param delim: a delimiter to split text into sentences.
-    :type delim: str
     """
 
     def __init__(self, delim: str = ".") -> None:
@@ -20,7 +19,7 @@ class SimpleParser(LingualParser):
         """Parse the document.
 
         :param str: The text contents of the document.
-        :rtype: a *generator* of tokenized text.
+        :return: a *generator* of tokenized text.
         """
         i = 0
         for text in str.split(self.delim):

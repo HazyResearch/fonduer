@@ -95,9 +95,9 @@ class SpacyParser(LingualParser):
         return False
 
     def _load_lang_model(self) -> None:
-        """
-        Load spaCy language model or download if model is available and not
-        installed.
+        """Load spaCy language model.
+
+        If a model is not installed, download it before loading it.
 
         Currenty supported spaCy languages
 
@@ -121,9 +121,9 @@ class SpacyParser(LingualParser):
     def enrich_sentences_with_NLP(
         self, sentences: Collection[Sentence]
     ) -> Iterator[Sentence]:
-        """
-        Enrich a list of fonduer Sentence objects with NLP features. We merge
-        and process the text of all Sentences for higher efficiency.
+        """Enrich a list of fonduer Sentence objects with NLP features.
+
+        We merge and process the text of all Sentences for higher efficiency.
 
         :param sentences: List of fonduer Sentence objects for one document
         :return:
@@ -212,7 +212,6 @@ class SpacyParser(LingualParser):
         :param text: The text of the parent paragraph of the sentences
         :return:
         """
-
         if self.model.has_pipe("sentence_boundary_detector"):
             self.model.remove_pipe(name="sentence_boundary_detector")
 

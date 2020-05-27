@@ -7,16 +7,13 @@ from torch import Tensor
 
 
 class SoftCrossEntropyLoss(nn.Module):
-    """
-    Calculate the CrossEntropyLoss with soft targets
+    """Calculate the CrossEntropyLoss with soft targets.
 
     :param weight: Weight to assign to each of the classes. Default: None
-    :type weight: list of float
     :param reduction: The way to reduce the losses: 'none' | 'mean' | 'sum'.
         'none': no reduction,
         'mean': the mean of the losses,
         'sum': the sum of the losses.
-    :type reduction: str
     """
 
     def __init__(self, weight: List[float] = None, reduction: str = "mean"):
@@ -29,14 +26,12 @@ class SoftCrossEntropyLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        """
-        Calculate the loss
+        """Calculate the loss.
 
         :param input: prediction logits
         :param target: target probabilities
         :return: loss
         """
-
         n, k = input.shape
         losses = input.new_zeros(n)
 

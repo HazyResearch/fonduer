@@ -49,9 +49,7 @@ class Labeler(UDFRunner):
 
     :param session: The database session to use.
     :param candidate_classes: A list of candidate_subclasses to label.
-    :type candidate_classes: list
     :param parallelism: The number of processes to use in parallel. Default 1.
-    :type parallelism: int
     """
 
     def __init__(
@@ -91,13 +89,10 @@ class Labeler(UDFRunner):
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the Labeler if
             it is provided.
-        :type parallelism: int
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
-        :type progress_bar: bool
         :param table: A (database) table labels are written to.
             Takes `Label` (by default) or `GoldLabel`.
-        :type table: Table
         """
         if lfs is None:
             raise ValueError("Please provide a list of lists of labeling functions.")
@@ -135,27 +130,20 @@ class Labeler(UDFRunner):
             documents.
         :param split: If docs is None, apply the LFs to the candidates in this
             particular split.
-        :type split: int
         :param train: Whether or not to update the global key set of labels and
             the labels of candidates.
-        :type train: bool
         :param lfs: A list of lists of labeling functions to apply. Each list
             should correspond with the candidate_classes used to initialize the
             Labeler.
-        :type lfs: list of lists
         :param clear: Whether or not to clear the labels table before applying
             these LFs.
-        :type clear: bool
         :param parallelism: How many threads to use for extraction. This will
             override the parallelism value used to initialize the Labeler if
             it is provided.
-        :type parallelism: int
         :param progress_bar: Whether or not to display a progress bar. The
             progress bar is measured per document.
-        :type progress_bar: bool
         :param table: A (database) table labels are written to.
             Takes `Label` (by default) or `GoldLabel`.
-        :type table: Table
 
         :raises ValueError: If labeling functions are not provided for each
             candidate class.
@@ -206,7 +194,6 @@ class Labeler(UDFRunner):
         """Return a list of keys for the Labels.
 
         :return: List of LabelKeys.
-        :rtype: list
         """
         return list(get_sparse_matrix_keys(self.session, LabelKey))
 
@@ -220,11 +207,9 @@ class Labeler(UDFRunner):
         """Upsert the specified keys from LabelKeys.
 
         :param keys: A list of labeling functions to upsert.
-        :type keys: list, tuple
         :param candidate_classes: A list of the Candidates to upsert the key for.
             If None, upsert the keys for all candidate classes associated with
             this Labeler.
-        :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
@@ -276,11 +261,9 @@ class Labeler(UDFRunner):
         """Drop the specified keys from LabelKeys.
 
         :param keys: A list of labeling functions to delete.
-        :type keys: list, tuple
         :param candidate_classes: A list of the Candidates to drop the key for.
             If None, drops the keys for all candidate classes associated with
             this Labeler.
-        :type candidate_classes: list, tuple
         """
         # Make sure keys is iterable
         keys = keys if isinstance(keys, (list, tuple)) else [keys]
@@ -337,13 +320,10 @@ class Labeler(UDFRunner):
         """Delete Labels of each class from the database.
 
         :param train: Whether or not to clear the LabelKeys.
-        :type train: bool
         :param split: Which split of candidates to clear labels from.
-        :type split: int
         :param lfs: This parameter is ignored.
         :param table: A (database) table labels are cleared from.
             Takes `Label` (by default) or `GoldLabel`.
-        :type table: Table
         """
         # Clear Labels for the candidates in the split passed in.
         logger.info(f"Clearing Labels (split {split})")
@@ -372,7 +352,6 @@ class Labeler(UDFRunner):
 
         :param table: A (database) table labels are cleared from.
             Takes `Label` (by default) or `GoldLabel`.
-        :type table: Table
         """
         key_table = LabelKey if table == Label else GoldLabelKey
         logger.info(f"Clearing ALL {table.__name__}s and {key_table.__name__}s.")
@@ -400,16 +379,13 @@ class Labeler(UDFRunner):
         """Load dense matrix of GoldLabels for each candidate_class.
 
         :param cand_lists: The candidates to get gold labels for.
-        :type cand_lists: List of list of candidates.
         :param annotator: A specific annotator key to get labels for. Default
             None.
-        :type annotator: str
         :raises ValueError: If get_gold_labels is called before gold labels are
             loaded, the result will contain ABSTAIN values. We raise a
             ValueError to help indicate this potential mistake to the user.
         :return: A list of MxN dense matrix where M are the candidates and N is the
             annotators. If annotator is provided, return a list of Mx1 matrix.
-        :rtype: list[np.ndarray]
         """
         gold_labels = [
             unshift_label_matrix(m)
@@ -431,10 +407,8 @@ class Labeler(UDFRunner):
         """Load dense matrix of Labels for each candidate_class.
 
         :param cand_lists: The candidates to get labels for.
-        :type cand_lists: List of list of candidates.
         :return: A list of MxN dense matrix where M are the candidates and N is the
             labeling functions.
-        :rtype: list[np.ndarray]
         """
         return [
             unshift_label_matrix(m)

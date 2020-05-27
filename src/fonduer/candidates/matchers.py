@@ -26,8 +26,8 @@ class _Matcher(object):
         pass
 
     def _check_opts(self) -> None:
-        """
-        Checks for unsupported opts, throws error if found
+        """Check for unsupported opts, throws error if found.
+
         NOTE: Must be called _after_ init()
         """
         for opt in self.opts.keys():
@@ -39,8 +39,8 @@ class _Matcher(object):
         return True
 
     def f(self, m: TemporaryContext) -> bool:
-        """
-        The recursively composed version of filter function f.
+        """The recursively composed version of filter function f.
+
         By default, returns logical **conjunction** of operator and single
         child operator
         """
@@ -54,8 +54,8 @@ class _Matcher(object):
             )
 
     def apply(self, mentions: Iterator[TemporaryContext]) -> Iterator[TemporaryContext]:
-        """
-        Apply the Matcher to a **generator** of mentions.
+        """Apply the Matcher to a **generator** of mentions.
+
         Optionally only takes the longest match (NOTE: assumes this is the
         *first* match)
         """
@@ -102,7 +102,7 @@ class DictionaryMatch(_Matcher):
             self.d = frozenset(self._stem(w) for w in list(self.d))
 
     def _stem(self, w: str) -> str:
-        """Apply stemmer, handling encoding errors"""
+        """Apply stemmer, handling encoding errors."""
         try:
             return self.stemmer.stem(w)
         except UnicodeDecodeError:
@@ -143,7 +143,7 @@ class LambdaFunctionMatcher(_Matcher):
             raise Exception("Please supply a function f as func=f.")
 
     def _f(self, m: TemporaryContext) -> bool:
-        """The internal (non-composed) version of filter function f"""
+        """The internal (non-composed) version of filter function f."""
         if not isinstance(m, TemporarySpanMention):
             raise ValueError(
                 f"{self.__class__.__name__} only supports TemporarySpanMention"
@@ -478,7 +478,7 @@ class LambdaFunctionFigureMatcher(_Matcher):
             raise Exception("Please supply a function f as func=f.")
 
     def _f(self, m: TemporaryContext) -> bool:
-        """The internal (non-composed) version of filter function f"""
+        """The internal (non-composed) version of filter function f."""
         if not isinstance(m, TemporaryFigureMention):
             raise ValueError(
                 f"{self.__class__.__name__} only supports TemporaryFigureMention"
@@ -487,6 +487,6 @@ class LambdaFunctionFigureMatcher(_Matcher):
 
 
 class DoNothingMatcher(_Matcher):
-    """Matcher class for doing nothing"""
+    """Matcher class for doing nothing."""
 
     pass

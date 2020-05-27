@@ -44,7 +44,6 @@ def is_superset(a: Iterable, b: Iterable) -> bool:
 
     :param a: A collection of items
     :param b: A collection of items
-    :rtype: boolean
     """
     return set(a).issuperset(b)
 
@@ -57,7 +56,6 @@ def overlap(a: Iterable, b: Iterable) -> bool:
 
     :param a: A collection of items
     :param b: A collection of items
-    :rtype: boolean
     """
     return not set(a).isdisjoint(b)
 
@@ -74,7 +72,6 @@ def get_matches(
     :param candidate_set: The set of candidates to evaluate
     :param match_values: An option list of the values to consider as matched.
         [1, -1] by default.
-    :rtype: a list of candidates
     """
     logger = logging.getLogger(__name__)
     matches: List[Candidate] = []

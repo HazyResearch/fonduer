@@ -11,7 +11,6 @@ class LingualParser(object):
         Split input text into sentences.
 
         :param text: text to be split
-        :type text: str
         :return: A generator of dict that is used as `**kwargs` to instantiate
             :class:`Sentence <fonduer.parser.models.Sentence>`.
         """

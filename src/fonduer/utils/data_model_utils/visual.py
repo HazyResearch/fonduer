@@ -29,7 +29,6 @@ def get_page(mention: Union[Candidate, Mention, TemporarySpanMention]) -> int:
     If a candidate is passed in, this returns the page of its first Mention.
 
     :param mention: The Mention to get the page number of.
-    :rtype: integer
     """
     span = _to_span(mention)
     return span.get_attrib_tokens("page")[0]
@@ -43,7 +42,6 @@ def is_horz_aligned(c: Candidate) -> bool:
     shares a similar y-axis value in the visual rendering of the document.
 
     :param c: The candidate to evaluate
-    :rtype: boolean
     """
     return all(
         [
@@ -62,7 +60,6 @@ def is_vert_aligned(c: Candidate) -> bool:
     shares a similar x-axis value in the visual rendering of the document.
 
     :param c: The candidate to evaluate
-    :rtype: boolean
     """
     return all(
         [
@@ -83,7 +80,6 @@ def is_vert_aligned_left(c: Candidate) -> bool:
     border of their bounding boxes.
 
     :param c: The candidate to evaluate
-    :rtype: boolean
     """
     return all(
         [
@@ -106,7 +102,6 @@ def is_vert_aligned_right(c: Candidate) -> bool:
     border of their bounding boxes.
 
     :param c: The candidate to evaluate
-    :rtype: boolean
     """
     return all(
         [
@@ -129,7 +124,6 @@ def is_vert_aligned_center(c: Candidate) -> bool:
     their bounding boxes.
 
     :param c: The candidate to evaluate
-    :rtype: boolean
     """
     return all(
         [
@@ -151,7 +145,6 @@ def same_page(c: Candidate) -> bool:
     PDF is created and then used to determine the page number of a Mention.
 
     :param c: The candidate to evaluate
-    :rtype: boolean
     """
     return all(
         [
@@ -342,7 +335,6 @@ def get_page_vert_percentile(
     :param mention: The Mention to evaluate
     :param page_width: The width of the page. Default to Letter paper width.
     :param page_height: The heigh of the page. Default to Letter paper height.
-    :rtype: float in [0.0, 1.0]
     """
     span = _to_span(mention)
     return span.get_bbox().top / page_height
@@ -384,10 +376,9 @@ def get_page_horz_percentile(
     Note that if a candidate is passed in, only the vertical percentile of its
     first Mention is returned.
 
-    :param c: The Mention to evaluate
+    :param mention: The Mention to evaluate
     :param page_width: The width of the page. Default to Letter paper width.
     :param page_height: The heigh of the page. Default to Letter paper height.
-    :rtype: float in [0.0, 1.0]
     """
     span = _to_span(mention)
     return span.get_bbox().left / page_width
@@ -458,7 +449,6 @@ def get_visual_aligned_lemmas(
     Note that if a candidate is passed in, all of its Mentions will be searched.
 
     :param mention: The Mention to evaluate.
-    :rtype: a *generator* of lemmas
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -479,6 +469,5 @@ def get_aligned_lemmas(
     Note that if a candidate is passed in, all of its Mentions will be searched.
 
     :param mention: The Mention to evaluate.
-    :rtype: a set of lemmas
     """
     return set(get_visual_aligned_lemmas(mention))

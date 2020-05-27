@@ -55,26 +55,17 @@ def create_task(
 
     :param task_names: Relation name(s), If str, only one relation; If List[str],
         multiple relations.
-    :type task_names: str, List[str]
     :param n_arities: The arity of each relation.
-    :type n_arities: int, List[int]
     :param n_features: The multimodal feature set size.
-    :type n_features: int
     :param n_classes: Number of classes for each task. (Only support classification
         task now).
-    :type n_classes: int, List[int]
     :param emb_layer: The embedding layer for LSTM. No need for LogisticRegression
         model.
-    :type emb_layer: EmbeddingModule
     :param model: Model name (available models: "LSTM", "LogisticRegression"),
         defaults to "LSTM".
-    :type model: str
     :param mode: Learning mode (available modes: "STL", "MTL"),
         defaults to "MTL".
-    :type mode: str
-
     """
-
     if model not in ["LSTM", "LogisticRegression"]:
         raise ValueError(
             f"Unrecognized model {model}. Only support {['LSTM', 'LogisticRegression']}"

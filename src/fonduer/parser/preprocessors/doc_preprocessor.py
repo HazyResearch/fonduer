@@ -19,13 +19,10 @@ class DocPreprocessor(object):
         """
         :param path: a path to file or directory, or a glob pattern. The basename
             (as returned by ``os.path.basename``) should be unique among all files.
-        :type path: str
         :param encoding: file encoding to use, defaults to "utf-8".
-        :type encoding: str, optional
         :param max_docs: the maximum number of ``Documents`` to produce,
             defaults to sys.maxsize.
-        :type max_docs: int, optional
-        :rtype: A generator of ``Documents``.
+        :return: A generator of ``Documents``.
         """
         self.path = path
         self.encoding = encoding

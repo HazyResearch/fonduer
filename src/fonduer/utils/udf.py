@@ -54,9 +54,9 @@ class UDFRunner(object):
         progress_bar: bool = True,
         **kwargs: Any,
     ) -> None:
-        """
-        Apply the given UDF to the set of objects returned by the doc_loader, either
-        single or multi-threaded, and optionally calling clear() first.
+        """Apply the given UDF to the set of objects returned by the doc_loader.
+
+        Either single or multi-threaded, and optionally calling clear() first.
         """
         # Clear everything downstream of this UDF if requested
         if clear:
@@ -102,7 +102,7 @@ class UDFRunner(object):
     def _apply(
         self, doc_loader: Collection[Document], parallelism: int, **kwargs: Any
     ) -> None:
-        """Run the UDF multi-threaded using python multiprocessing"""
+        """Run the UDF multi-threaded using python multiprocessing."""
         if not Meta.postgres:
             raise ValueError("Fonduer must use PostgreSQL as a database backend.")
 
@@ -212,5 +212,5 @@ class UDF(Process):
         session.close()
 
     def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
-        """This function takes in an object, and returns a generator / set / list"""
+        """This function takes in an object, and returns a generator / set / list."""
         raise NotImplementedError()

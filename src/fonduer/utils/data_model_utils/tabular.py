@@ -27,7 +27,6 @@ def same_table(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Table.
 
     :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
     """
     return all(
         _to_span(c[i]).sentence.is_tabular()
@@ -40,7 +39,6 @@ def same_row(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Row.
 
     :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
     """
     return same_table(c) and all(
         is_row_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
@@ -52,7 +50,6 @@ def same_col(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Col.
 
     :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
     """
     return same_table(c) and all(
         is_col_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
@@ -64,7 +61,6 @@ def is_tabular_aligned(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Row or Col.
 
     :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
     """
     return same_table(c) and all(
         is_col_aligned(_to_span(c[i]).sentence, _to_span(c[0]).sentence)
@@ -77,7 +73,6 @@ def same_cell(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Cell.
 
     :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
     """
     return all(
         _to_span(c[i]).sentence.cell is not None
@@ -90,7 +85,6 @@ def same_sentence(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Sentence.
 
     :param c: The candidate whose Mentions are being compared
-    :rtype: boolean
     """
     return all(
         _to_span(c[i]).sentence is not None
@@ -106,7 +100,6 @@ def get_max_col_num(
 
     :param mention: The Mention to evaluate. If a candidate is given, default
         to its last Mention.
-    :rtype: integer or None
     """
     span = _to_span(mention, idx=-1)
     if span.sentence.is_tabular():
@@ -122,7 +115,6 @@ def get_min_col_num(
 
     :param mention: The Mention to evaluate. If a candidate is given, default
         to its first Mention.
-    :rtype: integer or None
     """
     span = _to_span(mention)
     if span.sentence.is_tabular():
@@ -138,7 +130,6 @@ def get_min_row_num(
 
     :param mention: The Mention to evaluate. If a candidate is given, default
         to its first Mention.
-    :rtype: integer or None
     """
     span = _to_span(mention)
     if span.sentence.is_tabular():
@@ -164,7 +155,6 @@ def get_sentence_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -195,7 +185,6 @@ def get_neighbor_sentence_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -228,7 +217,6 @@ def get_cell_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -277,7 +265,7 @@ def get_neighbor_cell_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams (or (ngram, direction) tuples if directions=True)
+    :return: a *generator* of ngrams (or (ngram, direction) tuples if directions=True)
     """
     # TODO: Fix this to be more efficient (optimize with SQL query)
     spans = _to_spans(mention)
@@ -348,7 +336,6 @@ def get_row_ngrams(
     :param n_max: The maximum n of the ngrams that should be returned
     :param spread: The number of rows above and below to also consider "aligned".
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -382,7 +369,6 @@ def get_col_ngrams(
     :param n_max: The maximum n of the ngrams that should be returned
     :param spread: The number of cols left and right to also consider "aligned".
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -418,7 +404,6 @@ def get_aligned_ngrams(
     :param spread: The number of rows/cols above/below/left/right to also
         consider "aligned".
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     for span in spans:
@@ -454,7 +439,6 @@ def get_head_ngrams(
     :param n_min: The minimum n of the ngrams that should be returned
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
-    :rtype: a *generator* of ngrams
     """
     spans = _to_spans(mention)
     axes: Set[str] = (axis,) if axis else ("row", "col")  # type: ignore

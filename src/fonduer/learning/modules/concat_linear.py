@@ -6,16 +6,11 @@ from torch import Tensor
 
 
 class ConcatLinear(nn.Module):
-    """
-    Concat different outputs and feed into a linear layer
+    """Concat different outputs and feed into a linear layer.
 
     :param concat_output_keys: The keys of features to concat.
-    :type concat_output_keys: list of str
     :param input_dim: The total sum of input dim.
-    :type input_dim: int
     :param outpt_dim: The output dim.
-    :type outpt_dim: int
-
     """
 
     def __init__(

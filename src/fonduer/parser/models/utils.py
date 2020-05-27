@@ -15,7 +15,6 @@ def construct_stable_id(
     Contruct a stable ID for a Context given its parent and its character
     offsets relative to the parent.
     """
-
     doc_id, type, idx = split_stable_id(parent_context.stable_id)
 
     if polymorphic_type in [
