@@ -14,8 +14,6 @@ from fonduer.parser.models import Document, Sentence
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
 from fonduer.utils.utils_visual import (
-    bbox_from_sentence,
-    bbox_from_span,
     bbox_horz_aligned,
     bbox_vert_aligned,
     bbox_vert_aligned_center,
@@ -50,9 +48,7 @@ def is_horz_aligned(c: Candidate) -> bool:
     return all(
         [
             _to_span(c[i]).sentence.is_visual()
-            and bbox_horz_aligned(
-                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
-            )
+            and bbox_horz_aligned(_to_span(c[i]).get_bbox(), _to_span(c[0]).get_bbox())
             for i in range(len(c))
         ]
     )
@@ -71,9 +67,7 @@ def is_vert_aligned(c: Candidate) -> bool:
     return all(
         [
             _to_span(c[i]).sentence.is_visual()
-            and bbox_vert_aligned(
-                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
-            )
+            and bbox_vert_aligned(_to_span(c[i]).get_bbox(), _to_span(c[0]).get_bbox())
             for i in range(len(c))
         ]
     )
@@ -95,7 +89,7 @@ def is_vert_aligned_left(c: Candidate) -> bool:
         [
             _to_span(c[i]).sentence.is_visual()
             and bbox_vert_aligned_left(
-                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+                _to_span(c[i]).get_bbox(), _to_span(c[0]).get_bbox()
             )
             for i in range(len(c))
         ]
@@ -118,7 +112,7 @@ def is_vert_aligned_right(c: Candidate) -> bool:
         [
             _to_span(c[i]).sentence.is_visual()
             and bbox_vert_aligned_right(
-                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+                _to_span(c[i]).get_bbox(), _to_span(c[0]).get_bbox()
             )
             for i in range(len(c))
         ]
@@ -141,7 +135,7 @@ def is_vert_aligned_center(c: Candidate) -> bool:
         [
             _to_span(c[i]).sentence.is_visual()
             and bbox_vert_aligned_center(
-                bbox_from_span(_to_span(c[i])), bbox_from_span(_to_span(c[0]))
+                _to_span(c[i]).get_bbox(), _to_span(c[0]).get_bbox()
             )
             for i in range(len(c))
         ]
@@ -162,8 +156,7 @@ def same_page(c: Candidate) -> bool:
     return all(
         [
             _to_span(c[i]).sentence.is_visual()
-            and bbox_from_span(_to_span(c[i])).page
-            == bbox_from_span(_to_span(c[0])).page
+            and _to_span(c[i]).get_bbox().page == _to_span(c[0]).get_bbox().page
             for i in range(len(c))
         ]
     )
@@ -253,13 +246,11 @@ def _get_direction_ngrams(
             continue
         for sentence in span.sentence.document.sentences:
             # Skip if not in the same page.
-            if span.sentence.get_bbox().page != bbox_from_sentence(sentence).page:
+            if span.sentence.get_bbox().page != sentence.get_bbox().page:
                 continue
             if from_sentence:
                 if (
-                    bbox_direction_aligned(
-                        bbox_from_sentence(sentence), bbox_from_span(span)
-                    )
+                    bbox_direction_aligned(sentence.get_bbox(), span.get_bbox())
                     and sentence is not span.sentence  # not from its Sentence
                 ):
                     for ngram in tokens_to_ngrams(
@@ -269,7 +260,7 @@ def _get_direction_ngrams(
             else:
                 for ts in ngrams_space.apply(sentence):
                     if (  # True if visually aligned AND not from itself.
-                        bbox_direction_aligned(bbox_from_span(ts), bbox_from_span(span))
+                        bbox_direction_aligned(ts.get_bbox(), span.get_bbox())
                         and ts not in span
                         and span not in ts
                     ):
@@ -354,7 +345,7 @@ def get_page_vert_percentile(
     :rtype: float in [0.0, 1.0]
     """
     span = _to_span(mention)
-    return bbox_from_span(span).top / page_height
+    return span.get_bbox().top / page_height
 
 
 def get_page_horz_percentile(
@@ -399,7 +390,7 @@ def get_page_horz_percentile(
     :rtype: float in [0.0, 1.0]
     """
     span = _to_span(mention)
-    return bbox_from_span(span).left / page_width
+    return span.get_bbox().left / page_width
 
 
 def _assign_alignment_features(sentences_by_key: defaultdict, align_type: str) -> None:
@@ -435,7 +426,7 @@ def _preprocess_visual_features(doc: Document) -> None:
         xc_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
         x1_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
         for sentence in sentences:
-            sentence.bbox = bbox_from_sentence(sentence)
+            sentence.bbox = sentence.get_bbox()
             sentence.yc = int((sentence.bbox.top + sentence.bbox.bottom) / 2)
             sentence.x0 = sentence.bbox.left
             sentence.x1 = sentence.bbox.right
