@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 
 from fonduer.parser.models.context import Context
+from fonduer.utils.utils_visual import Bbox
 
 INT_ARRAY_TYPE = postgresql.ARRAY(Integer)
 STR_ARRAY_TYPE = postgresql.ARRAY(String)
@@ -167,6 +168,21 @@ class VisualMixin(object):
         :rtype: bool
         """
         return self.page is not None and self.page[0] is not None
+
+    def get_bbox(self) -> Bbox:
+        """Get the bonding box."""
+        # TODO: this may have issues where a sentence is linked to words on different
+        # pages
+        if self.is_visual():
+            return Bbox(
+                self.page[0],
+                min(self.top),
+                max(self.bottom),
+                min(self.left),
+                max(self.right),
+            )
+        else:
+            return None
 
 
 class StructuralMixin(object):
