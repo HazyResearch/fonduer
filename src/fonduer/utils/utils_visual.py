@@ -1,7 +1,5 @@
+import warnings
 from typing import NamedTuple
-
-from fonduer.candidates.models.span_mention import TemporarySpanMention
-from fonduer.parser.models import Sentence
 
 
 class Bbox(NamedTuple):
@@ -14,7 +12,13 @@ class Bbox(NamedTuple):
     right: int
 
 
-def bbox_from_span(span: TemporarySpanMention) -> Bbox:
+def bbox_from_span(span) -> Bbox:  # type: ignore
+    warnings.warn(
+        "bbox_from_span(span) is deprecated. Use span.get_bbox() instead.",
+        DeprecationWarning,
+    )
+    from fonduer.candidates.models.span_mention import TemporarySpanMention  # noqa
+
     if isinstance(span, TemporarySpanMention) and span.sentence.is_visual():
         return Bbox(
             span.get_attrib_tokens("page")[0],
@@ -27,7 +31,13 @@ def bbox_from_span(span: TemporarySpanMention) -> Bbox:
         return None
 
 
-def bbox_from_sentence(sentence: Sentence) -> Bbox:
+def bbox_from_sentence(sentence) -> Bbox:  # type: ignore
+    warnings.warn(
+        "bbox_from_sentence(sentence) is deprecated. Use sentence.get_bbox() instead.",
+        DeprecationWarning,
+    )
+    from fonduer.parser.models import Sentence  # noqa
+
     # TODO: this may have issues where a sentence is linked to words on different pages
     if isinstance(sentence, Sentence) and sentence.is_visual():
         return Bbox(

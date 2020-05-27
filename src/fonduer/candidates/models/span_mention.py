@@ -8,6 +8,7 @@ from fonduer.candidates.models.temporary_context import TemporaryContext
 from fonduer.parser.models.context import Context
 from fonduer.parser.models.sentence import Sentence
 from fonduer.parser.models.utils import construct_stable_id
+from fonduer.utils.utils_visual import Bbox
 
 
 class TemporarySpanMention(TemporaryContext):
@@ -172,6 +173,19 @@ class TemporarySpanMention(TemporaryContext):
         :rtype: str
         """
         return self.get_attrib_span("words")
+
+    def get_bbox(self) -> Bbox:
+        """Get the bounding box."""
+        if self.sentence.is_visual():
+            return Bbox(
+                self.get_attrib_tokens("page")[0],
+                min(self.get_attrib_tokens("top")),
+                max(self.get_attrib_tokens("bottom")),
+                min(self.get_attrib_tokens("left")),
+                max(self.get_attrib_tokens("right")),
+            )
+        else:
+            return None
 
     def __contains__(self, other_span: object) -> bool:
         if not isinstance(other_span, TemporarySpanMention):

@@ -253,10 +253,7 @@ def _get_direction_ngrams(
             continue
         for sentence in span.sentence.document.sentences:
             # Skip if not in the same page.
-            if (
-                bbox_from_sentence(span.sentence).page
-                != bbox_from_sentence(sentence).page
-            ):
+            if span.sentence.get_bbox().page != bbox_from_sentence(sentence).page:
                 continue
             if from_sentence:
                 if (
