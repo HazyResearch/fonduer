@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 import tests.shared.hardware_subclasses  # noqa
 from fonduer.learning.dataset import FonduerDataset
-from fonduer.packaging.fonduer_model import F_matrix, FonduerModel
+from fonduer.packaging import F_matrix, FonduerModel
 from fonduer.parser.models import Document
 from tests.shared.hardware_lfs import TRUE
 from tests.shared.hardware_utils import get_implied_parts
