@@ -137,9 +137,13 @@ def test_parse_md_details():
     assert header.right == [111, 231]
     assert header.left == [35, 117]
 
+    # Choose a sentence whose words get NER tags that are unlikely to change
+    # even when a lang model changes.
+    sent = sorted(doc.sentences, key=lambda x: x.position)[2]
+    assert sent.words == ["Second", "Heading"]
     # Test lingual attributes
-    assert header.ner_tags == ["ORG", "ORG"]
-    assert header.dep_labels == ["compound", "ROOT"]
+    assert sent.ner_tags[0] == "ORDINAL"
+    assert sent.dep_labels[0] == "compound"
 
     # Test whether nlp information corresponds to sentence words
     for sent in doc.sentences:
