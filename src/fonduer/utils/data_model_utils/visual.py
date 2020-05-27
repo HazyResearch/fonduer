@@ -5,7 +5,7 @@
 from builtins import range
 from collections import defaultdict
 from functools import lru_cache
-from typing import DefaultDict, Iterator, List, Set, Union
+from typing import Any, DefaultDict, Iterator, List, Set, Union
 
 from fonduer.candidates.mentions import Ngrams
 from fonduer.candidates.models import Candidate, Mention
@@ -421,10 +421,10 @@ def _preprocess_visual_features(doc: Document) -> None:
 
     for page, sentences in sentence_by_page.items():
         # process per page alignments
-        yc_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
-        x0_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
-        xc_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
-        x1_aligned: DefaultDict[int, List[Sentence]] = defaultdict(list)
+        yc_aligned: DefaultDict[Any, List[Sentence]] = defaultdict(list)
+        x0_aligned: DefaultDict[Any, List[Sentence]] = defaultdict(list)
+        xc_aligned: DefaultDict[Any, List[Sentence]] = defaultdict(list)
+        x1_aligned: DefaultDict[Any, List[Sentence]] = defaultdict(list)
         for sentence in sentences:
             sentence.bbox = sentence.get_bbox()
             sentence.yc = (sentence.bbox.top + sentence.bbox.bottom) / 2
