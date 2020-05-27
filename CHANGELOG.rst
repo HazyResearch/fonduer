@@ -1,9 +1,19 @@
 Unreleased_
 -----------
 
+Added
+^^^^^
+* `@HiromuHota`_: Add get_bbox() to :class:`Sentence` and :class:`SpanMention`.
+  (`#429 <https://github.com/HazyResearch/fonduer/pull/429>`_)
+
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Enabled "Type hints (PEP 484) support for the Sphinx autodoc extension."
+
+Deprecated
+^^^^^^^^^^
+* `@HiromuHota`_: Deprecated :func:`bbox_from_span` and :func:`bbox_from_sentence`.
+  (`#429 <https://github.com/HazyResearch/fonduer/pull/429>`_)
 
 Fixed
 ^^^^^
