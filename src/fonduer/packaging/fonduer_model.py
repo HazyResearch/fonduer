@@ -59,30 +59,7 @@ def _get_default_conda_env() -> Optional[Dict[str, Any]]:
 class FonduerModel(pyfunc.PythonModel):
     """A custom MLflow model for Fonduer.
 
-    This class is intended to be subclassed. Example:
-
-    .. code-block:: python
-        :caption: your_fonduer_model.py
-
-        class YourFonduerModel(FonduerModel):
-            def _classify(self, doc: Document) -> DataFrame:
-                # Your implementation
-
-    >>> from your_fonduer_model import YourFonduerModel
-    >>> from fonduer.packaging import fonduer_model
-    >>> fonduer_model.save_model(
-            fonduer_model=YourFonduerModel(),
-            path="fonduer_model",
-            code_paths=["tests"],
-            preprocessor=preprocessor,
-            parser=parser,
-            mention_extractor=mention_extractor,
-            candidate_extractor=candidate_extractor,
-            featurizer=featurizer,
-            emmental_model=emmental_model,
-            word2id=emb_layer.word2id,
-        )
-
+    This class is intended to be subclassed.
     """
 
     def _classify(self, doc: Document) -> DataFrame:
