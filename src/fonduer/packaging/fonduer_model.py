@@ -23,6 +23,13 @@ from fonduer import init_logging
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.candidates import CandidateExtractorUDF
 from fonduer.candidates.mentions import MentionExtractorUDF
+from fonduer.candidates.models import (
+    Candidate,
+    Mention,
+    candidate_subclass,
+    mention_subclass,
+)
+from fonduer.candidates.models.mention import mention_subclasses
 from fonduer.features.feature_extractors import FeatureExtractor
 from fonduer.features.featurizer import Featurizer, FeaturizerUDF
 from fonduer.parser import Parser
@@ -118,6 +125,12 @@ class FonduerModel(pyfunc.PythonModel):
 
 def _load_pyfunc(model_path: str) -> Any:
     """Load PyFunc implementation. Called by ``pyfunc.load_pyfunc``."""
+
+    # Load mention_classes
+    _load_mention_classes(model_path)
+    # Load candiate_classes
+    _load_candidate_classes(model_path)
+    # Load a pickled model
     model = pickle.load(open(os.path.join(model_path, "model.pkl"), "rb"))
     fonduer_model = model["fonduer_model"]
     fonduer_model.preprocessor = model["preprosessor"]
@@ -263,6 +276,14 @@ def save_model(
     model_code_path = os.path.join(path, pyfunc.CODE)
     os.makedirs(model_code_path)
 
+    # mention_classes
+    _save_mention_classes(mention_extractor.udf_init_kwargs["mention_classes"], path)
+
+    # candidate_classes
+    _save_candidate_classes(
+        candidate_extractor.udf_init_kwargs["candidate_classes"], path
+    )
+
     # Note that instances of ParserUDF and other UDF theselves are not picklable.
     # https://stackoverflow.com/a/52026025
     model = {
@@ -345,6 +366,55 @@ class _FonduerWrapper(object):
     def predict(self, dataframe: DataFrame) -> DataFrame:
         predicted = self.fonduer_model.predict(dataframe)
         return predicted
+
+
+def _save_mention_classes(mention_classes: List[Mention], path: str) -> None:
+    pickle.dump(
+        [
+            {
+                "class_name": mention_class.__name__,
+                "cardinality": mention_class.cardinality,
+                "values": mention_class.values,
+                "table_name": mention_class.__tablename__,
+            }
+            for mention_class in mention_classes
+        ],
+        open(os.path.join(path, "mention_classes.pkl"), "wb"),
+    )
+
+
+def _load_mention_classes(path: str) -> None:
+    for kwargs in pickle.load(open(os.path.join(path, "mention_classes.pkl"), "rb")):
+        mention_subclass(**kwargs)
+
+
+def _save_candidate_classes(candidate_classes: List[Candidate], path: str) -> None:
+    pickle.dump(
+        [
+            {
+                "class_name": candidate_class.__name__,
+                "mention_class_names": [
+                    candidate_class.__name__
+                    for candidate_class in candidate_class.mentions
+                ],
+                "table_name": candidate_class.__tablename__,
+                "cardinality": candidate_class.cardinality,
+                "values": candidate_class.values,
+            }
+            for candidate_class in candidate_classes
+        ],
+        open(os.path.join(path, "candidate_classes.pkl"), "wb"),
+    )
+
+
+def _load_candidate_classes(path: str) -> None:
+    for kwargs in pickle.load(open(os.path.join(path, "candidate_classes.pkl"), "rb")):
+        # Convert the classnames of mention to mention_classes
+        kwargs["args"] = [
+            mention_subclasses[mention_class_name][0]
+            for mention_class_name in kwargs.pop("mention_class_names")
+        ]
+        candidate_subclass(**kwargs)
 
 
 def F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix:

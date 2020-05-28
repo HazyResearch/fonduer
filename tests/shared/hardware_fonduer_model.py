@@ -4,7 +4,6 @@ import numpy as np
 from emmental.data import EmmentalDataLoader
 from pandas import DataFrame
 
-import tests.shared.hardware_subclasses  # noqa
 from fonduer.learning.dataset import FonduerDataset
 from fonduer.packaging import F_matrix, FonduerModel
 from fonduer.parser.models import Document
