@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from io import BytesIO
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import cloudpickle as pickle
 import emmental
@@ -181,7 +181,7 @@ def log_model(
     parser: Parser,
     mention_extractor: MentionExtractor,
     candidate_extractor: CandidateExtractor,
-    conda_env: Optional[Dict] = None,
+    conda_env: Optional[Union[Dict, str]] = None,
     code_paths: Optional[List[str]] = None,
     model_type: Optional[str] = "emmental",
     labeler: Optional[Labeler] = None,
@@ -199,7 +199,8 @@ def log_model(
     :param parser: self-explanatory
     :param mention_extractor: self-explanatory
     :param candidate_extractor: self-explanatory
-    :param conda_env: A dictionary representation of a Conda environment.
+    :param conda_env: Either a dictionary representation of a Conda environment
+        or the path to a Conda environment yaml file.
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
@@ -240,7 +241,7 @@ def save_model(
     mention_extractor: MentionExtractor,
     candidate_extractor: CandidateExtractor,
     mlflow_model: Model = Model(),
-    conda_env: Optional[Dict] = None,
+    conda_env: Optional[Union[Dict, str]] = None,
     code_paths: Optional[List[str]] = None,
     model_type: Optional[str] = "emmental",
     labeler: Optional[Labeler] = None,
@@ -259,7 +260,8 @@ def save_model(
     :param mention_extractor: self-explanatory
     :param candidate_extractor: self-explanatory
     :param mlflow_model: model configuration.
-    :param conda_env: A dictionary representation of a Conda environment.
+    :param conda_env: Either a dictionary representation of a Conda environment
+        or the path to a Conda environment yaml file.
     :param code_paths: A list of local filesystem paths to Python file dependencies,
         or directories containing file dependencies. These files are prepended to the
         system path when the model is loaded.
