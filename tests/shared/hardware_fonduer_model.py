@@ -5,7 +5,8 @@ from emmental.data import EmmentalDataLoader
 from pandas import DataFrame
 
 from fonduer.learning.dataset import FonduerDataset
-from fonduer.packaging import F_matrix, FonduerModel
+from fonduer.packaging import FonduerModel
+from fonduer.packaging.fonduer_model import _F_matrix
 from fonduer.parser.models import Document
 from tests.shared.hardware_lfs import TRUE
 from tests.shared.hardware_utils import get_implied_parts
@@ -21,7 +22,7 @@ class HardwareFonduerModel(FonduerModel):
 
         features_list = self.featurizer.apply(doc)
         # Convert features into a sparse matrix
-        F_test = F_matrix(features_list[0], self.key_names)
+        F_test = _F_matrix(features_list[0], self.key_names)
 
         test_dataloader = EmmentalDataLoader(
             task_to_label_dict={ATTRIBUTE: "labels"},

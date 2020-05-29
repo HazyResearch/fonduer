@@ -419,7 +419,7 @@ def _load_candidate_classes(path: str) -> None:
         candidate_subclass(**kwargs)
 
 
-def F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix:
+def _F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix:
     """Convert features (the output from FeaturizerUDF.apply) into a sparse matrix.
 
     Note that :func:`FeaturizerUDF.apply` returns a list of list of feature mapping,
@@ -446,7 +446,7 @@ def F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix
     return F
 
 
-def L_matrix(labels: List[Dict[str, Any]], key_names: List[str]) -> np.ndarray:
+def _L_matrix(labels: List[Dict[str, Any]], key_names: List[str]) -> np.ndarray:
     """Convert labels (the output from LabelerUDF.apply) into a dense matrix.
 
     Note that :func:`LabelerUDF.apply` returns a list of list of label mapping,
@@ -459,4 +459,4 @@ def L_matrix(labels: List[Dict[str, Any]], key_names: List[str]) -> np.ndarray:
     :param labels: a list of label mapping (key: key_name, value=label).
     :param key_names: a list of all key_names.
     """
-    return unshift_label_matrix(F_matrix(labels, key_names))
+    return unshift_label_matrix(_F_matrix(labels, key_names))
