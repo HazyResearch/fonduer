@@ -14,21 +14,53 @@ A packaged Fonduer pipeline model (or simply referred to as a Fonduer model) loo
         │   ├── my_subclasses.py
         │   └── my_fonduer_model.py
         ├── conda.yaml
+        ├── candidate_classes.pkl
+        ├── mention_classes.pkl
         └── model.pkl  # the pickled Fonduer pipeline model.
-
-This directory, conformal to the `MLflow Model`_, can be deployed either locally or on the cloud using MLflow's built-in deployment tools.
-
-Example
--------
 
 Currently, two types of classifiers are supported: :class:`EmmentalModel` (aka discriminative model) and :class:`LabelModel` (aka generative model).
 The following example shows how to package a Fonduer pipeline model that uses :class:`EmmentalModel` as a classifier.
 
+Example
+-------
+
+First, create a class that inherits :class:`FonduerModel` and implements :func:`_classify`.
+Then, put this class in a Python module like `my_fonduer_model.py` instead of in a Jupyter notebook or a long Python script as this module will be packaged.
+
+    .. code-block:: python
+        :caption: my_fonduer_model.py
+
+        class MyFonduerModel(FonduerModel):
+            def _classify(self, doc: Document) -> DataFrame:
+                # My implementation
+
+Similarly, put anything that is required for :class:`MentionExtractor` and :class:`CandidateExtractor`, i.e., mention_classes, mention_spaces, matchers, candidate_classes, and throttlers, into another module.
+
+    .. code-block:: python
+        :caption: my_subclasses.py
+
+        from fonduer.candidates.models import mention_subclass
+        Presidentname = mention_subclass("Presidentname")
+        Placeofbirth = mention_subclass("Placeofbirth")
+
+        mention_classes = [Presidentname, Placeofbirth]
+        ...
+        mention_spaces = [presname_ngrams, placeofbirth_ngrams]
+        matchers = [president_name_matcher, place_of_birth_matcher]
+        candidate_classes = [PresidentnamePlaceofbirth]
+        throttlers = [my_throttler]
+
+Finally, in a Jupyter notebook or a Python script, build and train a pipeline, then save the trained pipeline.
+
     >>> from fonduer.parser.preprocessors import HTMLDocPreprocessor
     >>> preprocessor = HTMLDocPreprocessor(docs_path)
     >>> ...
-    >>> # Initialize other components like parser, mention_extractor.
-    >>> # Then, train them if they can be trained, e.g., featurizer, emmental_model.
+    >>> # Import mention_classes, candidate_classes, etc. from my_subclasses.py
+    >>> # instead of defining them here.
+    >>> from my_subclasses import mention_classes, mention_spaces, matchers
+    >>> mention_extractor = MentionExtractor(session, mention_classes, mention_spaces, matchers)
+    >>> from my_subclasses import candidate_classes, throttlers
+    >>> candidate_extractor = CandidateExtractor(session, candidate_classes, throttlers)
     >>> ...
     >>> from my_fonduer_model import MyFonduerModel
     >>> from fonduer.packaging import save_model
@@ -45,22 +77,10 @@ The following example shows how to package a Fonduer pipeline model that uses :c
             word2id=emb_layer.word2id,
         )
 
-    .. code-block:: python
-        :caption: my_fonduer_model.py
-
-        import my_subclasses
-
-        class MyFonduerModel(FonduerModel):
-            def _classify(self, doc: Document) -> DataFrame:
-                # My implementation
-
-If you are familiar with MLflow, you may wonder why the `/code` directory should include these Python files.
-
-To successfully package a Fonduer model, there are things to understand:
-
-1. `my_fonduer_model.py` should import `my_subclasses`.
-2. Depending on your application, some other python files may need to be included `code_paths`.
-
+Remember to list `my_subclasses.py` and `my_fonduer_model.py` in the ``code_paths`` argument.
+Other modules can also be listed if they are required during inference.
+Alternatively, you can manually place arbitrary modules or data under `/code` or `/data` directory, respectively.
+For further information about MLflow Model, please see `MLflow Model`_.
 
 .. _MLflow Model: https://www.mlflow.org/docs/latest/models.html
 
