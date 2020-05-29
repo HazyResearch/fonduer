@@ -55,8 +55,8 @@ Finally, in a Jupyter notebook or a Python script, build and train a pipeline, t
     >>> from fonduer.parser.preprocessors import HTMLDocPreprocessor
     >>> preprocessor = HTMLDocPreprocessor(docs_path)
     >>> ...
-    >>> # Import mention_classes, candidate_classes, etc. from my_subclasses.py
-    >>> # instead of defining them here.
+    # Import mention_classes, candidate_classes, etc. from my_subclasses.py
+    # instead of defining them here.
     >>> from my_subclasses import mention_classes, mention_spaces, matchers
     >>> mention_extractor = MentionExtractor(session, mention_classes, mention_spaces, matchers)
     >>> from my_subclasses import candidate_classes, throttlers
