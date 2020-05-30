@@ -20,9 +20,9 @@ from fonduer.features.featurizer import Featurizer
 from fonduer.features.models import FeatureKey
 from fonduer.packaging import log_model, save_model
 from fonduer.packaging.fonduer_model import (
-    _F_matrix,
+    _convert_features_to_matrix,
+    _convert_labels_to_matrix,
     _get_default_conda_env,
-    _L_matrix,
     _load_candidate_classes,
     _load_mention_classes,
     _save_candidate_classes,
@@ -61,40 +61,40 @@ def setup_common_components():
     }
 
 
-def test_F_matrix():
-    """Test _F_matrix."""
+def test_convert_features_to_matrix():
+    """Test _convert_features_to_matrix."""
     features: List[Dict[str, Any]] = [
         {"keys": ["key1", "key2"], "values": [0.0, 0.1]},
         {"keys": ["key1", "key2"], "values": [1.0, 1.1]},
     ]
     key_names: List[str] = ["key1", "key2"]
 
-    F = _F_matrix(features, key_names)
+    F = _convert_features_to_matrix(features, key_names)
     D = np.array([[0.0, 0.1], [1.0, 1.1]])
     assert (F.todense() == D).all()
 
 
-def test_F_matrix_limited_keys():
-    """Test _F_matrix with limited keys."""
+def test_convert_features_to_matrix_limited_keys():
+    """Test _convert_features_to_matrix with limited keys."""
     features: List[Dict[str, Any]] = [
         {"keys": ["key1", "key2"], "values": [0.0, 0.1]},
         {"keys": ["key1", "key2"], "values": [1.0, 1.1]},
     ]
 
-    F = _F_matrix(features, ["key1"])
+    F = _convert_features_to_matrix(features, ["key1"])
     D = np.array([[0.0], [1.0]])
     assert (F.todense() == D).all()
 
 
-def test_L_matrix():
-    """Test _L_matrix."""
+def test_convert_labels_to_matrix():
+    """Test _convert_labels_to_matrix."""
     labels: List[Dict[str, Any]] = [
         {"keys": ["key1", "key2"], "values": [0, 1]},
         {"keys": ["key1", "key2"], "values": [1, 2]},
     ]
     key_names: List[str] = ["key1", "key2"]
 
-    L = _L_matrix(labels, key_names)
+    L = _convert_labels_to_matrix(labels, key_names)
     D = np.array([[-1, 0], [0, 1]])
     assert (L == D).all()
 

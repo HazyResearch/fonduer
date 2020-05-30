@@ -401,12 +401,10 @@ def _load_candidate_classes(path: str) -> None:
         candidate_subclass(**kwargs)
 
 
-def _F_matrix(features: List[Dict[str, Any]], keys: List[str]) -> csr_matrix:
+def _convert_features_to_matrix(
+    features: List[Dict[str, Any]], keys: List[str]
+) -> csr_matrix:
     """Convert features (the output from FeaturizerUDF.apply) into a sparse matrix.
-
-    Note that :func:`FeaturizerUDF.apply` returns a list of list of feature mapping,
-    where the outer list represents candidate_classes, while this method takes a list
-    of feature mapping of each candidate_class.
 
     :param features: a list of feature mapping (key: key, value=feature).
     :param keys: a list of all keys.
@@ -414,14 +412,12 @@ def _F_matrix(features: List[Dict[str, Any]], keys: List[str]) -> csr_matrix:
     return _convert_mappings_to_matrix(features, keys)
 
 
-def _L_matrix(labels: List[Dict[str, Any]], keys: List[str]) -> np.ndarray:
+def _convert_labels_to_matrix(
+    labels: List[Dict[str, Any]], keys: List[str]
+) -> np.ndarray:
     """Convert labels (the output from LabelerUDF.apply) into a dense matrix.
 
-    Note that :func:`LabelerUDF.apply` returns a list of list of label mapping,
-    where the outer list represents candidate_classes, while this method takes a list
-    of label mapping of each candidate_class.
-
-    Also note that the input labels are 0-indexed (``{0, 1, ..., k}``),
+    Note that the input labels are 0-indexed (``{0, 1, ..., k}``),
     while the output labels are -1-indexed (``{-1, 0, ..., k-1}``).
 
     :param labels: a list of label mapping (key: key, value=label).
