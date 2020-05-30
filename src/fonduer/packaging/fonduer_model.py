@@ -278,10 +278,10 @@ def save_model(
     model_code_path = os.path.join(path, pyfunc.CODE)
     os.makedirs(model_code_path)
 
-    # mention_classes
+    # Save mention_classes
     _save_mention_classes(mention_extractor.udf_init_kwargs["mention_classes"], path)
 
-    # candidate_classes
+    # Save candidate_classes
     _save_candidate_classes(
         candidate_extractor.udf_init_kwargs["candidate_classes"], path
     )
@@ -330,6 +330,7 @@ def save_model(
             for lf in _:
                 lf.__module__ = modules.pop()
 
+    # Create a conda yaml file.
     conda_env_subpath = "conda.yaml"
     if conda_env is None:
         conda_env = _get_default_conda_env()
@@ -339,6 +340,7 @@ def save_model(
     with open(os.path.join(path, conda_env_subpath), "w") as f:
         yaml.safe_dump(conda_env, stream=f, default_flow_style=False)
 
+    # Copy code_paths.
     if code_paths is not None:
         for code_path in code_paths:
             _copy_file_or_tree(src=code_path, dst=model_code_path)
