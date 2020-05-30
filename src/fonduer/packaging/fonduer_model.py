@@ -125,7 +125,6 @@ class FonduerModel(pyfunc.PythonModel):
 
 def _load_pyfunc(model_path: str) -> Any:
     """Load PyFunc implementation. Called by ``pyfunc.load_pyfunc``."""
-
     # Load mention_classes
     _load_mention_classes(model_path)
     # Load candiate_classes
@@ -154,18 +153,11 @@ def _load_pyfunc(model_path: str) -> Any:
         fonduer_model.featurizer = FeaturizerUDF(candidate_classes, FeatureExtractor())
         fonduer_model.key_names = model["feature_keys"]
         fonduer_model.word2id = model["word2id"]
-
-        # Load the emmental_model
-        buffer = BytesIO()
-        buffer.write(model["emmental_model"])
-        buffer.seek(0)
-        fonduer_model.emmental_model = torch.load(buffer)
+        fonduer_model.emmental_model = _load_emmental_model(model["emmental_model"])
     else:
         fonduer_model.labeler = LabelerUDF(candidate_classes)
         fonduer_model.key_names = model["labeler_keys"]
-
         fonduer_model.lfs = model["lfs"]
-
         fonduer_model.label_models = []
         for state_dict in model["label_models_state_dict"]:
             label_model = LabelModel()
@@ -283,7 +275,6 @@ def save_model(
     _save_candidate_classes(
         candidate_extractor.udf_init_kwargs["candidate_classes"], path
     )
-
     # Makes lfs unpicklable w/o the module (ie fonduer_lfs.py)
     # https://github.com/cloudpipe/cloudpickle/issues/206#issuecomment-555939172
     modules = []
@@ -306,21 +297,14 @@ def save_model(
         key_names = [key.name for key in featurizer.get_keys()]
         model["feature_keys"] = key_names
         model["word2id"] = word2id
-
-        # Save the emmental_model
-        buffer = BytesIO()
-        torch.save(emmental_model, buffer)
-        buffer.seek(0)
-        model["emmental_model"] = buffer.read()
+        model["emmental_model"] = _save_emmental_model(emmental_model)
     else:
         key_names = [key.name for key in labeler.get_keys()]
         model["labeler_keys"] = key_names
-
         model["lfs"] = lfs
         model["label_models_state_dict"] = [
             label_model.__dict__ for label_model in label_models
         ]
-
     pickle.dump(model, open(os.path.join(path, "model.pkl"), "wb"))
 
     # Restore __module__ back to the original
@@ -352,6 +336,20 @@ def save_model(
         env=conda_env_subpath,
     )
     mlflow_model.save(os.path.join(path, "MLmodel"))
+
+
+def _save_emmental_model(emmental_model: EmmentalModel) -> bytes:
+    buffer = BytesIO()
+    torch.save(emmental_model, buffer)
+    buffer.seek(0)
+    return buffer.read()
+
+
+def _load_emmental_model(b: bytes) -> EmmentalModel:
+    buffer = BytesIO()
+    buffer.write(b)
+    buffer.seek(0)
+    return torch.load(buffer)
 
 
 def _save_mention_classes(mention_classes: List[Mention], path: str) -> None:
