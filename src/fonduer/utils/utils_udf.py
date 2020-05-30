@@ -23,6 +23,7 @@ from sqlalchemy.sql.expression import cast
 
 from fonduer.candidates.models import Candidate
 from fonduer.parser.models import Document
+from fonduer.utils.models import AnnotationMixin
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ logger = logging.getLogger(__name__)
 ALL_SPLITS = "ALL"
 
 
-def _get_cand_values(candidate: Candidate, key_table: Table) -> List:
+def _get_cand_values(candidate: Candidate, key_table: Table) -> List[AnnotationMixin]:
     """Get the corresponding values for the key_table."""
     # NOTE: Import just before checking to avoid circular imports.
     from fonduer.features.models import FeatureKey
@@ -136,29 +137,59 @@ def get_sparse_matrix(
 
         # Keys are used as a global index
         if key:
-            keys_map = {key: 0}
+            key_names = [key]
         else:
+            # Get all keys
             all_keys = get_sparse_matrix_keys(session, key_table)
-            keys_map = {k.name: i for (i, k) in enumerate(all_keys)}
+            # Filter only keys that are used by this cand_list
+            key_names = [k.name for k in all_keys]
 
-        indptr = [0]
-        indices = []
-        data = []
+        annotations: List[Dict[str, Any]] = []
         for cand in cand_list:
-            values = _get_cand_values(cand, key_table)
-            if values:
-                for cand_key, cand_value in zip(values[0].keys, values[0].values):
-                    if cand_key in keys_map:
-                        indices.append(keys_map[cand_key])
-                        data.append(cand_value)
-
-            indptr.append(len(indices))
-
-        result.append(
-            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys_map)))
-        )
-
+            annotation_mixins: List[AnnotationMixin] = _get_cand_values(cand, key_table)
+            if annotation_mixins:
+                annotations.append(
+                    {
+                        "keys": annotation_mixins[0].keys,
+                        "values": annotation_mixins[0].values,
+                    }
+                )
+            else:
+                annotations.append({"keys": [], "values": []})
+        result.append(_convert_mappings_to_matrix(annotations, key_names))
     return result
+
+
+def _convert_mappings_to_matrix(
+    mappings: List[Dict[str, Any]], keys: List[str]
+) -> csr_matrix:
+    """Convert a list of (annotation) mapping into a sparse matrix.
+
+    An annotation mapping is a dictionary representation of annotations like instances
+    of :class:`Label` and :class:`Feature`. For example, label.keys and label.values
+    corresponds to annotation["keys"] and annotation["values"].
+
+    Note that :func:`FeaturizerUDF.apply` returns a list of list of such a mapping,
+    where the outer list represents candidate_classes, while this method takes a list
+    of a mapping of each candidate_class.
+
+    :param mappings: a list of annotation mapping.
+    :param keys: a list of keys, which becomes columns of the matrix to be returned.
+    """
+    # Create a mapping that maps key_name to column index)
+    keys_map = {key: keys.index(key) for key in keys}
+
+    indptr = [0]
+    indices = []
+    data = []
+    for mapping in mappings:
+        if mapping:
+            for key, value in zip(mapping["keys"], mapping["values"]):
+                if key in keys:
+                    indices.append(keys_map[key])
+                    data.append(value)
+        indptr.append(len(indices))
+    return csr_matrix((data, indices, indptr), shape=(len(mappings), len(keys)))
 
 
 def unshift_label_matrix(L_sparse: csr_matrix) -> np.ndarray:
