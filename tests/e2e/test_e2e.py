@@ -604,11 +604,12 @@ def test_e2e():
 
     # Save a fonduer model
     from tests.shared.hardware_fonduer_model import HardwareFonduerModel
-    from fonduer.packaging import save_model
+    from fonduer.packaging import log_model
 
-    save_model(
+    artifact_path = "fonduer_model"
+    log_model(
         HardwareFonduerModel(),
-        "fonduer_model",
+        artifact_path,
         code_paths=["tests"],
         preprocessor=doc_preprocessor,
         parser=corpus_parser,
@@ -620,14 +621,17 @@ def test_e2e():
     )
 
     # Load the saved Fonduer model
-    reloaded_fonduer_model = mlflow.pyfunc.load_model("fonduer_model")
+    model_uri = "runs:/{run_id}/{artifact_path}".format(
+        run_id=mlflow.active_run().info.run_id, artifact_path=artifact_path
+    )
+    fonduer_model_loaded = mlflow.pyfunc.load_model(model_uri=model_uri)
     input = pd.DataFrame(
         data={
             "html_path": ["tests/data/html/112823.html"],
             "pdf_path": ["tests/data/pdf/112823.pdf"],
         }
     )
-    output = reloaded_fonduer_model.predict(input)
+    output = fonduer_model_loaded.predict(input)
     assert all(output.columns == ["doc", "part", "val", "html_path"])
     assert len(output.index) >= 1
 
