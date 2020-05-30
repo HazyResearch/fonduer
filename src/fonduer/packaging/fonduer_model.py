@@ -37,7 +37,7 @@ from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF
 from fonduer.parser.preprocessors import DocPreprocessor
 from fonduer.supervision.labeler import Labeler, LabelerUDF
-from fonduer.utils.utils_udf import unshift_label_matrix
+from fonduer.utils.utils_udf import _convert_mappings_to_matrix, unshift_label_matrix
 
 logger = logging.getLogger(__name__)
 
@@ -401,34 +401,20 @@ def _load_candidate_classes(path: str) -> None:
         candidate_subclass(**kwargs)
 
 
-def _F_matrix(features: List[Dict[str, Any]], key_names: List[str]) -> csr_matrix:
+def _F_matrix(features: List[Dict[str, Any]], keys: List[str]) -> csr_matrix:
     """Convert features (the output from FeaturizerUDF.apply) into a sparse matrix.
 
     Note that :func:`FeaturizerUDF.apply` returns a list of list of feature mapping,
     where the outer list represents candidate_classes, while this method takes a list
     of feature mapping of each candidate_class.
 
-    :param features: a list of feature mapping (key: key_name, value=feature).
-    :param key_names: a list of all key_names.
+    :param features: a list of feature mapping (key: key, value=feature).
+    :param keys: a list of all keys.
     """
-    keys_map = {}
-    for (i, k) in enumerate(key_names):
-        keys_map[k] = i
-
-    indptr = [0]
-    indices = []
-    data = []
-    for feature in features:
-        for cand_key, cand_value in zip(feature["keys"], feature["values"]):
-            if cand_key in key_names:
-                indices.append(keys_map[cand_key])
-                data.append(cand_value)
-        indptr.append(len(indices))
-    F = csr_matrix((data, indices, indptr), shape=(len(features), len(key_names)))
-    return F
+    return _convert_mappings_to_matrix(features, keys)
 
 
-def _L_matrix(labels: List[Dict[str, Any]], key_names: List[str]) -> np.ndarray:
+def _L_matrix(labels: List[Dict[str, Any]], keys: List[str]) -> np.ndarray:
     """Convert labels (the output from LabelerUDF.apply) into a dense matrix.
 
     Note that :func:`LabelerUDF.apply` returns a list of list of label mapping,
@@ -438,7 +424,7 @@ def _L_matrix(labels: List[Dict[str, Any]], key_names: List[str]) -> np.ndarray:
     Also note that the input labels are 0-indexed (``{0, 1, ..., k}``),
     while the output labels are -1-indexed (``{-1, 0, ..., k-1}``).
 
-    :param labels: a list of label mapping (key: key_name, value=label).
-    :param key_names: a list of all key_names.
+    :param labels: a list of label mapping (key: key, value=label).
+    :param keys: a list of all keys.
     """
-    return unshift_label_matrix(_F_matrix(labels, key_names))
+    return unshift_label_matrix(_convert_mappings_to_matrix(labels, keys))
