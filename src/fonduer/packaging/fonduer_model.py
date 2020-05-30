@@ -171,7 +171,7 @@ def _load_pyfunc(model_path: str) -> Any:
             label_model = LabelModel()
             label_model.__dict__.update(state_dict)
             fonduer_model.label_models.append(label_model)
-    return _FonduerWrapper(fonduer_model)
+    return fonduer_model
 
 
 def log_model(
@@ -353,23 +353,6 @@ def save_model(
         env=conda_env_subpath,
     )
     mlflow_model.save(os.path.join(path, "MLmodel"))
-
-
-class _FonduerWrapper(object):
-    """Wrapper class that creates a predict function.
-
-    predict(data: pd.DataFrame) -> model's output as pd.DataFrame (pandas DataFrame)
-    """
-
-    def __init__(self, fonduer_model: FonduerModel) -> None:
-        """
-        :param python_model: An instance of a subclass of :class:`~PythonModel`.
-        """
-        self.fonduer_model = fonduer_model
-
-    def predict(self, dataframe: DataFrame) -> DataFrame:
-        predicted = self.fonduer_model.predict(dataframe)
-        return predicted
 
 
 def _save_mention_classes(mention_classes: List[Mention], path: str) -> None:
