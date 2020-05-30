@@ -18,10 +18,8 @@ from fonduer.candidates.models.candidate import candidate_subclasses
 from fonduer.candidates.models.mention import mention_subclasses
 from fonduer.features.featurizer import Featurizer
 from fonduer.features.models import FeatureKey
-from fonduer.packaging import log_model, save_model
+from fonduer.packaging import FonduerModel, log_model, save_model
 from fonduer.packaging.fonduer_model import (
-    _convert_features_to_matrix,
-    _convert_labels_to_matrix,
     _get_default_conda_env,
     _load_candidate_classes,
     _load_mention_classes,
@@ -69,7 +67,7 @@ def test_convert_features_to_matrix():
     ]
     key_names: List[str] = ["key1", "key2"]
 
-    F = _convert_features_to_matrix(features, key_names)
+    F = FonduerModel.convert_features_to_matrix(features, key_names)
     D = np.array([[0.0, 0.1], [1.0, 1.1]])
     assert (F.todense() == D).all()
 
@@ -81,7 +79,7 @@ def test_convert_features_to_matrix_limited_keys():
         {"keys": ["key1", "key2"], "values": [1.0, 1.1]},
     ]
 
-    F = _convert_features_to_matrix(features, ["key1"])
+    F = FonduerModel.convert_features_to_matrix(features, ["key1"])
     D = np.array([[0.0], [1.0]])
     assert (F.todense() == D).all()
 
@@ -94,7 +92,7 @@ def test_convert_labels_to_matrix():
     ]
     key_names: List[str] = ["key1", "key2"]
 
-    L = _convert_labels_to_matrix(labels, key_names)
+    L = FonduerModel.convert_labels_to_matrix(labels, key_names)
     D = np.array([[-1, 0], [0, 1]])
     assert (L == D).all()
 

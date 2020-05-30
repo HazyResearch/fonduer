@@ -122,6 +122,31 @@ class FonduerModel(pyfunc.PythonModel):
         df = self._classify(doc)
         return df
 
+    @staticmethod
+    def convert_features_to_matrix(
+        features: List[Dict[str, Any]], keys: List[str]
+    ) -> csr_matrix:
+        """Convert features (the output from FeaturizerUDF.apply) into a sparse matrix.
+
+        :param features: a list of feature mapping (key: key, value=feature).
+        :param keys: a list of all keys.
+        """
+        return _convert_mappings_to_matrix(features, keys)
+
+    @staticmethod
+    def convert_labels_to_matrix(
+        labels: List[Dict[str, Any]], keys: List[str]
+    ) -> np.ndarray:
+        """Convert labels (the output from LabelerUDF.apply) into a dense matrix.
+
+        Note that the input labels are 0-indexed (``{0, 1, ..., k}``),
+        while the output labels are -1-indexed (``{-1, 0, ..., k-1}``).
+
+        :param labels: a list of label mapping (key: key, value=label).
+        :param keys: a list of all keys.
+        """
+        return unshift_label_matrix(_convert_mappings_to_matrix(labels, keys))
+
 
 def _load_pyfunc(model_path: str) -> Any:
     """Load PyFunc implementation. Called by ``pyfunc.load_pyfunc``."""
@@ -399,28 +424,3 @@ def _load_candidate_classes(path: str) -> None:
             for mention_class_name in kwargs.pop("mention_class_names")
         ]
         candidate_subclass(**kwargs)
-
-
-def _convert_features_to_matrix(
-    features: List[Dict[str, Any]], keys: List[str]
-) -> csr_matrix:
-    """Convert features (the output from FeaturizerUDF.apply) into a sparse matrix.
-
-    :param features: a list of feature mapping (key: key, value=feature).
-    :param keys: a list of all keys.
-    """
-    return _convert_mappings_to_matrix(features, keys)
-
-
-def _convert_labels_to_matrix(
-    labels: List[Dict[str, Any]], keys: List[str]
-) -> np.ndarray:
-    """Convert labels (the output from LabelerUDF.apply) into a dense matrix.
-
-    Note that the input labels are 0-indexed (``{0, 1, ..., k}``),
-    while the output labels are -1-indexed (``{-1, 0, ..., k-1}``).
-
-    :param labels: a list of label mapping (key: key, value=label).
-    :param keys: a list of all keys.
-    """
-    return unshift_label_matrix(_convert_mappings_to_matrix(labels, keys))
