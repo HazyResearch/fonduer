@@ -278,13 +278,20 @@ def save_model(
     model_code_path = os.path.join(path, pyfunc.CODE)
     os.makedirs(model_code_path)
 
-    # Save mention_classes
+    # Save mention_classes and candidate_classes
     _save_mention_classes(mention_extractor.udf_init_kwargs["mention_classes"], path)
-
-    # Save candidate_classes
     _save_candidate_classes(
         candidate_extractor.udf_init_kwargs["candidate_classes"], path
     )
+
+    # Makes lfs unpicklable w/o the module (ie fonduer_lfs.py)
+    # https://github.com/cloudpipe/cloudpickle/issues/206#issuecomment-555939172
+    modules = []
+    if model_type == "label":
+        for _ in lfs:
+            for lf in _:
+                modules.append(lf.__module__)
+                lf.__module__ = "__main__"
 
     # Note that instances of ParserUDF and other UDF theselves are not picklable.
     # https://stackoverflow.com/a/52026025
@@ -295,7 +302,6 @@ def save_model(
         "mention_extractor": mention_extractor.udf_init_kwargs,
         "candidate_extractor": candidate_extractor.udf_init_kwargs,
     }
-    modules = []
     if model_type == "emmental":
         key_names = [key.name for key in featurizer.get_keys()]
         model["feature_keys"] = key_names
@@ -309,13 +315,6 @@ def save_model(
     else:
         key_names = [key.name for key in labeler.get_keys()]
         model["labeler_keys"] = key_names
-
-        # Makes lfs unpicklable w/o the module (ie fonduer_lfs.py)
-        # https://github.com/cloudpipe/cloudpickle/issues/206#issuecomment-555939172
-        for _ in lfs:
-            for lf in _:
-                modules.append(lf.__module__)
-                lf.__module__ = "__main__"
 
         model["lfs"] = lfs
         model["label_models_state_dict"] = [
