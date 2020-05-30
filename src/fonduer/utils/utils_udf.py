@@ -133,19 +133,13 @@ def get_sparse_matrix(
     for cand_list in cand_lists:
         if len(cand_list) == 0:
             raise ValueError("cand_lists contain empty cand_list.")
-        candidate_class = cand_list[0].__tablename__
 
         # Keys are used as a global index
         if key:
             keys_map = {key: 0}
-            key_size = len(keys_map)
         else:
             all_keys = get_sparse_matrix_keys(session, key_table)
-            key_size = len(all_keys)
-            keys_map = {}
-            for (i, k) in enumerate(all_keys):
-                if candidate_class in k.candidate_classes:
-                    keys_map[k.name] = i
+            keys_map = {k.name: i for (i, k) in enumerate(all_keys)}
 
         indptr = [0]
         indices = []
@@ -161,7 +155,7 @@ def get_sparse_matrix(
             indptr.append(len(indices))
 
         result.append(
-            csr_matrix((data, indices, indptr), shape=(len(cand_list), key_size))
+            csr_matrix((data, indices, indptr), shape=(len(cand_list), len(keys_map)))
         )
 
     return result
