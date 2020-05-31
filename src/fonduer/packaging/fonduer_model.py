@@ -44,25 +44,6 @@ logger = logging.getLogger(__name__)
 MODEL_TYPE = "model_type"
 
 
-def _get_default_conda_env() -> Optional[Dict[str, Any]]:
-    """
-    :return: The default Conda environment for MLflow Models produced by calls to
-             :func:`save_model()` and :func:`log_model()`.
-    """
-    import torch
-    import fonduer
-
-    return _mlflow_conda_env(
-        additional_conda_deps=[
-            "pytorch={}".format(torch.__version__),  # type: ignore
-            "psycopg2",
-            "pip",
-        ],
-        additional_pip_deps=["fonduer=={}".format(fonduer.__version__)],
-        additional_conda_channels=["pytorch"],
-    )
-
-
 class FonduerModel(pyfunc.PythonModel):
     """A custom MLflow model for Fonduer.
 
@@ -361,6 +342,25 @@ def save_model(
         env=conda_env_subpath,
     )
     mlflow_model.save(os.path.join(path, "MLmodel"))
+
+
+def _get_default_conda_env() -> Optional[Dict[str, Any]]:
+    """
+    :return: The default Conda environment for MLflow Models produced by calls to
+             :func:`save_model()` and :func:`log_model()`.
+    """
+    import torch
+    import fonduer
+
+    return _mlflow_conda_env(
+        additional_conda_deps=[
+            "pytorch={}".format(torch.__version__),  # type: ignore
+            "psycopg2",
+            "pip",
+        ],
+        additional_pip_deps=["fonduer=={}".format(fonduer.__version__)],
+        additional_conda_channels=["pytorch"],
+    )
 
 
 def _save_emmental_model(emmental_model: EmmentalModel) -> bytes:
