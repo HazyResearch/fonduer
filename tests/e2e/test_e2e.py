@@ -3,9 +3,7 @@ import os
 import pickle
 
 import emmental
-import mlflow.pyfunc
 import numpy as np
-import pandas as pd
 import pytest
 from emmental.data import EmmentalDataLoader
 from emmental.learner import EmmentalLearner
@@ -81,7 +79,7 @@ def test_e2e():
 
     fonduer.init_logging(
         format="[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
-        level=logging.DEBUG,
+        level=logging.INFO,
     )
 
     session = fonduer.Meta.init(CONN_STRING).Session()
@@ -457,13 +455,13 @@ def test_e2e():
         ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LogisticRegression"
     )
 
-    emmental_model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 
     for task in tasks:
-        emmental_model.add_task(task)
+        model.add_task(task)
 
     emmental_learner = EmmentalLearner()
-    emmental_learner.learn(emmental_model, [train_dataloader])
+    emmental_learner.learn(model, [train_dataloader])
 
     test_dataloader = EmmentalDataLoader(
         task_to_label_dict={ATTRIBUTE: "labels"},
@@ -475,7 +473,7 @@ def test_e2e():
         shuffle=False,
     )
 
-    test_preds = emmental_model.predict(test_dataloader, return_preds=True)
+    test_preds = model.predict(test_dataloader, return_preds=True)
     positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.6)
     true_pred = [test_cands[0][_] for _ in positive[0]]
 
@@ -573,15 +571,15 @@ def test_e2e():
         mode="STL",
     )
 
-    emmental_model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 
     for task in tasks:
-        emmental_model.add_task(task)
+        model.add_task(task)
 
     emmental_learner = EmmentalLearner()
-    emmental_learner.learn(emmental_model, [train_dataloader, valid_dataloader])
+    emmental_learner.learn(model, [train_dataloader, valid_dataloader])
 
-    test_preds = emmental_model.predict(test_dataloader, return_preds=True)
+    test_preds = model.predict(test_dataloader, return_preds=True)
     positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
     true_pred = [test_cands[0][_] for _ in positive[0]]
 
@@ -602,39 +600,6 @@ def test_e2e():
 
     assert f1 > 0.7
 
-    # Save a fonduer model
-    from tests.shared.hardware_fonduer_model import HardwareFonduerModel
-    from fonduer.packaging import log_model
-
-    artifact_path = "fonduer_model"
-    log_model(
-        HardwareFonduerModel(),
-        artifact_path,
-        code_paths=["tests"],
-        preprocessor=doc_preprocessor,
-        parser=corpus_parser,
-        mention_extractor=mention_extractor,
-        candidate_extractor=candidate_extractor,
-        featurizer=featurizer,
-        emmental_model=emmental_model,
-        word2id=emb_layer.word2id,
-    )
-
-    # Load the saved Fonduer model
-    model_uri = "runs:/{run_id}/{artifact_path}".format(
-        run_id=mlflow.active_run().info.run_id, artifact_path=artifact_path
-    )
-    fonduer_model_loaded = mlflow.pyfunc.load_model(model_uri=model_uri)
-    input = pd.DataFrame(
-        data={
-            "html_path": ["tests/data/html/112823.html"],
-            "pdf_path": ["tests/data/pdf/112823.pdf"],
-        }
-    )
-    output = fonduer_model_loaded.predict(input)
-    assert all(output.columns == ["doc", "part", "val", "html_path"])
-    assert len(output.index) >= 1
-
     # Testing STL LSTM
     emmental.Meta.reset()
     emmental.init(fonduer.Meta.log_path)
@@ -644,15 +609,15 @@ def test_e2e():
         ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LSTM", mode="STL"
     )
 
-    emmental_model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 
     for task in tasks:
-        emmental_model.add_task(task)
+        model.add_task(task)
 
     emmental_learner = EmmentalLearner()
-    emmental_learner.learn(emmental_model, [train_dataloader])
+    emmental_learner.learn(model, [train_dataloader])
 
-    test_preds = emmental_model.predict(test_dataloader, return_preds=True)
+    test_preds = model.predict(test_dataloader, return_preds=True)
     positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
     true_pred = [test_cands[0][_] for _ in positive[0]]
 
@@ -688,15 +653,15 @@ def test_e2e():
         mode="MTL",
     )
 
-    emmental_model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 
     for task in tasks:
-        emmental_model.add_task(task)
+        model.add_task(task)
 
     emmental_learner = EmmentalLearner()
-    emmental_learner.learn(emmental_model, [train_dataloader, valid_dataloader])
+    emmental_learner.learn(model, [train_dataloader, valid_dataloader])
 
-    test_preds = emmental_model.predict(test_dataloader, return_preds=True)
+    test_preds = model.predict(test_dataloader, return_preds=True)
     positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
     true_pred = [test_cands[0][_] for _ in positive[0]]
 
@@ -726,15 +691,15 @@ def test_e2e():
         ATTRIBUTE, 2, F_train[0].shape[1], 2, emb_layer, model="LSTM", mode="MTL"
     )
 
-    emmental_model = EmmentalModel(name=f"{ATTRIBUTE}_task")
+    model = EmmentalModel(name=f"{ATTRIBUTE}_task")
 
     for task in tasks:
-        emmental_model.add_task(task)
+        model.add_task(task)
 
     emmental_learner = EmmentalLearner()
-    emmental_learner.learn(emmental_model, [train_dataloader])
+    emmental_learner.learn(model, [train_dataloader])
 
-    test_preds = emmental_model.predict(test_dataloader, return_preds=True)
+    test_preds = model.predict(test_dataloader, return_preds=True)
     positive = np.where(np.array(test_preds["probs"][ATTRIBUTE])[:, TRUE] > 0.7)
     true_pred = [test_cands[0][_] for _ in positive[0]]
 
