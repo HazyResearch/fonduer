@@ -84,7 +84,7 @@ class FonduerModel(pyfunc.PythonModel):
         :param pdf_path: a path of a PDF file or a directory containing files.
         """
         if not os.path.exists(html_path):
-            raise RuntimeError("html_path should be a file/directory path")
+            raise ValueError("html_path should be a file/directory path")
         # Parse docs
         doc = next(
             self.preprocessor._parse_file(html_path, os.path.basename(html_path))

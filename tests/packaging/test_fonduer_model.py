@@ -7,6 +7,7 @@ import emmental.meta
 import mlflow
 import mlflow.pyfunc
 import numpy as np
+import pandas as pd
 import pytest
 import yaml
 from emmental.model import EmmentalModel
@@ -227,3 +228,120 @@ def test_save_with_conda_yaml(tmp_path: Path, setup_common_components: Dict):
     )
     # Your conda yaml file is saved as "conda.yaml".
     assert os.path.exists(os.path.join(tmp_path, artifact_path, "conda.yaml"))
+
+
+def test_predict(mocker, setup_common_components: Dict):
+    """Test if a Fonduer model can predict."""
+    kwargs = setup_common_components
+    featurizer = Featurizer(None, [PartTemp])
+    # Mock the get_keys()
+    featurizer.get_keys = MagicMock(return_value=[FeatureKey(name="key1")])
+    emmental.meta.init_config()
+
+    # Log the model with FonduerModel()
+    log_model(
+        FonduerModel(),
+        artifact_path,
+        **kwargs,
+        code_paths=[
+            "tests"
+        ],  # pass a directory name to preserver the directory hierarchy
+        featurizer=featurizer,
+        emmental_model=EmmentalModel(),
+        word2id={"foo": 1},
+    )
+    # Load the model
+    fonduer_model = mlflow.pyfunc.load_model(
+        os.path.join(mlflow.active_run().info.artifact_uri, artifact_path)
+    )
+    with pytest.raises(NotImplementedError):
+        _ = fonduer_model.predict(
+            pd.DataFrame(data={"html_path": ["tests/data/html/112823.html"]})
+        )
+
+    # Log the model with HardwareFonduerModel()
+    log_model(
+        HardwareFonduerModel(),
+        artifact_path,
+        **kwargs,
+        code_paths=[
+            "tests"
+        ],  # pass a directory name to preserver the directory hierarchy
+        featurizer=featurizer,
+        emmental_model=EmmentalModel(),
+        word2id={"foo": 1},
+    )
+    # Load the model
+    fonduer_model = mlflow.pyfunc.load_model(
+        os.path.join(mlflow.active_run().info.artifact_uri, artifact_path)
+    )
+
+    # Mock the _classify as we don't test the implementation of _classify here.
+    mock_output = pd.DataFrame(data={"col1": ["val1"], "col2": ["val2"]})
+    fonduer_model._classify = MagicMock(return_value=mock_output)
+
+    # Input both html_path and pdf_html
+    spy = mocker.spy(fonduer_model, "_process")
+    output = fonduer_model.predict(
+        pd.DataFrame(
+            data={
+                "html_path": ["tests/data/html/112823.html"],
+                "pdf_path": ["tests/data/pdf/112823.pdf"],
+            }
+        )
+    )
+    spy.assert_called_once_with(
+        "tests/data/html/112823.html", "tests/data/pdf/112823.pdf"
+    )
+    assert output.equals(
+        pd.DataFrame(
+            data={
+                "col1": ["val1"],
+                "col2": ["val2"],
+                "html_path": ["tests/data/html/112823.html"],
+            }
+        )
+    )
+
+    # Input only html_path
+    spy.reset_mock()
+    output = fonduer_model.predict(
+        pd.DataFrame(data={"html_path": ["tests/data/html/112823.html"]})
+    )
+    spy.assert_called_once_with("tests/data/html/112823.html", None)
+    assert output.equals(
+        pd.DataFrame(
+            data={
+                "col1": ["val1"],
+                "col2": ["val2"],
+                "html_path": ["tests/data/html/112823.html"],
+            }
+        )
+    )
+
+    # Input html_path that does not exist
+    spy.reset_mock()
+
+    with pytest.raises(ValueError):
+        _ = fonduer_model.predict(
+            pd.DataFrame(data={"html_path": ["tests/data/html/foo.html"]})
+        )
+
+    # Test when _classify produces multiple relations per doc.
+    mock_output = pd.DataFrame(data={"col0": ["00", "10"], "col1": ["01", "11"]})
+    fonduer_model._classify = MagicMock(return_value=mock_output)
+    output = fonduer_model.predict(
+        pd.DataFrame(data={"html_path": ["tests/data/html/112823.html"]})
+    )
+    assert output.equals(
+        pd.DataFrame(
+            data={
+                "col0": ["00", "10"],
+                "col1": ["01", "11"],
+                "html_path": [
+                    "tests/data/html/112823.html",
+                    "tests/data/html/112823.html",
+                ],
+            }
+        )
+    )
