@@ -189,7 +189,7 @@ def test_e2e():
 
     # Test Dropping FeatureKey
     # Should force a row deletion
-    featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NNP NN IN]"])
+    featurizer.drop_keys(["BASIC_e1_CONTAINS_WORDS_[BC182]"])
     assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Should only remove the part_volt as a relation and leave part_temp
