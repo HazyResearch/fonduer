@@ -25,6 +25,7 @@ Example
 -------
 
 First, create a class that inherits :class:`FonduerModel` and implements :func:`_classify`.
+You can see fully functional examples of such a class at hardware_fonduer_model.py_ and my_fonduer_model.py_.
 Then, put this class in a Python module like `my_fonduer_model.py` instead of in a Jupyter notebook or a Python script as this module will be packaged.
 
     .. code-block:: python
@@ -32,7 +33,24 @@ Then, put this class in a Python module like `my_fonduer_model.py` instead of in
 
         class MyFonduerModel(FonduerModel):
             def _classify(self, doc: Document) -> DataFrame:
-                # My implementation
+                # Assume only one candidate class is used.
+                candidate_class = self.candidate_extractor.candidate_classes[0]
+                # Get a list of candidates for this candidate_class.
+                test_cands = getattr(doc, candidate_class.__tablename__ + "s")
+                # Get a list of true predictions out of candidates.
+                ...
+                true_preds = [test_cands[_] for _ in positive[0]]
+
+                # Load the true predictions into a dataframe.
+                df = DataFrame()
+                for true_pred in true_preds:
+                    entity_relation = tuple(m.context.get_span() for m in true_pred.get_mentions())
+                    df = df.append(
+                        DataFrame([entity_relation],
+                        columns=[m.__name__ for m in candidate_class.mentions]
+                        )
+                    )
+                return df
 
 Similarly, put anything that is required for :class:`MentionExtractor` and :class:`CandidateExtractor`, i.e., mention_classes, mention_spaces, matchers, candidate_classes, and throttlers, into another module.
 
@@ -83,6 +101,8 @@ Alternatively, you can manually place arbitrary modules or data under `/code` or
 For further information about MLflow Model, please see `MLflow Model`_.
 
 .. _MLflow Model: https://www.mlflow.org/docs/latest/models.html
+.. _hardware_fonduer_model.py: https://github.com/HazyResearch/fonduer/blob/master/tests/shared/hardware_fonduer_model.py
+.. _my_fonduer_model.py: https://github.com/HiromuHota/fonduer-mlflow/blob/master/my_fonduer_model.py
 
 MLflow model for Fonduer
 ------------------------
