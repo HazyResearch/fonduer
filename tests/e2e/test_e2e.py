@@ -13,6 +13,7 @@ from snorkel.labeling.model import LabelModel
 
 import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
+from fonduer.candidates.models import Candidate
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.learning.dataset import FonduerDataset
@@ -183,12 +184,13 @@ def test_e2e():
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 214
-    assert session.query(FeatureKey).count() == 1260
+    assert session.query(FeatureKey).count() == 1281
+    num_feature_keys = session.query(FeatureKey).count()
 
     # Test Dropping FeatureKey
     # Should force a row deletion
     featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NNP NN IN]"])
-    assert session.query(FeatureKey).count() == 1259
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Should only remove the part_volt as a relation and leave part_temp
     assert set(
@@ -201,7 +203,7 @@ def test_e2e():
     assert session.query(FeatureKey).filter(
         FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
-    assert session.query(FeatureKey).count() == 1259
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Inserting the removed key
     featurizer.upsert_keys(
@@ -213,37 +215,45 @@ def test_e2e():
         .one()
         .candidate_classes
     ) == {"part_temp", "part_volt"}
-    assert session.query(FeatureKey).count() == 1259
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
     # Removing the key again
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
 
     # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
-    assert session.query(FeatureKey).count() == 1258
+    assert session.query(FeatureKey).count() == num_feature_keys - 2
     session.query(Feature).delete(synchronize_session="fetch")
     session.query(FeatureKey).delete(synchronize_session="fetch")
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 6478
-    assert session.query(FeatureKey).count() == 4538
+    # the number of Features should equals to the total number of train candidates
+    assert session.query(Feature).count() == len(train_cands[0]) + len(train_cands[1])
+    num_features = session.query(Feature).count()
+    assert session.query(FeatureKey).count() == 4577
+    num_feature_keys = session.query(FeatureKey).count()
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3493, 4538)
-    assert F_train[1].shape == (2985, 4538)
-    assert len(featurizer.get_keys()) == 4538
+    assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
+    assert F_train[1].shape == (len(train_cands[1]), num_feature_keys)
+    assert len(featurizer.get_keys()) == num_feature_keys
 
     featurizer.apply(split=1, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 6692
-    assert session.query(FeatureKey).count() == 4538
+    # the number of Features should increate by the total number of dev candidates
+    num_features += len(dev_cands[0]) + len(dev_cands[1])
+    assert session.query(Feature).count() == num_features
+
+    assert session.query(FeatureKey).count() == num_feature_keys
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (61, 4538)
-    assert F_dev[1].shape == (153, 4538)
+    assert F_dev[0].shape == (len(dev_cands[0]), num_feature_keys)
+    assert F_dev[1].shape == (len(dev_cands[1]), num_feature_keys)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 8252
-    assert session.query(FeatureKey).count() == 4538
+    # the number of Features should increate by the total number of test candidates
+    num_features += len(test_cands[0]) + len(test_cands[1])
+    assert session.query(Feature).count() == num_features
+    assert session.query(FeatureKey).count() == num_feature_keys
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (416, 4538)
-    assert F_test[1].shape == (1144, 4538)
+    assert F_test[0].shape == (len(test_cands[0]), num_feature_keys)
+    assert F_test[1].shape == (len(test_cands[1]), num_feature_keys)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
 
@@ -260,7 +270,8 @@ def test_e2e():
         train=True,
         parallelism=PARALLEL,
     )
-    assert session.query(GoldLabel).count() == 8252
+    # All candidates should now be gold-labeled.
+    assert session.query(GoldLabel).count() == session.query(Candidate).count()
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -286,26 +297,27 @@ def test_e2e():
         train=True,
         parallelism=PARALLEL,
     )
-    assert session.query(Label).count() == 6478
+    assert session.query(Label).count() == len(train_cands[0]) + len(train_cands[1])
     assert session.query(LabelKey).count() == 9
+    num_label_keys = session.query(LabelKey).count()
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3493, 9)
-    assert L_train[1].shape == (2985, 9)
-    assert len(labeler.get_keys()) == 9
+    assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
+    assert L_train[1].shape == (len(train_cands[1]), num_label_keys)
+    assert len(labeler.get_keys()) == num_label_keys
 
     # Test Dropping LabelerKey
     labeler.drop_keys(["LF_storage_row"])
-    assert len(labeler.get_keys()) == 8
+    assert len(labeler.get_keys()) == num_label_keys - 1
 
     # Test Upserting LabelerKey
     labeler.upsert_keys(["LF_storage_row"])
     assert "LF_storage_row" in [label.name for label in labeler.get_keys()]
 
     L_train_gold = labeler.get_gold_labels(train_cands)
-    assert L_train_gold[0].shape == (3493, 1)
+    assert L_train_gold[0].shape == (len(train_cands[0]), 1)
 
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
-    assert L_train_gold[0].shape == (3493, 1)
+    assert L_train_gold[0].shape == (len(train_cands[0]), 1)
 
     label_model = LabelModel(cardinality=2)
     label_model.fit(L_train=L_train[0], n_epochs=500, seed=1234, log_freq=100)
@@ -432,10 +444,11 @@ def test_e2e():
         LF_not_temp_relevant,
     ]
     labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
-    assert session.query(Label).count() == 6478
+    assert session.query(Label).count() == len(train_cands[0]) + len(train_cands[1])
     assert session.query(LabelKey).count() == 16
+    num_label_keys = session.query(LabelKey).count()
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3493, 16)
+    assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
 
     label_model = LabelModel(cardinality=2)
     label_model.fit(L_train=L_train[0], n_epochs=500, seed=1234, log_freq=100)
