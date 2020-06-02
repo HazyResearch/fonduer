@@ -25,7 +25,7 @@ Example
 -------
 
 First, create a class that inherits :class:`FonduerModel` and implements :func:`_classify`.
-Then, put this class in a Python module like `my_fonduer_model.py` instead of in a Jupyter notebook or a long Python script as this module will be packaged.
+Then, put this class in a Python module like `my_fonduer_model.py` instead of in a Jupyter notebook or a Python script as this module will be packaged.
 
     .. code-block:: python
         :caption: my_fonduer_model.py
