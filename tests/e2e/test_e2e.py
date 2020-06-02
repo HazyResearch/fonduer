@@ -150,19 +150,7 @@ def test_e2e():
 
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
-    assert session.query(Part).count() == 299
-    assert session.query(Temp).count() == 138
-    assert session.query(Volt).count() == 140
     assert len(mention_extractor.get_mentions()) == 3
-    assert len(mention_extractor.get_mentions()[0]) == 299
-    assert (
-        len(
-            mention_extractor.get_mentions(
-                docs=[session.query(Document).filter(Document.name == "112823").first()]
-            )[0]
-        )
-        == 70
-    )
 
     # Candidate Extraction
     candidate_extractor = CandidateExtractor(
@@ -171,11 +159,6 @@ def test_e2e():
 
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
-
-    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3493
-    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
-    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 416
-    assert session.query(PartVolt).count() == 4282
 
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0, sort=True)
@@ -193,15 +176,6 @@ def test_e2e():
     )
 
     assert len(train_cands) == 2
-    assert len(train_cands[0]) == 3493
-    assert (
-        len(
-            candidate_extractor.get_candidates(
-                docs=[session.query(Document).filter(Document.name == "112823").first()]
-            )[0]
-        )
-        == 1432
-    )
 
     # Featurization
     featurizer = Featurizer(session, [PartTemp, PartVolt])
