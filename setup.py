@@ -32,7 +32,7 @@ setup(
         "ipython",
     ],
     extras_require={
-        "spacy_ja": ["mecab-python3==0.7"],
+        "spacy_ja": ["fugashi"],  # spacy switched to fugashi at v2.2.4
         "spacy_zh": ["jieba>=0.39, <0.40"],
     },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
