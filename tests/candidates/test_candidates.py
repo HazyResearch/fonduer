@@ -300,7 +300,7 @@ def test_cand_gen():
     )
 
     doc = candidate_extractor_udf.apply(doc, split=0)
-    assert len(doc.part_temps) == 1432
+    assert len(doc.part_temps) == 1431
     assert len(doc.part_volts) == 2310
 
     # Clear
@@ -313,7 +313,7 @@ def test_cand_gen():
 
     doc = candidate_extractor_udf.apply(doc, split=0)
 
-    assert len(doc.part_temps) == 1432
+    assert len(doc.part_temps) == 1431
     assert len(doc.part_volts) == 1993
     assert len(doc.parts) == 70
     assert len(doc.volts) == 33
