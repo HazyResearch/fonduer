@@ -17,7 +17,7 @@ Changed
 ^^^^^^^
 * `@HiromuHota`_: Enabled "Type hints (PEP 484) support for the Sphinx autodoc extension."
   (`#421 <https://github.com/HazyResearch/fonduer/pull/421>`_)
-* `@HiromuHota`_: Switched from mecab-python3 to fugashi as a wrapper for Mecab.
+* `@HiromuHota`_: Switched the Cython wrapper for Mecab from mecab-python3 to fugashi.
   Since the Japanese tokenizer remains the same, there should be no impact on users.
   (`#384 <https://github.com/HazyResearch/fonduer/issues/384>`_)
   (`#432 <https://github.com/HazyResearch/fonduer/pull/432>`_)
