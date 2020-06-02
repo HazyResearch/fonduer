@@ -32,7 +32,7 @@ setup(
         "ipython",
     ],
     extras_require={
-        "spacy_ja": ["fugashi"],  # spacy switched to fugashi at v2.2.4
+        "spacy_ja": ["fugashi[unidic-lite]>=0.1.12"],  # 0.1.12 supports bundled unidic
         "spacy_zh": ["jieba>=0.39, <0.40"],
     },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],
