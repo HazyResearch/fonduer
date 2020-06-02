@@ -9,10 +9,18 @@ Added
   See `here <../user/packaging.html>`_ for how to use it.
   (`#259 <https://github.com/HazyResearch/fonduer/issues/259>`_)
   (`#407 <https://github.com/HazyResearch/fonduer/pull/407>`_)
+* `@HiromuHota`_: Support spaCy v2.2.
+  (`#384 <https://github.com/HazyResearch/fonduer/issues/384>`_)
+  (`#432 <https://github.com/HazyResearch/fonduer/pull/432>`_)
 
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Enabled "Type hints (PEP 484) support for the Sphinx autodoc extension."
+  (`#421 <https://github.com/HazyResearch/fonduer/pull/421>`_)
+* `@HiromuHota`_: Switched from mecab-python3 to fugashi as a wrapper for Mecab.
+  Since the Japanese tokenizer remains the same, there should be no impact on users.
+  (`#384 <https://github.com/HazyResearch/fonduer/issues/384>`_)
+  (`#432 <https://github.com/HazyResearch/fonduer/pull/432>`_)
 
 Deprecated
 ^^^^^^^^^^
