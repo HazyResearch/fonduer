@@ -19,6 +19,7 @@ setup(
         "snorkel>=0.9.5, <0.10.0",  # placed early due to stricter requirements
         "emmental>=0.0.6, <0.1.0",
         "lxml>=4.2.5, <5.0.0",
+        "mlflow>=1.1.0, <2.0.0",
         "numpy>=1.11, <2.0",
         "pyyaml>=5.1, <6.0",
         "scipy>=1.1.0, <2.0.0",
