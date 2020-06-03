@@ -70,21 +70,13 @@ its NLP pipeline (`see spacy language support`_). We also started adding
 languages with spaCy alpha support for tokenization (`see spacy alpha
 languages`_). Currently, only Chinese and Japanese are supported.
 
-If you would like to use Fonduer for Japanese documents, you will first have
-to install some additional packages (`see mecab on PyPI`_).
+If you would like to use Fonduer for Japanese documents, you can use
+``pip install fonduer[spacy_ja]`` to install Fonduer with Japanese language support.
+On macOS, you need to install Mecab (the Japanese tokenizer used by spaCy) too.
 
-For Linux::
+For macOS::
 
-    $ sudo apt-get install swig libmecab-dev
-    $ sudo apt-get install mecab unidic-mecab
-
-For OS X::
-
-    $ brew install swig mecab
-    $ brew install mecab-unidic
-
-Afterwards, you can use ``pip install fonduer[spacy_ja]`` to install Fonduer
-with Japanese language support.
+    $ brew install mecab
 
 If you would like to use Fonduer for Chinese documents, you can use
 ``pip install fonduer[spacy_zh]`` to install Fonduer with Chinese language support.
