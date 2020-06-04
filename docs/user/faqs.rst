@@ -72,11 +72,6 @@ languages`_). Currently, only Chinese and Japanese are supported.
 
 If you would like to use Fonduer for Japanese documents, you can use
 ``pip install fonduer[spacy_ja]`` to install Fonduer with Japanese language support.
-On macOS, you need to install Mecab (the Japanese tokenizer used by spaCy) too.
-
-For macOS::
-
-    $ brew install mecab
 
 If you would like to use Fonduer for Chinese documents, you can use
 ``pip install fonduer[spacy_zh]`` to install Fonduer with Chinese language support.
