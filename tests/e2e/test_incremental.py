@@ -116,8 +116,8 @@ def test_incremental():
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == len(train_cands[0])
-    assert session.query(FeatureKey).count() == 526
     num_feature_keys = session.query(FeatureKey).count()
+    assert num_feature_keys == 526
 
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
@@ -188,8 +188,8 @@ def test_incremental():
     # Update features
     featurizer.update(new_docs, parallelism=PARALLEL)
     assert session.query(Feature).count() == len(train_cands[0])
-    assert session.query(FeatureKey).count() == 2526
     num_feature_keys = session.query(FeatureKey).count()
+    assert num_feature_keys == 2526
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
     assert len(featurizer.get_keys()) == num_feature_keys
@@ -213,8 +213,8 @@ def test_incremental():
     labeler.update(new_docs, lfs=[stg_temp_lfs], parallelism=PARALLEL)
     assert session.query(Label).count() == len(train_cands[0])
     # Only 5 because LF_storage_row doesn't apply to any doc (always ABSTAIN)
-    assert session.query(LabelKey).count() == 5
     num_label_keys = session.query(LabelKey).count()
+    assert num_label_keys == 5
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
 

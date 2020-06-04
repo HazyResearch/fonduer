@@ -186,8 +186,8 @@ def test_e2e():
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 214
-    assert session.query(FeatureKey).count() == 1281
     num_feature_keys = session.query(FeatureKey).count()
+    assert num_feature_keys == 1281
 
     # Test Dropping FeatureKey
     # Should force a row deletion
@@ -229,10 +229,10 @@ def test_e2e():
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     # the number of Features should equals to the total number of train candidates
-    assert session.query(Feature).count() == len(train_cands[0]) + len(train_cands[1])
     num_features = session.query(Feature).count()
-    assert session.query(FeatureKey).count() == 4577
+    assert num_features == len(train_cands[0]) + len(train_cands[1])
     num_feature_keys = session.query(FeatureKey).count()
+    assert num_feature_keys == 4577
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
     assert F_train[1].shape == (len(train_cands[1]), num_feature_keys)
@@ -300,8 +300,8 @@ def test_e2e():
         parallelism=PARALLEL,
     )
     assert session.query(Label).count() == len(train_cands[0]) + len(train_cands[1])
-    assert session.query(LabelKey).count() == 9
     num_label_keys = session.query(LabelKey).count()
+    assert num_label_keys == 9
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
     assert L_train[1].shape == (len(train_cands[1]), num_label_keys)
@@ -447,8 +447,8 @@ def test_e2e():
     ]
     labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
     assert session.query(Label).count() == len(train_cands[0]) + len(train_cands[1])
-    assert session.query(LabelKey).count() == 16
     num_label_keys = session.query(LabelKey).count()
+    assert num_label_keys == 16
     L_train = labeler.get_label_matrices(train_cands)
     assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
 
