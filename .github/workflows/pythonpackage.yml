@@ -95,8 +95,6 @@ jobs:
     - name: Install dependencies for macOS
       run: |
         brew update
-        # fugashi for macOS still requires mecab
-        brew install mecab
         # Install ImageMagick for Wand.
         brew install freetype imagemagick ghostscript
 
