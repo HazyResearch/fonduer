@@ -152,6 +152,7 @@ def test_e2e():
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
     assert len(mention_extractor.get_mentions()) == 3
+    assert len(mention_extractor.get_mentions(docs)) == 3
 
     # Candidate Extraction
     candidate_extractor = CandidateExtractor(
@@ -177,6 +178,7 @@ def test_e2e():
     )
 
     assert len(train_cands) == 2
+    assert len(candidate_extractor.get_candidates(docs)) == 2
 
     # Featurization
     featurizer = Featurizer(session, [PartTemp, PartVolt])
