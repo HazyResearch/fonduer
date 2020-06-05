@@ -12,6 +12,7 @@ from fonduer.parser.preprocessors import (
     TextDocPreprocessor,
     TSVDocPreprocessor,
 )
+from fonduer.utils.utils_visual import Bbox
 
 
 def get_parser_udf(
@@ -44,6 +45,42 @@ def get_parser_udf(
         language=language,
     )
     return parser_udf
+
+
+def test_visual_linker():
+    """Test the visual_linker (#12)."""
+    docs_path = "tests/data/html_simple/md.html"
+    pdf_path = "tests/data/pdf_simple/md.pdf"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "md"))
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        pdf_path=pdf_path,
+        language="en",
+    )
+    doc = parser_udf.apply(doc)
+
+    # Check bbox for "One"
+    sentence = doc.sentences[4]
+    assert sentence.text == "One"
+    assert sentence.get_bbox() == Bbox(page=1, left=95, top=155, right=114, bottom=168)
+
+    # Check bbox for "Two"
+    sentence = doc.sentences[5]
+    assert sentence.text == "Two"
+    assert sentence.get_bbox() == Bbox(page=1, left=95, top=169, right=116, bottom=182)
+
+    # Check bbox for "Three"
+    sentence = doc.sentences[6]
+    assert sentence.text == "Three"
+    assert sentence.get_bbox() == Bbox(page=1, left=95, top=182, right=122, bottom=195)
 
 
 def test_parse_md_details():
