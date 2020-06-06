@@ -62,9 +62,6 @@ class UDFRunner(object):
         if clear:
             self.clear(**kwargs)
 
-        # Track the last documents parsed by apply
-        self.last_docs = set(doc.name for doc in doc_loader)
-
         # Execute the UDF
         self.logger.info("Running UDF...")
 
@@ -112,9 +109,12 @@ class UDFRunner(object):
         # Use an output queue to track multiprocess progress
         out_queue = manager.Queue()
 
+        # Clear the last documents parsed by the last run
+        self.last_docs = set()
         # Fill input queue with documents
         for doc in doc_loader:
             in_queue.put(doc)
+            self.last_docs.add(doc.name)
         total_count = in_queue.qsize()
 
         # Create UDF Processes
