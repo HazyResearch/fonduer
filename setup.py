@@ -23,7 +23,7 @@ setup(
         "numpy>=1.11, <2.0",
         "pyyaml>=5.1, <6.0",
         "scipy>=1.1.0, <2.0.0",
-        "spacy>=2.1.3, <2.2.0",
+        "spacy>=2.1.3, <2.3.0",
         "sqlalchemy[postgresql]>=1.3.7, <2.0.0",
         "torch>=1.3.1,<2.0.0",
         "tqdm>=4.36.0, <5.0.0",
@@ -32,7 +32,7 @@ setup(
         "ipython",
     ],
     extras_require={
-        "spacy_ja": ["mecab-python3==0.7"],
+        "spacy_ja": ["fugashi[unidic-lite]>=0.2.3"],
         "spacy_zh": ["jieba>=0.39, <0.40"],
     },
     keywords=["fonduer", "knowledge base construction", "richly formatted data"],

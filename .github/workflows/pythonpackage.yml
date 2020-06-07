@@ -27,12 +27,6 @@ jobs:
     - name: Install dependencies for Ubuntu
       run: |
         sudo apt-get install neofetch
-        sudo apt-get install -q -y libmecab-dev swig mecab
-        # In Ubuntu 18.04, unidic-mecab is too old, so we install it manually. Note
-        # that this automatically sets the dictionary to unidic.
-        # Binary dictionary not included in 2.2.0-1 (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=788822)
-        wget http://launchpadlibrarian.net/326401889/unidic-mecab_2.1.2~dfsg-7_all.deb
-        sudo dpkg -i unidic-mecab_2.1.2~dfsg-7_all.deb
         # Install ImageMagick library for Wand
         sudo apt-get install libmagickwand-dev ghostscript
         # Remove the policy file to allow the visualizer test to open the PDF.
@@ -49,7 +43,6 @@ jobs:
         psql --version
         python --version
         pip --version
-        mecab -D || true
     - name: Install Fonduer
       run: |
         make dev_extra
@@ -102,10 +95,6 @@ jobs:
     - name: Install dependencies for macOS
       run: |
         brew update
-        brew install swig mecab mecab-unidic
-        # Use unidic-mecab dictionary
-        sed -i -e "s/ipadic/unidic/" /usr/local/etc/mecabrc
-
         # Install ImageMagick for Wand.
         brew install freetype imagemagick ghostscript
 
@@ -141,7 +130,6 @@ jobs:
         psql --version
         python --version
         pip --version
-        mecab -D || true
         neofetch
     - name: Install Fonduer
       run: |

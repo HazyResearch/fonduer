@@ -13,6 +13,7 @@ from snorkel.labeling.model import LabelModel
 
 import fonduer
 from fonduer.candidates import CandidateExtractor, MentionExtractor
+from fonduer.candidates.models import Candidate
 from fonduer.features import Featurizer
 from fonduer.features.models import Feature, FeatureKey
 from fonduer.learning.dataset import FonduerDataset
@@ -115,61 +116,6 @@ def test_e2e():
     assert ld == len(last_docs)
     assert len(docs[0].sentences) == len(last_docs[0].sentences)
 
-    assert len(docs[0].sentences) == 799
-    assert len(docs[1].sentences) == 663
-    assert len(docs[2].sentences) == 784
-    assert len(docs[3].sentences) == 661
-    assert len(docs[4].sentences) == 513
-    assert len(docs[5].sentences) == 700
-    assert len(docs[6].sentences) == 528
-    assert len(docs[7].sentences) == 161
-    assert len(docs[8].sentences) == 228
-    assert len(docs[9].sentences) == 511
-    assert len(docs[10].sentences) == 331
-    assert len(docs[11].sentences) == 528
-
-    # Check table numbers
-    assert len(docs[0].tables) == 9
-    assert len(docs[1].tables) == 9
-    assert len(docs[2].tables) == 14
-    assert len(docs[3].tables) == 11
-    assert len(docs[4].tables) == 11
-    assert len(docs[5].tables) == 10
-    assert len(docs[6].tables) == 10
-    assert len(docs[7].tables) == 2
-    assert len(docs[8].tables) == 7
-    assert len(docs[9].tables) == 10
-    assert len(docs[10].tables) == 6
-    assert len(docs[11].tables) == 9
-
-    # Check figure numbers
-    assert len(docs[0].figures) == 32
-    assert len(docs[1].figures) == 11
-    assert len(docs[2].figures) == 38
-    assert len(docs[3].figures) == 31
-    assert len(docs[4].figures) == 7
-    assert len(docs[5].figures) == 38
-    assert len(docs[6].figures) == 10
-    assert len(docs[7].figures) == 31
-    assert len(docs[8].figures) == 4
-    assert len(docs[9].figures) == 27
-    assert len(docs[10].figures) == 5
-    assert len(docs[11].figures) == 27
-
-    # Check caption numbers
-    assert len(docs[0].captions) == 0
-    assert len(docs[1].captions) == 0
-    assert len(docs[2].captions) == 0
-    assert len(docs[3].captions) == 0
-    assert len(docs[4].captions) == 0
-    assert len(docs[5].captions) == 0
-    assert len(docs[6].captions) == 0
-    assert len(docs[7].captions) == 0
-    assert len(docs[8].captions) == 0
-    assert len(docs[9].captions) == 0
-    assert len(docs[10].captions) == 0
-    assert len(docs[11].captions) == 0
-
     train_docs = set()
     dev_docs = set()
     test_docs = set()
@@ -205,19 +151,8 @@ def test_e2e():
 
     mention_extractor.apply(docs, parallelism=PARALLEL)
 
-    assert session.query(Part).count() == 299
-    assert session.query(Temp).count() == 138
-    assert session.query(Volt).count() == 140
     assert len(mention_extractor.get_mentions()) == 3
-    assert len(mention_extractor.get_mentions()[0]) == 299
-    assert (
-        len(
-            mention_extractor.get_mentions(
-                docs=[session.query(Document).filter(Document.name == "112823").first()]
-            )[0]
-        )
-        == 70
-    )
+    assert len(mention_extractor.get_mentions(docs)) == 3
 
     # Candidate Extraction
     candidate_extractor = CandidateExtractor(
@@ -226,11 +161,6 @@ def test_e2e():
 
     for i, docs in enumerate([train_docs, dev_docs, test_docs]):
         candidate_extractor.apply(docs, split=i, parallelism=PARALLEL)
-
-    assert session.query(PartTemp).filter(PartTemp.split == 0).count() == 3493
-    assert session.query(PartTemp).filter(PartTemp.split == 1).count() == 61
-    assert session.query(PartTemp).filter(PartTemp.split == 2).count() == 416
-    assert session.query(PartVolt).count() == 4282
 
     # Grab candidate lists
     train_cands = candidate_extractor.get_candidates(split=0, sort=True)
@@ -248,15 +178,7 @@ def test_e2e():
     )
 
     assert len(train_cands) == 2
-    assert len(train_cands[0]) == 3493
-    assert (
-        len(
-            candidate_extractor.get_candidates(
-                docs=[session.query(Document).filter(Document.name == "112823").first()]
-            )[0]
-        )
-        == 1432
-    )
+    assert len(candidate_extractor.get_candidates(docs)) == 2
 
     # Featurization
     featurizer = Featurizer(session, [PartTemp, PartVolt])
@@ -264,12 +186,13 @@ def test_e2e():
     # Test that FeatureKey is properly reset
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 214
-    assert session.query(FeatureKey).count() == 1260
+    num_feature_keys = session.query(FeatureKey).count()
+    assert num_feature_keys == 1281
 
     # Test Dropping FeatureKey
     # Should force a row deletion
-    featurizer.drop_keys(["DDL_e1_W_LEFT_POS_3_[NNP NN IN]"])
-    assert session.query(FeatureKey).count() == 1259
+    featurizer.drop_keys(["BASIC_e1_CONTAINS_WORDS_[BC182]"])
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Should only remove the part_volt as a relation and leave part_temp
     assert set(
@@ -282,7 +205,7 @@ def test_e2e():
     assert session.query(FeatureKey).filter(
         FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
-    assert session.query(FeatureKey).count() == 1259
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Inserting the removed key
     featurizer.upsert_keys(
@@ -294,37 +217,45 @@ def test_e2e():
         .one()
         .candidate_classes
     ) == {"part_temp", "part_volt"}
-    assert session.query(FeatureKey).count() == 1259
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
     # Removing the key again
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
 
     # Removing the last relation from a key should delete the row
     featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
-    assert session.query(FeatureKey).count() == 1258
+    assert session.query(FeatureKey).count() == num_feature_keys - 2
     session.query(Feature).delete(synchronize_session="fetch")
     session.query(FeatureKey).delete(synchronize_session="fetch")
 
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 6478
-    assert session.query(FeatureKey).count() == 4538
+    # the number of Features should equals to the total number of train candidates
+    num_features = session.query(Feature).count()
+    assert num_features == len(train_cands[0]) + len(train_cands[1])
+    num_feature_keys = session.query(FeatureKey).count()
+    assert num_feature_keys == 4577
     F_train = featurizer.get_feature_matrices(train_cands)
-    assert F_train[0].shape == (3493, 4538)
-    assert F_train[1].shape == (2985, 4538)
-    assert len(featurizer.get_keys()) == 4538
+    assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
+    assert F_train[1].shape == (len(train_cands[1]), num_feature_keys)
+    assert len(featurizer.get_keys()) == num_feature_keys
 
     featurizer.apply(split=1, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 6692
-    assert session.query(FeatureKey).count() == 4538
+    # the number of Features should increate by the total number of dev candidates
+    num_features += len(dev_cands[0]) + len(dev_cands[1])
+    assert session.query(Feature).count() == num_features
+
+    assert session.query(FeatureKey).count() == num_feature_keys
     F_dev = featurizer.get_feature_matrices(dev_cands)
-    assert F_dev[0].shape == (61, 4538)
-    assert F_dev[1].shape == (153, 4538)
+    assert F_dev[0].shape == (len(dev_cands[0]), num_feature_keys)
+    assert F_dev[1].shape == (len(dev_cands[1]), num_feature_keys)
 
     featurizer.apply(split=2, parallelism=PARALLEL)
-    assert session.query(Feature).count() == 8252
-    assert session.query(FeatureKey).count() == 4538
+    # the number of Features should increate by the total number of test candidates
+    num_features += len(test_cands[0]) + len(test_cands[1])
+    assert session.query(Feature).count() == num_features
+    assert session.query(FeatureKey).count() == num_feature_keys
     F_test = featurizer.get_feature_matrices(test_cands)
-    assert F_test[0].shape == (416, 4538)
-    assert F_test[1].shape == (1144, 4538)
+    assert F_test[0].shape == (len(test_cands[0]), num_feature_keys)
+    assert F_test[1].shape == (len(test_cands[1]), num_feature_keys)
 
     gold_file = "tests/data/hardware_tutorial_gold.csv"
 
@@ -341,7 +272,8 @@ def test_e2e():
         train=True,
         parallelism=PARALLEL,
     )
-    assert session.query(GoldLabel).count() == 8252
+    # All candidates should now be gold-labeled.
+    assert session.query(GoldLabel).count() == session.query(Candidate).count()
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -367,26 +299,27 @@ def test_e2e():
         train=True,
         parallelism=PARALLEL,
     )
-    assert session.query(Label).count() == 6478
-    assert session.query(LabelKey).count() == 9
+    assert session.query(Label).count() == len(train_cands[0]) + len(train_cands[1])
+    num_label_keys = session.query(LabelKey).count()
+    assert num_label_keys == 9
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3493, 9)
-    assert L_train[1].shape == (2985, 9)
-    assert len(labeler.get_keys()) == 9
+    assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
+    assert L_train[1].shape == (len(train_cands[1]), num_label_keys)
+    assert len(labeler.get_keys()) == num_label_keys
 
     # Test Dropping LabelerKey
     labeler.drop_keys(["LF_storage_row"])
-    assert len(labeler.get_keys()) == 8
+    assert len(labeler.get_keys()) == num_label_keys - 1
 
     # Test Upserting LabelerKey
     labeler.upsert_keys(["LF_storage_row"])
     assert "LF_storage_row" in [label.name for label in labeler.get_keys()]
 
     L_train_gold = labeler.get_gold_labels(train_cands)
-    assert L_train_gold[0].shape == (3493, 1)
+    assert L_train_gold[0].shape == (len(train_cands[0]), 1)
 
     L_train_gold = labeler.get_gold_labels(train_cands, annotator="gold")
-    assert L_train_gold[0].shape == (3493, 1)
+    assert L_train_gold[0].shape == (len(train_cands[0]), 1)
 
     label_model = LabelModel(cardinality=2)
     label_model.fit(L_train=L_train[0], n_epochs=500, seed=1234, log_freq=100)
@@ -513,10 +446,11 @@ def test_e2e():
         LF_not_temp_relevant,
     ]
     labeler.update(split=0, lfs=[stg_temp_lfs_2, ce_v_max_lfs], parallelism=PARALLEL)
-    assert session.query(Label).count() == 6478
-    assert session.query(LabelKey).count() == 16
+    assert session.query(Label).count() == len(train_cands[0]) + len(train_cands[1])
+    num_label_keys = session.query(LabelKey).count()
+    assert num_label_keys == 16
     L_train = labeler.get_label_matrices(train_cands)
-    assert L_train[0].shape == (3493, 16)
+    assert L_train[0].shape == (len(train_cands[0]), num_label_keys)
 
     label_model = LabelModel(cardinality=2)
     label_model.fit(L_train=L_train[0], n_epochs=500, seed=1234, log_freq=100)

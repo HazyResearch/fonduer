@@ -85,8 +85,8 @@ def test_cand_gen_cascading_delete():
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
-    assert session.query(PartTemp).count() == 1432
-    assert session.query(Candidate).count() == 1432
+    assert session.query(PartTemp).count() == 1431
+    assert session.query(Candidate).count() == 1431
     assert docs[0].name == "112823"
     assert len(docs[0].parts) == 70
     assert len(docs[0].temps) == 23
@@ -94,13 +94,13 @@ def test_cand_gen_cascading_delete():
     # Delete from parent class should cascade to child
     x = session.query(Candidate).first()
     session.query(Candidate).filter_by(id=x.id).delete(synchronize_session="fetch")
-    assert session.query(Candidate).count() == 1431
-    assert session.query(PartTemp).count() == 1431
+    assert session.query(Candidate).count() == 1430
+    assert session.query(PartTemp).count() == 1430
 
     # Test that deletion of a Candidate does not delete the Mention
     x = session.query(PartTemp).first()
     session.query(PartTemp).filter_by(id=x.id).delete(synchronize_session="fetch")
-    assert session.query(PartTemp).count() == 1430
+    assert session.query(PartTemp).count() == 1429
     assert session.query(Temp).count() == 23
     assert session.query(Part).count() == 70
 

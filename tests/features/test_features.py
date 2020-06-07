@@ -33,7 +33,7 @@ def test_unary_relation_feature_extraction():
     doc = mention_extractor_udf.apply(doc)
 
     assert doc.name == "112823"
-    assert len(doc.parts) == 58
+    assert len(doc.parts) == 62
     part = doc.parts[0]
     logger.info(f"Part: {part.context}")
 
@@ -122,7 +122,7 @@ def test_binary_relation_feature_extraction():
     )
     doc = mention_extractor_udf.apply(doc)
 
-    assert len(doc.parts) == 58
+    assert len(doc.parts) == 62
     assert len(doc.temps) == 16
     part = doc.parts[0]
     temp = doc.temps[0]
