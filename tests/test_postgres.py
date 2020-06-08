@@ -1,3 +1,4 @@
+"""Unit tests that involve postgres access."""
 import logging
 import os
 
@@ -30,6 +31,28 @@ if "CI" in os.environ:
     )
 else:
     CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
+
+
+def test_preprocessor_parse_file_called_once(mocker):
+    """Test if DocPreprocessor._parse_file is called only once during parser.apply."""
+    max_docs = 1
+    session = Meta.init(CONN_STRING).Session()
+    docs_path = "tests/data/html/"
+    # Set up preprocessor, parser, and spy on preprocessor
+    doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
+    spy = mocker.spy(doc_preprocessor, "_parse_file")
+    corpus_parser = Parser(session)
+
+    # Check if udf.last_docs is empty.
+    assert len(corpus_parser.get_last_documents()) == 0
+
+    # Parsing
+    corpus_parser.apply(doc_preprocessor)
+
+    # Check if udf.last_docs is correctly updated.
+    assert len(corpus_parser.get_last_documents()) == max_docs
+    # doc_preprocessor._parse_file should be called only once (#434).
+    spy.assert_called_once()
 
 
 def test_cand_gen_cascading_delete():
