@@ -104,17 +104,14 @@ class UDFRunner(object):
 
         # Create an input queue to feed documents to UDF workers
         manager = Manager()
-        in_queue = manager.Queue()
+        # Set maxsize (#435). The number is heuristically determined.
+        in_queue = manager.Queue(maxsize=parallelism * 2)
         # Use an output queue to track multiprocess progress
         out_queue = manager.Queue()
 
         # Clear the last documents parsed by the last run
         self.last_docs = set()
-        # Fill input queue with documents
-        for doc in doc_loader:
-            in_queue.put(doc)
-            self.last_docs.add(doc.name)
-        total_count = in_queue.qsize()
+        total_count = len(doc_loader)
 
         # Create UDF Processes
         for i in range(parallelism):
@@ -131,12 +128,23 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.start()
 
+        iter = doc_loader.__iter__()
         count_parsed = 0
         while (
             any([udf.is_alive() for udf in self.udfs]) or not out_queue.empty()
         ) and count_parsed < total_count:
+            # Fill input queue with documents but # of docs in queue is capped (#435).
+            if not in_queue.full():
+                try:
+                    doc = next(iter)
+                    in_queue.put(doc)
+                    self.last_docs.add(doc.name)
+                except StopIteration:
+                    pass
+
+            # Get doc from the out_queue and persist the result into postgres
             try:
-                y = out_queue.get(timeout=1)
+                y = out_queue.get_nowait()
                 self._add(y)
                 # Update progress bar whenever an item has been processed
                 count_parsed += 1
@@ -150,6 +158,8 @@ class UDFRunner(object):
                 raise (e)
 
         # Join the UDF processes
+        for _ in self.udfs:
+            in_queue.put(UDF.TASK_DONE)
         for udf in self.udfs:
             udf.join()
 
@@ -198,19 +208,18 @@ class UDF(Process):
         Session = new_sessionmaker()
         session = Session()
         while True:
-            try:
-                doc = self.in_queue.get_nowait()
-                # Merge the object with the session owned by the current child process.
-                # If transient (ie not saved), save the object to the database.
-                # If not, load it from the database w/o the overhead of reconciliation.
-                if inspect(doc).transient:  # This only happens during parser.apply
-                    doc = session.merge(doc, load=True)
-                else:
-                    doc = session.merge(doc, load=False)
-                y = self.apply(doc, **self.apply_kwargs)
-                self.out_queue.put(y)
-            except Empty:
+            doc = self.in_queue.get()  # block until an item is available
+            if doc == UDF.TASK_DONE:
                 break
+            # Merge the object with the session owned by the current child process.
+            # If transient (ie not saved), save the object to the database.
+            # If not, load it from the database w/o the overhead of reconciliation.
+            if inspect(doc).transient:  # This only happens during parser.apply
+                doc = session.merge(doc, load=True)
+            else:
+                doc = session.merge(doc, load=False)
+            y = self.apply(doc, **self.apply_kwargs)
+            self.out_queue.put(y)
         session.commit()
         session.close()
 
