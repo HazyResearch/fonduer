@@ -469,7 +469,7 @@ def _get_head_cell(root_cell: Cell, axis: str) -> Cell:
 
 @lru_cache(maxsize=256)
 def _get_table_cells(table: Table) -> DefaultDict[Cell, List[Sentence]]:
-    """Helper function with caching for table cells and the cells' sentences.
+    """Cache table cells and the cells' sentences.
 
     This function significantly improves the speed of `get_row_ngrams`
     primarily by reducing the number of queries that are made (which were

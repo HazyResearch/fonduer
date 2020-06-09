@@ -17,7 +17,7 @@ class XMLTree:
     """
 
     def __init__(self, xml_root: _Element, words: Optional[List[str]] = None) -> None:
-        """Calls subroutines to generate JSON form of XML input."""
+        """Call subroutines to generate JSON form of XML input."""
         self.root = xml_root
         self.words = words
 
@@ -41,16 +41,15 @@ class XMLTree:
 @lru_cache(maxsize=1024)
 def corenlp_to_xmltree(obj: Union[Dict, Sentence], prune_root: bool = True) -> XMLTree:
     """
-    Transforms an object with CoreNLP dep_path and dep_parent attributes into
-    an XMLTree. Will include elements of any array having the same dimensiion
+    Transform an object with CoreNLP dep_path and dep_parent attributes into
+    an XMLTree. Will include elements of any array having the same dimension
     as dep_* as node attributes. Also adds special word_idx attribute
     corresponding to original sequence order in sentence.
     """
     # Convert input object to dictionary
     s: Dict = get_as_dict(obj)
 
-    # Use the dep_parents array as a guide: ensure it is present and a list of
-    # ints
+    # Use the dep_parents array as a guide: ensure it is present and a list of ints
     if not ("dep_parents" in s and isinstance(s["dep_parents"], list)):
         raise ValueError(
             "Input CoreNLP object must have a 'dep_parents' attribute which is a list"

@@ -70,7 +70,8 @@ def candidate_subclass(
     cardinality: Optional[int] = None,
     values: Optional[List[Any]] = None,
 ) -> Type[Candidate]:
-    """
+    """Create new relation.
+
     Creates and returns a Candidate subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
 

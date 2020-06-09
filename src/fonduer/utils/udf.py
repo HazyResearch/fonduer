@@ -90,7 +90,7 @@ class UDFRunner(object):
         raise NotImplementedError()
 
     def _after_apply(self, **kwargs: Any) -> None:
-        """This method is executed by a single process after apply."""
+        """Execute this method by a single process after apply."""
         pass
 
     def _add(self, instance: Any) -> None:
@@ -161,6 +161,8 @@ class UDFRunner(object):
 
 
 class UDF(Process):
+    """UDF class."""
+
     TASK_DONE = "done"
 
     def __init__(
@@ -186,7 +188,7 @@ class UDF(Process):
 
     def run(self) -> None:
         """
-        This method is called when the UDF is run as a Process in a
+        Call this method when the UDF is run as a Process in a
         multiprocess setting The basic routine is: get from JoinableQueue,
         apply, put / add outputs, loop
         """
@@ -212,5 +214,8 @@ class UDF(Process):
         session.close()
 
     def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
-        """This function takes in an object, and returns a generator / set / list."""
+        """Apply function.
+
+        This function takes in an object, and returns a generator / set / list.
+        """
         raise NotImplementedError()

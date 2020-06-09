@@ -22,7 +22,8 @@ except Exception:
 
 
 class SpacyParser(LingualParser):
-    """
+    """Spacy parser class.
+
     spaCy
     https://spacy.io/
 
@@ -205,7 +206,8 @@ class SpacyParser(LingualParser):
         return sentence_batches
 
     def split_sentences(self, text: str) -> Iterator[Dict[str, Any]]:
-        """
+        """Split text into sentences.
+
         Split input text into sentences that match CoreNLP's default format,
         but are not yet processed.
 
@@ -265,7 +267,9 @@ class SpacyParser(LingualParser):
 
 
 def set_custom_boundary(doc: Doc) -> Doc:
-    """Set the sentence boundaries based on the already separated sentences.
+    """Set the boundaries of sentence.
+
+    Set the sentence boundaries based on the already separated sentences.
     :param doc: doc.user_data should have a list of Sentence.
     :return doc:
     """
@@ -283,7 +287,8 @@ def set_custom_boundary(doc: Doc) -> Doc:
 
 
 class TokenPreservingTokenizer(object):
-    """
+    """Token perserving tokenizer.
+
     This custom tokenizer simply preserves the tokenization that was already
     performed during sentence splitting. It will output a list of space
     separated tokens, whereas each token is a single word from the list of

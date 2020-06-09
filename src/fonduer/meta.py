@@ -19,7 +19,7 @@ def init_logging(
     format: str = "[%(asctime)s][%(levelname)s] %(name)s:%(lineno)s - %(message)s",
     level: int = logging.INFO,
 ) -> None:
-    """Configures logging to output to the provided log_dir.
+    """Configure logging to output to the provided log_dir.
 
     Will use a nested directory whose name is the current timestamp.
 

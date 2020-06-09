@@ -5,6 +5,8 @@ from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
 
 class PredictionKey(AnnotationKeyMixin, Meta.Base):
+    """A Prediction's annotation key."""
+
     pass
 
 

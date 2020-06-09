@@ -11,8 +11,9 @@ def construct_stable_id(
     relative_char_offset_start: int,
     relative_char_offset_end: int,
 ) -> str:
-    """
-    Contruct a stable ID for a Context given its parent and its character
+    """Construct Context's stable ID.
+
+    Construct a stable ID for a Context given its parent and its character
     offsets relative to the parent.
     """
     doc_id, type, idx = split_stable_id(parent_context.stable_id)
@@ -43,7 +44,9 @@ def construct_stable_id(
 
 
 def split_stable_id(stable_id: str,) -> Tuple[str, str, List[int]]:
-    """Split stable id, returning:
+    """Split stable ID.
+
+    Analyzing stable ID and return the following information:
 
         * Document (root) stable ID
         * Context polymorphic type

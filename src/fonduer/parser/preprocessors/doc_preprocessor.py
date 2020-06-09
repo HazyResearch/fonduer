@@ -16,7 +16,8 @@ class DocPreprocessor(object):
     def __init__(
         self, path: str, encoding: str = "utf-8", max_docs: int = sys.maxsize
     ) -> None:
-        """
+        """Initialize DocPreprocessor.
+
         :param path: a path to file or directory, or a glob pattern. The basename
             (as returned by ``os.path.basename``) should be unique among all files.
         :param encoding: file encoding to use, defaults to "utf-8".
@@ -30,7 +31,7 @@ class DocPreprocessor(object):
         self.all_files = self._get_files(self.path)
 
     def _generate(self) -> Iterator[Document]:
-        """Parses a file or directory of files into a set of ``Document`` objects."""
+        """Parse a file or directory of files into a set of ``Document`` objects."""
         doc_count = 0
         for fp in self.all_files:
             for doc in self._get_docs_for_path(fp):

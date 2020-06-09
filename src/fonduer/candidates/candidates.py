@@ -125,8 +125,10 @@ class CandidateExtractor(UDFRunner):
         )
 
     def clear(self, split: int) -> None:  # type: ignore
-        """Delete Candidates of each class initialized with the
-        CandidateExtractor from given split the database.
+        """Clear Candidates of each class.
+
+        Delete Candidates of each class initialized with the CandidateExtractor
+        from given split the database.
 
         :param split: Which split to clear.
         """

@@ -28,7 +28,7 @@ def column_constructor(
     delim: Optional[str] = None,
 ) -> List[Tuple[str, str, str]]:
     """
-    Converts raw content to a list of strutured tuple where each tuple contains
+    Convert raw content to a list of strutured tuple where each tuple contains
         (type, name, content).
 
     :param text: content to be converted ()

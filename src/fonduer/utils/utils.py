@@ -10,8 +10,7 @@ if TYPE_CHECKING:  # to prevent circular imports
 
 def camel_to_under(name: str) -> str:
     """
-    Converts camel-case string to lowercase string separated by underscores.
-
+    Convert camel-case string to lowercase string separated by underscores.
     Written by epost (http://stackoverflow.com/questions/1175208).
 
     :param name: String to be converted
@@ -49,8 +48,9 @@ def tokens_to_ngrams(
 def get_set_of_stable_ids(
     doc: Document, candidate_class: "Type[Candidate]"
 ) -> Set[Tuple[str, ...]]:
-    """Returns a set of stable_ids of candidates.
-    A stable_ids of a candidate is a tuple of stable_id of the constituent context.
+    """Return a set of stable_ids of candidates.
+
+    A stable_id of a candidate is a tuple of stable_id of the constituent context.
     """
     set_of_stable_ids = set()
     # "s" is required due to the relationship between Document and candidate_class.

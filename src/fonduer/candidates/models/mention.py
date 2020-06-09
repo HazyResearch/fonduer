@@ -64,7 +64,8 @@ def mention_subclass(
     values: Optional[List[Any]] = None,
     table_name: Optional[str] = None,
 ) -> Type[Mention]:
-    """
+    """Create new mention.
+
     Creates and returns a Mention subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
 

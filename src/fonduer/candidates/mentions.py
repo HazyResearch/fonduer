@@ -39,7 +39,8 @@ class MentionSpace(object):
 
 
 class Ngrams(MentionSpace):
-    """
+    """Defines the space of Mentions as all n-grams in a Sentence.
+
     Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
     Sentence *x*, indexing by **character offset**.
 
@@ -113,7 +114,7 @@ class Ngrams(MentionSpace):
 
 
 class MentionNgrams(Ngrams):
-    """Defines the **space** of Mentions.
+    """Defines the **space** of Mentions as n-grams in a Document.
 
     Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
     Document *x*, divided into Sentences inside of html elements (such as table
