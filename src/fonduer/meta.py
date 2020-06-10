@@ -57,10 +57,13 @@ def init_logging(
 
 # Defines procedure for setting up a sessionmaker
 def new_sessionmaker() -> sessionmaker:
-    # Turning on autocommit for Postgres, see
-    # http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/
-    # Otherwise any e.g. query starts a transaction, locking tables... very
-    # bad for e.g. multiple notebooks open, multiple processes, etc.
+    """Create new sessionmaker.
+
+    Turning on autocommit for Postgres, see
+    http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/
+    Otherwise any e.g. query starts a transaction, locking tables... very
+    bad for e.g. multiple notebooks open, multiple processes, etc.
+    """
     try:
         engine = create_engine(
             Meta.conn_string,

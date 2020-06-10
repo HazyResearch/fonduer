@@ -39,6 +39,7 @@ def tokens_to_ngrams(
     delim: str = " ",
     lower: bool = False,
 ) -> Iterator[str]:
+    """Get n-grams from tokens."""
     f = (lambda x: x.lower()) if lower else (lambda x: x)
     N = len(tokens)
     for root in range(N):

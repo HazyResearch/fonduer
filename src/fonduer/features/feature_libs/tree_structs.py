@@ -84,12 +84,24 @@ def corenlp_to_xmltree(obj: Union[Dict, Sentence], prune_root: bool = True) -> X
 
 
 def scrub(s: str) -> str:
+    """Scrub the string.
+
+    :param s: The input string.
+    :return: The scrubbed string.
+    """
     return "".join(c for c in s if ord(c) < 128)
 
 
 def corenlp_to_xmltree_sub(
     s: Dict[str, Any], dep_parents: List[int], rid: int = 0
 ) -> _Element:
+    """Construct XMLTree with CoreNLP information.
+
+    :param s: Input object.
+    :param dep_parents: Dependency parents.
+    :param rid: Root id, defaults to 0
+    :return: The constructed XMLTree.
+    """
     i = rid - 1
     attrib = {}
     N = len(list(dep_parents))
@@ -119,5 +131,9 @@ def corenlp_to_xmltree_sub(
 
 
 def singular(s: str) -> str:
-    """Get singular form of word s (crudely)."""
+    """Get singular form of word s (crudely).
+
+    :param s: The input string.
+    :return: The singular form of the string.
+    """
     return re.sub(r"e?s$", "", s, flags=re.I)

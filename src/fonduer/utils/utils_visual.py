@@ -13,6 +13,11 @@ class Bbox(NamedTuple):
 
 
 def bbox_from_span(span) -> Bbox:  # type: ignore
+    """Get bounding box from span.
+
+    :param span: The input span.
+    :return: The bounding box of the span.
+    """
     warnings.warn(
         "bbox_from_span(span) is deprecated. Use span.get_bbox() instead.",
         DeprecationWarning,
@@ -32,6 +37,11 @@ def bbox_from_span(span) -> Bbox:  # type: ignore
 
 
 def bbox_from_sentence(sentence) -> Bbox:  # type: ignore
+    """Get bounding box from sentence.
+
+    :param sentence: The input sentence.
+    :return: The bounding box of the sentence.
+    """
     warnings.warn(
         "bbox_from_sentence(sentence) is deprecated. Use sentence.get_bbox() instead.",
         DeprecationWarning,
