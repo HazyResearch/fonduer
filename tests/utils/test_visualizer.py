@@ -1,3 +1,4 @@
+"""Fonduer visualizer unit tests."""
 from fonduer.candidates import MentionNgrams
 from fonduer.candidates.candidates import CandidateExtractorUDF
 from fonduer.candidates.matchers import OrganizationMatcher
@@ -7,10 +8,9 @@ from tests.candidates.test_candidates import parse_doc
 
 
 def test_visualizer():
+    """Unit test of visualizer using the md document."""
     from fonduer.utils.visualizer import Visualizer  # noqa
 
-    """Unit test of visualizer using the md document.
-    """
     docs_path = "tests/data/html_simple/md.html"
     pdf_path = "tests/data/pdf_simple/md.pdf"
 
@@ -47,9 +47,9 @@ def test_visualizer():
 
 
 def test_get_pdf_dim():
+    """Test get_pdf_dim on different pages."""
     from fonduer.utils.visualizer import get_pdf_dim  # noqa
 
-    """Test get_pdf_dim on different pages"""
     assert get_pdf_dim("tests/data/pdf/BC546A_Series_B14-521026.pdf") == (729, 1032)
     assert get_pdf_dim("tests/data/pdf/BC546A_Series_B14-521026.pdf", page=1) == (
         729,

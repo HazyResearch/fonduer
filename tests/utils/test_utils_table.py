@@ -1,3 +1,4 @@
+"""Fonduer table utils' tests."""
 import logging
 
 from fonduer.utils.utils_table import _min_range_diff

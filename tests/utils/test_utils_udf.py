@@ -1,3 +1,4 @@
+"""Fonduer UDF utils' unit tests."""
 import logging
 
 import numpy as np

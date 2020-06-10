@@ -1,3 +1,4 @@
+"""Fonduer learning utils' unit tests."""
 from fonduer.candidates.models import Candidate
 from fonduer.learning.utils import confusion_matrix
 

@@ -1,3 +1,4 @@
+"""Hardware throttlers."""
 import re
 
 from fonduer.utils.data_model_utils import (
@@ -11,6 +12,7 @@ from tests.shared.hardware_spaces import expand_part_range
 
 
 def temp_throttler(c):
+    """Temperature throttler."""
     (part, attr) = c
     if same_table((part, attr)):
         return is_horz_aligned((part, attr)) or is_vert_aligned((part, attr))
@@ -18,6 +20,7 @@ def temp_throttler(c):
 
 
 def filter_non_parts(c):
+    """Filter non parts."""
     ret = set()
     for _ in c:
         for __ in expand_part_range(_):
@@ -27,6 +30,7 @@ def filter_non_parts(c):
 
 
 def LF_part_miss_match(c):
+    """Return 0 if part mismatch."""
     ngrams_part = set(list(get_vert_ngrams(c[1], n_max=1)))
     ngrams_part = filter_non_parts(
         ngrams_part.union(set(list(get_horz_ngrams(c[1], n_max=1))))
@@ -40,6 +44,7 @@ def LF_part_miss_match(c):
 
 
 def volt_throttler(c):
+    """Voltage throttler."""
     (part, attr) = c
     if same_table((part, attr)):
         return is_horz_aligned((part, attr)) or is_vert_aligned((part, attr))

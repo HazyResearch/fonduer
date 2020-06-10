@@ -1,3 +1,4 @@
+"""Fonduer spacy parser unit tests."""
 import os
 
 import pytest
@@ -14,6 +15,7 @@ from fonduer.parser.models import Sentence
     "CI" not in os.environ, reason="Only run non-English tests on GitHub Actions"
 )
 def test_spacy_support():
+    """Unit test of spacy support."""
     # Supported language
     lingual_parser = SpacyParser("en")
     assert lingual_parser.has_tokenizer_support()
@@ -35,6 +37,7 @@ def test_spacy_support():
 
 
 def test_spacy_split_sentences():
+    """Unit test of splitting sentences."""
     lingual_parser = SpacyParser("en")
     tokenize_and_split_sentences = lingual_parser.split_sentences
     text = "This is a text. This is another text."
@@ -44,6 +47,7 @@ def test_spacy_split_sentences():
 
 
 def test_split_sentences_by_char_limit():
+    """Unit test of splitting sentences by char limit."""
     lingual_parser = SpacyParser("en")
 
     text = "This is a text. This is another text."

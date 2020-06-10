@@ -1,3 +1,4 @@
+"""Fonduer MLflow unit tests."""
 import os
 from pathlib import Path
 from typing import Any, Dict, List
@@ -43,6 +44,7 @@ artifact_path = "fonduer_model"
 
 @pytest.fixture
 def setup_common_components():
+    """Set up mention/candidate extractor."""
     preprocessor = HTMLDocPreprocessor("tests/data/html/")
     parser = Parser(None)
     mention_extractor = MentionExtractor(

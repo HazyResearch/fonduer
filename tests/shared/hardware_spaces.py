@@ -1,3 +1,4 @@
+"""Hardware mention spaces."""
 import logging
 import re
 from builtins import chr, range, str
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 def expand_part_range(text):
-    """
+    """Expand transistor part range.
+
     Given a string, generates strings that are potentially implied by
     the original text. Two main operations are performed:
         1. Expanding ranges (X to Y; X ~ Y; X -- Y)
@@ -145,9 +147,7 @@ def expand_part_range(text):
 
 
 def atoi(num_str):
-    """
-    Helper function which converts a string to an integer, or returns None.
-    """
+    """Convert a string to an integer, or returns None."""
     try:
         return int(num_str)
     except Exception:
@@ -156,18 +156,18 @@ def atoi(num_str):
 
 
 def char_range(a, b):
-    """
-    Generates the characters from a to b inclusive.
-    """
+    """Generate the characters from a to b inclusive."""
     for c in range(ord(a), ord(b) + 1):
         yield chr(c)
 
 
 class MentionNgramsPart(MentionNgrams):
+    """N-grams mention specifically for transistor parts."""
+
     def __init__(
         self, parts_by_doc=None, n_max=3, expand=True, split_tokens=["-", "/"]
     ):
-        """MentionNgrams specifically for transistor parts.
+        """Initialize MentionNgramsPart.
 
         :param parts_by_doc: a dictionary d where d[document_name.upper()] =
             [partA, partB, ...]
@@ -177,6 +177,7 @@ class MentionNgramsPart(MentionNgrams):
         self.expander = expand_part_range if expand else (lambda x: [x])
 
     def apply(self, doc):
+        """Apply function takes a Document and return a mention generator."""
         for ts in MentionNgrams.apply(self, doc):
             enumerated_parts = [
                 part.upper() for part in expand_part_range(ts.get_span())
@@ -227,10 +228,14 @@ class MentionNgramsPart(MentionNgrams):
 
 
 class MentionNgramsTemp(MentionNgrams):
+    """N-grams mention specifically for temperature."""
+
     def __init__(self, n_max=2, split_tokens=["-", "/"]):
+        """Initialize MentionNgramsTemp."""
         super().__init__(n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, doc):
+        """Apply function takes a Document and return a mention generator."""
         for ts in MentionNgrams.apply(self, doc):
             m = re.match(
                 r"^([\+\-\u2010\u2011\u2012\u2013\u2014\u2212\uf02d])?(\s*)(\d+)$",
@@ -286,10 +291,14 @@ class MentionNgramsTemp(MentionNgrams):
 
 
 class MentionNgramsVolt(MentionNgrams):
+    """N-grams mention specifically for voltage."""
+
     def __init__(self, n_max=1, split_tokens=["-", "/"]):
+        """Initialize MentionNgramsVolt."""
         super().__init__(n_max=n_max, split_tokens=split_tokens)
 
     def apply(self, doc):
+        """Apply function takes a Document and return a mention generator."""
         for ts in MentionNgrams.apply(self, doc):
             if ts.get_span().endswith(".0"):
                 value = ts.get_span()[:-2]

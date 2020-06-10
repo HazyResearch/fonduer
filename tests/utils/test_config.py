@@ -1,3 +1,4 @@
+"""Fonduer load config unit tests."""
 import os
 
 from fonduer.utils.config import get_config

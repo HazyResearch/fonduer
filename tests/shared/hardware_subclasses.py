@@ -1,3 +1,4 @@
+"""Hardware mention/candidate subclasses."""
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 
 Part = mention_subclass("Part")

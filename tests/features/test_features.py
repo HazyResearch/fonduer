@@ -1,3 +1,4 @@
+"""Fonduer featurization unit tests."""
 import itertools
 import logging
 

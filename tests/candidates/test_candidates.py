@@ -1,3 +1,4 @@
+"""Fonduer unit tests for extracting candidates."""
 import logging
 import pickle
 from typing import Optional
@@ -42,6 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_doc(docs_path: str, file_name: str, pdf_path: Optional[str] = None):
+    """Parse documents from given path."""
     max_docs = 1
 
     logger.info("Parsing...")
@@ -321,7 +323,7 @@ def test_cand_gen():
 
 
 def test_ngrams():
-    """Test ngram limits in mention extraction"""
+    """Test n-gram limits in mention extraction."""
     file_name = "lincoln_short"
     docs_path = f"tests/data/pure_html/{file_name}.html"
     doc = parse_doc(docs_path, file_name)
@@ -447,7 +449,7 @@ def test_mention_longest_match():
 
 
 def test_multimodal_cand():
-    """Test multimodal candidate generation"""
+    """Test multimodal candidate generation."""
     file_name = "radiology"
     docs_path = f"tests/data/pure_html/{file_name}.html"
     doc = parse_doc(docs_path, file_name)
@@ -522,8 +524,7 @@ def test_multimodal_cand():
 
 
 def test_pickle_subclasses():
-    """Test if it is possible to pickle mention/candidate subclasses and their objects.
-    """
+    """Test if mention/candidate subclasses and their objects can be pickled."""
     Part = mention_subclass("Part")
     Temp = mention_subclass("Temp")
     PartTemp = candidate_subclass("PartTemp", [Part, Temp])
