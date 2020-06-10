@@ -21,10 +21,7 @@ else:
 
 
 class UDFRunner(object):
-    """
-    Class to run UDFs in parallel using simple queue-based multiprocessing
-    setup.
-    """
+    """Class to run UDFs in parallel using simple queue-based multiprocessing setup."""
 
     def __init__(
         self,
@@ -172,7 +169,8 @@ class UDF(Process):
         worker_id: int = 0,
         **udf_init_kwargs: Any,
     ) -> None:
-        """
+        """Initialize UDF.
+
         :param in_queue: A Queue of input objects to processes
         :param out_queue: A Queue of output objects from processes
         :param worker_id: An ID of a process
@@ -187,7 +185,8 @@ class UDF(Process):
         self.apply_kwargs: Dict[str, Any] = {}
 
     def run(self) -> None:
-        """
+        """Run function of UDF.
+
         Call this method when the UDF is run as a Process in a
         multiprocess setting The basic routine is: get from JoinableQueue,
         apply, put / add outputs, loop

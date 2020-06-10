@@ -27,7 +27,8 @@ def column_constructor(
     type: str = "text",
     delim: Optional[str] = None,
 ) -> List[Tuple[str, str, str]]:
-    """
+    """Column constructor.
+
     Convert raw content to a list of strutured tuple where each tuple contains
         (type, name, content).
 

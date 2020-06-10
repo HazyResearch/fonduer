@@ -11,7 +11,8 @@ class PredictionKey(AnnotationKeyMixin, Meta.Base):
 
 
 class Prediction(AnnotationMixin, Meta.Base):
-    """
+    """A Prediction table.
+
     A probability associated with a Candidate, indicating the degree of belief
     that the Candidate is true.
 

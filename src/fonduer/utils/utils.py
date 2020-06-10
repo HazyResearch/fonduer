@@ -11,6 +11,7 @@ if TYPE_CHECKING:  # to prevent circular imports
 def camel_to_under(name: str) -> str:
     """
     Convert camel-case string to lowercase string separated by underscores.
+
     Written by epost (http://stackoverflow.com/questions/1175208).
 
     :param name: String to be converted

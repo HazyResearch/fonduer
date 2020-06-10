@@ -248,7 +248,8 @@ def get_neighbor_cell_ngrams(
     n_max: int = 1,
     lower: bool = True,
 ) -> Iterator[Union[str, Tuple[str, str]]]:
-    """
+    """Get ngrams from all neighbor Cells.
+
     Get the ngrams from all Cells that are within a given Cell distance in one
     direction from the given Mention.
 

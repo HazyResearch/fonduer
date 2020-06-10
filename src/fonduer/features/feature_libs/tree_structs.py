@@ -40,7 +40,8 @@ class XMLTree:
 
 @lru_cache(maxsize=1024)
 def corenlp_to_xmltree(obj: Union[Dict, Sentence], prune_root: bool = True) -> XMLTree:
-    """
+    """Convert CoreNLP attributes into an XMLTree.
+
     Transform an object with CoreNLP dep_path and dep_parent attributes into
     an XMLTree. Will include elements of any array having the same dimension
     as dep_* as node attributes. Also adds special word_idx attribute

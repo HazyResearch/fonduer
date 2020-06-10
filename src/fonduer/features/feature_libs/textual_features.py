@@ -111,7 +111,8 @@ def extract_textual_features(
 
 
 def _compile_entity_feature_generator() -> Callable:
-    """
+    """Compile entity feature generator.
+
     Given optional arguments, returns a generator function which accepts an xml
     root and a list of indexes for a mention, and will generate relation
     features for this entity.

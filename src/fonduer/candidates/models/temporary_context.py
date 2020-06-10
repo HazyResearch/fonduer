@@ -5,7 +5,8 @@ from fonduer.parser.models.context import Context
 
 
 class TemporaryContext(object):
-    """
+    """Temporary Context class.
+
     A context which does not incur the overhead of a proper ORM-based Context
     object. The TemporaryContext class is specifically for the candidate
     extraction process, during which a MentionSpace object will generate many

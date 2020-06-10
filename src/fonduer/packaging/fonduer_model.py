@@ -345,7 +345,8 @@ def save_model(
 
 
 def _get_default_conda_env() -> Optional[Dict[str, Any]]:
-    """
+    """Get default Conda environment.
+
     :return: The default Conda environment for MLflow Models produced by calls to
              :func:`save_model()` and :func:`log_model()`.
     """

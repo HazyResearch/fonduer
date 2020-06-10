@@ -52,7 +52,8 @@ def bbox_from_sentence(sentence) -> Bbox:  # type: ignore
 
 
 def bbox_horz_aligned(box1: Bbox, box2: Bbox) -> bool:
-    """
+    """Check two bounding boxes are horizontally aligned.
+
     Return true if the vertical center point of either span is within the
     vertical range of the other
     """
@@ -75,7 +76,8 @@ def bbox_horz_aligned(box1: Bbox, box2: Bbox) -> bool:
 
 
 def bbox_vert_aligned(box1: Bbox, box2: Bbox) -> bool:
-    """
+    """Check two bounding boxes are vertical aligned.
+
     Return true if the horizontal center point of either span is within the
     horizontal range of the other
     """
@@ -95,21 +97,30 @@ def bbox_vert_aligned(box1: Bbox, box2: Bbox) -> bool:
 
 
 def bbox_vert_aligned_left(box1: Bbox, box2: Bbox) -> bool:
-    """Return true if the left boundary of both boxes is within 2 pts."""
+    """Check two boxes' left boundaries are with 2pts.
+
+    Return true if the left boundary of both boxes is within 2 pts.
+    """
     if not (box1 and box2):
         return False
     return abs(box1.left - box2.left) <= 2
 
 
 def bbox_vert_aligned_right(box1: Bbox, box2: Bbox) -> bool:
-    """Return true if the right boundary of both boxes is within 2 pts."""
+    """Check two boxes' right boundaries are with 2pts.
+
+    Return true if the right boundary of both boxes is within 2 pts.
+    """
     if not (box1 and box2):
         return False
     return abs(box1.right - box2.right) <= 2
 
 
 def bbox_vert_aligned_center(box1: Bbox, box2: Bbox) -> bool:
-    """Return true if the center of both boxes is within 5 pts."""
+    """Check two boxes' centers are with 5pts.
+
+    Return true if the center of both boxes is within 5 pts.
+    """
     if not (box1 and box2):
         return False
     return abs(((box1.right + box1.left) / 2.0) - ((box2.right + box2.left) / 2.0)) <= 5
