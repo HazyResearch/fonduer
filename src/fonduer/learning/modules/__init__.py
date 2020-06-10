@@ -1,1 +1,1 @@
-"""The Fonduer's learning modules."""
+"""Fonduer's learning modules."""

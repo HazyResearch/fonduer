@@ -1,1 +1,1 @@
-"""The Fonduer's utils module."""
+"""Fonduer's utils module."""

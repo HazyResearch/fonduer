@@ -1,4 +1,4 @@
-"""The Fonduer package."""
+"""Fonduer package."""
 from fonduer._version import __version__
 from fonduer.meta import Meta, init_logging
 

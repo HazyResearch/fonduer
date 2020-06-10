@@ -1,4 +1,4 @@
-"""The Fonduer's candidate model module."""
+"""Fonduer's candidate model module."""
 from fonduer.candidates.models.candidate import Candidate, candidate_subclass
 from fonduer.candidates.models.caption_mention import CaptionMention
 from fonduer.candidates.models.cell_mention import CellMention
