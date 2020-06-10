@@ -68,11 +68,21 @@ class SpacyParser(LingualParser):
             self._load_lang_model()
 
     def has_tokenizer_support(self) -> bool:
+        """
+        Return True when a tokenizer is supported.
+
+        :return: True when a tokenizer is supported.
+        """
         return self.lang is not None and (
             self.has_NLP_support() or self.lang in self.alpha_languages
         )
 
     def has_NLP_support(self) -> bool:
+        """
+        Return True when NLP is supported.
+
+        :return: True when NLP is supported.
+        """
         return self.lang is not None and (self.lang in self.languages)
 
     @staticmethod

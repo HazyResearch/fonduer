@@ -53,11 +53,12 @@ class TemporaryContext(object):
     def _get_polymorphic_identity(self) -> str:
         raise NotImplementedError()
 
-    def get_stable_id(self) -> str:
-        raise NotImplementedError()
-
     def _get_table(self) -> Type[Context]:
         raise NotImplementedError()
 
     def _get_insert_args(self) -> Dict[str, Any]:
+        raise NotImplementedError()
+
+    def get_stable_id(self) -> str:
+        """Get the stable_id of TemporaryContext."""
         raise NotImplementedError()

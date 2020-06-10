@@ -86,6 +86,7 @@ class DictionaryMatch(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize the dictionary matcher."""
         self.ignore_case = self.opts.get("ignore_case", True)
         self.attrib = self.opts.get("attrib", WORDS)
         self.inverse = self.opts.get("inverse", False)
@@ -134,6 +135,7 @@ class LambdaFunctionMatcher(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize the lambda function matcher."""
         self.attrib = self.opts.get("attrib", WORDS)
 
         # Set longest match only to False by default.
@@ -161,6 +163,7 @@ class Union(_Matcher):
     """
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         for child in self.children:
             if child.f(m):
                 return True
@@ -176,6 +179,7 @@ class Intersect(_Matcher):
     """
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         for child in self.children:
             if not child.f(m):
                 return False
@@ -197,6 +201,7 @@ class Inverse(_Matcher):
         super().__init__(*children, **opts)
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         child = self.children[0]
         return not child.f(m)
 
@@ -232,6 +237,7 @@ class Concat(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize concatenate matcher."""
         self.permutations = self.opts.get("permutations", False)
         self.left_required = self.opts.get("left_required", True)
         self.right_required = self.opts.get("right_required", True)
@@ -239,6 +245,7 @@ class Concat(_Matcher):
         self.sep = self.opts.get("sep", " ")
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         if not isinstance(m, TemporarySpanMention):
             raise ValueError(
                 f"{self.__class__.__name__} only supports TemporarySpanMention"
@@ -474,6 +481,7 @@ class LambdaFunctionFigureMatcher(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize lambda function figure matcher."""
         # Set longest match only to False
         self.longest_match_only = False
         try:

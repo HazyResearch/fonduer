@@ -34,7 +34,7 @@ class Visualizer(object):
     ) -> List[Image]:
         """Display bounding boxes on the document.
 
-        Displays each of the bounding boxes passed in 'boxes' on images of the pdf
+        Display each of the bounding boxes passed in 'boxes' on images of the pdf
         pointed to by pdf_file
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
@@ -65,7 +65,7 @@ class Visualizer(object):
     ) -> DisplayHandle:
         """Display the bounding boxes of candidates.
 
-        Displays the bounding boxes corresponding to candidates on an image of the pdf
+        Display the bounding boxes corresponding to candidates on an image of the pdf
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         if not pdf_file:
@@ -88,6 +88,10 @@ class Visualizer(object):
         target: Optional[str] = None,
         pdf_file: Optional[str] = None,
     ) -> DisplayHandle:
+        """Display the bounding boxes of words.
+
+        Display the bounding boxes corresponding to words on the pdf.
+        """
         if not pdf_file:
             pdf_file = os.path.join(self.pdf_path, sentences[0].document.name + ".pdf")
         boxes = []

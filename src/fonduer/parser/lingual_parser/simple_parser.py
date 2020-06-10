@@ -44,7 +44,17 @@ class SimpleParser(LingualParser):
             i += 1
 
     def has_NLP_support(self) -> bool:
+        """
+        Return True when NLP is supported.
+
+        :return: True when NLP is supported.
+        """
         return False
 
     def has_tokenizer_support(self) -> bool:
+        """
+        Return True when a tokenizer is supported.
+
+        :return: True when a tokenizer is supported.
+        """
         return True

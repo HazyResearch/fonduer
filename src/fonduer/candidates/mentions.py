@@ -32,9 +32,15 @@ class MentionSpace(object):
     """
 
     def __init__(self) -> None:
+        """Initialize mention space."""
         pass
 
     def apply(self, x: Context) -> Iterator[TemporaryContext]:
+        """Apply function takes a Context and return a mention generator.
+
+        :param x: The input Context.
+        :yield: The mention generator.
+        """
         raise NotImplementedError()
 
 
@@ -64,7 +70,11 @@ class Ngrams(MentionSpace):
         )
 
     def apply(self, context: Sentence) -> Iterator[TemporarySpanMention]:
+        """Apply function takes a Sentence and return a mention generator.
 
+        :param x: The input Sentence.
+        :yield: The mention generator.
+        """
         # These are the character offset--**relative to the sentence
         # start**--for each _token_
         offsets = context.char_offsets

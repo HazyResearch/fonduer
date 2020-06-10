@@ -32,9 +32,11 @@ class XMLTree:
         return js
 
     def to_json(self) -> Dict:
+        """Convert to json."""
         return self._to_json(self.root)
 
     def to_str(self) -> bytes:
+        """Convert to string."""
         return et.tostring(self.root)
 
 

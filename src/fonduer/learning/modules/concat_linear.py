@@ -22,6 +22,7 @@ class ConcatLinear(nn.Module):
         self.linear = nn.Linear(input_dim, outpt_dim)
 
     def forward(self, intermediate_output_dict: Dict[str, Any]) -> Tensor:
+        """Forward function."""
         input_feature = torch.cat(
             [intermediate_output_dict[key][0] for key in self.concat_output_keys], dim=1
         )

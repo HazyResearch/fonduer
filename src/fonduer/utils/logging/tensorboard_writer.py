@@ -13,4 +13,5 @@ class TensorBoardLogger(object):
         self.writer.add_scalar(name, value, step)
 
     def close(self) -> None:
+        """Close the tensorboard logger."""
         self.writer.close()

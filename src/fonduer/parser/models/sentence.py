@@ -17,15 +17,35 @@ class SentenceMixin(object):
     """A sentence Context in a Document."""
 
     def is_lingual(self) -> bool:
+        """
+        Return True when lingual information is available.
+
+        :return: True when lingual information is available.
+        """
         return False
 
     def is_visual(self) -> bool:
+        """
+        Return True when visual information is available.
+
+        :return: True when visual information is available.
+        """
         return False
 
     def is_tabular(self) -> bool:
+        """
+        Return True when tabular information is available.
+
+        :return: True when tabular information is available.
+        """
         return False
 
     def is_structural(self) -> bool:
+        """
+        Return True when structural information is available.
+
+        :return: True when structural information is available.
+        """
         return False
 
 
