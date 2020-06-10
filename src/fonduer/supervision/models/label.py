@@ -1,3 +1,4 @@
+"""Fonduer label model."""
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects import postgresql
 
@@ -73,4 +74,5 @@ class StableLabel(Meta.Base):
     value = Column(Integer, nullable=False)
 
     def __repr__(self) -> str:
+        """Represent the stable label as a string."""
         return f"{self.__class__.__name__} ({self.annotator_name} : {self.value})"

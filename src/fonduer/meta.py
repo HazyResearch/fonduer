@@ -1,3 +1,4 @@
+"""Fonduer meta class."""
 import logging
 import os
 import tempfile

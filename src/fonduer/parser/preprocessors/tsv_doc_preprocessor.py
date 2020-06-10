@@ -1,3 +1,4 @@
+"""Fonduer TSV document preprocessor."""
 import codecs
 import sys
 from typing import Iterator

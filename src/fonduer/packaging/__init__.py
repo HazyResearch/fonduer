@@ -1,4 +1,4 @@
-"""The Fonduer's packaging module."""
+"""Fonduer's packaging module."""
 from fonduer.packaging.fonduer_model import FonduerModel, log_model, save_model
 
 __all__ = [

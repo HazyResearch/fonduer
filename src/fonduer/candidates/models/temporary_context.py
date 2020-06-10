@@ -1,3 +1,4 @@
+"""Fonduer temporary mention model."""
 from builtins import object
 from typing import Any, Dict, Type
 
@@ -26,29 +27,35 @@ class TemporaryContext(object):
         self.id = None
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         raise NotImplementedError()
 
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, TemporaryContext):
             return NotImplemented
         raise NotImplementedError()
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, TemporaryContext):
             return NotImplemented
         raise NotImplementedError()
 
     def __gt__(self, other: object) -> bool:
+        """Check if the mention is greater than another mention."""
         if not isinstance(other, TemporaryContext):
             return NotImplemented
         raise NotImplementedError()
 
     def __contains__(self, other: object) -> bool:
+        """Check if the mention contains another mention."""
         if not isinstance(other, TemporaryContext):
             return NotImplemented
         raise NotImplementedError()
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         raise NotImplementedError()
 
     def _get_polymorphic_identity(self) -> str:

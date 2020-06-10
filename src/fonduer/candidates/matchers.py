@@ -1,3 +1,4 @@
+"""Fonduer matcher."""
 import re
 from typing import Iterator, Set
 

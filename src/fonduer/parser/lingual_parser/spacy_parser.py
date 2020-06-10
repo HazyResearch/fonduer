@@ -1,3 +1,4 @@
+"""Fonduer Spacy parser."""
 import importlib
 import logging
 from collections import defaultdict

@@ -1,3 +1,4 @@
+"""Soft cross entropy loss."""
 from typing import List
 
 import torch

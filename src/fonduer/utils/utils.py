@@ -1,3 +1,4 @@
+"""Fonduer utils."""
 import re
 from builtins import range
 from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Type, Union

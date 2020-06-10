@@ -1,3 +1,4 @@
+"""Concat linear."""
 from typing import Any, Dict, List
 
 import torch

@@ -1,3 +1,4 @@
+"""Customized Emmental task for Fonduer."""
 import logging
 from functools import partial
 from typing import Any, Dict, List, Optional, Union

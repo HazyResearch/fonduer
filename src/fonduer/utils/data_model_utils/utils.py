@@ -1,3 +1,4 @@
+"""Fonduer data model utils."""
 import logging
 from functools import lru_cache
 from typing import Callable, Iterable, List, Set, Union

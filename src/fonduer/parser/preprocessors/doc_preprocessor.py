@@ -1,3 +1,4 @@
+"""Fonduer document preprocessor."""
 import glob
 import os
 import sys
@@ -41,12 +42,14 @@ class DocPreprocessor(object):
                     return
 
     def __len__(self) -> int:
+        """Get total number of documents."""
         raise NotImplementedError(
             "One generic file can yield more than one Document object, "
             "so length can not be yielded before we process all files"
         )
 
     def __iter__(self) -> Iterator[Document]:
+        """Get the generator of documents."""
         return self._generate()
 
     def _get_docs_for_path(self, fp: str) -> Iterator[Document]:

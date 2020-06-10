@@ -1,3 +1,4 @@
+"""Fonduer parser."""
 import itertools
 import logging
 import re

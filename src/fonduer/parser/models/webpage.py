@@ -1,3 +1,4 @@
+"""Fonduer webpage context model."""
 from sqlalchemy import Column, ForeignKey, Integer, String
 
 from fonduer.parser.models.context import Context
@@ -34,4 +35,5 @@ class Webpage(Context):
 
     # Rest of class definition here
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         return f"Webpage(id: {self.name[:10]}..., url: {self.url[8:23]}...)"

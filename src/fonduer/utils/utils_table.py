@@ -1,3 +1,4 @@
+"""Fonduer tabular utils."""
 import itertools
 from builtins import range
 from functools import lru_cache

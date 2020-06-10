@@ -1,3 +1,4 @@
+"""Fonduer mention."""
 import logging
 import re
 from builtins import map, range
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class MentionSpace(object):
-    """Defines the **space** of Mention objects.
+    """Define the **space** of Mention objects.
 
     Calling *apply(x)* given an object *x* returns a generator over mentions in
     *x*.
@@ -45,9 +46,9 @@ class MentionSpace(object):
 
 
 class Ngrams(MentionSpace):
-    """Defines the space of Mentions as all n-grams in a Sentence.
+    """Define the space of Mentions as all n-grams in a Sentence.
 
-    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
+    Define the space of Mentions as all n-grams (n_min <= n <= n_max) in a
     Sentence *x*, indexing by **character offset**.
 
     :param n_min: Lower limit for the generated n_grams.

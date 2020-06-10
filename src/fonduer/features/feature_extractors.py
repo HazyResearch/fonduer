@@ -1,3 +1,4 @@
+"""Fonduer feature extractor."""
 from typing import Callable, Dict, Iterator, List, Tuple, Union
 
 from fonduer.candidates.models import Candidate

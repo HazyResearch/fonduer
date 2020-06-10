@@ -1,3 +1,4 @@
+"""Fonduer UDF."""
 import logging
 from multiprocessing import Manager, Process
 from queue import Empty, Queue

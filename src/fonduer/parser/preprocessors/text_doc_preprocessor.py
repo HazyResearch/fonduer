@@ -1,3 +1,4 @@
+"""Fonduer text document preprocessor."""
 import codecs
 import os
 from typing import Iterator

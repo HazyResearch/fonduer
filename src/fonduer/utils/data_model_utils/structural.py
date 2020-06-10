@@ -1,7 +1,4 @@
-###############################
-# Structural modality utilities
-###############################
-
+"""Fonduer structural modality utilities."""
 import functools
 from builtins import str
 from typing import List, Optional, Tuple, Union

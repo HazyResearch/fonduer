@@ -1,3 +1,4 @@
+"""Fonduer parser utils."""
 from typing import List, Optional, Tuple
 
 

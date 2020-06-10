@@ -1,3 +1,4 @@
+"""Fonduer context model."""
 from sqlalchemy import Column, Integer, String
 
 from fonduer.meta import Meta

@@ -1,3 +1,4 @@
+"""Fonduer tensorboard logger."""
 from tensorboardX import SummaryWriter
 
 

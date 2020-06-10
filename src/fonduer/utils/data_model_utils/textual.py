@@ -1,7 +1,4 @@
-############################
-# Textual modality utilities
-############################
-
+"""Fonduer textual modality utilities."""
 from typing import Iterator, Union
 
 from fonduer.candidates.models import Candidate, Mention

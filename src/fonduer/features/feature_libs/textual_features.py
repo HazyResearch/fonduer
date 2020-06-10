@@ -1,3 +1,4 @@
+"""Fonduer textual feature extractor."""
 from builtins import range
 from typing import Any, Callable, Dict, Iterator, List, Set, Tuple, Union
 

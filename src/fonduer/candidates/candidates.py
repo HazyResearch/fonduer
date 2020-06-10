@@ -1,3 +1,4 @@
+"""Fonduer candidate."""
 import logging
 from builtins import range
 from itertools import product

@@ -1,3 +1,4 @@
+"""Fonduer lingual parser."""
 from typing import Collection, Iterable, Iterator
 
 from fonduer.parser.models import Sentence

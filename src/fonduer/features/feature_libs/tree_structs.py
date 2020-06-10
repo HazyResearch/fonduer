@@ -1,3 +1,4 @@
+"""Fonduer tree structs."""
 import re
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union

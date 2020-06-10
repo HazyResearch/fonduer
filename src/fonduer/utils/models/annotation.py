@@ -1,3 +1,4 @@
+"""Fonduer annotation model."""
 from typing import Tuple
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
@@ -19,6 +20,7 @@ class AnnotationKeyMixin(object):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Get the table name."""
         return camel_to_under(cls.__name__)
 
     @declared_attr
@@ -33,9 +35,11 @@ class AnnotationKeyMixin(object):
 
     @declared_attr
     def __table_args__(cls) -> Tuple[UniqueConstraint]:
+        """Get the table args."""
         return (UniqueConstraint("name"),)
 
     def __repr__(self) -> str:
+        """Represent the annotation key as a string."""
         return f"{self.__class__.__name__} ({self.name})"
 
 
@@ -62,6 +66,7 @@ class AnnotationMixin(object):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Get the table name."""
         return camel_to_under(cls.__name__)
 
     # The key is the "name" or "type" of the Annotation- e.g. the name of a
@@ -96,6 +101,7 @@ class AnnotationMixin(object):
         )
 
     def __repr__(self) -> str:
+        """Represent the annotation as a string."""
         return (
             f"{self.__class__.__name__}"
             f" ("

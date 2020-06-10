@@ -1,3 +1,4 @@
+"""Fonduer visual linker."""
 import logging
 import os
 import re

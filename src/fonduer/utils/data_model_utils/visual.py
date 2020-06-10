@@ -1,7 +1,4 @@
-###########################
-# Visual modality utilities
-###########################
-
+"""Fonduer visual modality utilities."""
 from builtins import range
 from collections import defaultdict
 from functools import lru_cache

@@ -1,3 +1,4 @@
+"""Fonduer tabular feature extractor."""
 from typing import Dict, Iterator, List, Set, Tuple, Union
 
 from fonduer.candidates.models import Candidate

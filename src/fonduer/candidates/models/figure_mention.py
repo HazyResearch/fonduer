@@ -1,3 +1,4 @@
+"""Fonduer figure mention model."""
 from typing import Any, Dict, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
@@ -18,30 +19,36 @@ class TemporaryFigureMention(TemporaryContext):
         self.figure = figure  # The figure Context
 
     def __len__(self) -> int:
+        """Get the length of the mention."""
         return 1
 
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, TemporaryFigureMention):
             return NotImplemented
         return self.figure == other.figure
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, TemporaryFigureMention):
             return NotImplemented
         return self.figure != other.figure
 
     def __gt__(self, other: object) -> bool:
+        """Check if the mention is greater than another mention."""
         if not isinstance(other, TemporaryFigureMention):
             return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
     def __contains__(self, other: object) -> bool:
+        """Check if the mention contains another mention."""
         if not isinstance(other, TemporaryFigureMention):
             return NotImplemented
         return self.__eq__(other)
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return hash(self.figure)
 
     def get_stable_id(self) -> str:
@@ -58,6 +65,7 @@ class TemporaryFigureMention(TemporaryContext):
         return {"figure_id": self.figure.id}
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         return (
             f"{self.__class__.__name__}"
             f"("

@@ -1,3 +1,4 @@
+"""Fonduer visualizer."""
 import logging
 import os
 import subprocess

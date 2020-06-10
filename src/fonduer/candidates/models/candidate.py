@@ -1,3 +1,4 @@
+"""Fonduer candidate model."""
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Type
 
@@ -45,12 +46,15 @@ class Candidate(Meta.Base):
         return tuple(getattr(self, name) for name in self.__argnames__)
 
     def __len__(self) -> int:
+        """Get the length of the candidate."""
         return len(self.__argnames__)
 
     def __getitem__(self, key: int) -> Mention:
+        """Get the mention from candidate."""
         return self.get_mentions()[key]
 
     def __repr__(self) -> str:
+        """Represent the candidate as a string."""
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -59,6 +63,7 @@ class Candidate(Meta.Base):
         )
 
     def __gt__(self, other_cand: "Candidate") -> bool:
+        """Check if the candidate is greater than another candidate."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other_cand.__repr__()
 

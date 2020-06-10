@@ -1,6 +1,4 @@
-############################
-# Tabular modality utilities
-############################
+"""Fonduer tabular modality utilities."""
 from builtins import range
 from collections import defaultdict
 from functools import lru_cache

@@ -1,8 +1,7 @@
+"""Utilities for constructing and splitting stable ids."""
 from typing import List, Tuple
 
 from fonduer.parser.models import Context
-
-"""Utilities for constructing and splitting stable ids."""
 
 
 def construct_stable_id(

@@ -1,3 +1,4 @@
+"""Fonduer learning prediction model."""
 from sqlalchemy import Column, Float
 
 from fonduer.meta import Meta

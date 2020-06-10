@@ -1,3 +1,4 @@
+"""Fonduer sentence context model."""
 from builtins import object
 from typing import Any, Dict
 
@@ -287,6 +288,7 @@ class Sentence(
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         if self.is_tabular():
             rows = (
                 tuple([self.row_start, self.row_end])
@@ -351,5 +353,6 @@ class Sentence(
         }
 
     def __gt__(self, other: "Sentence") -> bool:
+        """Check if the context is greater than another context."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

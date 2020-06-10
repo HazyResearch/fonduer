@@ -1,3 +1,4 @@
+"""Fonduer CSV document preprocessor."""
 import codecs
 import csv
 import os

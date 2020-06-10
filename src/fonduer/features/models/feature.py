@@ -1,3 +1,4 @@
+"""Fonduer feature model."""
 from sqlalchemy import Column, Float
 from sqlalchemy.dialects import postgresql
 

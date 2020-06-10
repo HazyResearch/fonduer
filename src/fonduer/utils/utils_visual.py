@@ -1,3 +1,4 @@
+"""Fonduer visual utils."""
 import warnings
 from typing import NamedTuple
 
