@@ -463,6 +463,11 @@ class ParserUDF(UDF):
             # Pull the image from a child img node, if one exists
             imgs = [child for child in node if child.tag == "img"]
 
+            # In case the image from the child img node doesn't exist
+            if len(imgs) == 0:
+                logger.warning("No image found in Figure.")
+                return state
+
             if len(imgs) > 1:
                 logger.warning("Figure contains multiple images.")
                 # Right now we don't support multiple URLs in the Figure context
