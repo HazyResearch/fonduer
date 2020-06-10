@@ -1,3 +1,4 @@
+"""The Fonduer's data model utils module."""
 from fonduer.utils.data_model_utils.structural import (
     common_ancestor,
     get_ancestor_class_names,

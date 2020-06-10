@@ -1,3 +1,4 @@
+"""The Fonduer's parser model module."""
 from fonduer.parser.models.caption import Caption
 from fonduer.parser.models.context import Context
 from fonduer.parser.models.document import Document

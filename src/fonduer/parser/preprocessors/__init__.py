@@ -1,3 +1,4 @@
+"""The Fonduer's parser preprocessor module."""
 from fonduer.parser.preprocessors.csv_doc_preprocessor import CSVDocPreprocessor
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 from fonduer.parser.preprocessors.html_doc_preprocessor import HTMLDocPreprocessor
