@@ -91,6 +91,7 @@ class Parser(UDFRunner):
         vizlink: Optional[VisualLinker] = None,  # visual linker
         pdf_path: Optional[str] = None,
     ) -> None:
+        """Initialize Parser."""
         super().__init__(
             session,
             ParserUDF,

@@ -13,6 +13,7 @@ class TemporarySectionMention(TemporaryContext):
     """The TemporaryContext version of SectionMention."""
 
     def __init__(self, section: Section) -> None:
+        """Initialize TemporarySectionMention."""
         super().__init__()
         self.section = section  # The section Context
 
@@ -91,5 +92,6 @@ class SectionMention(Context, TemporarySectionMention):
     }
 
     def __init__(self, tc: TemporarySectionMention):
+        """Initialize SectionMention."""
         self.stable_id = tc.get_stable_id()
         self.section = tc.section

@@ -196,6 +196,7 @@ class Inverse(_Matcher):
     """
 
     def __init__(self, *children, **opts):  # type: ignore
+        """Initialize inverse matcher."""
         if not len(children) == 1:
             raise ValueError("Provide a single Matcher.")
         super().__init__(*children, **opts)
@@ -397,6 +398,7 @@ class PersonMatcher(RegexMatchEach):
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize person matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "PERSON"
         super().__init__(*children, **kwargs)
@@ -411,6 +413,7 @@ class LocationMatcher(RegexMatchEach):
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize location matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "GPE|LOC"
         super().__init__(*children, **kwargs)
@@ -425,6 +428,7 @@ class OrganizationMatcher(RegexMatchEach):
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize organization matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NORG|ORG"
         super().__init__(*children, **kwargs)
@@ -439,6 +443,7 @@ class DateMatcher(RegexMatchEach):
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize date matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "DATE"
         super().__init__(*children, **kwargs)
@@ -453,6 +458,7 @@ class NumberMatcher(RegexMatchEach):
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize number matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NUMBER|QUANTITY"
         super().__init__(*children, **kwargs)
@@ -467,6 +473,7 @@ class MiscMatcher(RegexMatchEach):
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize miscellaneous matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "MISC"
         super().__init__(*children, **kwargs)

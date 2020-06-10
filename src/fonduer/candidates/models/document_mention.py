@@ -13,6 +13,7 @@ class TemporaryDocumentMention(TemporaryContext):
     """The TemporaryContext version of DocumentMention."""
 
     def __init__(self, document: Document) -> None:
+        """Initialize TemporaryDocumentMention."""
         super().__init__()
         self.document = document  # The document Context
 
@@ -87,5 +88,6 @@ class DocumentMention(Context, TemporaryDocumentMention):
     }
 
     def __init__(self, tc: TemporaryDocumentMention):
+        """Initialize DocumentMention."""
         self.stable_id = tc.get_stable_id()
         self.document = tc.document

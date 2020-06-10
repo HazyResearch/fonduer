@@ -13,6 +13,7 @@ class SimpleParser(LingualParser):
     """
 
     def __init__(self, delim: str = ".") -> None:
+        """Initialize SimpleParser."""
         self.delim = delim
 
     def split_sentences(self, str: str) -> Iterator[Dict[str, Any]]:

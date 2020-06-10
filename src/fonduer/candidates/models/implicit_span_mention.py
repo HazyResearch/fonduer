@@ -36,6 +36,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         right: List[Optional[int]],
         meta: Any = None,
     ) -> None:
+        """Initialize TemporaryImplicitSpanMention."""
         super().__init__(sentence, char_start, char_end, meta)
         self.expander_key = expander_key
         self.position = position
@@ -310,6 +311,7 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
     }
 
     def __init__(self, tc: TemporaryImplicitSpanMention):
+        """Initialize ImplicitSpanMention."""
         self.stable_id = tc.get_stable_id()
         self.sentence = tc.sentence
         self.char_start = tc.char_start

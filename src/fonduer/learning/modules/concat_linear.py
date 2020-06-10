@@ -16,6 +16,7 @@ class ConcatLinear(nn.Module):
     def __init__(
         self, concat_output_keys: List[str], input_dim: int, outpt_dim: int
     ) -> None:
+        """Initialize ConcatLinear."""
         super().__init__()
 
         self.concat_output_keys = concat_output_keys

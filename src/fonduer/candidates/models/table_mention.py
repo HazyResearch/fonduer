@@ -13,6 +13,7 @@ class TemporaryTableMention(TemporaryContext):
     """The TemporaryContext version of TableMention."""
 
     def __init__(self, table: Table) -> None:
+        """Initialize TemporaryTableMention."""
         super().__init__()
         self.table = table  # The table Context
 
@@ -91,5 +92,6 @@ class TableMention(Context, TemporaryTableMention):
     }
 
     def __init__(self, tc: TemporaryTableMention):
+        """Initialize TableMention."""
         self.stable_id = tc.get_stable_id()
         self.table = tc.table

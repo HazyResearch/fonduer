@@ -21,6 +21,7 @@ class TemporarySpanMention(TemporaryContext):
         char_end: int,
         meta: Optional[Any] = None,
     ) -> None:
+        """Initialize TemporarySpanMention."""
         super().__init__()
         self.sentence = sentence  # The sentence Context of the Span
         self.char_start = char_start
@@ -255,6 +256,7 @@ class SpanMention(Context, TemporarySpanMention):
     }
 
     def __init__(self, tc: TemporarySpanMention):
+        """Initialize SpanMention."""
         self.stable_id = tc.get_stable_id()
         self.sentence = tc.sentence
         self.char_start = tc.char_start

@@ -60,6 +60,7 @@ class Ngrams(MentionSpace):
     def __init__(
         self, n_min: int = 1, n_max: int = 5, split_tokens: Collection[str] = []
     ) -> None:
+        """Initialize Ngrams."""
         MentionSpace.__init__(self)
         self.n_min = n_min
         self.n_max = n_max

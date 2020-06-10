@@ -13,6 +13,7 @@ class TemporaryCellMention(TemporaryContext):
     """The TemporaryContext version of CellMention."""
 
     def __init__(self, cell: Cell) -> None:
+        """Initialize TemporaryCellMention."""
         super().__init__()
         self.cell = cell  # The cell Context
 
@@ -92,5 +93,6 @@ class CellMention(Context, TemporaryCellMention):
     }
 
     def __init__(self, tc: TemporaryCellMention):
+        """Initialize CellMention."""
         self.stable_id = tc.get_stable_id()
         self.cell = tc.cell

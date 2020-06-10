@@ -22,6 +22,7 @@ class TemporaryContext(object):
     """
 
     def __init__(self) -> None:
+        """Initialize TemporaryContext."""
         self.id = None
 
     def __repr__(self) -> str:

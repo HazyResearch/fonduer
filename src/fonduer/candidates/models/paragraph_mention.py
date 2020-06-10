@@ -13,6 +13,7 @@ class TemporaryParagraphMention(TemporaryContext):
     """The TemporaryContext version of ParagraphMention."""
 
     def __init__(self, paragraph: Paragraph) -> None:
+        """Initialize TemporaryParagraphMention."""
         super().__init__()
         self.paragraph = paragraph  # The paragraph Context
 
@@ -93,5 +94,6 @@ class ParagraphMention(Context, TemporaryParagraphMention):
     }
 
     def __init__(self, tc: TemporaryParagraphMention):
+        """Initialize ParagraphMention."""
         self.stable_id = tc.get_stable_id()
         self.paragraph = tc.paragraph

@@ -30,6 +30,7 @@ class UDFRunner(object):
         parallelism: int = 1,
         **udf_init_kwargs: Any,
     ) -> None:
+        """Initialize UDFRunner."""
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs

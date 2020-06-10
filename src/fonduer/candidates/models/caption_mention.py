@@ -13,6 +13,7 @@ class TemporaryCaptionMention(TemporaryContext):
     """The TemporaryContext version of CaptionMention."""
 
     def __init__(self, caption: Caption) -> None:
+        """Initialize TemporaryCaptionMention."""
         super().__init__()
         self.caption = caption  # The caption Context
 
@@ -90,5 +91,6 @@ class CaptionMention(Context, TemporaryCaptionMention):
     }
 
     def __init__(self, tc: TemporaryCaptionMention):
+        """Initialize CaptionMention."""
         self.stable_id = tc.get_stable_id()
         self.caption = tc.caption

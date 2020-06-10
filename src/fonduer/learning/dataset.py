@@ -38,7 +38,7 @@ class FonduerDataset(EmmentalDataset):
         labels: Union[np.array, int],
         index: Optional[List[int]] = None,
     ):
-
+        """Initialize FonduerDataset."""
         self.name = name
         self.candidates = candidates
         self.features = features
