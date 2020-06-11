@@ -123,7 +123,7 @@ class DictionaryMatch(_Matcher):
 
 
 class LambdaFunctionMatcher(_Matcher):
-    """Select n-grams that return True when fed to a function f.
+    """Select ``Ngrams`` that return True when fed to a function f.
 
     :param func: The function to evaluate with a signature of ``f: m -> {True, False}``,
         where ``m`` denotes a mention. More precisely, ``m`` is an instance of child
