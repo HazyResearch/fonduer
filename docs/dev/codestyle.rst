@@ -43,10 +43,10 @@ Docstring format
 We use Sphinx_ to build documentation.
 While Sphinx's ``autodoc`` extension, which automatically generates documentation from
 docstring, supports several docstring formats, we use `Sphinx docstring format`_.
-A typical Sphinx docsting looks like the following:
+A typical Sphinx docstring looks like the following:
 
 .. code-block:: python
-    :caption: A typical Sphinx docsting
+    :caption: A typical Sphinx docstring
 
     """[Summary]
 
@@ -64,7 +64,7 @@ Since we annotate functions with types (`PEP 484`_), `:type` and `:rtype` in the
 are redundant and hence not allowed in Fonduer. An example Fonduer docstring looks like:
 
 .. code-block:: python
-    :caption: An example Fonduer docsting
+    :caption: An example Fonduer docstring
 
     def greeting(name: str) -> str:
         """Return a greeting to a person.
