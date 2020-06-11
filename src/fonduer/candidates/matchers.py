@@ -283,7 +283,7 @@ class Concat(_Matcher):
 class _RegexMatch(_Matcher):
     """Regex matcher class.
 
-    Select mentions using regular expression. Does not specify specific
+    Select mentions using a regular expression. Does not specify the
     semantics of *what* is being matched yet.
     """
 
