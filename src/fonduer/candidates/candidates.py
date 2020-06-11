@@ -129,7 +129,7 @@ class CandidateExtractor(UDFRunner):
         """Clear Candidates of each class.
 
         Delete Candidates of each class initialized with the CandidateExtractor
-        from given split the database.
+        from the given split in the database.
 
         :param split: Which split to clear.
         """
