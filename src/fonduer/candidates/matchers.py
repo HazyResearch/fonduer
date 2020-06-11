@@ -12,7 +12,7 @@ WORDS = "words"
 class _Matcher(object):
     """Matcher class.
 
-    Apply a function ``f : m -> {True,False}`` to a generator of mentions,
+    Apply a function ``f : m -> {True, False}`` to a generator of mentions,
     returning only mentions *m* s.t. *f(m) == True*,
     where f can be compositionally defined.
     """
