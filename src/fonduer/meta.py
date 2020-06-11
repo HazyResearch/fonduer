@@ -61,9 +61,9 @@ def new_sessionmaker() -> sessionmaker:
     """Create new sessionmaker.
 
     Turning on autocommit for Postgres, see
-    http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/
-    Otherwise any e.g. query starts a transaction, locking tables... very
-    bad for e.g. multiple notebooks open, multiple processes, etc.
+    http://oddbird.net/2014/06/14/sqlalchemy-postgres-autocommit/.
+    Otherwise performance suffers with multiple notebooks/processes/etc due to lock
+    contention on the tables.
     """
     try:
         engine = create_engine(

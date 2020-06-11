@@ -24,7 +24,7 @@ def _min_range_diff(
     :param a_end: The end index of the first object.
     :param b_start: The start index of the second object.
     :param b_end: The end index of the second object.
-    :param absolute: Whether use absolute value, defaults to True
+    :param absolute: Whether use absolute value, defaults to True.
     :return: The minimum range difference.
     """
     f = lambda x: (abs(x) if absolute else x)
@@ -46,7 +46,7 @@ def min_row_diff(
 
     :param a: The first cell or sentence.
     :param b: The second cell or sentence.
-    :param absolute: Whether use absolute value, defaults to True
+    :param absolute: Whether use absolute value, defaults to True.
     :return: The minimum row difference.
     """
     return _min_range_diff(
@@ -61,7 +61,7 @@ def min_col_diff(
 
     :param a: The first cell or sentence.
     :param b: The second cell or sentence.
-    :param absolute: Whether use absolute value, defaults to True
+    :param absolute: Whether use absolute value, defaults to True.
     :return: The minimum column difference.
     """
     return _min_range_diff(
@@ -79,7 +79,7 @@ def min_axis_diff(
 
     :param a: The first cell or sentence.
     :param b: The second cell or sentence.
-    :param axis: The axis to calculate the difference, defaults to None
+    :param axis: The axis to calculate the difference, defaults to None.
     :return: The minimum axis difference.
     """
     if axis == "row":
@@ -97,7 +97,7 @@ def is_row_aligned(
 
     :param a: The first cell or sentence.
     :param b: The second cell or sentence.
-    :param spread: Row difference range, defaults to [0, 0]
+    :param spread: Row difference range, defaults to [0, 0].
     :return: Return True if two sentences or cells are row-wise aligned.
     """
     return min_row_diff(a, b) in range(spread[0], spread[1] + 1)
@@ -110,7 +110,7 @@ def is_col_aligned(
 
     :param a: The first cell or sentence.
     :param b: The second cell or sentence.
-    :param spread: Column difference range, defaults to [0, 0]
+    :param spread: Column difference range, defaults to [0, 0].
     :return: Return True if two sentences or cells are column-wise aligned.
     """
     return min_col_diff(a, b) in range(spread[0], spread[1] + 1)
@@ -126,8 +126,8 @@ def is_axis_aligned(
 
     :param a: The first cell or sentence.
     :param b: The second cell or sentence.
-    :param axis: The axis to calculate the alignment, defaults to None
-    :param spread: Row/column difference range, defaults to [0, 0]
+    :param axis: The axis to calculate the alignment, defaults to None.
+    :param spread: Row/column difference range, defaults to [0, 0].
     :return: Return True if two sentences or cells are axis-wise aligned.
     """
     if axis == "row":
