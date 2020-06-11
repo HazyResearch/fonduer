@@ -158,7 +158,7 @@ class VisualMixin(object):
         return self.page is not None and self.page[0] is not None
 
     def get_bbox(self) -> Bbox:
-        """Get the bonding box."""
+        """Get the bounding box."""
         # TODO: this may have issues where a sentence is linked to words on different
         # pages
         if self.is_visual():
