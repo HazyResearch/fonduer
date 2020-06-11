@@ -787,3 +787,26 @@ def test_parser_skips_and_flattens():
     doc.text = "<html><body><word>Hello, </word><word>world!</word></body></html>"
     doc = parser_udf.apply(doc)
     assert doc.sentences[0].text == "Hello, world!"
+
+
+def test_parser_no_image():
+    """Unit test of Parser on a single document that has a figure without image"""
+
+    docs_path = "tests/data/html_simple/no_image.html"
+    pdf_path = "tests/data/pdf_simple/no_image.pdf"
+
+    # Preprocessor for the Docs
+    preprocessor = HTMLDocPreprocessor(docs_path)
+    doc = next(preprocessor._parse_file(docs_path, "no_image"))
+
+    # Check that doc has a name
+    assert doc.name == "no_image"
+
+    # Create an Parser and parse the no_image document
+    parser_udf = get_parser_udf(
+        structural=True, lingual=False, visual=True, pdf_path=pdf_path,
+    )
+    doc = parser_udf.apply(doc)
+
+    # Check that doc has no figures
+    assert len(doc.figures) == 0
