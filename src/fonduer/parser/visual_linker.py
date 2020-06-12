@@ -163,7 +163,7 @@ class VisualLinker(object):
                             word_id = (page_num, i)
                             pdf_word_list.append((word_id, content))
                             coordinate_map[word_id] = Bbox(
-                                page_num, y_min_line, xmin, y_max_line, xmax,
+                                page_num, y_min_line, y_max_line, xmin, xmax,
                             )
                             block_coordinates[word_id] = (y_min_block, x_min_block)
                             i += 1
@@ -318,7 +318,7 @@ class VisualLinker(object):
 
     def _update_coordinates(self) -> Iterator[Sentence]:
         for sentence in self.sentences:
-            (page, top, left, bottom, right) = list(
+            (page, top, bottom, left, right) = list(
                 zip(
                     *[
                         self.coordinate_map[self.links[((sentence.stable_id), i)]]

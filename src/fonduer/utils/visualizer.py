@@ -48,13 +48,13 @@ class Visualizer(object):
             boxes_by_page: DefaultDict[
                 int, List[Tuple[int, int, int, int]]
             ] = defaultdict(list)
-            for i, (page, top, left, bottom, right) in enumerate(boxes):
+            for i, (page, top, bottom, left, right) in enumerate(boxes):
                 boxes_per_page[page] += 1
-                boxes_by_page[page].append((top, left, bottom, right))
+                boxes_by_page[page].append((top, bottom, left, right))
             for i, page_num in enumerate(boxes_per_page.keys()):
                 img = pdf_to_img(pdf_file, page_num)
                 draw.fill_color = transparent
-                for j, (top, left, bottom, right) in enumerate(boxes_by_page[page_num]):
+                for j, (top, bottom, left, right) in enumerate(boxes_by_page[page_num]):
                     draw.stroke_color = colors[j % 2] if alternate_colors else colors[0]
                     draw.rectangle(left=left, top=top, right=right, bottom=bottom)
                 draw(img)
@@ -103,8 +103,8 @@ class Visualizer(object):
                         Bbox(
                             sentence.page[i],
                             sentence.top[i],
-                            sentence.left[i],
                             sentence.bottom[i],
+                            sentence.left[i],
                             sentence.right[i],
                         )
                     )
@@ -117,8 +117,8 @@ def get_box(span: SpanMention) -> Bbox:
     return Bbox(
         min(span.get_attrib_tokens("page")),
         min(span.get_attrib_tokens("top")),
-        min(span.get_attrib_tokens("left")),
         max(span.get_attrib_tokens("bottom")),
+        min(span.get_attrib_tokens("left")),
         max(span.get_attrib_tokens("right")),
     )
 
