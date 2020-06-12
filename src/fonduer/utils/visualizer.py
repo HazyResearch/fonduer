@@ -2,6 +2,7 @@
 import logging
 import os
 import subprocess
+import warnings
 from builtins import object
 from collections import defaultdict
 from typing import DefaultDict, List, Optional, Tuple
@@ -114,6 +115,9 @@ class Visualizer(object):
 
 def get_box(span: SpanMention) -> Bbox:
     """Get the bounding box."""
+    warnings.warn(
+        "get_box(span) is deprecated. Use span.get_bbox() instead.", DeprecationWarning,
+    )
     return Bbox(
         min(span.get_attrib_tokens("page")),
         min(span.get_attrib_tokens("top")),
