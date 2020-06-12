@@ -9,7 +9,7 @@ from tests.candidates.test_candidates import parse_doc
 
 def test_visualizer():
     """Unit test of visualizer using the md document."""
-    from fonduer.utils.visualizer import Visualizer  # noqa
+    from fonduer.utils.visualizer import Visualizer, get_box  # noqa
 
     docs_path = "tests/data/html_simple/md.html"
     pdf_path = "tests/data/pdf_simple/md.pdf"
@@ -38,12 +38,21 @@ def test_visualizer():
 
     doc = candidate_extractor_udf.apply(doc, split=0)
 
-    cands = doc.organizations
+    # Take one candidate
+    cand = doc.organizations[0]
 
-    # Test visualizer
     pdf_path = "tests/data/pdf_simple"
     vis = Visualizer(pdf_path)
-    vis.display_candidates([cands[0]])
+
+    # Test bounding boxes
+    boxes = [get_box(mention.context) for mention in cand.get_mentions()]
+    for box in boxes:
+        assert box.top <= box.bottom
+        assert box.left <= box.right
+    assert boxes == [mention.context.get_bbox() for mention in cand.get_mentions()]
+
+    # Test visualizer
+    vis.display_candidates([cand])
 
 
 def test_get_pdf_dim():
