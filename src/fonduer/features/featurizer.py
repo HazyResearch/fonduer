@@ -1,3 +1,4 @@
+"""Fonduer featurizer."""
 import itertools
 import logging
 from collections import defaultdict

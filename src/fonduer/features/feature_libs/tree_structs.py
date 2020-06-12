@@ -1,3 +1,4 @@
+"""Fonduer tree structs."""
 import re
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
@@ -17,7 +18,7 @@ class XMLTree:
     """
 
     def __init__(self, xml_root: _Element, words: Optional[List[str]] = None) -> None:
-        """Calls subroutines to generate JSON form of XML input."""
+        """Call subroutines to generate JSON form of XML input."""
         self.root = xml_root
         self.words = words
 
@@ -32,25 +33,27 @@ class XMLTree:
         return js
 
     def to_json(self) -> Dict:
+        """Convert to json."""
         return self._to_json(self.root)
 
     def to_str(self) -> bytes:
+        """Convert to string."""
         return et.tostring(self.root)
 
 
 @lru_cache(maxsize=1024)
 def corenlp_to_xmltree(obj: Union[Dict, Sentence], prune_root: bool = True) -> XMLTree:
-    """
-    Transforms an object with CoreNLP dep_path and dep_parent attributes into
-    an XMLTree. Will include elements of any array having the same dimensiion
+    """Convert CoreNLP attributes into an XMLTree.
+
+    Transform an object with CoreNLP dep_path and dep_parent attributes into
+    an XMLTree. Will include elements of any array having the same dimension
     as dep_* as node attributes. Also adds special word_idx attribute
     corresponding to original sequence order in sentence.
     """
     # Convert input object to dictionary
     s: Dict = get_as_dict(obj)
 
-    # Use the dep_parents array as a guide: ensure it is present and a list of
-    # ints
+    # Use the dep_parents array as a guide: ensure it is present and a list of ints
     if not ("dep_parents" in s and isinstance(s["dep_parents"], list)):
         raise ValueError(
             "Input CoreNLP object must have a 'dep_parents' attribute which is a list"
@@ -84,12 +87,24 @@ def corenlp_to_xmltree(obj: Union[Dict, Sentence], prune_root: bool = True) -> X
 
 
 def scrub(s: str) -> str:
+    """Scrub the string.
+
+    :param s: The input string.
+    :return: The scrubbed string.
+    """
     return "".join(c for c in s if ord(c) < 128)
 
 
 def corenlp_to_xmltree_sub(
     s: Dict[str, Any], dep_parents: List[int], rid: int = 0
 ) -> _Element:
+    """Construct XMLTree with CoreNLP information.
+
+    :param s: Input object.
+    :param dep_parents: Dependency parents.
+    :param rid: Root id, defaults to 0
+    :return: The constructed XMLTree.
+    """
     i = rid - 1
     attrib = {}
     N = len(list(dep_parents))
@@ -119,5 +134,9 @@ def corenlp_to_xmltree_sub(
 
 
 def singular(s: str) -> str:
-    """Get singular form of word s (crudely)."""
+    """Get singular form of word s (crudely).
+
+    :param s: The input string.
+    :return: The singular form of the string.
+    """
     return re.sub(r"e?s$", "", s, flags=re.I)

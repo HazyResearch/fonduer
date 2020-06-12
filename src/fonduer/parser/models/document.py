@@ -1,3 +1,4 @@
+"""Fonduer document context model."""
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.types import PickleType
 
@@ -32,8 +33,10 @@ class Document(Context):
     __mapper_args__ = {"polymorphic_identity": "document"}
 
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         return f"Document {self.name}"
 
     def __gt__(self, other: "Document") -> bool:
+        """Check if the context is greater than another context."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

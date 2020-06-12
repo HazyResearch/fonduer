@@ -1,3 +1,4 @@
+"""Fonduer table context model."""
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -46,6 +47,7 @@ class Table(Context):
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         return (
             f"Table("
             f"Doc: {self.document.name}, "
@@ -55,6 +57,7 @@ class Table(Context):
         )
 
     def __gt__(self, other: "Table") -> bool:
+        """Check if the context is greater than another context."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
@@ -112,6 +115,7 @@ class Cell(Context):
     __table_args__ = (UniqueConstraint(document_id, table_id, position),)
 
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         return (
             f"Cell(Doc: {self.document.name}, "
             f"Table: {self.table.position}, "
@@ -121,5 +125,6 @@ class Cell(Context):
         )
 
     def __gt__(self, other: "Cell") -> bool:
+        """Check if the context is greater than another context."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

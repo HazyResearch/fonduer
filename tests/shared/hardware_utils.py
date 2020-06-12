@@ -1,3 +1,4 @@
+"""Hardware utils."""
 import codecs
 import csv
 import logging
@@ -27,6 +28,7 @@ TRUE = 1
 def get_gold_dict(
     filename, doc_on=True, part_on=True, val_on=True, attribute=None, docs=None
 ):
+    """Get gold dict."""
     with codecs.open(filename, encoding="utf-8") as csvfile:
         gold_reader = csv.reader(csvfile)
         gold_dict = set()
@@ -55,6 +57,7 @@ gold_dict = get_gold_dict(
 
 
 def gold(c: Candidate) -> int:
+    """Check if candidate is in gold dict."""
     doc = (c[0].context.sentence.document.name).upper()
     part = (c[0].context.get_span()).upper()
     val = ("".join(c[1].context.get_span().split())).upper()
@@ -68,7 +71,7 @@ def gold(c: Candidate) -> int:
 def entity_level_f1(
     candidates, gold_file, attribute=None, corpus=None, parts_by_doc=None
 ):
-    """Checks entity-level recall of candidates compared to gold.
+    """Check entity-level recall of candidates compared to gold.
 
     Turns a CandidateSet into a normal set of entity-level tuples
     (doc, part, [attribute_value])
@@ -129,6 +132,7 @@ def entity_level_f1(
 
 
 def get_implied_parts(part, doc, parts_by_doc):
+    """Get implied parts."""
     yield part
     if parts_by_doc:
         for p in parts_by_doc[doc]:
@@ -137,6 +141,7 @@ def get_implied_parts(part, doc, parts_by_doc):
 
 
 def entity_to_candidates(entity, candidate_subset):
+    """Get corresponding candidates from entity."""
     matches = []
     for c in candidate_subset:
         c_entity = tuple(

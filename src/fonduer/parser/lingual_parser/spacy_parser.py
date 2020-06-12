@@ -1,3 +1,4 @@
+"""Fonduer Spacy parser."""
 import importlib
 import logging
 from collections import defaultdict
@@ -22,7 +23,8 @@ except Exception:
 
 
 class SpacyParser(LingualParser):
-    """
+    """Spacy parser class.
+
     spaCy
     https://spacy.io/
 
@@ -58,6 +60,7 @@ class SpacyParser(LingualParser):
     alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
 
     def __init__(self, lang: Optional[str]) -> None:
+        """Initialize SpacyParser."""
         self.logger = logging.getLogger(__name__)
         self.name = "spacy"
 
@@ -67,11 +70,21 @@ class SpacyParser(LingualParser):
             self._load_lang_model()
 
     def has_tokenizer_support(self) -> bool:
+        """
+        Return True when a tokenizer is supported.
+
+        :return: True when a tokenizer is supported.
+        """
         return self.lang is not None and (
             self.has_NLP_support() or self.lang in self.alpha_languages
         )
 
     def has_NLP_support(self) -> bool:
+        """
+        Return True when NLP is supported.
+
+        :return: True when NLP is supported.
+        """
         return self.lang is not None and (self.lang in self.languages)
 
     @staticmethod
@@ -205,7 +218,8 @@ class SpacyParser(LingualParser):
         return sentence_batches
 
     def split_sentences(self, text: str) -> Iterator[Dict[str, Any]]:
-        """
+        """Split text into sentences.
+
         Split input text into sentences that match CoreNLP's default format,
         but are not yet processed.
 
@@ -265,7 +279,9 @@ class SpacyParser(LingualParser):
 
 
 def set_custom_boundary(doc: Doc) -> Doc:
-    """Set the sentence boundaries based on the already separated sentences.
+    """Set the boundaries of sentence.
+
+    Set the sentence boundaries based on the already separated sentences.
     :param doc: doc.user_data should have a list of Sentence.
     :return doc:
     """
@@ -283,7 +299,8 @@ def set_custom_boundary(doc: Doc) -> Doc:
 
 
 class TokenPreservingTokenizer(object):
-    """
+    """Token perserving tokenizer.
+
     This custom tokenizer simply preserves the tokenization that was already
     performed during sentence splitting. It will output a list of space
     separated tokens, whereas each token is a single word from the list of

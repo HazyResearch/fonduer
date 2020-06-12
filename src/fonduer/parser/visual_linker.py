@@ -1,3 +1,4 @@
+"""Fonduer visual linker."""
 import logging
 import os
 import re
@@ -22,6 +23,7 @@ class VisualLinker(object):
     def __init__(
         self, pdf_path: str, time: bool = False, verbose: bool = False
     ) -> None:
+        """Initialize VisualLinker."""
         self.pdf_path = pdf_path
         self.logger = logging.getLogger(__name__)
         self.pdf_file: Optional[str] = None

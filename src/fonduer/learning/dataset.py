@@ -1,3 +1,4 @@
+"""Fonduer dataset."""
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -38,7 +39,7 @@ class FonduerDataset(EmmentalDataset):
         labels: Union[np.array, int],
         index: Optional[List[int]] = None,
     ):
-
+        """Initialize FonduerDataset."""
         self.name = name
         self.candidates = candidates
         self.features = features
@@ -59,6 +60,7 @@ class FonduerDataset(EmmentalDataset):
         super().__init__(name, self.X_dict, self.Y_dict, "_uids_")
 
     def __len__(self) -> int:
+        """Get the length of the dataset."""
         try:
             if self.index is not None:
                 return len(self.index)
@@ -70,6 +72,7 @@ class FonduerDataset(EmmentalDataset):
     def __getitem__(
         self, index: int
     ) -> Tuple[Dict[str, Union[Tensor, list]], Dict[str, Tensor]]:
+        """Get the data from dataset."""
         if self.index is not None:
             index = self.index[index]
 

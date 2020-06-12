@@ -1,3 +1,4 @@
+"""Fonduer's candidate module."""
 from fonduer.candidates.candidates import CandidateExtractor
 from fonduer.candidates.mentions import (
     MentionCaptions,

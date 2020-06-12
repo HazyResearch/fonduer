@@ -1,3 +1,4 @@
+"""Fonduer sentence context model."""
 from builtins import object
 from typing import Any, Dict
 
@@ -17,15 +18,35 @@ class SentenceMixin(object):
     """A sentence Context in a Document."""
 
     def is_lingual(self) -> bool:
+        """
+        Return True when lingual information is available.
+
+        :return: True when lingual information is available.
+        """
         return False
 
     def is_visual(self) -> bool:
+        """
+        Return True when visual information is available.
+
+        :return: True when visual information is available.
+        """
         return False
 
     def is_tabular(self) -> bool:
+        """
+        Return True when tabular information is available.
+
+        :return: True when tabular information is available.
+        """
         return False
 
     def is_structural(self) -> bool:
+        """
+        Return True when structural information is available.
+
+        :return: True when structural information is available.
+        """
         return False
 
 
@@ -34,27 +55,27 @@ class LingualMixin(object):
 
     @declared_attr
     def lemmas(cls) -> Column:
-        """A list of the lemmas for each word in a ``Sentence``."""
+        """List of the lemmas for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     @declared_attr
     def pos_tags(cls) -> Column:
-        """A list of POS tags for each word in a ``Sentence``."""
+        """List of POS tags for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     @declared_attr
     def ner_tags(cls) -> Column:
-        """A list of NER tags for each word in a ``Sentence``."""
+        """List of NER tags for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     @declared_attr
     def dep_parents(cls) -> Column:
-        """A list of the dependency parents for each word in a ``Sentence``."""
+        """List of the dependency parents for each word in a ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
     def dep_labels(cls) -> Column:
-        """A list of dependency labels for each word in a ``Sentence``."""
+        """List of dependency labels for each word in a ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     def is_lingual(self) -> bool:
@@ -67,12 +88,12 @@ class TabularMixin(object):
 
     @declared_attr
     def table_id(cls) -> Column:
-        """The id of the parent ``Table``, if any."""
+        """Id of the parent ``Table``, if any."""
         return Column("table_id", ForeignKey("table.id"))
 
     @declared_attr
     def table(cls) -> relationship:
-        """The parent ``Table``, if any."""
+        """Parent ``Table``, if any."""
         return relationship(
             "Table",
             backref=backref("sentences", cascade="all, delete-orphan"),
@@ -81,12 +102,12 @@ class TabularMixin(object):
 
     @declared_attr
     def cell_id(cls) -> Column:
-        """The id of the parent ``Cell``, if any."""
+        """Id of the parent ``Cell``, if any."""
         return Column("cell_id", ForeignKey("cell.id"))
 
     @declared_attr
     def cell(cls) -> relationship:
-        """The parent ``Cell``, if any."""
+        """Parent ``Cell``, if any."""
         return relationship(
             "Cell",
             backref=backref("sentences", cascade="all, delete-orphan"),
@@ -95,22 +116,22 @@ class TabularMixin(object):
 
     @declared_attr
     def row_start(cls) -> Column:
-        """The ``row_start`` of the parent ``Cell``, if any."""
+        """``row_start`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     @declared_attr
     def row_end(cls) -> Column:
-        """The ``row_end`` of the parent ``Cell``, if any."""
+        """``row_end`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     @declared_attr
     def col_start(cls) -> Column:
-        """The ``col_start`` of the parent ``Cell``, if any."""
+        """``col_start`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     @declared_attr
     def col_end(cls) -> Column:
-        """The ``col_end`` of the parent ``Cell``, if any."""
+        """``col_end`` of the parent ``Cell``, if any."""
         return Column(Integer)
 
     def is_tabular(self) -> bool:
@@ -127,7 +148,7 @@ class VisualMixin(object):
 
     @declared_attr
     def page(cls) -> Column:
-        """A list of the page index of each word in the ``Sentence``.
+        """List of the page index of each word in the ``Sentence``.
 
         Page indexes start at 0.
         """
@@ -135,22 +156,22 @@ class VisualMixin(object):
 
     @declared_attr
     def top(cls) -> Column:
-        """A list of each word's TOP bounding box coordinate in the ``Sentence``."""
+        """List of each word's TOP bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
     def left(cls) -> Column:
-        """A list of each word's LEFT bounding box coordinate in the ``Sentence``."""
+        """List of each word's LEFT bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
     def bottom(cls) -> Column:
-        """A list of each word's BOTTOM bounding box coordinate in the ``Sentence``."""
+        """List of each word's BOTTOM bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     @declared_attr
     def right(cls) -> Column:
-        """A list of each word's RIGHT bounding box coordinate in the ``Sentence``."""
+        """List of each word's RIGHT bounding box coordinate in the ``Sentence``."""
         return Column(INT_ARRAY_TYPE)
 
     def is_visual(self) -> bool:
@@ -178,18 +199,18 @@ class StructuralMixin(object):
 
     @declared_attr
     def xpath(cls) -> Column:
-        """The HTML XPATH to the ``Sentence``."""
+        """HTML XPATH to the ``Sentence``."""
         return Column(String)
 
     @declared_attr
     def html_tag(cls) -> Column:
-        """The HTML tag of the element containing the ``Sentence``."""
+        """HTML tag of the element containing the ``Sentence``."""
         return Column(String)
 
     #: The HTML attributes of the element the ``Sentence`` is found in.
     @declared_attr
     def html_attrs(cls) -> Column:
-        """A list of the html attributes of the element containing the ``Sentence``."""
+        """List of the html attributes of the element containing the ``Sentence``."""
         return Column(STR_ARRAY_TYPE)
 
     def is_structural(self) -> bool:
@@ -267,6 +288,7 @@ class Sentence(
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         if self.is_tabular():
             rows = (
                 tuple([self.row_start, self.row_end])
@@ -331,5 +353,6 @@ class Sentence(
         }
 
     def __gt__(self, other: "Sentence") -> bool:
+        """Check if the context is greater than another context."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

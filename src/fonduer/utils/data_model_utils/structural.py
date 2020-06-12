@@ -1,7 +1,4 @@
-###############################
-# Structural modality utilities
-###############################
-
+"""Fonduer structural modality utilities."""
 import functools
 from builtins import str
 from typing import List, Optional, Tuple, Union
@@ -188,8 +185,10 @@ def common_ancestor(c: Tuple[SpanMention, SpanMention]) -> List[str]:
 
 
 def lowest_common_ancestor_depth(c: Tuple[SpanMention, SpanMention]) -> int:
-    """Return the minimum distance between a binary-Mention Candidate to their
-    lowest common ancestor.
+    """Return the lowest common ancestor depth.
+
+    In particular, return the minimum distance between a binary-Mention Candidate to
+    their lowest common ancestor.
 
     For example, if the tree looked like this::
 

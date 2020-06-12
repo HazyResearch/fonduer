@@ -1,3 +1,4 @@
+"""Fonduer unit tests for matchers."""
 import pytest
 
 from fonduer.candidates.matchers import Intersect, Inverse, RegexMatchSpan, Union
@@ -9,6 +10,7 @@ from fonduer.parser.models import Document, Sentence
 
 @pytest.fixture()
 def doc_setup():
+    """Set up document."""
     doc = Document(id=1, name="test", stable_id="1::document:0:0")
     doc.text = "This is apple"
     lingual_parser = SpacyParser("en")
@@ -19,6 +21,7 @@ def doc_setup():
 
 
 def test_union(doc_setup):
+    """Test union matcher."""
     doc = doc_setup
     space = MentionNgrams(n_min=1, n_max=2)
     tc: TemporarySpanMention
@@ -65,6 +68,7 @@ def test_union(doc_setup):
 
 
 def test_intersect(doc_setup):
+    """Test intersect matcher."""
     doc = doc_setup
     space = MentionNgrams(n_min=1, n_max=3)
     tc: TemporarySpanMention
@@ -111,6 +115,7 @@ def test_intersect(doc_setup):
 
 
 def test_inverse(doc_setup):
+    """Test inverse matcher."""
     doc = doc_setup
     space = MentionNgrams(n_min=1, n_max=2)
     tc: TemporarySpanMention

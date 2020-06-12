@@ -1,3 +1,4 @@
+"""Fonduer's supervision model module."""
 from fonduer.supervision.models.label import (
     GoldLabel,
     GoldLabelKey,

@@ -1,3 +1,4 @@
+"""Fonduer feature extractor."""
 from typing import Callable, Dict, Iterator, List, Tuple, Union
 
 from fonduer.candidates.models import Candidate
@@ -35,6 +36,7 @@ class FeatureExtractor(object):
         features: List[str] = ["textual", "structural", "tabular", "visual"],
         customize_feature_funcs: Union[Feature_func, List[Feature_func]] = [],
     ) -> None:
+        """Initialize FeatureExtractor."""
         if not isinstance(customize_feature_funcs, list):
             customize_feature_funcs = [customize_feature_funcs]
 

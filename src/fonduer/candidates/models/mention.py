@@ -1,3 +1,4 @@
+"""Fonduer mention model."""
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Type
 
@@ -40,12 +41,15 @@ class Mention(Meta.Base):
         return tuple(getattr(self, name) for name in self.__argnames__)
 
     def __len__(self) -> int:
+        """Get the length of the mention."""
         return len(self.__argnames__)
 
     def __getitem__(self, key: int) -> Context:
+        """Get the context from mention."""
         return self.get_contexts()[key]
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -54,6 +58,7 @@ class Mention(Meta.Base):
         )
 
     def __gt__(self, other: "Mention") -> bool:
+        """Check if the mention is greater than another mention."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
@@ -64,7 +69,8 @@ def mention_subclass(
     values: Optional[List[Any]] = None,
     table_name: Optional[str] = None,
 ) -> Type[Mention]:
-    """
+    """Create new mention.
+
     Creates and returns a Mention subclass with provided argument names,
     which are Context type. Creates the table in DB if does not exist yet.
 

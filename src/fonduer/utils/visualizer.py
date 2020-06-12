@@ -1,3 +1,4 @@
+"""Fonduer visualizer."""
 import logging
 import os
 import subprocess
@@ -22,7 +23,8 @@ class Visualizer(object):
     """Object to display bounding boxes on a pdf document."""
 
     def __init__(self, pdf_path: str) -> None:
-        """
+        """Initialize Visualizer.
+
         :param pdf_path: directory where documents are stored
         :return:
         """
@@ -31,8 +33,9 @@ class Visualizer(object):
     def display_boxes(
         self, pdf_file: str, boxes: List[Bbox], alternate_colors: bool = False,
     ) -> List[Image]:
-        """
-        Displays each of the bounding boxes passed in 'boxes' on images of the pdf
+        """Display bounding boxes on the document.
+
+        Display each of the bounding boxes passed in 'boxes' on images of the pdf
         pointed to by pdf_file
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
@@ -61,8 +64,9 @@ class Visualizer(object):
     def display_candidates(
         self, candidates: List[Candidate], pdf_file: Optional[str] = None
     ) -> DisplayHandle:
-        """
-        Displays the bounding boxes corresponding to candidates on an image of the pdf
+        """Display the bounding boxes of candidates.
+
+        Display the bounding boxes corresponding to candidates on an image of the pdf
         boxes is a list of 5-tuples (page, top, left, bottom, right)
         """
         if not pdf_file:
@@ -85,6 +89,10 @@ class Visualizer(object):
         target: Optional[str] = None,
         pdf_file: Optional[str] = None,
     ) -> DisplayHandle:
+        """Display the bounding boxes of words.
+
+        Display the bounding boxes corresponding to words on the pdf.
+        """
         if not pdf_file:
             pdf_file = os.path.join(self.pdf_path, sentences[0].document.name + ".pdf")
         boxes = []
@@ -137,7 +145,7 @@ def get_pdf_dim(pdf_file: str, page: int = 1) -> Tuple[int, int]:
 def pdf_to_img(
     pdf_file: str, page_num: int, pdf_dim: Optional[Tuple[int, int]] = None
 ) -> Image:
-    """Converts pdf file into image.
+    """Convert pdf file into image.
 
     :param pdf_file: path to the pdf file
     :param page_num: page number to convert (index starting at 1)

@@ -1,3 +1,4 @@
+"""Soft cross entropy loss."""
 from typing import List
 
 import torch
@@ -17,6 +18,7 @@ class SoftCrossEntropyLoss(nn.Module):
     """
 
     def __init__(self, weight: List[float] = None, reduction: str = "mean"):
+        """Initialize SoftCrossEntropyLoss."""
         super().__init__()
         if weight is None:
             self.weight = None

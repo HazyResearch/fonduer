@@ -1,3 +1,4 @@
+"""Fonduer textual feature extractor."""
 from builtins import range
 from typing import Any, Callable, Dict, Iterator, List, Set, Tuple, Union
 
@@ -111,7 +112,8 @@ def extract_textual_features(
 
 
 def _compile_entity_feature_generator() -> Callable:
-    """
+    """Compile entity feature generator.
+
     Given optional arguments, returns a generator function which accepts an xml
     root and a list of indexes for a mention, and will generate relation
     features for this entity.

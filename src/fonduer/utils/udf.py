@@ -1,3 +1,4 @@
+"""Fonduer UDF."""
 import logging
 from multiprocessing import Manager, Process
 from queue import Empty, Queue
@@ -21,10 +22,7 @@ else:
 
 
 class UDFRunner(object):
-    """
-    Class to run UDFs in parallel using simple queue-based multiprocessing
-    setup.
-    """
+    """Class to run UDFs in parallel using simple queue-based multiprocessing setup."""
 
     def __init__(
         self,
@@ -33,6 +31,7 @@ class UDFRunner(object):
         parallelism: int = 1,
         **udf_init_kwargs: Any,
     ) -> None:
+        """Initialize UDFRunner."""
         self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
@@ -90,7 +89,7 @@ class UDFRunner(object):
         raise NotImplementedError()
 
     def _after_apply(self, **kwargs: Any) -> None:
-        """This method is executed by a single process after apply."""
+        """Execute this method by a single process after apply."""
         pass
 
     def _add(self, instance: Any) -> None:
@@ -161,6 +160,8 @@ class UDFRunner(object):
 
 
 class UDF(Process):
+    """UDF class."""
+
     TASK_DONE = "done"
 
     def __init__(
@@ -170,7 +171,8 @@ class UDF(Process):
         worker_id: int = 0,
         **udf_init_kwargs: Any,
     ) -> None:
-        """
+        """Initialize UDF.
+
         :param in_queue: A Queue of input objects to processes
         :param out_queue: A Queue of output objects from processes
         :param worker_id: An ID of a process
@@ -185,8 +187,9 @@ class UDF(Process):
         self.apply_kwargs: Dict[str, Any] = {}
 
     def run(self) -> None:
-        """
-        This method is called when the UDF is run as a Process in a
+        """Run function of UDF.
+
+        Call this method when the UDF is run as a Process in a
         multiprocess setting The basic routine is: get from JoinableQueue,
         apply, put / add outputs, loop
         """
@@ -212,5 +215,8 @@ class UDF(Process):
         session.close()
 
     def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
-        """This function takes in an object, and returns a generator / set / list."""
+        """Apply function.
+
+        This function takes in an object, and returns a generator / set / list.
+        """
         raise NotImplementedError()

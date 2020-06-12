@@ -1,3 +1,4 @@
+"""Fonduer cell mention model."""
 from typing import Any, Dict, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
@@ -13,34 +14,41 @@ class TemporaryCellMention(TemporaryContext):
     """The TemporaryContext version of CellMention."""
 
     def __init__(self, cell: Cell) -> None:
+        """Initialize TemporaryCellMention."""
         super().__init__()
         self.cell = cell  # The cell Context
 
     def __len__(self) -> int:
+        """Get the length of the mention."""
         return 1
 
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, TemporaryCellMention):
             return NotImplemented
         return self.cell == other.cell
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, TemporaryCellMention):
             return NotImplemented
         return self.cell != other.cell
 
     def __gt__(self, other: object) -> bool:
+        """Check if the mention is greater than another mention."""
         if not isinstance(other, TemporaryCellMention):
             return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
     def __contains__(self, other: object) -> bool:
+        """Check if the mention contains another mention."""
         if not isinstance(other, TemporaryCellMention):
             return NotImplemented
         return self.__eq__(other)
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return hash(self.cell)
 
     def get_stable_id(self) -> str:
@@ -57,6 +65,7 @@ class TemporaryCellMention(TemporaryContext):
         return {"cell_id": self.cell.id}
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -92,5 +101,6 @@ class CellMention(Context, TemporaryCellMention):
     }
 
     def __init__(self, tc: TemporaryCellMention):
+        """Initialize CellMention."""
         self.stable_id = tc.get_stable_id()
         self.cell = tc.cell

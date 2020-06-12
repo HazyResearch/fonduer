@@ -1,3 +1,4 @@
+"""Fonduer caption mention model."""
 from typing import Any, Dict, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
@@ -13,34 +14,41 @@ class TemporaryCaptionMention(TemporaryContext):
     """The TemporaryContext version of CaptionMention."""
 
     def __init__(self, caption: Caption) -> None:
+        """Initialize TemporaryCaptionMention."""
         super().__init__()
         self.caption = caption  # The caption Context
 
     def __len__(self) -> int:
+        """Get the length of the mention."""
         return 1
 
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, TemporaryCaptionMention):
             return NotImplemented
         return self.caption == other.caption
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, TemporaryCaptionMention):
             return NotImplemented
         return self.caption != other.caption
 
     def __gt__(self, other: object) -> bool:
+        """Check if the mention is greater than another mention."""
         if not isinstance(other, TemporaryCaptionMention):
             return NotImplemented
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()
 
     def __contains__(self, other: object) -> bool:
+        """Check if the mention contains another mention."""
         if not isinstance(other, TemporaryCaptionMention):
             return NotImplemented
         return self.__eq__(other)
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return hash(self.caption)
 
     def get_stable_id(self) -> str:
@@ -57,6 +65,7 @@ class TemporaryCaptionMention(TemporaryContext):
         return {"caption_id": self.caption.id}
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         return (
             f"{self.__class__.__name__}("
             f"document={self.caption.document.name}, "
@@ -90,5 +99,6 @@ class CaptionMention(Context, TemporaryCaptionMention):
     }
 
     def __init__(self, tc: TemporaryCaptionMention):
+        """Initialize CaptionMention."""
         self.stable_id = tc.get_stable_id()
         self.caption = tc.caption

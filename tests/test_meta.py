@@ -1,3 +1,4 @@
+"""Test Fonduer meta."""
 import logging
 
 import pytest
@@ -11,7 +12,6 @@ DB = "meta_test"
 
 def test_meta_connection_strings():
     """Simple sanity checks for validating postgres connection strings."""
-
     with pytest.raises(ValueError):
         Meta.init("postgresql" + DB).Session()
 
@@ -26,9 +26,7 @@ def test_meta_connection_strings():
 
 
 def test_subclass_before_meta_init():
-    """Test if it is possible to create a mention (candidate) subclass even before Meta
-    is initialized.
-    """
+    """Test if mention (candidate) subclass can be created before Meta init."""
     Part = mention_subclass("Part")
     logger.info(f"Create a mention subclass '{Part.__tablename__}'")
     Meta.init("postgresql://localhost:5432/" + DB).Session()

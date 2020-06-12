@@ -1,3 +1,4 @@
+"""Fonduer TSV document preprocessor."""
 import codecs
 import sys
 from typing import Iterator
@@ -21,7 +22,8 @@ class TSVDocPreprocessor(DocPreprocessor):
         max_docs: int = sys.maxsize,
         header: bool = False,
     ) -> None:
-        """
+        """Initialize TSV DocPreprocessor.
+
         :param path: a path to file or directory, or a glob pattern. The basename
             (as returned by ``os.path.basename``) should be unique among all files.
         :param encoding: file encoding to use (e.g. "utf-8").

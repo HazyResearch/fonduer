@@ -1,3 +1,4 @@
+"""Fonduer parser unit tests."""
 import logging
 import os
 
@@ -483,6 +484,7 @@ def test_simple_parser():
 
 
 def test_custom_parser():
+    """Unit test of customized parser."""
     lingual_parser = SpacyParser("en")
     parser_udf = get_parser_udf(
         language="de", lingual=True, lingual_parser=lingual_parser
@@ -493,6 +495,7 @@ def test_custom_parser():
 
 
 def test_parse_table_span():
+    """Unit test of parse table span."""
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/table_span.html"

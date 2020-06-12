@@ -1,3 +1,4 @@
+"""Fonduer matcher."""
 import re
 from typing import Iterator, Set
 
@@ -9,8 +10,9 @@ WORDS = "words"
 
 
 class _Matcher(object):
-    """
-    Applies a function ``f : m -> {True,False}`` to a generator of mentions,
+    """Matcher class.
+
+    Apply a function ``f : m -> {True, False}`` to a generator of mentions,
     returning only mentions *m* s.t. *f(m) == True*,
     where f can be compositionally defined.
     """
@@ -35,11 +37,11 @@ class _Matcher(object):
                 raise Exception(f"Unsupported option: {opt}")
 
     def _f(self, m: TemporaryContext) -> bool:
-        """The internal (non-composed) version of filter function f"""
+        """Non-composed version of filter function f."""
         return True
 
     def f(self, m: TemporaryContext) -> bool:
-        """The recursively composed version of filter function f.
+        """(Recursively) Composed version of filter function f.
 
         By default, returns logical **conjunction** of operator and single
         child operator
@@ -70,7 +72,7 @@ class _Matcher(object):
 
 
 class DictionaryMatch(_Matcher):
-    """Selects mention Ngrams that match against a given list *d*.
+    """Select mention Ngrams that match against a given list *d*.
 
     :param d: A list of strings representing a dictionary.
     :type d: list of str
@@ -85,6 +87,7 @@ class DictionaryMatch(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize the dictionary matcher."""
         self.ignore_case = self.opts.get("ignore_case", True)
         self.attrib = self.opts.get("attrib", WORDS)
         self.inverse = self.opts.get("inverse", False)
@@ -120,7 +123,7 @@ class DictionaryMatch(_Matcher):
 
 
 class LambdaFunctionMatcher(_Matcher):
-    """Selects Ngrams that return True when fed to a function f.
+    """Select ``Ngrams`` that return True when fed to a function f.
 
     :param func: The function to evaluate with a signature of ``f: m -> {True, False}``,
         where ``m`` denotes a mention. More precisely, ``m`` is an instance of child
@@ -133,6 +136,7 @@ class LambdaFunctionMatcher(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize the lambda function matcher."""
         self.attrib = self.opts.get("attrib", WORDS)
 
         # Set longest match only to False by default.
@@ -143,7 +147,7 @@ class LambdaFunctionMatcher(_Matcher):
             raise Exception("Please supply a function f as func=f.")
 
     def _f(self, m: TemporaryContext) -> bool:
-        """The internal (non-composed) version of filter function f."""
+        """Non-composed version of filter function f."""
         if not isinstance(m, TemporarySpanMention):
             raise ValueError(
                 f"{self.__class__.__name__} only supports TemporarySpanMention"
@@ -152,7 +156,7 @@ class LambdaFunctionMatcher(_Matcher):
 
 
 class Union(_Matcher):
-    """Takes the union of mention sets returned by the provided ``Matchers``.
+    """Take the union of mention sets returned by the provided ``Matchers``.
 
     :param longest_match_only: If True, only return the longest match. Default True.
         Overrides longest_match_only of its child ``Matchers``.
@@ -160,6 +164,7 @@ class Union(_Matcher):
     """
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         for child in self.children:
             if child.f(m):
                 return True
@@ -167,7 +172,7 @@ class Union(_Matcher):
 
 
 class Intersect(_Matcher):
-    """Takes the intersection of mention sets returned by the provided ``Matchers``.
+    """Take the intersection of mention sets returned by the provided ``Matchers``.
 
     :param longest_match_only: If True, only return the longest match. Default True.
         Overrides longest_match_only of its child ``Matchers``.
@@ -175,6 +180,7 @@ class Intersect(_Matcher):
     """
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         for child in self.children:
             if not child.f(m):
                 return False
@@ -182,7 +188,7 @@ class Intersect(_Matcher):
 
 
 class Inverse(_Matcher):
-    """Returns the opposite result of ifs child ``Matcher``.
+    """Return the opposite result of ifs child ``Matcher``.
 
     :raises ValueError: If more than one Matcher is provided.
     :param longest_match_only: If True, only return the longest match. Default True.
@@ -191,18 +197,22 @@ class Inverse(_Matcher):
     """
 
     def __init__(self, *children, **opts):  # type: ignore
+        """Initialize inverse matcher."""
         if not len(children) == 1:
             raise ValueError("Provide a single Matcher.")
         super().__init__(*children, **opts)
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         child = self.children[0]
         return not child.f(m)
 
 
 class Concat(_Matcher):
-    """Selects mentions which are the concatenation of adjacent matches from
-    child operators.
+    """Concatenate mentions generated by Matchers.
+
+    Select mentions which are the concatenation of adjacent matches from child
+    operators.
 
     :Example:
         A concatenation of a NumberMatcher and PersonMatcher could match on
@@ -229,6 +239,7 @@ class Concat(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize concatenate matcher."""
         self.permutations = self.opts.get("permutations", False)
         self.left_required = self.opts.get("left_required", True)
         self.right_required = self.opts.get("right_required", True)
@@ -236,6 +247,7 @@ class Concat(_Matcher):
         self.sep = self.opts.get("sep", " ")
 
     def f(self, m: TemporaryContext) -> bool:
+        """Non-composed version of filter function f."""
         if not isinstance(m, TemporarySpanMention):
             raise ValueError(
                 f"{self.__class__.__name__} only supports TemporarySpanMention"
@@ -269,9 +281,10 @@ class Concat(_Matcher):
 
 
 class _RegexMatch(_Matcher):
-    """
-    Base regex class. Does not specify specific semantics of *what* is being
-    matched yet.
+    """Regex matcher class.
+
+    Select mentions using a regular expression. Does not specify the
+    semantics of *what* is being matched yet.
     """
 
     def init(self) -> None:
@@ -308,7 +321,7 @@ class _RegexMatch(_Matcher):
 
 
 class RegexMatchSpan(_RegexMatch):
-    """Matches regex pattern on **full concatenated span**.
+    """Match regex pattern on **full concatenated span**.
 
     :param rgx: The RegEx pattern to use.
     :type rgx: str
@@ -349,7 +362,7 @@ class RegexMatchSpan(_RegexMatch):
 
 
 class RegexMatchEach(_RegexMatch):
-    """Matches regex pattern on **each token**.
+    """Match regex pattern on **each token**.
 
     :param rgx: The RegEx pattern to use.
     :type rgx: str
@@ -379,13 +392,14 @@ class RegexMatchEach(_RegexMatch):
 
 class PersonMatcher(RegexMatchEach):
     """
-    Matches Spans that are the names of people, as identified by spaCy.
+    Match Spans that are the names of people, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
     for which each token was tagged as a person (PERSON).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize person matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "PERSON"
         super().__init__(*children, **kwargs)
@@ -393,13 +407,14 @@ class PersonMatcher(RegexMatchEach):
 
 class LocationMatcher(RegexMatchEach):
     """
-    Matches Spans that are the names of locations, as identified by spaCy.
+    Match Spans that are the names of locations, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
     for which each token was tagged as a location (GPE or LOC).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize location matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "GPE|LOC"
         super().__init__(*children, **kwargs)
@@ -407,13 +422,14 @@ class LocationMatcher(RegexMatchEach):
 
 class OrganizationMatcher(RegexMatchEach):
     """
-    Matches Spans that are the names of organizations, as identified by spaCy.
+    Match Spans that are the names of organizations, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
     for which each token was tagged as an organization (NORG or ORG).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize organization matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NORG|ORG"
         super().__init__(*children, **kwargs)
@@ -421,13 +437,14 @@ class OrganizationMatcher(RegexMatchEach):
 
 class DateMatcher(RegexMatchEach):
     """
-    Matches Spans that are dates, as identified by spaCy.
+    Match Spans that are dates, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
     for which each token was tagged as a date (DATE).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize date matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "DATE"
         super().__init__(*children, **kwargs)
@@ -435,13 +452,14 @@ class DateMatcher(RegexMatchEach):
 
 class NumberMatcher(RegexMatchEach):
     """
-    Matches Spans that are numbers, as identified by spaCy.
+    Match Spans that are numbers, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
     for which each token was tagged as a number (NUMBER or QUANTITY).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize number matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "NUMBER|QUANTITY"
         super().__init__(*children, **kwargs)
@@ -449,20 +467,21 @@ class NumberMatcher(RegexMatchEach):
 
 class MiscMatcher(RegexMatchEach):
     """
-    Matches Spans that are miscellaneous named entities, as identified by spaCy.
+    Match Spans that are miscellaneous named entities, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
     for which each token was tagged as miscellaneous (MISC).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
+        """Initialize miscellaneous matcher."""
         kwargs["attrib"] = "ner_tags"
         kwargs["rgx"] = "MISC"
         super().__init__(*children, **kwargs)
 
 
 class LambdaFunctionFigureMatcher(_Matcher):
-    """Selects Figures that return True when fed to a function f.
+    """Select Figures that return True when fed to a function f.
 
     :param func: The function to evaluate. See :class:`LambdaFunctionMatcher` for
         details.
@@ -470,6 +489,7 @@ class LambdaFunctionFigureMatcher(_Matcher):
     """
 
     def init(self) -> None:
+        """Initialize lambda function figure matcher."""
         # Set longest match only to False
         self.longest_match_only = False
         try:
@@ -478,7 +498,7 @@ class LambdaFunctionFigureMatcher(_Matcher):
             raise Exception("Please supply a function f as func=f.")
 
     def _f(self, m: TemporaryContext) -> bool:
-        """The internal (non-composed) version of filter function f."""
+        """Non-composed version of filter function f."""
         if not isinstance(m, TemporaryFigureMention):
             raise ValueError(
                 f"{self.__class__.__name__} only supports TemporaryFigureMention"

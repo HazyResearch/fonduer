@@ -1,6 +1,4 @@
-############################
-# Tabular modality utilities
-############################
+"""Fonduer tabular modality utilities."""
 from builtins import range
 from collections import defaultdict
 from functools import lru_cache
@@ -248,7 +246,8 @@ def get_neighbor_cell_ngrams(
     n_max: int = 1,
     lower: bool = True,
 ) -> Iterator[Union[str, Tuple[str, str]]]:
-    """
+    """Get ngrams from all neighbor Cells.
+
     Get the ngrams from all Cells that are within a given Cell distance in one
     direction from the given Mention.
 
@@ -469,7 +468,7 @@ def _get_head_cell(root_cell: Cell, axis: str) -> Cell:
 
 @lru_cache(maxsize=256)
 def _get_table_cells(table: Table) -> DefaultDict[Cell, List[Sentence]]:
-    """Helper function with caching for table cells and the cells' sentences.
+    """Cache table cells and the cells' sentences.
 
     This function significantly improves the speed of `get_row_ngrams`
     primarily by reducing the number of queries that are made (which were

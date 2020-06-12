@@ -1,3 +1,4 @@
+"""Fonduer's feature library module."""
 from fonduer.features.feature_libs.structural_features import (
     extract_structural_features,
 )

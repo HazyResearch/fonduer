@@ -1,3 +1,4 @@
+"""Fonduer parser utils."""
 from typing import List, Optional, Tuple
 
 
@@ -27,8 +28,9 @@ def column_constructor(
     type: str = "text",
     delim: Optional[str] = None,
 ) -> List[Tuple[str, str, str]]:
-    """
-    Converts raw content to a list of strutured tuple where each tuple contains
+    """Column constructor.
+
+    Convert raw content to a list of strutured tuple where each tuple contains
         (type, name, content).
 
     :param text: content to be converted ()

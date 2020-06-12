@@ -1,3 +1,4 @@
+"""Customized Emmental task for Fonduer."""
 import logging
 from functools import partial
 from typing import Any, Dict, List, Optional, Union
@@ -27,6 +28,14 @@ def loss(
     Y: Tensor,
     active: Tensor,
 ) -> Tensor:
+    """Define the loss of the task.
+
+    :param module_name: The module name to calculate the loss.
+    :param intermediate_output_dict: The intermediate output dictionary
+    :param Y: Ground truth labels.
+    :param active: The sample mask.
+    :return: Loss.
+    """
     if len(Y.size()) == 1:
         label = intermediate_output_dict[module_name][0].new_zeros(
             intermediate_output_dict[module_name][0].size()
@@ -39,6 +48,12 @@ def loss(
 
 
 def output(module_name: str, intermediate_output_dict: Dict[str, Any]) -> Tensor:
+    """Define the output of the task.
+
+    :param module_name: The module name to calculate the loss.
+    :param intermediate_output_dict: The intermediate output dictionary
+    :return: Output tensor.
+    """
     return F.softmax(intermediate_output_dict[module_name][0])
 
 

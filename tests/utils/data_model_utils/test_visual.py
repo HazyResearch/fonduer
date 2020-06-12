@@ -1,3 +1,4 @@
+"""Fonduer data model's visual utils' unit tests."""
 import pytest
 
 from fonduer.candidates.mentions import MentionNgrams
@@ -8,6 +9,7 @@ from fonduer.utils.data_model_utils.visual import get_horz_ngrams, get_vert_ngra
 
 @pytest.fixture()
 def doc_setup():
+    """Set up document."""
     doc = Document(id=1, name="test", stable_id="1::document:0:0")
     doc.text = "This is apple. That is orange. Where is banaba? I like Apple."
     lingual_parser = SpacyParser("en")

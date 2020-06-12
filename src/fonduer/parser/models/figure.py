@@ -1,3 +1,4 @@
+"""Fonduer figure context model."""
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 
@@ -58,6 +59,7 @@ class Figure(Context):
     __table_args__ = (UniqueConstraint(document_id, position),)
 
     def __repr__(self) -> str:
+        """Represent the context as a string."""
         if self.cell:
             return (
                 f"Figure("
@@ -79,5 +81,6 @@ class Figure(Context):
             )
 
     def __gt__(self, other: "Figure") -> bool:
+        """Check if the context is greater than another context."""
         # Allow sorting by comparing the string representations of each
         return self.__repr__() > other.__repr__()

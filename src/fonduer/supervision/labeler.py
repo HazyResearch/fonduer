@@ -1,3 +1,4 @@
+"""Fonduer labeler."""
 import logging
 from collections import defaultdict
 from typing import (

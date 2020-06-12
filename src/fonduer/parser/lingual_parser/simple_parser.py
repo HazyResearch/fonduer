@@ -13,6 +13,7 @@ class SimpleParser(LingualParser):
     """
 
     def __init__(self, delim: str = ".") -> None:
+        """Initialize SimpleParser."""
         self.delim = delim
 
     def split_sentences(self, str: str) -> Iterator[Dict[str, Any]]:
@@ -44,7 +45,17 @@ class SimpleParser(LingualParser):
             i += 1
 
     def has_NLP_support(self) -> bool:
+        """
+        Return True when NLP is supported.
+
+        :return: True when NLP is supported.
+        """
         return False
 
     def has_tokenizer_support(self) -> bool:
+        """
+        Return True when a tokenizer is supported.
+
+        :return: True when a tokenizer is supported.
+        """
         return True

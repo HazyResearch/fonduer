@@ -1,3 +1,4 @@
+"""Fonduer mention."""
 import logging
 import re
 from builtins import map, range
@@ -25,22 +26,29 @@ logger = logging.getLogger(__name__)
 
 
 class MentionSpace(object):
-    """Defines the **space** of Mention objects.
+    """Define the **space** of Mention objects.
 
     Calling *apply(x)* given an object *x* returns a generator over mentions in
     *x*.
     """
 
     def __init__(self) -> None:
+        """Initialize mention space."""
         pass
 
     def apply(self, x: Context) -> Iterator[TemporaryContext]:
+        """Apply function takes a Context and return a mention generator.
+
+        :param x: The input Context.
+        :yield: The mention generator.
+        """
         raise NotImplementedError()
 
 
 class Ngrams(MentionSpace):
-    """
-    Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
+    """Define the space of Mentions as all n-grams in a Sentence.
+
+    Define the space of Mentions as all n-grams (n_min <= n <= n_max) in a
     Sentence *x*, indexing by **character offset**.
 
     :param n_min: Lower limit for the generated n_grams.
@@ -53,6 +61,7 @@ class Ngrams(MentionSpace):
     def __init__(
         self, n_min: int = 1, n_max: int = 5, split_tokens: Collection[str] = []
     ) -> None:
+        """Initialize Ngrams."""
         MentionSpace.__init__(self)
         self.n_min = n_min
         self.n_max = n_max
@@ -63,7 +72,11 @@ class Ngrams(MentionSpace):
         )
 
     def apply(self, context: Sentence) -> Iterator[TemporarySpanMention]:
+        """Apply function takes a Sentence and return a mention generator.
 
+        :param x: The input Sentence.
+        :yield: The mention generator.
+        """
         # These are the character offset--**relative to the sentence
         # start**--for each _token_
         offsets = context.char_offsets
@@ -113,7 +126,7 @@ class Ngrams(MentionSpace):
 
 
 class MentionNgrams(Ngrams):
-    """Defines the **space** of Mentions.
+    """Defines the **space** of Mentions as n-grams in a Document.
 
     Defines the space of Mentions as all n-grams (n_min <= n <= n_max) in a
     Document *x*, divided into Sentences inside of html elements (such as table

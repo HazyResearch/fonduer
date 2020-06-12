@@ -1,3 +1,4 @@
+"""Fonduer lingual parser."""
 from typing import Collection, Iterable, Iterator
 
 from fonduer.parser.models import Sentence
@@ -30,7 +31,7 @@ class LingualParser(object):
 
     def has_NLP_support(self) -> bool:
         """
-        Returns True when NLP is supported.
+        Return True when NLP is supported.
 
         :return: True when NLP is supported.
         """
@@ -38,7 +39,7 @@ class LingualParser(object):
 
     def has_tokenizer_support(self) -> bool:
         """
-        Returns True when a tokenizer is supported.
+        Return True when a tokenizer is supported.
 
         :return: True when a tokenizer is supported.
         """

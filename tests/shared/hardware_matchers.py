@@ -1,3 +1,4 @@
+"""Hardware matchers."""
 import csv
 
 from fonduer.candidates.matchers import (
@@ -29,9 +30,7 @@ part_rgx_matcher = RegexMatchSpan(rgx=part_rgx, longest_match_only=True)
 
 
 def get_digikey_parts_set(path):
-    """
-    Reads in the digikey part dictionary and yeilds each part.
-    """
+    """Get all transistor parts from digikey part dictionary."""
     all_parts = set()
     with open(path, "r") as csvinput:
         reader = csv.reader(csvinput)
@@ -47,6 +46,7 @@ part_dict_matcher = DictionaryMatch(d=get_digikey_parts_set(dict_path))
 
 
 def common_prefix_length_diff(str1, str2):
+    """Calculate common prefix length difference."""
     for i in range(min(len(str1), len(str2))):
         if str1[i] != str2[i]:
             return min(len(str1), len(str2)) - i
@@ -54,6 +54,7 @@ def common_prefix_length_diff(str1, str2):
 
 
 def part_file_name_conditions(attr):
+    """Check part file name conditions."""
     file_name = attr.sentence.document.name
     if len(file_name.split("_")) != 2:
         return False
@@ -83,6 +84,7 @@ ce_v_max_rgx_matcher = RegexMatchSpan(rgx=r"\d{1,2}[05]", longest_match_only=Fal
 
 
 def ce_v_max_conditions(attr):
+    """Check ce_v_max conditions."""
     return overlap(
         ce_keywords.union(ce_abbrevs), get_row_ngrams(attr, spread=[0, 3], n_max=3)
     )
@@ -92,6 +94,7 @@ ce_v_max_row_matcher = LambdaFunctionMatcher(func=ce_v_max_conditions)
 
 
 def ce_v_max_more_conditions1(attr):
+    """Check ce_v_max conditions."""
     text = attr.sentence.text
     if (
         attr.char_start > 1
@@ -103,6 +106,7 @@ def ce_v_max_more_conditions1(attr):
 
 
 def ce_v_max_more_conditions(attr):
+    """Check ce_v_max conditions."""
     text = attr.sentence.text
     if attr.char_start != 0 and text[attr.char_start - 1] == "/":
         return False
@@ -127,6 +131,7 @@ def ce_v_max_more_conditions(attr):
 
 
 def attr_in_table(attr):
+    """Check attribute is in table."""
     return attr.sentence.is_tabular()
 
 

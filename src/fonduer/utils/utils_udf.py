@@ -1,3 +1,4 @@
+"""Fonduer UDF utils."""
 import logging
 from typing import (
     Any,

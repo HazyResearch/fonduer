@@ -1,3 +1,4 @@
+"""Fonduer span mention model."""
 from typing import Any, Dict, List, Optional, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
@@ -21,6 +22,7 @@ class TemporarySpanMention(TemporaryContext):
         char_end: int,
         meta: Optional[Any] = None,
     ) -> None:
+        """Initialize TemporarySpanMention."""
         super().__init__()
         self.sentence = sentence  # The sentence Context of the Span
         self.char_start = char_start
@@ -28,9 +30,11 @@ class TemporarySpanMention(TemporaryContext):
         self.meta = meta
 
     def __len__(self) -> int:
+        """Get the length of the mention."""
         return self.char_end - self.char_start + 1
 
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, TemporarySpanMention):
             return NotImplemented
         return (
@@ -40,6 +44,7 @@ class TemporarySpanMention(TemporaryContext):
         )
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, TemporarySpanMention):
             return NotImplemented
         return (
@@ -49,6 +54,7 @@ class TemporarySpanMention(TemporaryContext):
         )
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return hash(self.sentence) + hash(self.char_start) + hash(self.char_end)
 
     def get_stable_id(self) -> str:
@@ -171,6 +177,7 @@ class TemporarySpanMention(TemporaryContext):
             return None
 
     def __contains__(self, other_span: object) -> bool:
+        """Check if the mention contains another mention."""
         if not isinstance(other_span, TemporarySpanMention):
             return NotImplemented
         return (
@@ -202,6 +209,7 @@ class TemporarySpanMention(TemporaryContext):
             raise NotImplementedError()
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -255,6 +263,7 @@ class SpanMention(Context, TemporarySpanMention):
     }
 
     def __init__(self, tc: TemporarySpanMention):
+        """Initialize SpanMention."""
         self.stable_id = tc.get_stable_id()
         self.sentence = tc.sentence
         self.char_start = tc.char_start
@@ -267,14 +276,17 @@ class SpanMention(Context, TemporarySpanMention):
     # We redefine these to use default semantics, overriding the operators
     # inherited from TemporarySpanMention
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, SpanMention):
             return NotImplemented
         return self is other
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, SpanMention):
             return NotImplemented
         return self is not other
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return id(self)

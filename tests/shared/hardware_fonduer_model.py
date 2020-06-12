@@ -1,3 +1,4 @@
+"""Hardware FonduerModel."""
 import pickle
 
 import numpy as np
@@ -14,6 +15,8 @@ ATTRIBUTE = "stg_temp_max"
 
 
 class HardwareFonduerModel(FonduerModel):
+    """Customized FonduerModel for hardware."""
+
     def _classify(self, doc: Document) -> DataFrame:
         # Only one candidate class is used.
         candidate_class = self.candidate_extractor.candidate_classes[0]

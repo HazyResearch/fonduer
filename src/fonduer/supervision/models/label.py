@@ -1,3 +1,4 @@
+"""Fonduer label model."""
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects import postgresql
 
@@ -6,26 +7,36 @@ from fonduer.utils.models.annotation import AnnotationKeyMixin, AnnotationMixin
 
 
 class GoldLabelKey(AnnotationKeyMixin, Meta.Base):
-    """A gold label's key that identifies the annotator of the gold label."""
+    """Gold label key class.
+
+    A gold label's key that identifies the annotator of the gold label.
+    """
 
     pass
 
 
 class GoldLabel(AnnotationMixin, Meta.Base):
-    """A separate class for labels from human annotators or other gold standards."""
+    """Gold label class.
+
+    A separate class for labels from human annotators or other gold standards.
+    """
 
     #: A list of integer values for each Key.
     values = Column(postgresql.ARRAY(Integer), nullable=False)
 
 
 class LabelKey(AnnotationKeyMixin, Meta.Base):
-    """A label's key that identifies the labeling function."""
+    """Label key class.
+
+    A label's key that identifies the labeling function.
+    """
 
     pass
 
 
 class Label(AnnotationMixin, Meta.Base):
-    """
+    """Label class.
+
     A discrete label associated with a Candidate, indicating a target prediction value.
 
     Labels are used to represent the output of labeling functions. A Label's
@@ -37,7 +48,8 @@ class Label(AnnotationMixin, Meta.Base):
 
 
 class StableLabel(Meta.Base):
-    """
+    """Stable label table.
+
     A special secondary table for preserving labels created by *human
     annotators* in a stable format that does not cascade, and is independent of
     the Candidate IDs.
@@ -62,4 +74,5 @@ class StableLabel(Meta.Base):
     value = Column(Integer, nullable=False)
 
     def __repr__(self) -> str:
+        """Represent the stable label as a string."""
         return f"{self.__class__.__name__} ({self.annotator_name} : {self.value})"

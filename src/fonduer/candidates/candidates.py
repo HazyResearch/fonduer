@@ -1,3 +1,4 @@
+"""Fonduer candidate."""
 import logging
 from builtins import range
 from itertools import product
@@ -125,8 +126,10 @@ class CandidateExtractor(UDFRunner):
         )
 
     def clear(self, split: int) -> None:  # type: ignore
-        """Delete Candidates of each class initialized with the
-        CandidateExtractor from given split the database.
+        """Clear Candidates of each class.
+
+        Delete Candidates of each class initialized with the CandidateExtractor
+        from the given split in the database.
 
         :param split: Which split to clear.
         """

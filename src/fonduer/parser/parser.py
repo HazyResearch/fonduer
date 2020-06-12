@@ -1,3 +1,4 @@
+"""Fonduer parser."""
 import itertools
 import logging
 import re
@@ -91,6 +92,7 @@ class Parser(UDFRunner):
         vizlink: Optional[VisualLinker] = None,  # visual linker
         pdf_path: Optional[str] = None,
     ) -> None:
+        """Initialize Parser."""
         super().__init__(
             session,
             ParserUDF,
@@ -167,6 +169,8 @@ class Parser(UDFRunner):
 
 
 class ParserUDF(UDF):
+    """Parser UDF class."""
+
     def __init__(
         self,
         structural: bool,
@@ -183,7 +187,8 @@ class ParserUDF(UDF):
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
-        """
+        """Initialize Parser UDF.
+
         :param visual: boolean, if True visual features are used in the model
         :param pdf_path: directory where pdf are saved, if a pdf file is not
             found, it will be created from the html document and saved in that

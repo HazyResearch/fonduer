@@ -1,3 +1,4 @@
+"""Fonduer learning marginal model."""
 from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, UniqueConstraint
 
 from fonduer.meta import Meta
@@ -24,6 +25,7 @@ class Marginal(Meta.Base):
     __table_args__ = (UniqueConstraint(candidate_id, training, value),)
 
     def __repr__(self) -> str:
+        """Represent the marginal as a string."""
         label = "Training" if self.training else "Predicted"
         return (
             f"<"

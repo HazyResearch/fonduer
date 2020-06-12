@@ -1,3 +1,4 @@
+"""Fonduer implicit span mention model."""
 from typing import Any, Dict, List, Optional, Type
 
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
@@ -36,6 +37,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         right: List[Optional[int]],
         meta: Any = None,
     ) -> None:
+        """Initialize TemporaryImplicitSpanMention."""
         super().__init__(sentence, char_start, char_end, meta)
         self.expander_key = expander_key
         self.position = position
@@ -53,9 +55,11 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         self.right = right
 
     def __len__(self) -> int:
+        """Get the length of the mention."""
         return sum(map(len, self.words))
 
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, TemporaryImplicitSpanMention):
             return NotImplemented
         return (
@@ -67,6 +71,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         )
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, TemporaryImplicitSpanMention):
             return NotImplemented
         return (
@@ -78,6 +83,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         )
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return (
             hash(self.sentence)
             + hash(self.char_start)
@@ -201,6 +207,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             raise NotImplementedError()
 
     def __repr__(self) -> str:
+        """Represent the mention as a string."""
         return (
             f"{self.__class__.__name__}"
             f"("
@@ -310,6 +317,7 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
     }
 
     def __init__(self, tc: TemporaryImplicitSpanMention):
+        """Initialize ImplicitSpanMention."""
         self.stable_id = tc.get_stable_id()
         self.sentence = tc.sentence
         self.char_start = tc.char_start
@@ -336,14 +344,17 @@ class ImplicitSpanMention(Context, TemporaryImplicitSpanMention):
     # We redefine these to use default semantics, overriding the operators
     # inherited from TemporarySpan
     def __eq__(self, other: object) -> bool:
+        """Check if the mention is equal to another mention."""
         if not isinstance(other, ImplicitSpanMention):
             return NotImplemented
         return self is other
 
     def __ne__(self, other: object) -> bool:
+        """Check if the mention is not equal to another mention."""
         if not isinstance(other, ImplicitSpanMention):
             return NotImplemented
         return self is not other
 
     def __hash__(self) -> int:
+        """Get the hash value of mention."""
         return id(self)
