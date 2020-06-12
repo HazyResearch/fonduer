@@ -793,8 +793,7 @@ def test_parser_skips_and_flattens():
 
 
 def test_parser_no_image():
-    """Unit test of Parser on a single document that has a figure without image"""
-
+    """Unit test of Parser on a single document that has a figure without image."""
     docs_path = "tests/data/html_simple/no_image.html"
     pdf_path = "tests/data/pdf_simple/no_image.pdf"
 
