@@ -26,6 +26,9 @@ Deprecated
 ^^^^^^^^^^
 * `@HiromuHota`_: Deprecated :func:`bbox_from_span` and :func:`bbox_from_sentence`.
   (`#429 <https://github.com/HazyResearch/fonduer/pull/429>`_)
+* `@HiromuHota`_: Deprecated :func:`visualizer.get_box` in favor of :func:`span.get_bbox()`.
+  (`#445 <https://github.com/HazyResearch/fonduer/issues/445>`_)
+  (`#446 <https://github.com/HazyResearch/fonduer/pull/446>`_)
 
 Fixed
 ^^^^^
@@ -37,6 +40,9 @@ Fixed
   work even when the input mention is not tabular.
   (`#425 <https://github.com/HazyResearch/fonduer/issues/425>`_)
   (`#426 <https://github.com/HazyResearch/fonduer/pull/426>`_)
+* `@HiromuHota`_: Fix the order of args to Bbox.
+  (`#443 <https://github.com/HazyResearch/fonduer/issues/443>`_)
+  (`#444 <https://github.com/HazyResearch/fonduer/pull/444>`_)
 
 0.8.2_ - 2020-04-28
 -------------------

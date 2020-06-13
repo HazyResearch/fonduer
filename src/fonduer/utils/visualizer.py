@@ -2,6 +2,7 @@
 import logging
 import os
 import subprocess
+import warnings
 from builtins import object
 from collections import defaultdict
 from typing import DefaultDict, List, Optional, Tuple
@@ -48,13 +49,13 @@ class Visualizer(object):
             boxes_by_page: DefaultDict[
                 int, List[Tuple[int, int, int, int]]
             ] = defaultdict(list)
-            for i, (page, top, left, bottom, right) in enumerate(boxes):
+            for i, (page, top, bottom, left, right) in enumerate(boxes):
                 boxes_per_page[page] += 1
-                boxes_by_page[page].append((top, left, bottom, right))
+                boxes_by_page[page].append((top, bottom, left, right))
             for i, page_num in enumerate(boxes_per_page.keys()):
                 img = pdf_to_img(pdf_file, page_num)
                 draw.fill_color = transparent
-                for j, (top, left, bottom, right) in enumerate(boxes_by_page[page_num]):
+                for j, (top, bottom, left, right) in enumerate(boxes_by_page[page_num]):
                     draw.stroke_color = colors[j % 2] if alternate_colors else colors[0]
                     draw.rectangle(left=left, top=top, right=right, bottom=bottom)
                 draw(img)
@@ -77,9 +78,7 @@ class Visualizer(object):
                 pdf_file += ".PDF"
             else:
                 logger.error("display_candidates failed: pdf file missing.")
-        boxes = [
-            get_box(mention.context) for c in candidates for mention in c.get_mentions()
-        ]
+        boxes = [m.context.get_bbox() for c in candidates for m in c.get_mentions()]
         imgs = self.display_boxes(pdf_file, boxes, alternate_colors=True)
         return display(*imgs)
 
@@ -103,8 +102,8 @@ class Visualizer(object):
                         Bbox(
                             sentence.page[i],
                             sentence.top[i],
-                            sentence.left[i],
                             sentence.bottom[i],
+                            sentence.left[i],
                             sentence.right[i],
                         )
                     )
@@ -114,11 +113,14 @@ class Visualizer(object):
 
 def get_box(span: SpanMention) -> Bbox:
     """Get the bounding box."""
+    warnings.warn(
+        "get_box(span) is deprecated. Use span.get_bbox() instead.", DeprecationWarning,
+    )
     return Bbox(
         min(span.get_attrib_tokens("page")),
         min(span.get_attrib_tokens("top")),
-        min(span.get_attrib_tokens("left")),
         max(span.get_attrib_tokens("bottom")),
+        min(span.get_attrib_tokens("left")),
         max(span.get_attrib_tokens("right")),
     )
 
