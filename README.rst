@@ -25,9 +25,9 @@ Reference
 ---------
 
 `Fonduer: Knowledge Base Construction from Richly Formatted
-Data <https://arxiv.org/abs/1703.05028>`__::
+Data <https://arxiv.org/abs/1703.05028>`__ (`blog <http://hazyresearch.stanford.edu/fonduer>`__)::
 
-    @inproceedings{wu2017fonduer,
+    @inproceedings{wu2018fonduer,
       title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
       author={Wu, Sen and Hsiao, Luke and Cheng, Xiao and Hancock, Braden and Rekatsinas, Theodoros and Levis, Philip and R{\'e}, Christopher},
       booktitle={Proceedings of the 2018 International Conference on Management of Data},
