@@ -12,7 +12,7 @@ A clear and concise description of what the problem is.
 **Does your pull request fix any issue.**
 Cite the issue id.
 
-## Description of proposed changes
+## Description of the proposed changes
 A clear and concise description of what you propose.
 
 ## Test plan
