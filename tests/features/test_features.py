@@ -11,7 +11,7 @@ from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.features import FeatureExtractor
 from fonduer.features.featurizer import FeaturizerUDF
 from tests.candidates.test_candidates import parse_doc
-from tests.shared.hardware_matchers import part_matcher, temp_matcher
+from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +236,7 @@ def test_binary_relation_feature_extraction():
     assert n_default_w_customized_features == n_default_feats + n_cands
 
 
-def test_multary_relation_feature_extraction():
+def test_multinary_relation_feature_extraction():
     """Test extracting candidates from mentions from documents."""
     docs_path = "tests/data/html/112823.html"
     pdf_path = "tests/data/pdf/112823.pdf"
@@ -304,9 +304,7 @@ def test_multary_relation_feature_extraction():
             yield candidate.id, f"cand_id_{candidate.id}", 1
 
     # Featurization with one extra feature extractor
-    feature_extractors = FeatureExtractor(
-        features=["structural", "tabular", "visual"], customize_feature_funcs=[feat_ext]
-    )
+    feature_extractors = FeatureExtractor(customize_feature_funcs=[feat_ext])
     featurizer_udf = FeaturizerUDF(
         [PartTempVolt], feature_extractors=feature_extractors
     )
@@ -322,10 +320,7 @@ def test_multary_relation_feature_extraction():
         raise RuntimeError()
 
     # Featurization with a spurious feature extractor
-    feature_extractors = FeatureExtractor(
-        features=["structural", "tabular", "visual"],
-        customize_feature_funcs=[bad_feat_ext],
-    )
+    feature_extractors = FeatureExtractor(customize_feature_funcs=[bad_feat_ext])
     featurizer_udf = FeaturizerUDF(
         [PartTempVolt], feature_extractors=feature_extractors
     )
