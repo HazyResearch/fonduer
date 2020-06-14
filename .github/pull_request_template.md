@@ -1,9 +1,3 @@
----
-name: Pull request
-about: Proposed changes for this project
-
----
-
 ## Description of the problems or issues
 
 **Is your pull request related to a problem? Please describe.**
