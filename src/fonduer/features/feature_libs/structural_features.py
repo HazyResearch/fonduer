@@ -20,7 +20,7 @@ FEATURE_PREFIX = "STR_"
 DEF_VALUE = 1
 
 unary_strlib_feats: Dict[str, Set[Tuple[str, int]]] = {}
-binary_strlib_feats: Dict[str, Set[Tuple[str, int]]] = {}
+multinary_strlib_feats: Dict[str, Set[Tuple[str, int]]] = {}
 
 
 def extract_structural_features(
@@ -51,11 +51,12 @@ def extract_structural_features(
                 for feature, value in unary_strlib_feats[span.stable_id]:
                     yield candidate.id, FEATURE_PREFIX + feature, value
 
-        # Binary candidates
-        elif len(args) == 2:
-            span1, span2 = args
-            if span1.sentence.is_structural() or span2.sentence.is_structural():
-                for span, prefix in [(span1, "e1_"), (span2, "e2_")]:
+        # Multinary candidates
+        else:
+            spans = args
+            if all([span.sentence.is_structural() for span in spans]):
+                for i, span in enumerate(spans):
+                    prefix = f"e{i}_"
                     if span.stable_id not in unary_strlib_feats:
                         unary_strlib_feats[span.stable_id] = set()
                         for feature, value in _strlib_unary_features(span):
@@ -64,17 +65,13 @@ def extract_structural_features(
                     for feature, value in unary_strlib_feats[span.stable_id]:
                         yield candidate.id, FEATURE_PREFIX + prefix + feature, value
 
-                if candidate.id not in binary_strlib_feats:
-                    binary_strlib_feats[candidate.id] = set()
-                    for feature, value in _strlib_binary_features(span1, span2):
-                        binary_strlib_feats[candidate.id].add((feature, value))
+                if candidate.id not in multinary_strlib_feats:
+                    multinary_strlib_feats[candidate.id] = set()
+                    for feature, value in _strlib_multinary_features(spans):
+                        multinary_strlib_feats[candidate.id].add((feature, value))
 
-                for feature, value in binary_strlib_feats[candidate.id]:
+                for feature, value in multinary_strlib_feats[candidate.id]:
                     yield candidate.id, FEATURE_PREFIX + feature, value
-        else:
-            raise NotImplementedError(
-                "Only handles unary and binary candidates currently"
-            )
 
 
 def _strlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
@@ -109,12 +106,12 @@ def _strlib_unary_features(span: SpanMention) -> Iterator[Tuple[str, int]]:
     yield f"ANCESTOR_ID_[{' '.join(get_ancestor_id_names(span))}]", DEF_VALUE
 
 
-def _strlib_binary_features(
-    span1: SpanMention, span2: SpanMention
+def _strlib_multinary_features(
+    spans: Tuple[SpanMention, ...]
 ) -> Iterator[Tuple[str, int]]:
-    """Structural-related features for a pair of spans."""
-    yield f"COMMON_ANCESTOR_[{' '.join(common_ancestor((span1, span2)))}]", DEF_VALUE
+    """Structural-related features for multiple spans."""
+    yield f"COMMON_ANCESTOR_[{' '.join(common_ancestor(spans))}]", DEF_VALUE
 
     yield (
-        f"LOWEST_ANCESTOR_DEPTH_[" f"{lowest_common_ancestor_depth((span1, span2))}]"
+        f"LOWEST_ANCESTOR_DEPTH_[" f"{lowest_common_ancestor_depth(spans)}]"
     ), DEF_VALUE
