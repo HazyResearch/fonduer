@@ -169,25 +169,26 @@ def get_ancestor_id_names(
     return id_names
 
 
-def common_ancestor(c: Tuple[SpanMention, SpanMention]) -> List[str]:
-    """Return the path to the root that is shared between a binary-Mention Candidate.
+def common_ancestor(c: Tuple[SpanMention, ...]) -> List[str]:
+    """Return the path to the root that is shared between a multinary-Mention Candidate.
 
     In particular, this is the common path of HTML tags.
 
-    :param c: The binary-Mention Candidate to evaluate
+    :param c: The multinary-Mention Candidate to evaluate
     """
-    span1 = _to_span(c[0])
-    span2 = _to_span(c[1])
-    ancestor1 = np.array(span1.sentence.xpath.split("/"))
-    ancestor2 = np.array(span2.sentence.xpath.split("/"))
-    min_len = min(ancestor1.size, ancestor2.size)
-    return list(ancestor1[: np.argmin(ancestor1[:min_len] == ancestor2[:min_len])])
+    spans = [_to_span(i) for i in c]
+    ancestors = [np.array(span.sentence.xpath.split("/")) for span in spans]
+    min_len = min([a.size for a in ancestors])
+    arrays = np.array([a[:min_len] for a in ancestors])
+    arg_min = np.argmin(arrays[:-1] == arrays[1:], axis=1)
+    val = np.min(arg_min[np.nonzero(arg_min)])
+    return list(ancestors[0][:val])
 
 
-def lowest_common_ancestor_depth(c: Tuple[SpanMention, SpanMention]) -> int:
+def lowest_common_ancestor_depth(c: Tuple[SpanMention, ...]) -> int:
     """Return the lowest common ancestor depth.
 
-    In particular, return the minimum distance between a binary-Mention Candidate to
+    In particular, return the minimum distance between a multinary-Mention Candidate to
     their lowest common ancestor.
 
     For example, if the tree looked like this::
@@ -203,11 +204,12 @@ def lowest_common_ancestor_depth(c: Tuple[SpanMention, SpanMention]) -> int:
     indicate that two Mentions are spread far apart structurally in the
     document.
 
-    :param c: The binary-Mention Candidate to evaluate
+    :param c: The multinary-Mention Candidate to evaluate
     """
-    span1 = _to_span(c[0])
-    span2 = _to_span(c[1])
-    ancestor1 = np.array(span1.sentence.xpath.split("/"))
-    ancestor2 = np.array(span2.sentence.xpath.split("/"))
-    min_len = min(ancestor1.size, ancestor2.size)
-    return min_len - np.argmin(ancestor1[:min_len] == ancestor2[:min_len])
+    spans = [_to_span(i) for i in c]
+    ancestors = [np.array(span.sentence.xpath.split("/")) for span in spans]
+    min_len = min([a.size for a in ancestors])
+    arrays = np.array([a[:min_len] for a in ancestors])
+    arg_min = np.argmin(arrays[:-1] == arrays[1:], axis=1)
+    val = np.min(arg_min[np.nonzero(arg_min)])
+    return min_len - val
