@@ -192,38 +192,38 @@ def test_e2e():
 
     # Test Dropping FeatureKey
     # Should force a row deletion
-    featurizer.drop_keys(["BASIC_e1_CONTAINS_WORDS_[BC182]"])
+    featurizer.drop_keys(["BASIC_e0_CONTAINS_WORDS_[BC182]"])
     assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Should only remove the part_volt as a relation and leave part_temp
     assert set(
         session.query(FeatureKey)
-        .filter(FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]")
+        .filter(FeatureKey.name == "DDL_e0_LEMMA_SEQ_[bc182]")
         .one()
         .candidate_classes
     ) == {"part_temp", "part_volt"}
-    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
+    featurizer.drop_keys(["DDL_e0_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
     assert session.query(FeatureKey).filter(
-        FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]"
+        FeatureKey.name == "DDL_e0_LEMMA_SEQ_[bc182]"
     ).one().candidate_classes == ["part_temp"]
     assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     # Inserting the removed key
     featurizer.upsert_keys(
-        ["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp, PartVolt]
+        ["DDL_e0_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp, PartVolt]
     )
     assert set(
         session.query(FeatureKey)
-        .filter(FeatureKey.name == "DDL_e1_LEMMA_SEQ_[bc182]")
+        .filter(FeatureKey.name == "DDL_e0_LEMMA_SEQ_[bc182]")
         .one()
         .candidate_classes
     ) == {"part_temp", "part_volt"}
     assert session.query(FeatureKey).count() == num_feature_keys - 1
     # Removing the key again
-    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
+    featurizer.drop_keys(["DDL_e0_LEMMA_SEQ_[bc182]"], candidate_classes=[PartVolt])
 
     # Removing the last relation from a key should delete the row
-    featurizer.drop_keys(["DDL_e1_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
+    featurizer.drop_keys(["DDL_e0_LEMMA_SEQ_[bc182]"], candidate_classes=[PartTemp])
     assert session.query(FeatureKey).count() == num_feature_keys - 2
     session.query(Feature).delete(synchronize_session="fetch")
     session.query(FeatureKey).delete(synchronize_session="fetch")
