@@ -2,71 +2,59 @@
 import itertools
 from builtins import range
 from functools import lru_cache
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 from fonduer.parser.models.sentence import Sentence
 from fonduer.parser.models.table import Cell
 
 
 @lru_cache(maxsize=1024)
-def _min_range_diff(
-    a_start: int, a_end: int, b_start: int, b_end: int, absolute: bool = True
-) -> int:
+def _min_range_diff(coordinates: Tuple[Tuple[int, int]], absolute: bool = True) -> int:
     """Get the minimum range difference.
 
+    # Using Tuple instead of list because list is unhashable with `lru_cache`
     # if absolute=True, return the absolute value of minimum magnitude difference
     # if absolute=False, return the raw value of minimum magnitude difference
     # TODO: move back to efficient implementation once it sees that
     # min_range_diff(3,3,2,3) = 0 return max(0, max(a_end - b_start, b_end -
     # a_start))
 
-    :param a_start: The start index of the first object.
-    :param a_end: The end index of the first object.
-    :param b_start: The start index of the second object.
-    :param b_end: The end index of the second object.
+    :param coordinates: A tuple of a couple (start, end) indexes of the objects.
     :param absolute: Whether use absolute value, defaults to True.
     :return: The minimum range difference.
     """
     f = lambda x: (abs(x) if absolute else x)
     return min(
         [
-            f(ii[0] - ii[1])
+            f(min([x - y for x, y in zip(ii[:-1], ii[1:])], key=abs))
             for ii in itertools.product(
-                list(range(a_start, a_end + 1)), list(range(b_start, b_end + 1))
+                *[range(start, end + 1) for start, end in coordinates]
             )
         ],
         key=abs,
     )
 
 
-def min_row_diff(
-    a: Union[Cell, Sentence], b: Union[Cell, Sentence], absolute: bool = True
-) -> int:
+def min_row_diff(cells: List[Union[Cell, Sentence]], absolute: bool = True) -> int:
     """Get the minimum row difference of two sentences or cells.
 
-    :param a: The first cell or sentence.
-    :param b: The second cell or sentence.
+    :param cells: The list of cells or sentences.
     :param absolute: Whether use absolute value, defaults to True.
     :return: The minimum row difference.
     """
-    return _min_range_diff(
-        a.row_start, a.row_end, b.row_start, b.row_end, absolute=absolute
-    )
+    coordinates = [(cell.row_start, cell.row_end) for cell in cells]
+    return _min_range_diff(tuple(coordinates), absolute=absolute)
 
 
-def min_col_diff(
-    a: Union[Cell, Sentence], b: Union[Sentence, Cell], absolute: bool = True
-) -> int:
+def min_col_diff(cells: List[Union[Cell, Sentence]], absolute: bool = True) -> int:
     """Get the minimum column difference of two sentences or cells.
 
-    :param a: The first cell or sentence.
-    :param b: The second cell or sentence.
+    :param cells: The list of cells or sentences.
     :param absolute: Whether use absolute value, defaults to True.
     :return: The minimum column difference.
     """
-    return _min_range_diff(
-        a.col_start, a.col_end, b.col_start, b.col_end, absolute=absolute
-    )
+    coordinates = [(cell.col_start, cell.col_end) for cell in cells]
+    return _min_range_diff(tuple(coordinates), absolute=absolute)
 
 
 def min_axis_diff(
@@ -83,11 +71,11 @@ def min_axis_diff(
     :return: The minimum axis difference.
     """
     if axis == "row":
-        return min_row_diff(a, b, absolute)
+        return min_row_diff([a, b], absolute)
     elif axis == "col":
-        return min_col_diff(a, b, absolute)
+        return min_col_diff([a, b], absolute)
     else:
-        return min(min_row_diff(a, b, absolute), min_col_diff(a, b, absolute))
+        return min(min_row_diff([a, b], absolute), min_col_diff([a, b], absolute))
 
 
 def is_row_aligned(
@@ -100,7 +88,7 @@ def is_row_aligned(
     :param spread: Row difference range, defaults to [0, 0].
     :return: Return True if two sentences or cells are row-wise aligned.
     """
-    return min_row_diff(a, b) in range(spread[0], spread[1] + 1)
+    return min_row_diff([a, b]) in range(spread[0], spread[1] + 1)
 
 
 def is_col_aligned(
@@ -113,7 +101,7 @@ def is_col_aligned(
     :param spread: Column difference range, defaults to [0, 0].
     :return: Return True if two sentences or cells are column-wise aligned.
     """
-    return min_col_diff(a, b) in range(spread[0], spread[1] + 1)
+    return min_col_diff([a, b]) in range(spread[0], spread[1] + 1)
 
 
 def is_axis_aligned(

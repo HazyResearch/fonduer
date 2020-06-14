@@ -281,8 +281,8 @@ def get_neighbor_cell_ngrams(
                     _get_aligned_sentences(root_cell, "col"),
                 ]
             ):
-                row_diff = min_row_diff(sentence, root_cell, absolute=False)
-                col_diff = min_col_diff(sentence, root_cell, absolute=False)
+                row_diff = min_row_diff([sentence, root_cell], absolute=False)
+                col_diff = min_col_diff([sentence, root_cell], absolute=False)
                 if (
                     (row_diff or col_diff)
                     and not (row_diff and col_diff)
