@@ -17,6 +17,22 @@ from editdistance import eval as editdist  # Alternative library: python-levensh
 from fonduer.parser.models import Sentence
 from fonduer.utils.utils_visual import Bbox
 
+# Define a type alias for readability
+# PdfWordId is an ID for a word that is unique within a PDF file.
+# The two elements represent (page_num, i), where page_num is 1-based page number and
+# i is a 0-based unique ID for a word within that page.
+PdfWordId = Tuple[int, int]
+# PdfWord is a type alias for (PdfWordId, str), where the second element is a string
+# repsentation of the word.
+PdfWord = Tuple[PdfWordId, str]
+# Similarly, HtmlWordId is an ID for word that is unique within a HTML file.
+# The two elements represent (sentence.stable_id, i), where i is an ID within a
+# Sentence.
+HtmlWordId = Tuple[str, int]
+# Similar to PdfWord, HtmlWord is a type alias for (HtmlWordId, str), where the second
+# element is a string repsentation of the word.
+HtmlWord = Tuple[HtmlWordId, str]
+
 
 class VisualLinker(object):
     """Link visual information with sentences."""
@@ -30,10 +46,10 @@ class VisualLinker(object):
         self.pdf_file: Optional[str] = None
         self.verbose = verbose
         self.time = time
-        self.coordinate_map: Optional[Dict[Tuple[int, int], Bbox]] = None
-        self.pdf_word_list: Optional[List[Tuple[Tuple[int, int], str]]] = None
-        self.html_word_list: Optional[List[Tuple[Tuple[str, int], str]]] = None
-        self.links: Optional[OrderedDict[Tuple[str, int], Tuple[int, int]]] = None
+        self.coordinate_map: Optional[Dict[PdfWordId, Bbox]] = None
+        self.pdf_word_list: Optional[List[PdfWord]] = None
+        self.html_word_list: Optional[List[HtmlWord]] = None
+        self.links: Optional[OrderedDict[HtmlWordId, PdfWordId]] = None
         self.pdf_dim: Optional[Tuple[int, int]] = None
         delimiters = (
             r"([\(\)\,\?\u2212\u201C\u201D\u2018\u2019\u00B0\*']|(?<!http):|\.$|\.\.\.)"
@@ -89,8 +105,8 @@ class VisualLinker(object):
             f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'",
             shell=True,
         )
-        pdf_word_list: List[Tuple[Tuple[int, int], str]] = []
-        coordinate_map: Dict[Tuple[int, int], Bbox] = {}
+        pdf_word_list: List[PdfWord] = []
+        coordinate_map: Dict[PdfWordId, Bbox] = {}
         for i in range(1, int(num_pages) + 1):
             self.logger.debug(
                 f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -"
@@ -142,11 +158,11 @@ class VisualLinker(object):
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
     ) -> Tuple[
-        List[Tuple[Tuple[int, int], str]], Dict[Tuple[int, int], Bbox],
+        List[PdfWord], Dict[PdfWordId, Bbox],
     ]:
-        pdf_word_list: List[Tuple[Tuple[int, int], str]] = []
-        coordinate_map: Dict[Tuple[int, int], Bbox] = {}
-        block_coordinates = {}
+        pdf_word_list: List[PdfWord] = []
+        coordinate_map: Dict[PdfWordId, Bbox] = {}
+        block_coordinates: Dict[PdfWordId, Tuple[int, int]] = {}
         blocks = page.find_all("block")
         i = 0  # counter for word_id in page_num
         for block in blocks:
@@ -162,7 +178,7 @@ class VisualLinker(object):
                     xmax = int(float(word.get("xmax")))
                     for content in self.separators.split(word.getText()):
                         if len(content) > 0:  # Ignore empty characters
-                            word_id = (page_num, i)
+                            word_id: PdfWordId = (page_num, i)
                             pdf_word_list.append((word_id, content))
                             coordinate_map[word_id] = Bbox(
                                 page_num, y_min_line, y_max_line, xmin, xmax,
@@ -178,7 +194,7 @@ class VisualLinker(object):
         return pdf_word_list, coordinate_map
 
     def _extract_html_words(self) -> None:
-        html_word_list: List[Tuple[Tuple[str, int], str]] = []
+        html_word_list: List[HtmlWord] = []
         for sentence in self.sentences:
             for i, word in enumerate(sentence.words):
                 html_word_list.append(((sentence.stable_id, i), word))
