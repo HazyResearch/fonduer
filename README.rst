@@ -25,7 +25,7 @@ Reference
 ---------
 
 `Fonduer: Knowledge Base Construction from Richly Formatted
-Data <https://arxiv.org/abs/1703.05028>`__ (`blog <http://hazyresearch.stanford.edu/fonduer>`__)::
+Data <https://arxiv.org/abs/1703.05028>`__ (`blog <https://hazyresearch.stanford.edu/fonduer>`__)::
 
     @inproceedings{wu2018fonduer,
       title={Fonduer: Knowledge Base Construction from Richly Formatted Data},
