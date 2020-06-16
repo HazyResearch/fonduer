@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from builtins import object, range, zip
 from collections import OrderedDict, defaultdict
+from operator import attrgetter
 from typing import DefaultDict, Dict, Iterator, List, Optional, Tuple
 
 import numpy as np
@@ -63,7 +64,8 @@ class VisualLinker(object):
             override the one used in initialization, if provided.
         :return: A generator of ``Sentence``.
         """
-        self.sentences = sentences
+        # sentences should be sorted as their order is not deterministic.
+        self.sentences = sorted(sentences, key=attrgetter("position"))
         self.pdf_file = (
             pdf_path if os.path.isfile(pdf_path) else pdf_path + document_name + ".pdf"
         )
