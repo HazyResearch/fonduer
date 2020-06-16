@@ -43,6 +43,9 @@ Fixed
 * `@HiromuHota`_: Fix the order of args to Bbox.
   (`#443 <https://github.com/HazyResearch/fonduer/issues/443>`_)
   (`#444 <https://github.com/HazyResearch/fonduer/pull/444>`_)
+* `@HiromuHota`_: Fix the non-deterministic behavior in VisualLinker.
+  (`#412 <https://github.com/HazyResearch/fonduer/issues/412>`_)
+  (`#458 <https://github.com/HazyResearch/fonduer/pull/458>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
