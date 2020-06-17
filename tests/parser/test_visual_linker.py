@@ -2,6 +2,8 @@
 import random
 from operator import attrgetter
 
+from bs4 import BeautifulSoup
+
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.parser.visual_linker import VisualLinker
 from tests.parser.test_parser import get_parser_udf
@@ -52,3 +54,32 @@ def test_visual_linker_not_affected_by_order_of_sentences():
     assert all(
         [sent0.left == sent1.left for (sent0, sent1) in zip(sentences0, sentences1)]
     )
+
+
+def test_pdf_word_list_is_sorted():
+    """Test if pdf_word_list is sorted as expected.
+
+    no_image_unsorted.html is originally created from pdf_simple/no_image.pdf,
+    but the order of html elements like block and word has been changed to see if
+    pdf_word_list is sorted as expected.
+    """
+    docs_path = "tests/data/html_simple/no_image_unsorted.html"
+    pdf_path = "dummy_path"
+    visual_linker = VisualLinker(pdf_path=pdf_path)
+    with open(docs_path) as f:
+        soup = BeautifulSoup(f, "html.parser")
+    page = soup.find_all("page")[0]
+    pdf_word_list, coordinate_map = visual_linker._coordinates_from_HTML(page, 1)
+
+    # Check if words are sorted by block top
+    assert set([content for (_, content) in pdf_word_list[:2]]) == {"Sample", "HTML"}
+    # Check if words are sorted by top
+    assert [content for (_, content) in pdf_word_list[2:7]] == [
+        "This",
+        "is",
+        "an",
+        "html",
+        "that",
+    ]
+    # Check if words are sorted by left (#449)
+    assert [content for (_, content) in pdf_word_list[:2]] == ["Sample", "HTML"]
