@@ -9,6 +9,7 @@ In order to run the tests, you will need to create the local databases used
 by the tests::
 
     $ createdb meta_test
+    $ createdb parser_test
     $ createdb e2e_test
     $ createdb inc_test
     $ createdb pg_test

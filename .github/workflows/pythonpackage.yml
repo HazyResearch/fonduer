@@ -56,6 +56,7 @@ jobs:
         createdb e2e_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb inc_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb meta_test -p 5432 -h 127.0.0.1 -w -U postgres
+        createdb parser_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb pg_test -p 5432 -h 127.0.0.1 -w -U postgres
         cd tests && ./download_data.sh && cd ..
         python -m spacy download en
@@ -122,6 +123,7 @@ jobs:
         createdb e2e_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb inc_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb meta_test -p 5432 -h 127.0.0.1 -w -U postgres
+        createdb parser_test -p 5432 -h 127.0.0.1 -w -U postgres
         createdb pg_test -p 5432 -h 127.0.0.1 -w -U postgres
         cd tests && ./download_data.sh && cd ..
     - name: Print Version Info
