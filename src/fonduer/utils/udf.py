@@ -1,7 +1,8 @@
 """Fonduer UDF."""
 import logging
 from multiprocessing import Manager, Process
-from queue import Empty, Queue
+from queue import Queue
+from threading import Thread
 from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
 
 from sqlalchemy import inspect
@@ -111,7 +112,6 @@ class UDFRunner(object):
 
         # Clear the last documents parsed by the last run
         self.last_docs = set()
-        total_count = len(doc_loader)
 
         # Create UDF Processes
         for i in range(parallelism):
@@ -128,31 +128,28 @@ class UDFRunner(object):
         for udf in self.udfs:
             udf.start()
 
-        iter = doc_loader.__iter__()
+        def in_thread_func() -> None:
+            # Fill input queue with documents but # of docs in queue is capped (#435).
+            for doc in doc_loader:
+                in_queue.put(doc)  # block until a free slot is available
+                self.last_docs.add(doc.name)
+
+        Thread(target=in_thread_func).start()
+
         count_parsed = 0
+        total_count = len(doc_loader)
+
         while (
             any([udf.is_alive() for udf in self.udfs]) or not out_queue.empty()
         ) and count_parsed < total_count:
-            # Fill input queue with documents but # of docs in queue is capped (#435).
-            if not in_queue.full():
-                try:
-                    doc = next(iter)
-                    in_queue.put(doc)
-                    self.last_docs.add(doc.name)
-                except StopIteration:
-                    pass
-
             # Get doc from the out_queue and persist the result into postgres
             try:
-                y = out_queue.get_nowait()
+                y = out_queue.get()  # block until an item is available
                 self._add(y)
                 # Update progress bar whenever an item has been processed
                 count_parsed += 1
                 if self.pb is not None:
                     self.pb.update(1)
-            except Empty:
-                # This happens when any child process is alive and still processing.
-                pass
             except Exception as e:
                 # Raise an error for all the other exceptions.
                 raise (e)
