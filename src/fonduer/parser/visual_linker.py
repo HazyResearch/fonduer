@@ -69,9 +69,7 @@ class VisualLinker(object):
                 f"but should be 0.36.0 or above"
             )
 
-    def link(
-        self, document_name: str, sentences: List[Sentence], pdf_path: str
-    ) -> Iterator[Sentence]:
+    def link(self, document_name: str, sentences: List[Sentence]) -> Iterator[Sentence]:
         """Link visual information with sentences.
 
         :param document_name: the document name.
