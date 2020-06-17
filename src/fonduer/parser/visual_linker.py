@@ -66,11 +66,7 @@ class VisualLinker(object):
         """
         # sentences should be sorted as their order is not deterministic.
         self.sentences = sorted(sentences, key=attrgetter("position"))
-        self.pdf_file = (
-            pdf_path if os.path.isfile(pdf_path) else pdf_path + document_name + ".pdf"
-        )
-        if not os.path.isfile(self.pdf_file):
-            self.pdf_file = self.pdf_file[:-3] + "PDF"
+        self.pdf_file = self._get_linked_pdf_path(document_name)
         try:
             self._extract_pdf_words()
         except RuntimeError as e:
@@ -119,25 +115,34 @@ class VisualLinker(object):
         if self.verbose:
             self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
-    def is_linkable(self, filename: str) -> bool:
-        """Verify that the file exists and has a PDF extension.
+    def _get_linked_pdf_path(self, filename: str) -> str:
+        """Get the linked pdf file path, return None if it doesn't exist.
 
         :param filename: The path to the PDF document.
         """
         path = self.pdf_path
         # If path is file, but not PDF.
         if os.path.isfile(path) and path.lower().endswith(".pdf"):
-            return True
+            return path
         else:
             full_path = os.path.join(path, filename)
             if os.path.isfile(full_path) and full_path.lower().endswith(".pdf"):
-                return True
-            elif os.path.isfile(os.path.join(path, filename + ".pdf")):
-                return True
-            elif os.path.isfile(os.path.join(path, filename + ".PDF")):
-                return True
+                return full_path
+            full_path = os.path.join(path, filename + ".pdf")
+            if os.path.isfile(full_path):
+                return full_path
+            full_path = os.path.join(path, filename + ".PDF")
+            if os.path.isfile(full_path):
+                return full_path
 
-        return False
+        return None
+
+    def is_linkable(self, filename: str) -> bool:
+        """Verify that the file exists and has a PDF extension.
+
+        :param filename: The path to the PDF document.
+        """
+        return False if self._get_linked_pdf_path(filename) is None else True
 
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
