@@ -262,8 +262,7 @@ class ParserUDF(UDF):
             if self.visual:
                 # Use the provided pdf_path if present
                 self.pdf_path = pdf_path if pdf_path else self.pdf_path
-                self.vizlink.pdf_path = self.pdf_path
-                if not self.vizlink.is_linkable(document.name):
+                if not self.vizlink.is_linkable(document.name, self.pdf_path):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
@@ -274,7 +273,12 @@ class ParserUDF(UDF):
                     )
                 else:
                     # Add visual attributes
-                    [y for y in self.vizlink.link(document.name, document.sentences)]
+                    [
+                        y
+                        for y in self.vizlink.link(
+                            document.name, document.sentences, self.pdf_path
+                        )
+                    ]
             return document
         except Exception as e:
             warnings.warn(
