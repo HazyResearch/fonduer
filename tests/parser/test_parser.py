@@ -862,10 +862,11 @@ def test_various_file_path_formats():
 
     corpus_parser = parse(docs_path, pdf_path)
     docs = corpus_parser.get_documents()
-    assert len(docs) == 5
+    assert len(docs) == 6
     for doc in docs:
-        # table_span.pdf is not exist, so no coordinate info available
-        if doc.name == "table_span":
+        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
+        # coordinate info available
+        if doc.name in ["table_span", "no_image_unsorted"]:
             assert doc.sentences[0].top is None
         else:
             assert doc.sentences[0].top is not None
@@ -877,9 +878,11 @@ def test_various_file_path_formats():
 
     corpus_parser = parse(docs_path, pdf_path)
     docs = corpus_parser.get_documents()
-    assert len(docs) == 5
+    assert len(docs) == 6
     for doc in docs:
-        if doc.name == "table_span":
+        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
+        # coordinate info available
+        if doc.name in ["table_span", "no_image_unsorted"]:
             assert doc.sentences[0].top is None
         else:
             assert doc.sentences[0].top is not None
@@ -891,9 +894,11 @@ def test_various_file_path_formats():
 
     corpus_parser = parse(docs_path, pdf_path)
     docs = corpus_parser.get_documents()
-    assert len(docs) == 5
+    assert len(docs) == 6
     for doc in docs:
-        if doc.name == "table_span":
+        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
+        # coordinate info available
+        if doc.name in ["table_span", "no_image_unsorted"]:
             assert doc.sentences[0].top is None
         else:
             assert doc.sentences[0].top is not None
@@ -905,9 +910,11 @@ def test_various_file_path_formats():
 
     corpus_parser = parse(docs_path, pdf_path)
     docs = corpus_parser.get_documents()
-    assert len(docs) == 5
+    assert len(docs) == 6
     for doc in docs:
-        if doc.name == "table_span":
+        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
+        # coordinate info available
+        if doc.name in ["table_span", "no_image_unsorted"]:
             assert doc.sentences[0].top is None
         else:
             assert doc.sentences[0].top is not None
