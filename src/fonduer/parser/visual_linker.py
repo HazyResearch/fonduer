@@ -210,7 +210,9 @@ class VisualLinker(object):
 
         def link_exact(l: int, u: int) -> None:
             l, u, L, U = get_anchors(l, u)
+            # Inverted index that maps word to index(es) of html_word_list
             html_dict: DefaultDict[str, List[int]] = defaultdict(list)
+            # Inverted index that maps word to index(es) of pdf_word_list
             pdf_dict: DefaultDict[str, List[int]] = defaultdict(list)
             for i, (_, word) in enumerate(self.html_word_list[l:u]):
                 if html_to_pdf[l + i] is None:
