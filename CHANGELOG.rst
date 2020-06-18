@@ -34,7 +34,7 @@ Fixed
 ^^^^^
 * `@senwu`_: Fix pdf_path cannot be without a trailing slash.
   (`#442 <https://github.com/HazyResearch/fonduer/issues/442>`_)
-  (`#457 <https://github.com/HazyResearch/fonduer/pull/457>`_)
+  (`#459 <https://github.com/HazyResearch/fonduer/pull/459>`_)
 * `@kaikun213`_: Fix bug in table range difference calculations.
   (`#420 <https://github.com/HazyResearch/fonduer/pull/420>`_)
 * `@HiromuHota`_: mention_extractor.apply with clear=True now works even if it's not the first run.
