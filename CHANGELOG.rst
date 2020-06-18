@@ -46,6 +46,9 @@ Fixed
 * `@HiromuHota`_: Fix the non-deterministic behavior in VisualLinker.
   (`#412 <https://github.com/HazyResearch/fonduer/issues/412>`_)
   (`#458 <https://github.com/HazyResearch/fonduer/pull/458>`_)
+* `@HiromuHota`_: Fix an issue that the progress bar shows no progress on preprocessing
+  by executing preprocessing and parsing in parallel.
+  (`#439 <https://github.com/HazyResearch/fonduer/pull/439>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
