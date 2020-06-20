@@ -150,7 +150,7 @@ class VisualMixin(object):
     def page(cls) -> Column:
         """List of the page index of each word in the ``Sentence``.
 
-        Page indexes start at 0.
+        Page indexes start at 1.
         """
         return Column(INT_ARRAY_TYPE)
 
