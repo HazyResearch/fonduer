@@ -22,7 +22,7 @@ default = {
                 "get_row_ngrams": {"max": 2},
                 "get_col_ngrams": {"max": 2},
             },
-            "binary_features": {
+            "multinary_features": {
                 "min_row_diff": {"absolute": False},
                 "min_col_diff": {"absolute": False},
             },

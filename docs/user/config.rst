@@ -32,7 +32,7 @@ The default ``.fonduer-config.yaml`` configuration file is shown below::
             max: 2
           get_col_ngrams:
             max: 2
-        binary_features:
+        multinary_features:
           min_row_diff:
             absolute: False
           min_col_diff:
