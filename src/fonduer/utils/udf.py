@@ -21,6 +21,8 @@ except (AttributeError, ImportError):
 else:
     from tqdm.notebook import tqdm
 
+logger = logging.getLogger(__name__)
+
 
 class UDFRunner(object):
     """Class to run UDFs in parallel using simple queue-based multiprocessing setup."""
@@ -33,7 +35,6 @@ class UDFRunner(object):
         **udf_init_kwargs: Any,
     ) -> None:
         """Initialize UDFRunner."""
-        self.logger = logging.getLogger(__name__)
         self.udf_class = udf_class
         self.udf_init_kwargs = udf_init_kwargs
         self.udfs: List["UDF"] = []
@@ -63,15 +64,15 @@ class UDFRunner(object):
             self.clear(**kwargs)
 
         # Execute the UDF
-        self.logger.info("Running UDF...")
+        logger.info("Running UDF...")
 
         # Setup progress bar
         if progress_bar:
-            self.logger.debug("Setting up progress bar...")
+            logger.debug("Setting up progress bar...")
             if hasattr(doc_loader, "__len__"):
                 self.pb = tqdm(total=len(doc_loader))
             else:
-                self.logger.error("Could not determine size of progress bar")
+                logger.error("Could not determine size of progress bar")
 
         # Use the parallelism of the class if none is provided to apply
         parallelism = parallelism if parallelism else self.parallelism
@@ -79,10 +80,10 @@ class UDFRunner(object):
 
         # Close progress bar
         if self.pb is not None:
-            self.logger.debug("Closing progress bar...")
+            logger.debug("Closing progress bar...")
             self.pb.close()
 
-        self.logger.debug("Running after_apply...")
+        logger.debug("Running after_apply...")
         self._after_apply(**kwargs)
 
     def clear(self, **kwargs: Any) -> None:

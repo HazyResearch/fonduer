@@ -17,6 +17,8 @@ from editdistance import eval as editdist  # Alternative library: python-levensh
 from fonduer.parser.models import Sentence
 from fonduer.utils.utils_visual import Bbox
 
+logger = logging.getLogger(__name__)
+
 # Define a type alias for readability
 # PdfWordId is an ID for a word that is unique within a PDF file.
 # The two elements represent (page_num, i), where page_num is 1-based page number and
@@ -42,7 +44,6 @@ class VisualLinker(object):
     ) -> None:
         """Initialize VisualLinker."""
         self.pdf_path = pdf_path
-        self.logger = logging.getLogger(__name__)
         self.pdf_file: Optional[str] = None
         self.verbose = verbose
         self.time = time
@@ -87,7 +88,7 @@ class VisualLinker(object):
         try:
             self._extract_pdf_words()
         except RuntimeError as e:
-            self.logger.exception(e)
+            logger.exception(e)
             return
         self._extract_html_words()
         self._link_lists(search_max=200)
@@ -95,9 +96,7 @@ class VisualLinker(object):
             yield sentence
 
     def _extract_pdf_words(self) -> None:
-        self.logger.debug(
-            f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'"
-        )
+        logger.debug(f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'")
         num_pages = subprocess.check_output(
             f"pdfinfo '{self.pdf_file}' | grep -a ^Pages: | sed 's/[^0-9]*//'",
             shell=True,
@@ -105,9 +104,7 @@ class VisualLinker(object):
         pdf_word_list: List[PdfWord] = []
         coordinate_map: Dict[PdfWordId, Bbox] = {}
         for i in range(1, int(num_pages) + 1):
-            self.logger.debug(
-                f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -"
-            )
+            logger.debug(f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -")
             html_content = subprocess.check_output(
                 f"pdftotext -f {i} -l {i} -bbox-layout '{self.pdf_file}' -", shell=True
             )
@@ -130,7 +127,7 @@ class VisualLinker(object):
         )
         self.pdf_dim = (page_width, page_height)
         if self.verbose:
-            self.logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
+            logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
     def _get_linked_pdf_path(self, filename: str, pdf_path: str = None) -> str:
         """Get the linked pdf file path, return None if it doesn't exist.
@@ -208,7 +205,7 @@ class VisualLinker(object):
                 html_word_list.append(((sentence.stable_id, i), word))
         self.html_word_list = html_word_list
         if self.verbose:
-            self.logger.info(f"Extracted {len(self.html_word_list)} html words")
+            logger.info(f"Extracted {len(self.html_word_list)} html words")
 
     def _link_lists(
         self, search_max: int = 100, edit_cost: int = 20, offset_cost: int = 1
@@ -284,7 +281,7 @@ class VisualLinker(object):
                 ]
             )
             total = len(self.html_word_list)
-            self.logger.info(f"({matches}/{total}) = {matches / total:.2f}")
+            logger.info(f"({matches}/{total}) = {matches / total:.2f}")
             return matches
 
         N = len(self.html_word_list)
@@ -293,7 +290,7 @@ class VisualLinker(object):
         try:
             assert N > 0 and M > 0
         except Exception:
-            self.logger.exception(f"N = {N} and M = {M} are invalid values.")
+            logger.exception(f"N = {N} and M = {M} are invalid values.")
 
         html_to_pdf: List[Optional[int]] = [None] * N
         pdf_to_html: List[Optional[int]] = [None] * M
@@ -302,7 +299,7 @@ class VisualLinker(object):
         # first pass: global search for exact matches
         link_exact(0, N)
         if self.verbose:
-            self.logger.debug("Global exact matching:")
+            logger.debug("Global exact matching:")
             display_match_counts()
 
         # second pass: local search for exact matches
@@ -312,7 +309,7 @@ class VisualLinker(object):
                 min(N, i * search_radius + search_radius),
             )
         if self.verbose:
-            self.logger.debug("Local exact matching:")
+            logger.debug("Local exact matching:")
             display_match_counts()
 
         # third pass: local search for approximate matches
@@ -323,7 +320,7 @@ class VisualLinker(object):
             if html_to_pdf[i] is None:
                 link_fuzzy(i)
         if self.verbose:
-            self.logger.debug("Local approximate matching:")
+            logger.debug("Local approximate matching:")
             display_match_counts()
 
         # convert list to dict
@@ -336,7 +333,7 @@ class VisualLinker(object):
         )
         total = len(self.html_word_list)
         if self.verbose:
-            self.logger.debug(
+            logger.debug(
                 f"Linked {matches}/{total} ({matches / total:.2f}) html words exactly"
             )
         self.links = OrderedDict(
@@ -361,4 +358,4 @@ class VisualLinker(object):
             sentence.right = list(right)
             yield sentence
         if self.verbose:
-            self.logger.debug("Updated coordinates in database")
+            logger.debug("Updated coordinates in database")

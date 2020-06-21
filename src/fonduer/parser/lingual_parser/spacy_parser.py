@@ -21,6 +21,8 @@ try:
 except Exception:
     raise Exception("spaCy not installed. Use `pip install spacy`.")
 
+logger = logging.getLogger(__name__)
+
 
 class SpacyParser(LingualParser):
     """Spacy parser class.
@@ -61,7 +63,6 @@ class SpacyParser(LingualParser):
 
     def __init__(self, lang: Optional[str]) -> None:
         """Initialize SpacyParser."""
-        self.logger = logging.getLogger(__name__)
         self.name = "spacy"
 
         self.lang = lang
@@ -151,7 +152,7 @@ class SpacyParser(LingualParser):
 
         if self.model.has_pipe("sentencizer"):
             self.model.remove_pipe("sentencizer")
-            self.logger.debug(
+            logger.debug(
                 f"Removed sentencizer ('sentencizer') from model. "
                 f"Now in pipeline: {self.model.pipe_names}"
             )
@@ -180,7 +181,7 @@ class SpacyParser(LingualParser):
             try:
                 assert doc.is_parsed
             except Exception:
-                self.logger.exception(f"{doc} was not parsed")
+                logger.exception(f"{doc} was not parsed")
 
             for sent, current_sentence_obj in zip(doc.sents, sentence_batch):
                 parts: Dict[str, Any] = defaultdict(list)
@@ -239,18 +240,18 @@ class SpacyParser(LingualParser):
             # 'Probably save' according to spacy, as no parser or NER is used
             previous_max_length = self.model.max_length
             self.model.max_length = 100_000_000
-            self.logger.warning(
+            logger.warning(
                 f"Temporarily increased spacy maximum "
                 f"character limit to {self.model.max_length} to split sentences."
             )
             doc = self.model(text, disable=["parser", "tagger", "ner"])
             self.model.max_length = previous_max_length
-            self.logger.warning(
+            logger.warning(
                 f"Spacy maximum "
                 f"character limit set back to {self.model.max_length}."
             )
         except Exception as e:
-            self.logger.exception(e)
+            logger.exception(e)
 
         doc.is_parsed = True
         position = 0
@@ -312,7 +313,6 @@ class TokenPreservingTokenizer(object):
 
         :param vocab: The vocab attribute of the respective spacy language object.
         """
-        self.logger = logging.getLogger(__name__)
         self.vocab = vocab
 
     def __call__(self, tokenized_sentences: List[Sentence]) -> Doc:
