@@ -74,7 +74,7 @@ The different featurization parameters are explained in this section::
           get_col_ngrams:
             max: 2
         # binary feature settings
-        binary_features:
+        multinary_features:
           # minimal difference in rows to check
           min_row_diff:
             absolute: False
