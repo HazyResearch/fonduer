@@ -281,12 +281,13 @@ def test_predict(mocker, setup_common_components: Dict):
 
     # Mock the _classify as we don't test the implementation of _classify here.
     mock_output = pd.DataFrame(data={"col1": ["val1"], "col2": ["val2"]})
-    fonduer_model._classify = MagicMock(return_value=mock_output)
 
     # Input both html_path and pdf_html
     if version.parse(mlflow.__version__) >= version.parse("1.9.0"):
+        fonduer_model._model_impl._classify = MagicMock(return_value=mock_output)
         spy = mocker.spy(fonduer_model._model_impl, "_process")
     else:
+        fonduer_model._classify = MagicMock(return_value=mock_output)
         spy = mocker.spy(fonduer_model, "_process")
     output = fonduer_model.predict(
         pd.DataFrame(
@@ -335,7 +336,10 @@ def test_predict(mocker, setup_common_components: Dict):
 
     # Test when _classify produces multiple relations per doc.
     mock_output = pd.DataFrame(data={"col0": ["00", "10"], "col1": ["01", "11"]})
-    fonduer_model._classify = MagicMock(return_value=mock_output)
+    if version.parse(mlflow.__version__) >= version.parse("1.9.0"):
+        fonduer_model._model_impl._classify = MagicMock(return_value=mock_output)
+    else:
+        fonduer_model._classify = MagicMock(return_value=mock_output)
     output = fonduer_model.predict(
         pd.DataFrame(data={"html_path": ["tests/data/html/112823.html"]})
     )
