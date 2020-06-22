@@ -52,6 +52,9 @@ Fixed
 * `@HiromuHota`_: Fix an issue that the progress bar shows no progress on preprocessing
   by executing preprocessing and parsing in parallel.
   (`#439 <https://github.com/HazyResearch/fonduer/pull/439>`_)
+* `@HiromuHota`_: Adopt to mlflow>=1.9.0.
+  (`#461 <https://github.com/HazyResearch/fonduer/issues/461>`_)
+  (`#463 <https://github.com/HazyResearch/fonduer/pull/463>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
