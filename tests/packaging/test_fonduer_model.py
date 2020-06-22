@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 import yaml
 from emmental.model import EmmentalModel
+from packaging import version
 from snorkel.labeling.model import LabelModel
 
 from fonduer.candidates import CandidateExtractor, MentionExtractor
@@ -283,7 +284,10 @@ def test_predict(mocker, setup_common_components: Dict):
     fonduer_model._classify = MagicMock(return_value=mock_output)
 
     # Input both html_path and pdf_html
-    spy = mocker.spy(fonduer_model, "_process")
+    if version.parse(mlflow.__version__) >= version.parse("1.9.0"):
+        spy = mocker.spy(fonduer_model._model_impl, "_process")
+    else:
+        spy = mocker.spy(fonduer_model, "_process")
     output = fonduer_model.predict(
         pd.DataFrame(
             data={
