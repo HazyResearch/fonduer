@@ -93,6 +93,8 @@ jobs:
         command: |
           pip install -U pip  # upgrade pip after installing python
           echo "::add-path::`pyenv root`/shims"
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
     - name: Install dependencies for macOS
       run: |
         brew update
