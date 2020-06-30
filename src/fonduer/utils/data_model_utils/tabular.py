@@ -475,8 +475,7 @@ def _get_table_cells(table: Table) -> DefaultDict[Cell, List[Sentence]]:
     """
     sent_map: DefaultDict[Cell, List[Sentence]] = defaultdict(list)
     for sent in table.sentences:
-        if sent.is_tabular():
-            sent_map[sent.cell].append(sent)
+        sent_map[sent.cell].append(sent)
     return sent_map
 
 
@@ -499,12 +498,12 @@ def _get_axis_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
     ):
         yield ngram
-    if span.sentence.is_tabular():
-        for sentence in _get_aligned_sentences(span.sentence, axis, spread=spread):
-            for ngram in tokens_to_ngrams(
-                getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
-            ):
-                yield ngram
+
+    for sentence in _get_aligned_sentences(span.sentence, axis, spread=spread):
+        for ngram in tokens_to_ngrams(
+            getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
+        ):
+            yield ngram
 
 
 @lru_cache(maxsize=1024)
