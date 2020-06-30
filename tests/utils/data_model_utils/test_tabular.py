@@ -6,6 +6,7 @@ from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.utils.data_model_utils.tabular import (
     get_max_col_num,
     get_min_col_num,
+    get_min_row_num,
     is_tabular_aligned,
     same_cell,
     same_col,
@@ -126,3 +127,16 @@ def test_get_min_max_col_num(mention_setup):
     assert get_min_col_num(mentions[51]) == 0
     # TODO: it'd be better to use the mention that spans multiple cols
     assert get_max_col_num(mentions[51]) == 0
+
+
+def test_get_min_row_num(mention_setup):
+    """Test the parser with the md document."""
+    mentions = mention_setup
+
+    # Non tabular mention
+    assert mentions[0].get_span() == "Sample"
+    assert not get_min_row_num(mentions[0])
+
+    # Tabular mention
+    assert mentions[51].get_span() == "Joan"
+    assert get_min_row_num(mentions[51]) == 1
