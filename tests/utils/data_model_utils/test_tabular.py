@@ -4,9 +4,17 @@ import pytest
 from fonduer.candidates import MentionNgrams
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
 from fonduer.utils.data_model_utils.tabular import (
+    get_aligned_ngrams,
+    get_cell_ngrams,
+    get_col_ngrams,
+    get_head_ngrams,
     get_max_col_num,
     get_min_col_num,
     get_min_row_num,
+    get_neighbor_cell_ngrams,
+    get_neighbor_sentence_ngrams,
+    get_row_ngrams,
+    get_sentence_ngrams,
     is_tabular_aligned,
     same_cell,
     same_col,
@@ -140,3 +148,114 @@ def test_get_min_row_num(mention_setup):
     # Tabular mention
     assert mentions[51].get_span() == "Joan"
     assert get_min_row_num(mentions[51]) == 1
+
+
+def test_get_sentence_ngrams(mention_setup):
+    """Test the get_sentence_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[5].get_span() == "basic"
+    assert list(get_sentence_ngrams(mentions[5])) == [
+        "this",
+        "is",
+        "some",
+        ",",
+        "sample",
+        "markdown",
+        ".",
+    ]
+
+
+def test_get_neighbor_sentence_ngrams(mention_setup):
+    """Test the get_neighbor_sentence_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[5].get_span() == "basic"
+    assert list(get_neighbor_sentence_ngrams(mentions[5])) == ["sample", "markdown"] + [
+        "second",
+        "heading",
+    ]
+
+
+def test_get_cell_ngrams(mention_setup):
+    """Test the get_cell_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[52].get_span() == "saag"
+    assert list(get_cell_ngrams(mentions[52])) == ["paneer"]
+
+    # TODO: test get_cell_ngrams when there are other sentences in the cell.
+
+
+def test_get_neighbor_cell_ngrams(mention_setup):
+    """Test the get_neighbor_cell_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[52].get_span() == "saag"
+    # No directions
+    assert list(get_neighbor_cell_ngrams(mentions[52])) == ["paneer"] + ["joan"] + [
+        "medium"
+    ] + ["lunch", "order"] + ["vindaloo"]
+
+    # directions=True
+    # TODO: the expected direction for 'lunch' and 'order' is 'UP'
+    #  and that for 'vindaloo' is 'DOWN'?
+    assert list(get_neighbor_cell_ngrams(mentions[52], directions=True)) == [
+        "paneer",
+        ("joan", "LEFT"),
+        ("medium", "RIGHT"),
+        ("lunch", "DOWN"),
+        ("order", "DOWN"),
+        ("vindaloo", "UP"),
+    ]
+
+
+def test_get_row_ngrams(mention_setup):
+    """Test the get_row_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[52].get_span() == "saag"
+    assert list(get_row_ngrams(mentions[52])) == ["paneer"] + ["joan"] + ["medium"] + [
+        "$",
+        "11",
+    ]
+
+
+def test_get_col_ngrams(mention_setup):
+    """Test the get_col_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[52].get_span() == "saag"
+    assert list(get_col_ngrams(mentions[52])) == ["paneer"] + ["lunch", "order"] + [
+        "vindaloo"
+    ] + ["lamb", "madras"]
+
+
+def test_get_aligned_ngrams(mention_setup):
+    """Test the get_aligned_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[52].get_span() == "saag"
+    # TODO: ["paneer"] appears twice. Is this expected result?
+    assert list(get_aligned_ngrams(mentions[52])) == ["paneer"] + ["joan"] + [
+        "medium"
+    ] + ["$", "11"] + ["paneer"] + ["lunch", "order"] + ["vindaloo"] + [
+        "lamb",
+        "madras",
+    ]
+
+
+def test_get_head_ngrams(mention_setup):
+    """Test the get_head_ngrams function."""
+    mentions = mention_setup
+
+    assert mentions[52].get_span() == "saag"
+    assert list(get_head_ngrams(mentions[52])) == ["joan"] + ["lunch", "order"]
+
+    # when a mention is in the 1st column
+    assert mentions[51].get_span() == "Joan"
+    assert list(get_head_ngrams(mentions[51])) == []
+
+    # when a mention is in the header row
+    assert mentions[46].get_span() == "Name"
+    assert list(get_head_ngrams(mentions[46])) == []
