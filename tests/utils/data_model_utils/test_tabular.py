@@ -44,7 +44,7 @@ def mention_setup():
 
 
 def test_same_row(mention_setup):
-    """Test the parser with the md document."""
+    """Test the same_row function."""
     mentions = mention_setup
 
     # Same row
@@ -58,7 +58,7 @@ def test_same_row(mention_setup):
 
 
 def test_same_col(mention_setup):
-    """Test the parser with the md document."""
+    """Test the same_col function."""
     mentions = mention_setup
 
     # Different column
@@ -72,7 +72,7 @@ def test_same_col(mention_setup):
 
 
 def test_is_tabular_aligned(mention_setup):
-    """Test the parser with the md document."""
+    """Test the is_tabular_aligned function."""
     mentions = mention_setup
 
     # tabular_aligned
@@ -86,7 +86,7 @@ def test_is_tabular_aligned(mention_setup):
 
 
 def test_same_cell(mention_setup):
-    """Test the parser with the md document."""
+    """Test the same_cell function."""
     mentions = mention_setup
 
     # Different cell
@@ -100,7 +100,7 @@ def test_same_cell(mention_setup):
 
 
 def test_same_sentence(mention_setup):
-    """Test the parser with the md document."""
+    """Test the same_sentence function."""
     mentions = mention_setup
 
     # Same sentence
@@ -114,7 +114,7 @@ def test_same_sentence(mention_setup):
 
 
 def test_get_min_max_col_num(mention_setup):
-    """Test the parser with the md document."""
+    """Test the get_min_col_num and get_max_col_num function."""
     mentions = mention_setup
 
     # Non tabular mention
@@ -130,7 +130,7 @@ def test_get_min_max_col_num(mention_setup):
 
 
 def test_get_min_row_num(mention_setup):
-    """Test the parser with the md document."""
+    """Test the get_min_row_num function."""
     mentions = mention_setup
 
     # Non tabular mention
