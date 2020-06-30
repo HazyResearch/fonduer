@@ -7,6 +7,7 @@ from fonduer.candidates.matchers import (
     DictionaryMatch,
     Intersect,
     Inverse,
+    LambdaFunctionMatcher,
     RegexMatchSpan,
     Union,
 )
@@ -241,3 +242,25 @@ def test_dictionary_match(doc_setup):
     matcher = DictionaryMatch(d=["this"])
     with pytest.raises(ValueError):
         list(matcher.apply(doc.sentences[0].words))
+
+
+def test_lambda_function_matcher(doc_setup):
+    """Test DictionaryMatch matcher."""
+    doc = doc_setup
+    space = MentionNgrams(n_min=1, n_max=1)
+
+    # Test with a lambda function
+    matcher = LambdaFunctionMatcher(func=lambda x: True)
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
+        "This",
+        "is",
+        "apple",
+    }
+
+    # Test if matcher raises an error when _f is given non-TemporarySpanMention
+    with pytest.raises(ValueError):
+        list(matcher.apply(doc.sentences[0].words))
+
+    # Test if an error raised when a func is not provided.
+    with pytest.raises(Exception):
+        LambdaFunctionMatcher()
