@@ -289,7 +289,7 @@ def get_neighbor_cell_ngrams(
                 ):
                     if directions:
                         if col_diff == 0:
-                            direction = "UP" if 0 < row_diff else "DOWN"
+                            direction = "DOWN" if 0 < row_diff else "UP"
                         else:
                             direction = "RIGHT" if 0 < col_diff else "LEFT"
                         for ngram in tokens_to_ngrams(

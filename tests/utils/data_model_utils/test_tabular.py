@@ -198,15 +198,13 @@ def test_get_neighbor_cell_ngrams(mention_setup):
     ] + ["lunch", "order"] + ["vindaloo"]
 
     # directions=True
-    # TODO: the expected direction for 'lunch' and 'order' is 'UP'
-    #  and that for 'vindaloo' is 'DOWN'?
     assert list(get_neighbor_cell_ngrams(mentions[52], directions=True)) == [
         "paneer",
         ("joan", "LEFT"),
         ("medium", "RIGHT"),
-        ("lunch", "DOWN"),
-        ("order", "DOWN"),
-        ("vindaloo", "UP"),
+        ("lunch", "UP"),
+        ("order", "UP"),
+        ("vindaloo", "DOWN"),
     ]
 
     # when a mention is not tabular
