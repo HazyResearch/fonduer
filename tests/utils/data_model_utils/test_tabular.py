@@ -259,3 +259,7 @@ def test_get_head_ngrams(mention_setup):
     # when a mention is in the header row
     assert mentions[46].get_span() == "Name"
     assert list(get_head_ngrams(mentions[46])) == []
+
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_head_ngrams(mentions[0])) == []
