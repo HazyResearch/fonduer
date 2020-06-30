@@ -236,6 +236,11 @@ def test_get_col_ngrams(mention_setup):
         "vindaloo"
     ] + ["lamb", "madras"]
 
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    # TODO: the return value [None] is inconsistent with others like get_cell_ngrams
+    assert list(get_col_ngrams(mentions[0])) == [None]
+
 
 def test_get_aligned_ngrams(mention_setup):
     """Test the get_aligned_ngrams function."""
