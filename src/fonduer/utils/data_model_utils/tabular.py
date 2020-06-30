@@ -284,22 +284,14 @@ def get_neighbor_cell_ngrams(
                 row_diff = min_row_diff(sentence, root_cell, absolute=False)
                 col_diff = min_col_diff(sentence, root_cell, absolute=False)
                 if (
-                    (row_diff or col_diff)
-                    and not (row_diff and col_diff)
+                    row_diff ^ col_diff  # Exclusive OR
                     and abs(row_diff) + abs(col_diff) <= dist
                 ):
                     if directions:
-                        direction = ""
                         if col_diff == 0:
-                            if 0 < row_diff and row_diff <= dist:
-                                direction = "UP"
-                            elif 0 > row_diff and row_diff >= -dist:
-                                direction = "DOWN"
-                        elif row_diff == 0:
-                            if 0 < col_diff and col_diff <= dist:
-                                direction = "RIGHT"
-                            elif 0 > col_diff and col_diff >= -dist:
-                                direction = "LEFT"
+                            direction = "UP" if 0 < row_diff else "DOWN"
+                        else:
+                            direction = "RIGHT" if 0 < col_diff else "LEFT"
                         for ngram in tokens_to_ngrams(
                             getattr(sentence, attrib),
                             n_min=n_min,
