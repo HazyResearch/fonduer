@@ -209,6 +209,10 @@ def test_get_neighbor_cell_ngrams(mention_setup):
         ("vindaloo", "UP"),
     ]
 
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_neighbor_cell_ngrams(mentions[0])) == ["markdown"]
+
 
 def test_get_row_ngrams(mention_setup):
     """Test the get_row_ngrams function."""
