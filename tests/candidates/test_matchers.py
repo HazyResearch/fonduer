@@ -1,7 +1,15 @@
 """Fonduer unit tests for matchers."""
 import pytest
+from nltk.stem.porter import PorterStemmer
 
-from fonduer.candidates.matchers import Intersect, Inverse, RegexMatchSpan, Union
+from fonduer.candidates.matchers import (
+    Concat,
+    DictionaryMatch,
+    Intersect,
+    Inverse,
+    RegexMatchSpan,
+    Union,
+)
 from fonduer.candidates.mentions import MentionNgrams
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.parser.lingual_parser.spacy_parser import SpacyParser
@@ -173,3 +181,63 @@ def test_inverse(doc_setup):
     # Check if Inverse raises an error when two child matchers are provided.
     with pytest.raises(ValueError):
         Inverse(matcher0, matcher0)
+
+
+def test_cancat(doc_setup):
+    """Test Concat matcher."""
+    doc = doc_setup
+    space = MentionNgrams(n_min=1, n_max=2)
+
+    # Match any span that contains "this"
+    matcher0 = RegexMatchSpan(
+        rgx=r"this", search=False, full_match=False, longest_match_only=False
+    )
+    # Match any span that contains "is"
+    matcher1 = RegexMatchSpan(
+        rgx=r"is", search=False, full_match=False, longest_match_only=False
+    )
+    matcher = Concat(matcher0, matcher1)
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
+
+    # Test if matcher raises an error when _f is given non-TemporarySpanMention
+    with pytest.raises(ValueError):
+        list(matcher.apply(doc.sentences[0].words))
+
+    # Test if an error is raised when the number of child matchers is not 2.
+    matcher = Concat(matcher0)
+    with pytest.raises(ValueError):
+        list(matcher.apply(space.apply(doc)))
+
+    # Test with left_required=False
+    matcher = Concat(matcher0, matcher1, left_required=False)
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
+        "This is",
+        "is apple",
+    }
+
+    # Test with right_required=False
+    matcher = Concat(matcher0, matcher1, right_required=False)
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
+
+
+def test_dictionary_match(doc_setup):
+    """Test DictionaryMatch matcher."""
+    doc = doc_setup
+    space = MentionNgrams(n_min=1, n_max=1)
+
+    # Test with a list of str
+    matcher = DictionaryMatch(d=["this"])
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This"}
+
+    # Test without a dictionary
+    with pytest.raises(Exception):
+        DictionaryMatch()
+
+    # TODO: test with plural words
+    matcher = DictionaryMatch(d=["is"], stemmer=PorterStemmer())
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"is"}
+
+    # Test if matcher raises an error when _f is given non-TemporarySpanMention
+    matcher = DictionaryMatch(d=["this"])
+    with pytest.raises(ValueError):
+        list(matcher.apply(doc.sentences[0].words))

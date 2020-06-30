@@ -2,6 +2,7 @@ black>=18.9b0
 flake8>=3.8.0
 flake8-docstrings
 mypy
+nltk
 isort
 pre-commit
 pytest
