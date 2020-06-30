@@ -186,6 +186,10 @@ def test_get_cell_ngrams(mention_setup):
 
     # TODO: test get_cell_ngrams when there are other sentences in the cell.
 
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_cell_ngrams(mentions[0])) == ["markdown"]
+
 
 def test_get_neighbor_cell_ngrams(mention_setup):
     """Test the get_neighbor_cell_ngrams function."""
