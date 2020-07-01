@@ -8,6 +8,7 @@ from fonduer.candidates.matchers import (
     DictionaryMatch,
     Intersect,
     Inverse,
+    LambdaFunctionFigureMatcher,
     LambdaFunctionMatcher,
     LocationMatcher,
     MiscMatcher,
@@ -18,10 +19,10 @@ from fonduer.candidates.matchers import (
     RegexMatchSpan,
     Union,
 )
-from fonduer.candidates.mentions import MentionNgrams
+from fonduer.candidates.mentions import MentionFigures, MentionNgrams
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.parser.lingual_parser.spacy_parser import SpacyParser
-from fonduer.parser.models import Document, Sentence
+from fonduer.parser.models import Document, Figure, Sentence
 
 
 @pytest.fixture()
@@ -365,3 +366,35 @@ def test_ner_matchers():
     # Test if MiscMatcher works as expected
     matcher = MiscMatcher()
     assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"iPhone"}
+
+
+def test_figure_matcher(doc_setup):
+    """Test matchers for figures."""
+    doc = doc_setup
+    # Create two dummy figures
+    Figure(id=2, document=doc)
+    Figure(id=3, document=doc)
+    assert len(doc.figures) == 2
+
+    space = MentionFigures()
+    assert len(list(space.apply(doc))) == 2
+
+    # Set up a matcher that matches figures with id==2.
+    matcher = LambdaFunctionFigureMatcher(
+        func=lambda tf: True if tf.figure.id == 2 else False
+    )
+
+    # Test if matcher only matches the first figure.
+    assert len(list(matcher.apply(space.apply(doc)))) == 1
+    assert set(tf.figure.id for tf in matcher.apply(space.apply(doc))) == {2}
+
+    # The keyword arg should be "func"
+    with pytest.raises(Exception):
+        LambdaFunctionFigureMatcher(
+            function=lambda tf: True if tf.figure.id == 2 else False
+        )
+
+    # LambdaFunctionFigureMatcher only supports TemporaryFigureMention.
+    space = MentionNgrams(n_min=1, n_max=2)
+    with pytest.raises(ValueError):
+        list(matcher.apply(space.apply(doc)))
