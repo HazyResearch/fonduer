@@ -10,6 +10,8 @@ from fonduer.candidates.matchers import (
     Inverse,
     LambdaFunctionMatcher,
     LocationMatcher,
+    MiscMatcher,
+    NumberMatcher,
     OrganizationMatcher,
     PersonMatcher,
     RegexMatchEach,
@@ -305,9 +307,13 @@ def test_ner_matchers():
     """Test different ner type matchers."""
     # Set up a document
     doc = Document(id=1, name="test", stable_id="1::document:0:0")
-    doc.text = "Tim Cook was born in USA in 1960. \
-        He is the CEO of Apple. \
-        He sold 100 million of iPhone."
+    doc.text = " ".join(
+        [
+            "Tim Cook was born in USA in 1960.",
+            "He is the CEO of Apple.",
+            "He sold 100 million of iPhone.",
+        ]
+    )
     lingual_parser = SpacyParser("en")
     for parts in lingual_parser.split_sentences(doc.text):
         parts["document"] = doc
@@ -325,7 +331,8 @@ def test_ner_matchers():
         "O",
     ]
     doc.sentences[1].ner_tags = ["O", "O", "O", "O", "O", "ORG", "O"]
-    doc.sentences[2].ner_tags = ["O", "O", "O", "O", "O", "ORG", "O"]
+    # TODO: replace "NUMBER" with "CARDINAL" (#473)
+    doc.sentences[2].ner_tags = ["O", "O", "NUMBER", "NUMBER", "O", "MISC", "O"]
 
     # the length of words and that of ner_tags should match.
     assert len(doc.sentences[0].words) == len(doc.sentences[0].ner_tags)
@@ -348,3 +355,13 @@ def test_ner_matchers():
     # Test if OrganizationMatcher works as expected
     matcher = OrganizationMatcher()
     assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"Apple"}
+
+    # Test if NumberMatcher works as expected
+    matcher = NumberMatcher()
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {
+        "100 million"
+    }
+
+    # Test if MiscMatcher works as expected
+    matcher = MiscMatcher()
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"iPhone"}
