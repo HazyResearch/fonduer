@@ -1,4 +1,6 @@
 """Fonduer unit tests for matchers."""
+from unittest.mock import Mock
+
 import pytest
 from nltk.stem.porter import PorterStemmer
 
@@ -232,6 +234,15 @@ def test_cancat(doc_setup):
     matcher = Concat(matcher0, matcher1, right_required=False)
     assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
 
+    # Test with permutations=False
+    matcher = Concat(matcher1, matcher0, permutations=False)
+    assert set(matcher.apply(space.apply(doc))) == set()
+    # Test with permutations=True
+    matcher = Concat(matcher1, matcher0, permutations=True)
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"This is"}
+
+    # TODO: Add a test for ignore_sep=False
+
 
 def test_dictionary_match(doc_setup):
     """Test DictionaryMatch matcher."""
@@ -254,6 +265,21 @@ def test_dictionary_match(doc_setup):
     matcher = DictionaryMatch(d=["this"])
     with pytest.raises(ValueError):
         list(matcher.apply(doc.sentences[0].words))
+
+
+def test_do_not_use_stemmer_when_UnicodeDecodeError():
+    """Test DictionaryMatch when stemmer causes UnicodeDecodeError."""
+    stemmer = PorterStemmer()
+    matcher = DictionaryMatch(d=["is"], stemmer=stemmer)
+    # _stem(w) should return a word stem.
+    assert matcher._stem("caresses") == "caress"
+
+    stemmer.stem = Mock(
+        side_effect=UnicodeDecodeError("dummycodec", b"\x00\x00", 1, 2, "Dummy  !")
+    )
+    matcher = DictionaryMatch(d=["is"], stemmer=stemmer)
+    # _stem(w) should return w as stemmer.stem raises UnicodeDecodeError.
+    assert matcher._stem("caresses") == "caresses"
 
 
 def test_lambda_function_matcher(doc_setup):
