@@ -284,22 +284,14 @@ def get_neighbor_cell_ngrams(
                 row_diff = min_row_diff(sentence, root_cell, absolute=False)
                 col_diff = min_col_diff(sentence, root_cell, absolute=False)
                 if (
-                    (row_diff or col_diff)
-                    and not (row_diff and col_diff)
+                    row_diff ^ col_diff  # Exclusive OR
                     and abs(row_diff) + abs(col_diff) <= dist
                 ):
                     if directions:
-                        direction = ""
                         if col_diff == 0:
-                            if 0 < row_diff and row_diff <= dist:
-                                direction = "UP"
-                            elif 0 > row_diff and row_diff >= -dist:
-                                direction = "DOWN"
-                        elif row_diff == 0:
-                            if 0 < col_diff and col_diff <= dist:
-                                direction = "RIGHT"
-                            elif 0 > col_diff and col_diff >= -dist:
-                                direction = "LEFT"
+                            direction = "DOWN" if 0 < row_diff else "UP"
+                        else:
+                            direction = "RIGHT" if 0 < col_diff else "LEFT"
                         for ngram in tokens_to_ngrams(
                             getattr(sentence, attrib),
                             n_min=n_min,
@@ -483,8 +475,7 @@ def _get_table_cells(table: Table) -> DefaultDict[Cell, List[Sentence]]:
     """
     sent_map: DefaultDict[Cell, List[Sentence]] = defaultdict(list)
     for sent in table.sentences:
-        if sent.is_tabular():
-            sent_map[sent.cell].append(sent)
+        sent_map[sent.cell].append(sent)
     return sent_map
 
 
@@ -507,12 +498,12 @@ def _get_axis_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
     ):
         yield ngram
-    if span.sentence.is_tabular():
-        for sentence in _get_aligned_sentences(span.sentence, axis, spread=spread):
-            for ngram in tokens_to_ngrams(
-                getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
-            ):
-                yield ngram
+
+    for sentence in _get_aligned_sentences(span.sentence, axis, spread=spread):
+        for ngram in tokens_to_ngrams(
+            getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
+        ):
+            yield ngram
 
 
 @lru_cache(maxsize=1024)
