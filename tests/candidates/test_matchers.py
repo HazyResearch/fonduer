@@ -4,10 +4,15 @@ from nltk.stem.porter import PorterStemmer
 
 from fonduer.candidates.matchers import (
     Concat,
+    DateMatcher,
     DictionaryMatch,
     Intersect,
     Inverse,
     LambdaFunctionMatcher,
+    LocationMatcher,
+    OrganizationMatcher,
+    PersonMatcher,
+    RegexMatchEach,
     RegexMatchSpan,
     Union,
 )
@@ -74,6 +79,10 @@ def test_union(doc_setup):
         "This is",
         "is apple",
     }
+
+    # Unsupported option should raise an exception
+    with pytest.raises(Exception):
+        Union(matcher0, matcher1, long_match_only=False)
 
 
 def test_intersect(doc_setup):
@@ -264,3 +273,78 @@ def test_lambda_function_matcher(doc_setup):
     # Test if an error raised when a func is not provided.
     with pytest.raises(Exception):
         LambdaFunctionMatcher()
+
+
+def test_regex_match(doc_setup):
+    """Test RegexMatch matcher."""
+    doc = doc_setup
+    space = MentionNgrams(n_min=1, n_max=2)
+
+    # a wrong option name should raise an excetiopn
+    with pytest.raises(Exception):
+        RegexMatchSpan(regex=r"apple")
+
+    # Test if matcher raises an error when _f is given non-TemporarySpanMention
+    matcher = RegexMatchSpan(rgx=r"apple")
+    with pytest.raises(ValueError):
+        list(matcher.apply(doc.sentences[0].words))
+
+    matcher = RegexMatchEach(rgx=r"apple")
+    with pytest.raises(ValueError):
+        list(matcher.apply(doc.sentences[0].words))
+
+    # Test if RegexMatchEach works as expected.
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"apple"}
+
+    # Test ignore_case option
+    matcher = RegexMatchEach(rgx=r"Apple", ignore_case=False)
+    assert list(matcher.apply(space.apply(doc))) == []
+
+
+def test_ner_matchers():
+    """Test different ner type matchers."""
+    # Set up a document
+    doc = Document(id=1, name="test", stable_id="1::document:0:0")
+    doc.text = "Tim Cook was born in USA in 1960. \
+        He is the CEO of Apple. \
+        He sold 100 million of iPhone."
+    lingual_parser = SpacyParser("en")
+    for parts in lingual_parser.split_sentences(doc.text):
+        parts["document"] = doc
+        Sentence(**parts)
+    # Manually attach ner_tags as the result from spacy may fluctuate.
+    doc.sentences[0].ner_tags = [
+        "PERSON",
+        "PERSON",
+        "O",
+        "O",
+        "O",
+        "GPE",
+        "O",
+        "DATE",
+        "O",
+    ]
+    doc.sentences[1].ner_tags = ["O", "O", "O", "O", "O", "ORG", "O"]
+    doc.sentences[2].ner_tags = ["O", "O", "O", "O", "O", "ORG", "O"]
+
+    # the length of words and that of ner_tags should match.
+    assert len(doc.sentences[0].words) == len(doc.sentences[0].ner_tags)
+    assert len(doc.sentences[1].words) == len(doc.sentences[1].ner_tags)
+
+    space = MentionNgrams(n_min=1, n_max=2)
+
+    # Test if PersonMatcher works as expected
+    matcher = PersonMatcher()
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"Tim Cook"}
+
+    # Test if LocationMatcher works as expected
+    matcher = LocationMatcher()
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"USA"}
+
+    # Test if DateMatcher works as expected
+    matcher = DateMatcher()
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"1960"}
+
+    # Test if OrganizationMatcher works as expected
+    matcher = OrganizationMatcher()
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"Apple"}
