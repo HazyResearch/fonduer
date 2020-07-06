@@ -3,7 +3,7 @@ flake8>=3.8.0
 flake8-docstrings
 mypy
 nltk
-isort
+isort>=5.0.0
 pre-commit
 pytest
 pytest-dependency

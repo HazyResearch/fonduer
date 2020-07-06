@@ -15,8 +15,8 @@ from fonduer.parser.models.sentence import Sentence
 
 try:
     import spacy
-    from spacy.cli import download
     from spacy import util
+    from spacy.cli import download
     from spacy.tokens import Doc
 except Exception:
     raise Exception("spaCy not installed. Use `pip install spacy`.")

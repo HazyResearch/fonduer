@@ -16,8 +16,8 @@ test: dev check docs
 	pytest tests
 
 check:
-	isort -rc -c src/
-	isort -rc -c tests/
+	isort -c src/
+	isort -c tests/
 	black src/ --check
 	black tests/ --check
 	flake8 src/
