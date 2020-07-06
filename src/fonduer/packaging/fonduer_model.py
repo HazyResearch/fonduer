@@ -352,6 +352,7 @@ def _get_default_conda_env() -> Optional[Dict[str, Any]]:
              :func:`save_model()` and :func:`log_model()`.
     """
     import torch
+
     import fonduer
 
     return _mlflow_conda_env(

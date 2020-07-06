@@ -3,14 +3,13 @@ import logging
 from functools import partial
 from typing import Any, Dict, List, Optional, Union
 
-import torch.nn as nn
-import torch.nn.functional as F
 from emmental.modules.embedding_module import EmbeddingModule
 from emmental.modules.rnn_module import RNN
 from emmental.modules.sparse_linear_module import SparseLinear
 from emmental.scorer import Scorer
 from emmental.task import EmmentalTask
-from torch import Tensor
+from torch import Tensor, nn as nn
+from torch.nn import functional as F
 
 from fonduer.learning.modules.concat_linear import ConcatLinear
 from fonduer.learning.modules.soft_cross_entropy_loss import SoftCrossEntropyLoss

@@ -3,7 +3,7 @@ import re
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 
-import lxml.etree as et
+from lxml import etree as et
 from lxml.etree import _Element
 
 from fonduer.parser.models import Sentence

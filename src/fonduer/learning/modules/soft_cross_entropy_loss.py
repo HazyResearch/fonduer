@@ -2,9 +2,8 @@
 from typing import List
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch import Tensor
+from torch import Tensor, nn as nn
+from torch.nn import functional as F
 
 
 class SoftCrossEntropyLoss(nn.Module):
