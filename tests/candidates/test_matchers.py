@@ -358,8 +358,7 @@ def test_ner_matchers():
         "O",
     ]
     doc.sentences[1].ner_tags = ["O", "O", "O", "O", "O", "ORG", "O"]
-    # TODO: replace "NUMBER" with "CARDINAL" (#473)
-    doc.sentences[2].ner_tags = ["O", "O", "NUMBER", "NUMBER", "O", "MISC", "O"]
+    doc.sentences[2].ner_tags = ["O", "O", "CARDINAL", "CARDINAL", "O", "MISC", "O"]
 
     # the length of words and that of ner_tags should match.
     assert len(doc.sentences[0].words) == len(doc.sentences[0].ner_tags)
