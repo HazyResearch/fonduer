@@ -58,6 +58,9 @@ Fixed
 * `@HiromuHota`_: Adopt to mlflow>=1.9.0.
   (`#461 <https://github.com/HazyResearch/fonduer/issues/461>`_)
   (`#463 <https://github.com/HazyResearch/fonduer/pull/463>`_)
+* `@HiromuHota`_: Correct the entity type for NumberMatcher from "NUMBER" to "CARDINAL".
+  (`#473 <https://github.com/HazyResearch/fonduer/issues/473>`_)
+  (`#477 <https://github.com/HazyResearch/fonduer/pull/477>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
