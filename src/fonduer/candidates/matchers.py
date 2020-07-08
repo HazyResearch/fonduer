@@ -455,13 +455,13 @@ class NumberMatcher(RegexMatchEach):
     Match Spans that are numbers, as identified by spaCy.
 
     A convenience class for setting up a RegexMatchEach to match spans
-    for which each token was tagged as a number (NUMBER or QUANTITY).
+    for which each token was tagged as a number (CARDINAL or QUANTITY).
     """
 
     def __init__(self, *children, **kwargs):  # type: ignore
         """Initialize number matcher."""
         kwargs["attrib"] = "ner_tags"
-        kwargs["rgx"] = "NUMBER|QUANTITY"
+        kwargs["rgx"] = "CARDINAL|QUANTITY"
         super().__init__(*children, **kwargs)
 
 
