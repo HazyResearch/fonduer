@@ -3,6 +3,9 @@ Unreleased_
 
 Added
 ^^^^^
+* `@YasushiMiyata`_: Add :func:`get_max_row_num` to ``fonduer.utils.data_model_utils.tabular``.
+  (`#469 <https://github.com/HazyResearch/fonduer/issues/469>`_)
+  (`#480 <https://github.com/HazyResearch/fonduer/pull/480>`_)
 * `@HiromuHota`_: Add get_bbox() to :class:`Sentence` and :class:`SpanMention`.
   (`#429 <https://github.com/HazyResearch/fonduer/pull/429>`_)
 * `@HiromuHota`_: Add a custom MLflow model that allows you to package a Fonduer model.
@@ -1206,6 +1209,7 @@ Added
 ..
   For convenience, all username links for contributors can be listed here
 
+.. _@YasushiMiyata: https://github.com/YasushiMiyata
 .. _@HiromuHota: https://github.com/HiromuHota
 .. _@KenSugimoto: https://github.com/KenSugimoto
 .. _@j-rausch: https://github.com/j-rausch
