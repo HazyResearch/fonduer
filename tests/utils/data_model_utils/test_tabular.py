@@ -9,6 +9,7 @@ from fonduer.utils.data_model_utils.tabular import (
     get_col_ngrams,
     get_head_ngrams,
     get_max_col_num,
+    get_max_row_num,
     get_min_col_num,
     get_min_row_num,
     get_neighbor_cell_ngrams,
@@ -137,17 +138,19 @@ def test_get_min_max_col_num(mention_setup):
     assert get_max_col_num(mentions[51]) == 0
 
 
-def test_get_min_row_num(mention_setup):
-    """Test the get_min_row_num function."""
+def test_get_min_max_row_num(mention_setup):
+    """Test the get_min_row_num and get_max_row_num function."""
     mentions = mention_setup
 
     # Non tabular mention
     assert mentions[0].get_span() == "Sample"
+    assert not get_max_row_num(mentions[0])
     assert not get_min_row_num(mentions[0])
 
     # Tabular mention
     assert mentions[51].get_span() == "Joan"
     assert get_min_row_num(mentions[51]) == 1
+    assert get_max_row_num(mentions[51]) == 1
 
 
 def test_get_sentence_ngrams(mention_setup):

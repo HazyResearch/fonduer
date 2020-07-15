@@ -121,6 +121,21 @@ def get_min_col_num(
         return None
 
 
+def get_max_row_num(
+    mention: Union[Candidate, Mention, TemporarySpanMention]
+) -> Optional[int]:
+    """Return the largest row number that a Mention occupies.
+
+    :param mention: The Mention to evaluate. If a candidate is given, default
+        to its last Mention.
+    """
+    span = _to_span(mention, idx=-1)
+    if span.sentence.is_tabular():
+        return span.sentence.cell.row_end
+    else:
+        return None
+
+
 def get_min_row_num(
     mention: Union[Candidate, Mention, TemporarySpanMention]
 ) -> Optional[int]:
