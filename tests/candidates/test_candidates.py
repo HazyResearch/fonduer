@@ -373,8 +373,8 @@ def test_row_col_ngram_extraction():
         row_ngrams = list(get_row_ngrams(mention))
         col_ngrams = list(get_col_ngrams(mention))
         if not mention.sentence.is_tabular():
-            assert len(row_ngrams) == 1 and row_ngrams[0] is None
-            assert len(col_ngrams) == 1 and col_ngrams[0] is None
+            assert len(row_ngrams) == 0
+            assert len(col_ngrams) == 0
         else:
             assert not any(x is None for x in row_ngrams)
             assert not any(x is None for x in col_ngrams)
