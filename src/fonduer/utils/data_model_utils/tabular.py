@@ -502,12 +502,12 @@ def _get_axis_ngrams(
     n_max: int = 1,
     spread: List[int] = [0, 0],
     lower: bool = True,
-) -> Iterator[Union[str, None]]:
+) -> Iterator[str]:
     span = _to_span(mention)
 
     if not span.sentence.is_tabular():
-        yield None
         return
+        yield
 
     for ngram in get_sentence_ngrams(
         span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower

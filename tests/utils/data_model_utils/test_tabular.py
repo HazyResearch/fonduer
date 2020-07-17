@@ -241,8 +241,7 @@ def test_get_col_ngrams(mention_setup):
 
     # when a mention is not tabular
     assert mentions[0].get_span() == "Sample"
-    # TODO: the return value [None] is inconsistent with others like get_cell_ngrams
-    assert list(get_col_ngrams(mentions[0])) == [None]
+    assert list(get_col_ngrams(mentions[0])) == []
 
 
 def test_get_aligned_ngrams(mention_setup):

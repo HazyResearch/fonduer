@@ -64,6 +64,8 @@ Fixed
 * `@HiromuHota`_: Correct the entity type for NumberMatcher from "NUMBER" to "CARDINAL".
   (`#473 <https://github.com/HazyResearch/fonduer/issues/473>`_)
   (`#477 <https://github.com/HazyResearch/fonduer/pull/477>`_)
+* `@HiromuHota`_: Fix :func:`_get_axis_ngrams` not to return ``None`` when the input is not tabular.
+  (`#481 <https://github.com/HazyResearch/fonduer/pull/481>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
