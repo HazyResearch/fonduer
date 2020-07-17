@@ -133,7 +133,6 @@ class UDFRunner(object):
             # Fill input queue with documents but # of docs in queue is capped (#435).
             for doc in doc_loader:
                 in_queue.put(doc)  # block until a free slot is available
-                self.last_docs.add(doc.name)
 
         Thread(target=in_thread_func).start()
 
@@ -145,8 +144,9 @@ class UDFRunner(object):
         ) and count_parsed < total_count:
             # Get doc from the out_queue and persist the result into postgres
             try:
-                y = out_queue.get()  # block until an item is available
+                (doc_name, y) = out_queue.get()  # block until an item is available
                 self._add(y)
+                self.last_docs.add(doc_name)
                 # Update progress bar whenever an item has been processed
                 count_parsed += 1
                 if self.pb is not None:
@@ -217,7 +217,7 @@ class UDF(Process):
             else:
                 doc = session.merge(doc, load=False)
             y = self.apply(doc, **self.apply_kwargs)
-            self.out_queue.put(y)
+            self.out_queue.put((doc.name, y))
         session.commit()
         session.close()
 
