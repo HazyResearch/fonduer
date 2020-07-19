@@ -186,7 +186,7 @@ def _convert_mappings_to_matrix(
     for mapping in mappings:
         if mapping:
             for key, value in zip(mapping["keys"], mapping["values"]):
-                if key in keys:
+                if key in keys_map:
                     indices.append(keys_map[key])
                     data.append(value)
         indptr.append(len(indices))
