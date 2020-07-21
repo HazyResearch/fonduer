@@ -131,7 +131,7 @@ class UDFRunner(object):
 
         # Fill input queue with documents but # of docs in queue is capped (#435).
         def in_thread_func() -> None:
-            # Do not use session here to prevent concurrent use (#485).
+            # Do not use session here to prevent concurrent use (#482).
             for doc in doc_loader:
                 in_queue.put(doc)  # block until a free slot is available
 
