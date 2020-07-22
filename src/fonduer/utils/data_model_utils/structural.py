@@ -179,10 +179,13 @@ def common_ancestor(c: Tuple[SpanMention, ...]) -> List[str]:
     spans = [_to_span(i) for i in c]
     ancestors = [np.array(span.sentence.xpath.split("/")) for span in spans]
     min_len = min([a.size for a in ancestors])
-    arrays = np.array([a[:min_len] for a in ancestors])
-    arg_min = np.argmin(arrays[:-1] == arrays[1:], axis=1)
-    val = np.min(arg_min[np.nonzero(arg_min)])
-    return list(ancestors[0][:val])
+    ancestor = ancestors[0]
+    ind = 0  # all the ancestors are common up to this index (exclusive).
+    while ind < min_len:
+        if not all([a[ind] == ancestor[ind] for a in ancestors]):
+            break
+        ind += 1
+    return list(ancestors[0][:ind])
 
 
 def lowest_common_ancestor_depth(c: Tuple[SpanMention, ...]) -> int:
@@ -209,7 +212,10 @@ def lowest_common_ancestor_depth(c: Tuple[SpanMention, ...]) -> int:
     spans = [_to_span(i) for i in c]
     ancestors = [np.array(span.sentence.xpath.split("/")) for span in spans]
     min_len = min([a.size for a in ancestors])
-    arrays = np.array([a[:min_len] for a in ancestors])
-    arg_min = np.argmin(arrays[:-1] == arrays[1:], axis=1)
-    val = np.min(arg_min[np.nonzero(arg_min)])
-    return min_len - val
+    ancestor = ancestors[0]
+    ind = 0  # all the ancestors are common up to this index (exclusive).
+    while ind < min_len:
+        if not all([a[ind] == ancestor[ind] for a in ancestors]):
+            break
+        ind += 1
+    return min_len - ind
