@@ -62,7 +62,7 @@ def doc_setup():
                                     <td>test6</td>
                                     <td>test7</td>
                                 </tr>
-                            </table
+                            </table>
                         </div>
                     </body>
                 </html>"""
