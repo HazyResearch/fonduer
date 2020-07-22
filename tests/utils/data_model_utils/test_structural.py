@@ -64,6 +64,7 @@ def doc_setup():
                                 </tr>
                             </table>
                         </div>
+                        <p>test8 test9</p>
                     </body>
                 </html>"""
     doc = parser_udf.apply(doc)
@@ -81,6 +82,7 @@ def doc_setup():
         ([4, 5], ["", "html", "body", "div"], 3),
         ([5, 6], ["", "html", "body", "div", "table[2]", "tr"], 1),
         ([3, 5], ["", "html", "body", "div"], 3),
+        ([7, 8], ["", "html", "body", "p"], 0),
     ],
 )
 def test_ancestors(doc_setup, mention_ids, output_common_ancestor, output_lcad):
@@ -100,6 +102,9 @@ def test_ancestors(doc_setup, mention_ids, output_common_ancestor, output_lcad):
     assert mentions[4].sentence.text == "test5"
     assert mentions[5].sentence.text == "test6"
     assert mentions[6].sentence.text == "test7"
+    assert mentions[7].sentence.text == "test8 test9"
+    assert mentions[7].get_span() == "test8"
+    assert mentions[8].get_span() == "test9"
 
     test_mentions = (
         [mentions[i] for i in mention_ids] if len(mention_ids) > 0 else mentions
