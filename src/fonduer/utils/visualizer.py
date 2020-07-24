@@ -43,7 +43,7 @@ class Visualizer(object):
         imgs = []
         with Color("blue") as blue, Color("red") as red, Color(
             "rgba(0, 0, 0, 0.0)"
-        ) as transparent, Drawing() as draw:
+        ) as transparent:
             colors = [blue, red]
             boxes_per_page: DefaultDict[int, int] = defaultdict(int)
             boxes_by_page: DefaultDict[
@@ -53,13 +53,18 @@ class Visualizer(object):
                 boxes_per_page[page] += 1
                 boxes_by_page[page].append((top, bottom, left, right))
             for i, page_num in enumerate(boxes_per_page.keys()):
-                img = pdf_to_img(pdf_file, page_num)
-                draw.fill_color = transparent
-                for j, (top, bottom, left, right) in enumerate(boxes_by_page[page_num]):
-                    draw.stroke_color = colors[j % 2] if alternate_colors else colors[0]
-                    draw.rectangle(left=left, top=top, right=right, bottom=bottom)
-                draw(img)
-                imgs.append(img)
+                with Drawing() as draw:
+                    img = pdf_to_img(pdf_file, page_num)
+                    draw.fill_color = transparent
+                    for j, (top, bottom, left, right) in enumerate(
+                        boxes_by_page[page_num]
+                    ):
+                        draw.stroke_color = (
+                            colors[j % 2] if alternate_colors else colors[0]
+                        )
+                        draw.rectangle(left=left, top=top, right=right, bottom=bottom)
+                    draw(img)
+                    imgs.append(img)
             return imgs
 
     def display_candidates(
