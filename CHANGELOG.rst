@@ -69,6 +69,8 @@ Fixed
   (`#477 <https://github.com/HazyResearch/fonduer/pull/477>`_)
 * `@HiromuHota`_: Fix :func:`_get_axis_ngrams` not to return ``None`` when the input is not tabular.
   (`#481 <https://github.com/HazyResearch/fonduer/pull/481>`_)
+* `@HiromuHota`_: Fix :func:`Visualizer.display_candidates` not to draw rectangles on wrong pages.
+  (`#488 <https://github.com/HazyResearch/fonduer/pull/488>`_)
 
 0.8.2_ - 2020-04-28
 -------------------
