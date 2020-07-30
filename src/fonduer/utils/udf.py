@@ -213,11 +213,11 @@ class UDF(Process):
             # Merge the object with the session owned by the current child process.
             # If transient (ie not saved), save the object to the database.
             # If not, load it from the database w/o the overhead of reconciliation.
-            if inspect(doc).transient:  # This only happens during parser.apply
-                doc = session.merge(doc, load=True)
-            else:
+            if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
             y = self.apply(doc, **self.apply_kwargs)
+            if y and inspect(y).transient:  # This only happens during parser.apply
+                y = session.merge(y, load=True)
             self.out_queue.put((doc.name, y))
         session.commit()
         session.close()
