@@ -251,7 +251,7 @@ class ParserUDF(UDF):
 
     def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
-    ) -> Document:
+    ) -> Optional[Document]:
         """Parse a text in an instance of Document.
 
         :param document: document to parse.
@@ -287,6 +287,7 @@ class ParserUDF(UDF):
                     f"because of parse error: \n{e}"
                 )
             )
+            return None
 
     def _parse_table(self, node: HtmlElement, state: Dict[str, Any]) -> Dict[str, Any]:
         """Parse a table node.
