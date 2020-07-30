@@ -28,7 +28,7 @@ ARG FONDUER_VERSION=
 
 # Install python packages
 RUN pip install \
-    torch==1.4.0+cpu -f https://download.pytorch.org/whl/torch_stable.html \
+    torch==1.6.0+cpu -f https://download.pytorch.org/whl/torch_stable.html \
     # https://github.com/HazyResearch/fonduer/issues/390
     "tensorboard<2.0.0,>=1.14.0" "scikit-learn<0.22.0,>=0.20.2" \
     fonduer${FONDUER_VERSION:+==${FONDUER_VERSION}}
