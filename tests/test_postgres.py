@@ -198,3 +198,13 @@ def test_too_many_clients_error_should_not_happen():
     )
 
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
+
+
+def test_parse_error_doc_skipping():
+    """Test skipping of faulty htmls."""
+    faulty_doc_path = "tests/data/html_faulty/ext_diseases_missing_table_tag.html"
+    preprocessor = HTMLDocPreprocessor(faulty_doc_path)
+    session = Meta.init(CONN_STRING).Session()
+    corpus_parser = Parser(session)
+    corpus_parser.apply(preprocessor)
+    assert session.query(Document).count() == 0
