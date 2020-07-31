@@ -329,6 +329,10 @@ def test_regex_match(doc_setup):
     matcher = RegexMatchEach(rgx=r"Apple", ignore_case=False)
     assert list(matcher.apply(space.apply(doc))) == []
 
+    # Test sep option
+    matcher = RegexMatchSpan(rgx=r"isapple", sep=" ")
+    assert set(tc.get_span() for tc in matcher.apply(space.apply(doc))) == {"is apple"}
+
 
 def test_ner_matchers():
     """Test different ner type matchers."""
