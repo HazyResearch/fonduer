@@ -3,7 +3,7 @@ import logging
 from multiprocessing import Manager, Process
 from queue import Queue
 from threading import Thread
-from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type, Union
+from typing import Any, Collection, Dict, List, Optional, Set, Type, Union
 
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
@@ -94,7 +94,7 @@ class UDFRunner(object):
         """Execute this method by a single process after apply."""
         pass
 
-    def _add(self, obj: Union[Document, None, List[List[Dict[str, Any]]]]) -> None:
+    def _add(self, instance: Any) -> None:
         pass
 
     def _apply(
@@ -214,14 +214,14 @@ class UDF(Process):
             # This does not happen during parsing when doc is transient.
             if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
-            y: Union[Document, None, List[List[Dict[str, Any]]]] = self.apply(
-                doc, **self.apply_kwargs
-            )
+            y = self.apply(doc, **self.apply_kwargs)
             self.out_queue.put((doc.name, y))
         session.commit()
         session.close()
 
-    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
+    def apply(
+        self, doc: Document, **kwargs: Any
+    ) -> Union[Document, None, List[List[Dict[str, Any]]]]:
         """Apply function.
 
         This function takes in an object, and returns a generator / set / list.
