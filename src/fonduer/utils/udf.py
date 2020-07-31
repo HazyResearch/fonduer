@@ -217,7 +217,7 @@ class UDF(Process):
                 doc, **self.apply_kwargs
             )
             # Persist the object if no error happens during parsing.
-            if y and isinstance(y, Document) and inspect(y).transient:
+            if isinstance(y, Document) and inspect(y).transient:
                 session.add(y)
             self.out_queue.put((doc.name, y))
         session.commit()
