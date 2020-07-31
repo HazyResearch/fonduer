@@ -6,6 +6,7 @@ env:
 jobs:
   ubuntu-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       matrix:
         python-version: [3.6, 3.7]
@@ -78,6 +79,7 @@ jobs:
         fail_ci_if_error: true
   macos-test:
     runs-on: macos-latest
+    timeout-minutes: 60
     strategy:
       matrix:
         python-version: [3.6.10, 3.7.7]
