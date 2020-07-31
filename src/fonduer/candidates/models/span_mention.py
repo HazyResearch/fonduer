@@ -138,7 +138,7 @@ class TemporarySpanMention(TemporaryContext):
             self.get_word_start_index() : self.get_word_end_index() + 1
         ]
 
-    def get_attrib_span(self, a: str, sep: str = " ") -> str:
+    def get_attrib_span(self, a: str, sep: str = "") -> str:
         """Get the span of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -146,15 +146,18 @@ class TemporarySpanMention(TemporaryContext):
             sep.join(span.a)
 
         :param a: The attribute to get a span for.
-        :param sep: The separator to use for the join.
+        :param sep: The separator to use for the join,
+                    or to be removed from text if a="words".
         :return: The joined tokens, or text if a="words".
         """
         # NOTE: Special behavior for words currently (due to correspondence
         # with char_offsets)
         if a == "words":
-            return self.sentence.text[self.char_start : self.char_end + 1]
+            return self.sentence.text[self.char_start : self.char_end + 1].replace(
+                sep, ""
+            )
         else:
-            return sep.join(self.get_attrib_tokens(a))
+            return sep.join([str(n) for n in self.get_attrib_tokens(a)])
 
     def get_span(self) -> str:
         """Return the text of the ``Span``.

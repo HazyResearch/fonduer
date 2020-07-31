@@ -151,7 +151,7 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
         """
         return self.__getattribute__(a)
 
-    def get_attrib_span(self, a: str, sep: str = " ") -> str:
+    def get_attrib_span(self, a: str, sep: str = "") -> str:
         """Get the span of sentence attribute *a*.
 
         Intuitively, like calling::
@@ -159,13 +159,14 @@ class TemporaryImplicitSpanMention(TemporarySpanMention):
             sep.join(implicit_span.a)
 
         :param a: The attribute to get a span for.
-        :param sep: The separator to use for the join.
+        :param sep: The separator to use for the join,
+                    or to be removed from text if a="words".
         :return: The joined tokens, or text if a="words".
         """
         if a == "words":
-            return self.text
+            return self.text.replace(sep, "")
         else:
-            return sep.join(self.get_attrib_tokens(a))
+            return sep.join([str(n) for n in self.get_attrib_tokens(a)])
 
     def __getitem__(self, key: slice) -> "TemporaryImplicitSpanMention":
         """Slice operation returns a new candidate sliced according to **char index**.
