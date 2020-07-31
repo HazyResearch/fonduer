@@ -141,6 +141,11 @@ class Parser(UDFRunner):
             progress_bar=progress_bar,
         )
 
+    def _add(self, doc: Union[Document, None]) -> None:
+        # Persist the object if no error happens during parsing.
+        if doc:
+            self.session.add(doc)
+
     def clear(self, pdf_path: Optional[str] = None) -> None:  # type: ignore
         """Clear all of the ``Context`` objects in the database.
 

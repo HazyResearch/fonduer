@@ -94,7 +94,7 @@ class UDFRunner(object):
         """Execute this method by a single process after apply."""
         pass
 
-    def _add(self, instance: Any) -> None:
+    def _add(self, obj: Union[Document, None, List[List[Dict[str, Any]]]]) -> None:
         pass
 
     def _apply(
@@ -211,14 +211,12 @@ class UDF(Process):
             if doc == UDF.TASK_DONE:
                 break
             # Merge the object with the session owned by the current child process.
+            # This does not happen during parsing when doc is transient.
             if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
             y: Union[Document, None, List[List[Dict[str, Any]]]] = self.apply(
                 doc, **self.apply_kwargs
             )
-            # Persist the object if no error happens during parsing.
-            if isinstance(y, Document) and inspect(y).transient:
-                session.add(y)
             self.out_queue.put((doc.name, y))
         session.commit()
         session.close()
