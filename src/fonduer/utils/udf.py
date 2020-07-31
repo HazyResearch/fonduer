@@ -3,7 +3,7 @@ import logging
 from multiprocessing import Manager, Process
 from queue import Queue
 from threading import Thread
-from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
+from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type, Union
 
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
@@ -213,7 +213,9 @@ class UDF(Process):
             # Merge the object with the session owned by the current child process.
             if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
-            y = self.apply(doc, **self.apply_kwargs)
+            y: Union[Document, None, List[List[Dict[str, Any]]]] = self.apply(
+                doc, **self.apply_kwargs
+            )
             # Persist the object if no error happens during parsing.
             if y and isinstance(y, Document) and inspect(y).transient:
                 session.add(y)
