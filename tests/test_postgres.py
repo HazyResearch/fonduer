@@ -207,4 +207,7 @@ def test_parse_error_doc_skipping():
     session = Meta.init(CONN_STRING).Session()
     corpus_parser = Parser(session)
     corpus_parser.apply(preprocessor)
-    assert session.query(Document).count() == 0
+    # This returns documents that apply() was called on
+    assert corpus_parser.last_docs == {"ext_diseases_missing_table_tag"}
+    # This returns only documents that are successfully parsed.
+    assert corpus_parser.get_last_documents() == []

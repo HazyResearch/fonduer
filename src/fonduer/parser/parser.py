@@ -154,7 +154,7 @@ class Parser(UDFRunner):
         self.session.query(Context).delete(synchronize_session="fetch")
 
     def get_last_documents(self) -> List[Document]:
-        """Return the most recently parsed list of ``Documents``.
+        """Return the most recently successfully parsed list of ``Documents``.
 
         :return: A list of the most recently parsed ``Documents`` ordered by name.
         """
@@ -166,7 +166,7 @@ class Parser(UDFRunner):
         )
 
     def get_documents(self) -> List[Document]:
-        """Return all the parsed ``Documents`` in the database.
+        """Return all the successfully parsed ``Documents`` in the database.
 
         :return: A list of all ``Documents`` in the database ordered by name.
         """
