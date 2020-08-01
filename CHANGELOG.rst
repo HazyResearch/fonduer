@@ -21,6 +21,9 @@ Added
 
 Changed
 ^^^^^^^
+* `@YasushiMiyata`_: Enable `RegexMatchSpan` with concatenates words by sep="(separator)" option.
+  (`#270 <https://github.com/HazyResearch/fonduer/issues/270>`_)
+  (`#492 <https://github.com/HazyResearch/fonduer/pull/492>`_)
 * `@HiromuHota`_: Enabled "Type hints (PEP 484) support for the Sphinx autodoc extension."
   (`#421 <https://github.com/HazyResearch/fonduer/pull/421>`_)
 * `@HiromuHota`_: Switched the Cython wrapper for Mecab from mecab-python3 to fugashi.
