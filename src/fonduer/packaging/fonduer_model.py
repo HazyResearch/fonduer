@@ -357,7 +357,7 @@ def _get_default_conda_env() -> Optional[Dict[str, Any]]:
 
     return _mlflow_conda_env(
         additional_conda_deps=[
-            "pytorch={}".format(torch.__version__),  # type: ignore
+            "pytorch={}".format(torch.__version__),
             "psycopg2",
             "pip",
         ],

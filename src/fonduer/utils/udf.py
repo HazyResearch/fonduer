@@ -3,7 +3,7 @@ import logging
 from multiprocessing import Manager, Process
 from queue import Queue
 from threading import Thread
-from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Type
+from typing import Any, Collection, Dict, List, Optional, Set, Type, Union
 
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
@@ -211,18 +211,17 @@ class UDF(Process):
             if doc == UDF.TASK_DONE:
                 break
             # Merge the object with the session owned by the current child process.
-            # If transient (ie not saved), save the object to the database.
-            # If not, load it from the database w/o the overhead of reconciliation.
-            if inspect(doc).transient:  # This only happens during parser.apply
-                doc = session.merge(doc, load=True)
-            else:
+            # This does not happen during parsing when doc is transient.
+            if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
             y = self.apply(doc, **self.apply_kwargs)
             self.out_queue.put((doc.name, y))
         session.commit()
         session.close()
 
-    def apply(self, doc: Document, **kwargs: Any) -> Iterator[Meta.Base]:
+    def apply(
+        self, doc: Document, **kwargs: Any
+    ) -> Union[Document, None, List[List[Dict[str, Any]]]]:
         """Apply function.
 
         This function takes in an object, and returns a generator / set / list.

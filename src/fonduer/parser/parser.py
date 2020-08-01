@@ -141,6 +141,11 @@ class Parser(UDFRunner):
             progress_bar=progress_bar,
         )
 
+    def _add(self, doc: Union[Document, None]) -> None:
+        # Persist the object if no error happens during parsing.
+        if doc:
+            self.session.add(doc)
+
     def clear(self, pdf_path: Optional[str] = None) -> None:  # type: ignore
         """Clear all of the ``Context`` objects in the database.
 
@@ -149,7 +154,7 @@ class Parser(UDFRunner):
         self.session.query(Context).delete(synchronize_session="fetch")
 
     def get_last_documents(self) -> List[Document]:
-        """Return the most recently parsed list of ``Documents``.
+        """Return the most recently successfully parsed list of ``Documents``.
 
         :return: A list of the most recently parsed ``Documents`` ordered by name.
         """
@@ -161,7 +166,7 @@ class Parser(UDFRunner):
         )
 
     def get_documents(self) -> List[Document]:
-        """Return all the parsed ``Documents`` in the database.
+        """Return all the successfully parsed ``Documents`` in the database.
 
         :return: A list of all ``Documents`` in the database ordered by name.
         """
@@ -251,7 +256,7 @@ class ParserUDF(UDF):
 
     def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
-    ) -> Document:
+    ) -> Optional[Document]:
         """Parse a text in an instance of Document.
 
         :param document: document to parse.
@@ -287,6 +292,7 @@ class ParserUDF(UDF):
                     f"because of parse error: \n{e}"
                 )
             )
+            return None
 
     def _parse_table(self, node: HtmlElement, state: Dict[str, Any]) -> Dict[str, Any]:
         """Parse a table node.

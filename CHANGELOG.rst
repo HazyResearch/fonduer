@@ -71,6 +71,9 @@ Fixed
   (`#481 <https://github.com/HazyResearch/fonduer/pull/481>`_)
 * `@HiromuHota`_: Fix :func:`Visualizer.display_candidates` not to draw rectangles on wrong pages.
   (`#488 <https://github.com/HazyResearch/fonduer/pull/488>`_)
+* `@HiromuHota`_: Persist doc only when no error happens during parsing.
+  (`#489 <https://github.com/HazyResearch/fonduer/issues/489>`_)
+  (`#490 <https://github.com/HazyResearch/fonduer/pull/490>`_)
 
 0.8.2_ - 2020-04-28
 -------------------

@@ -326,9 +326,7 @@ class FeaturizerUDF(UDF):
 
         super().__init__(**kwargs)
 
-    def apply(  # type: ignore
-        self, doc: Document, **kwargs: Any
-    ) -> List[List[Dict[str, Any]]]:
+    def apply(self, doc: Document, **kwargs: Any) -> List[List[Dict[str, Any]]]:
         """Extract candidates from the given Context.
 
         :param doc: A document to process.
