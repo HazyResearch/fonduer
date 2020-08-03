@@ -294,7 +294,7 @@ class _RegexMatch(_Matcher):
             raise Exception("Please supply a regular expression string r as rgx=r.")
         self.ignore_case = self.opts.get("ignore_case", True)
         self.attrib = self.opts.get("attrib", WORDS)
-        self.sep = self.opts.get("sep", " ")
+        self.sep = self.opts.get("sep", "")
 
         # Extending the _RegexMatch to handle search(instead of only match)
         # and adding a toggle for full span match.
