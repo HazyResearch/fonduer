@@ -215,6 +215,9 @@ class UDF(Process):
             if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
             y = self.apply(doc, **self.apply_kwargs)
+            # Persist the object if no error happens during parsing.
+            if isinstance(y, Document) and inspect(y).transient:
+                session.add(y)
             self.out_queue.put((doc.name, y))
         session.commit()
         session.close()
