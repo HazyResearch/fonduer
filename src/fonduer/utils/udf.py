@@ -218,8 +218,8 @@ class UDF(Process):
             # Persist the object if no error happens during parsing.
             if isinstance(y, Document) and inspect(y).transient:
                 session.add(y)
+            session.commit()
             self.out_queue.put((doc.name, y))
-        session.commit()
         session.close()
 
     def apply(
