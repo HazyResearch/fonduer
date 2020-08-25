@@ -60,18 +60,10 @@ from tests.shared.hardware_utils import entity_level_f1, gold
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "e2e_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on GitHub Actions")
-def test_e2e():
+def test_e2e(database_session):
     """Run an end-to-end test on documents of the hardware domain."""
     # GitHub Actions gives 2 cores
     # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
@@ -84,7 +76,7 @@ def test_e2e():
         level=logging.INFO,
     )
 
-    session = fonduer.Meta.init(CONN_STRING).Session()
+    session = database_session
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"

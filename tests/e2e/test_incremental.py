@@ -5,7 +5,6 @@ import os
 import pytest
 from snorkel.labeling import labeling_function
 
-from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import Candidate
 from fonduer.features import Featurizer
@@ -31,20 +30,12 @@ from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "inc_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run incremental on GitHub Actions"
 )
-def test_incremental():
+def test_incremental(database_session):
     """Run an end-to-end test on incremental additions."""
     # GitHub Actions gives 2 cores
     # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
@@ -52,7 +43,7 @@ def test_incremental():
 
     max_docs = 1
 
-    session = Meta.init(CONN_STRING).Session()
+    session = database_session
 
     docs_path = "tests/data/html/dtc114w.html"
     pdf_path = "tests/data/pdf/dtc114w.pdf"

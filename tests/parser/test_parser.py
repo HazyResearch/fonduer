@@ -4,7 +4,6 @@ import os
 
 import pytest
 
-import fonduer
 from fonduer.parser import Parser
 from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
@@ -15,15 +14,6 @@ from fonduer.parser.preprocessors import (
     TextDocPreprocessor,
     TSVDocPreprocessor,
 )
-
-DB = "parser_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 def get_parser_udf(
@@ -825,9 +815,9 @@ def test_parser_no_image():
     assert len(doc.figures) == 0
 
 
-def test_various_file_path_formats():
+def test_various_file_path_formats(database_session):
     """Test the parser with various file path formats."""
-    session = fonduer.Meta.init(CONN_STRING).Session()
+    session = database_session
 
     def parse(docs_path, pdf_path):
         # Preprocessor for the Docs
