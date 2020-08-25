@@ -18,6 +18,9 @@ Added
 * `@wajdikhattel`_: Add multinary candidates.
   (`#455 <https://github.com/HazyResearch/fonduer/issues/455>`_)
   (`#456 <https://github.com/HazyResearch/fonduer/pull/456>`_)
+* `@HiromuHota`_: Add ``nullables`` to :func:`candidate_subclass()` to allow NULL mention in a candidate.
+  (`#496 <https://github.com/HazyResearch/fonduer/issues/496>`_)
+  (`#497 <https://github.com/HazyResearch/fonduer/pull/497>`_)
 
 Changed
 ^^^^^^^

@@ -541,3 +541,34 @@ def test_pickle_subclasses():
     pickle.loads(pickle.dumps(part))
     pickle.loads(pickle.dumps(temp))
     pickle.loads(pickle.dumps(parttemp))
+
+
+def test_candidate_with_nullable_mentions():
+    """Test if mentions can be NULL."""
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/112823.pdf"
+    doc = parse_doc(docs_path, "112823", pdf_path)
+
+    # Mention Extraction
+    MentionTemp = mention_subclass("MentionTemp")
+    temp_ngrams = MentionNgramsTemp(n_max=2)
+    mention_extractor_udf = MentionExtractorUDF(
+        [MentionTemp],
+        [temp_ngrams],
+        [temp_matcher],
+    )
+    doc = mention_extractor_udf.apply(doc)
+
+    assert len(doc.mention_temps) == 23
+
+    # Candidate Extraction
+    CandidateTemp = candidate_subclass("CandidateTemp", [MentionTemp], nullables=[True])
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [CandidateTemp], [None], False, False, True
+    )
+
+    doc = candidate_extractor_udf.apply(doc, split=0)
+    # The number of extracted candidates should be that of mentions + 1 (NULL)
+    assert len(doc.candidate_temps) == len(doc.mention_temps) + 1
+    # Extracted candidates should include one with NULL mention.
+    assert None in [c[0] for c in doc.candidate_temps]

@@ -74,6 +74,7 @@ def candidate_subclass(
     table_name: Optional[str] = None,
     cardinality: Optional[int] = None,
     values: Optional[List[Any]] = None,
+    nullables: Optional[List[bool]] = None,
 ) -> Type[Candidate]:
     """Create new relation.
 
@@ -95,6 +96,10 @@ def candidate_subclass(
     :param cardinality: The cardinality of the variable corresponding to the
         Candidate. By default is 2 i.e. is a binary value, e.g. is or is not
         a true mention.
+    :param values: A list of values a candidate can take as their label.
+    :param nullables: The number of nullables must match that of args.
+        If nullables[i]==True, a mention for ith mention subclass can be NULL.
+        If nullables=``None`` (by default), no mention can be NULL.
     """
     if table_name is None:
         table_name = camel_to_under(class_name)
@@ -123,6 +128,12 @@ def candidate_subclass(
     # If cardinality is specified but not values, fill in with ints
     elif cardinality is not None:
         values = list(range(cardinality))
+
+    if nullables:
+        if len(nullables) != len(args):
+            raise ValueError("The number of nullables must match that of args.")
+    else:
+        nullables = [False] * len(args)
 
     class_spec = (args, table_name, cardinality, values)
     if class_name in candidate_subclasses:
@@ -153,6 +164,7 @@ def candidate_subclass(
             # Helper method to get argument names
             "__argnames__": [_.__tablename__ for _ in args],
             "mentions": args,
+            "nullables": nullables,
         }
         class_attribs["document_id"] = Column(
             Integer, ForeignKey("document.id", ondelete="CASCADE")
@@ -166,10 +178,12 @@ def candidate_subclass(
         # Create named arguments, i.e. the entity mentions comprising the
         # relation mention.
         unique_args = []
-        for arg in args:
+        for arg, nullable in zip(args, nullables):
             # Primary arguments are constituent Contexts, and their ids
             class_attribs[arg.__tablename__ + "_id"] = Column(
-                Integer, ForeignKey(arg.__tablename__ + ".id", ondelete="CASCADE")
+                Integer,
+                ForeignKey(arg.__tablename__ + ".id", ondelete="CASCADE"),
+                nullable=nullable,
             )
             class_attribs[arg.__tablename__] = relationship(
                 arg.__name__,
