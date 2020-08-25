@@ -72,7 +72,6 @@ def new_sessionmaker() -> sessionmaker:
             executemany_mode="batch",
             isolation_level="AUTOCOMMIT",
         )
-        engine.connect()
     except sqlalchemy.exc.OperationalError as e:
         raise ValueError(
             f"{e}\n"
