@@ -1,3 +1,8 @@
+"""conftest.py file that defines shared fixture functions.
+
+See https://docs.pytest.org/en/stable/fixture.html#conftest-py-sharing-fixture-functions
+"""
+
 import os
 
 import psycopg2
@@ -18,6 +23,11 @@ else:
 
 @pytest.fixture
 def database_session():
+    """Fixture function that creates and drops a database.
+
+    As a setup, a database is created and an SQLAlchemy session is passed to a test.
+    As a teardown, the database is dropped after the test runs.
+    """
     if "CI" in os.environ:
         con = psycopg2.connect(
             host=os.environ["POSTGRES_HOST"],
