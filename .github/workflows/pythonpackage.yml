@@ -81,57 +81,52 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
-        python-version: [3.6.10, 3.7.7]
+        python-version: [3.6, 3.7]
     steps:
     - uses: actions/checkout@v2
-    # actions/setup-python@v1 cannot be used on macos (see #386)
-    - name: Install python version ${{ matrix.python-version }}
-      uses: gabrielfalcao/pyenv-action@v5
+    - name: Cache conda
+      uses: actions/cache@v1
+      env:
+        # Increase this value to reset cache
+        CACHE_NUMBER: 0
       with:
-        default: "${{ matrix.python-version }}"
-        command: |
-          pip install -U pip  # upgrade pip after installing python
-          echo "::add-path::`pyenv root`/shims"
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}
+    - name: Install miniconda and python version ${{ matrix.python-version }}
+      uses: goanpeca/setup-miniconda@v1
+      with:
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
+        channels: conda-forge
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Install dependencies for macOS
+      shell: bash -l {0}
       run: |
-        brew update
-        # Install ImageMagick for Wand.
-        brew install imagemagick
-
-        brew install poppler
-
-        brew install neofetch
-        # - name: Install postgres for macOS
-        #   run: |
-        # Install PostgreSQL 10 (12 not compatible with Fonduer)
-        # See https://github.com/HazyResearch/fonduer/issues/371
-        brew install postgresql@10
-        export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
-        echo "::add-path::/usr/local/opt/postgresql@10/bin"
-
-        # https://github.com/brianmario/mysql2/issues/795
-        echo "::set-env name=LIBRARY_PATH::$LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib/"
-
-        # Start postgresql for osx
-        rm -rf /usr/local/var/postgresql@10
-        initdb /usr/local/var/postgresql@10
-        pg_ctl -D /usr/local/var/postgresql@10 start; sleep 5
+        conda install imagemagick
+        conda install poppler
+        conda install postgresql
+        # Start postgresql
+        initdb -D mylocal_db
+        pg_ctl -D mylocal_db start; sleep 5
         createuser -s postgres
     - name: Set up test databases and test data
+      shell: bash -l {0}
       run: |
         cd tests && ./download_data.sh && cd ..
     - name: Print Version Info
+      shell: bash -l {0}
       run: |
         pdfinfo -v
         psql --version
         python --version
         pip --version
-        neofetch
     - name: Install Fonduer
+      shell: bash -l {0}
       run: |
         make dev_extra
         pip install -q pytest-cov
     - name: Run preliminary checks
+      shell: bash -l {0}
       run: |
         isort --version
         black --version
@@ -142,6 +137,7 @@ jobs:
       env:
         PGPASSWORD: postgres
     - name: Test with pytest
+      shell: bash -l {0}
       run: |
         python -m spacy download en
         pytest --cov=./ --cov-report=xml
