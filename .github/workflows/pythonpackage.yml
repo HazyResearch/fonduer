@@ -48,6 +48,10 @@ jobs:
         pip install -q pytest-cov
     - name: Run preliminary checks
       run: |
+        isort --version
+        black --version
+        flake8 --version
+        mypy --version
         make check
         make docs
     - name: Set up test databases and test data
@@ -129,6 +133,10 @@ jobs:
         pip install -q pytest-cov
     - name: Run preliminary checks
       run: |
+        isort --version
+        black --version
+        flake8 --version
+        mypy --version
         make check
         make docs
       env:

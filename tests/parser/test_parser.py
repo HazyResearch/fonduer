@@ -807,7 +807,10 @@ def test_parser_no_image():
 
     # Create an Parser and parse the no_image document
     parser_udf = get_parser_udf(
-        structural=True, lingual=False, visual=True, pdf_path=pdf_path,
+        structural=True,
+        lingual=False,
+        visual=True,
+        pdf_path=pdf_path,
     )
     doc = parser_udf.apply(doc)
 

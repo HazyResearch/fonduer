@@ -162,9 +162,7 @@ class VisualLinker(object):
 
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
-    ) -> Tuple[
-        List[PdfWord], Dict[PdfWordId, Bbox],
-    ]:
+    ) -> Tuple[List[PdfWord], Dict[PdfWordId, Bbox]]:
         pdf_word_list: List[PdfWord] = []
         coordinate_map: Dict[PdfWordId, Bbox] = {}
         block_coordinates: Dict[PdfWordId, Tuple[int, int]] = {}
@@ -186,7 +184,11 @@ class VisualLinker(object):
                             word_id: PdfWordId = (page_num, i)
                             pdf_word_list.append((word_id, content))
                             coordinate_map[word_id] = Bbox(
-                                page_num, y_min_line, y_max_line, xmin, xmax,
+                                page_num,
+                                y_min_line,
+                                y_max_line,
+                                xmin,
+                                xmax,
                             )
                             block_coordinates[word_id] = (y_min_block, x_min_block)
                             i += 1

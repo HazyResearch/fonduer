@@ -42,7 +42,9 @@ def construct_stable_id(
     raise ValueError(f"Unrecognized context type:\t{polymorphic_type}")
 
 
-def split_stable_id(stable_id: str,) -> Tuple[str, str, List[int]]:
+def split_stable_id(
+    stable_id: str,
+) -> Tuple[str, str, List[int]]:
     """Split stable ID.
 
     Analyzing stable ID and return the following information:

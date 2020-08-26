@@ -32,7 +32,10 @@ class Visualizer(object):
         self.pdf_path = pdf_path
 
     def display_boxes(
-        self, pdf_file: str, boxes: List[Bbox], alternate_colors: bool = False,
+        self,
+        pdf_file: str,
+        boxes: List[Bbox],
+        alternate_colors: bool = False,
     ) -> List[Image]:
         """Display bounding boxes on the document.
 
@@ -119,7 +122,8 @@ class Visualizer(object):
 def get_box(span: SpanMention) -> Bbox:
     """Get the bounding box."""
     warnings.warn(
-        "get_box(span) is deprecated. Use span.get_bbox() instead.", DeprecationWarning,
+        "get_box(span) is deprecated. Use span.get_bbox() instead.",
+        DeprecationWarning,
     )
     return Bbox(
         min(span.get_attrib_tokens("page")),
