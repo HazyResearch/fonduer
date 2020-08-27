@@ -24,16 +24,14 @@ jobs:
     - name: Install miniconda and python version ${{ matrix.python-version }}
       uses: goanpeca/setup-miniconda@v1
       with:
-        auto-update-conda: true
         python-version: ${{ matrix.python-version }}
         channels: conda-forge
+        channel-priority: strict
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Install dependencies
       shell: bash -l {0}
       run: |
-        conda install imagemagick
-        conda install poppler
-        conda install postgresql
+        conda install imagemagick poppler postgresql
         # Start postgresql
         initdb -D mylocal_db
         pg_ctl -D mylocal_db start; sleep 5
