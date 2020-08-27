@@ -4,83 +4,12 @@ env:
   CI: true
 
 jobs:
-  ubuntu-test:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies for Ubuntu
-      run: |
-        sudo apt-get install neofetch
-        # Install ImageMagick library for Wand
-        sudo apt-get install libmagickwand-dev ghostscript
-        # Remove the policy file to allow the visualizer test to open the PDF.
-        # See: https://github.com/HazyResearch/fonduer/issues/170
-        sudo rm -rf /etc/ImageMagick-6/policy.xml
-        sudo apt-get install -q -y poppler-utils
-        pip install --upgrade pip setuptools
-    - name: Print Version Info
-      run: |
-        neofetch
-        pdfinfo -v
-        psql --version
-        python --version
-        pip --version
-    - name: Install Fonduer
-      run: |
-        make dev_extra
-        pip install -q pytest-cov
-    - name: Run preliminary checks
-      run: |
-        isort --version
-        black --version
-        flake8 --version
-        mypy --version
-        make check
-        make docs
-    - name: Set up test databases and test data
-      run: |
-        cd tests && ./download_data.sh && cd ..
-        python -m spacy download en
-      env:
-        PGPASSWORD: postgres
-    - name: Test with pytest
-      run: |
-        pytest --cov=./ --cov-report=xml
-      env:
-        PGPASSWORD: postgres
-        PGUSER: postgres
-        POSTGRES_PORT: 5432
-        # Use 127.0.0.1 instead of localhost (#351)
-        POSTGRES_HOST: 127.0.0.1
-    - name: Upload to codecov.io
-      uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: true
-  macos-test:
-    runs-on: macos-latest
-    timeout-minutes: 60
-    strategy:
-      matrix:
+        os: [ubuntu-latest, macos-latest]
         python-version: [3.6, 3.7]
     steps:
     - uses: actions/checkout@v2
@@ -99,7 +28,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         channels: conda-forge
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
-    - name: Install dependencies for macOS
+    - name: Install dependencies
       shell: bash -l {0}
       run: |
         conda install imagemagick
@@ -160,7 +89,7 @@ jobs:
   build-and-publish:
     name: Build and Publish Fonduer to PyPI
     runs-on: ubuntu-latest
-    needs: [ubuntu-test, macos-test]
+    needs: test
     strategy:
       matrix:
         python-version: [3.7]
