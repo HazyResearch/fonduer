@@ -286,11 +286,13 @@ def get_neighbor_cell_ngrams(
     # TODO: Fix this to be more efficient (optimize with SQL query)
     spans = _to_spans(mention)
     for span in spans:
+        if not span.sentence.is_tabular():
+            continue
+
         for ngram in get_sentence_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
         ):
             yield ngram
-        if span.sentence.is_tabular():
             root_cell = span.sentence.cell
             for sentence in chain.from_iterable(
                 [
