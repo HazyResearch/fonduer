@@ -36,7 +36,8 @@ Changed
 * `@HiromuHota`_: Log a stack trace on parsing error for better debug experience.
   (`#478 <https://github.com/HazyResearch/fonduer/issues/478>`_)
   (`#479 <https://github.com/HazyResearch/fonduer/pull/479>`_)
-* `@HiromuHota`_: :func:`get_cell_ngrams` yields nothing when the mention is not tabular.
+* `@HiromuHota`_: :func:`get_cell_ngrams` and :func:`get_neighbor_cell_ngrams` yield
+  nothing when the mention is not tabular.
   (`#471 <https://github.com/HazyResearch/fonduer/issues/471>`_)
   (`#504 <https://github.com/HazyResearch/fonduer/pull/504>`_)
 
