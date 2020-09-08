@@ -233,11 +233,13 @@ def get_cell_ngrams(
     """
     spans = _to_spans(mention)
     for span in spans:
+        if not span.sentence.is_tabular():
+            continue
+
         for ngram in get_sentence_ngrams(
             span, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
         ):
             yield ngram
-        if span.sentence.is_tabular():
             for ngram in chain.from_iterable(
                 [
                     tokens_to_ngrams(

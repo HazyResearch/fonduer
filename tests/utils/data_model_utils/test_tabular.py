@@ -191,7 +191,7 @@ def test_get_cell_ngrams(mention_setup):
 
     # when a mention is not tabular
     assert mentions[0].get_span() == "Sample"
-    assert list(get_cell_ngrams(mentions[0])) == ["markdown"]
+    assert list(get_cell_ngrams(mentions[0])) == []
 
 
 def test_get_neighbor_cell_ngrams(mention_setup):
