@@ -180,7 +180,7 @@ def test_e2e(database_session):
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 214
     num_feature_keys = session.query(FeatureKey).count()
-    assert num_feature_keys == 1281
+    assert num_feature_keys == 1278
 
     # Test Dropping FeatureKey
     # Should force a row deletion
@@ -225,7 +225,7 @@ def test_e2e(database_session):
     num_features = session.query(Feature).count()
     assert num_features == len(train_cands[0]) + len(train_cands[1])
     num_feature_keys = session.query(FeatureKey).count()
-    assert num_feature_keys == 4577
+    assert num_feature_keys == 4555
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
     assert F_train[1].shape == (len(train_cands[1]), num_feature_keys)
