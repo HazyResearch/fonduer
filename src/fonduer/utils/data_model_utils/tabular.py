@@ -224,6 +224,7 @@ def get_cell_ngrams(
     """Get the ngrams that are in the Cell of the given mention, not including itself.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
+    Also note that if the mention is not tabular, nothing will be yielded.
 
     :param mention: The Mention whose Cell is being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
@@ -271,6 +272,7 @@ def get_neighbor_cell_ngrams(
     Note that if a candidate is passed in, all of its Mentions will be
     searched. If `directions=True``, each ngram will be returned with a
     direction in {'UP', 'DOWN', 'LEFT', 'RIGHT'}.
+    Also note that if the mention is not tabular, nothing will be yielded.
 
     :param mention: The Mention whose neighbor Cells are being searched
     :param dist: The Cell distance within which a neighbor Cell must be to be
@@ -339,6 +341,7 @@ def get_row_ngrams(
     """Get the ngrams from all Cells that are in the same row as the given Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
+    Also note that if the mention is not tabular, nothing will be yielded.
 
     :param mention: The Mention whose row Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
@@ -372,6 +375,7 @@ def get_col_ngrams(
     """Get the ngrams from all Cells that are in the same column as the given Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
+    Also note that if the mention is not tabular, nothing will be yielded.
 
     :param mention: The Mention whose column Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
@@ -406,6 +410,7 @@ def get_aligned_ngrams(
 
     Note that if a candidate is passed in, all of its Mentions will be
     searched.
+    Also note that if the mention is not tabular, nothing will be yielded.
 
     :param mention: The Mention whose row and column Cells are being searched
     :param attrib: The token attribute type (e.g. words, lemmas, poses)
@@ -441,6 +446,7 @@ def get_head_ngrams(
     ngrams in the topmost cell in the column, depending on the axis parameter.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
+    Also note that if the mention is not tabular, nothing will be yielded.
 
     :param mention: The Mention whose head Cells are being returned
     :param axis: Which axis {'row', 'col'} to search. If None, then both row
