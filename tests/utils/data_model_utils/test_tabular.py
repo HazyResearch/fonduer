@@ -229,6 +229,10 @@ def test_get_row_ngrams(mention_setup):
         "11",
     ]
 
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_row_ngrams(mentions[0])) == []
+
 
 def test_get_col_ngrams(mention_setup):
     """Test the get_col_ngrams function."""
@@ -256,6 +260,10 @@ def test_get_aligned_ngrams(mention_setup):
         "lamb",
         "madras",
     ]
+
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_aligned_ngrams(mentions[0])) == []
 
 
 def test_get_head_ngrams(mention_setup):
