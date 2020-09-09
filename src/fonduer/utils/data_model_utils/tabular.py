@@ -184,7 +184,7 @@ def get_sentence_ngrams(
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     """
-    get_sentence_ngrams_in_textual(mention, attrib, n_min, n_max, lower)
+    return get_sentence_ngrams_in_textual(mention, attrib, n_min, n_max, lower)
 
 
 @deprecation.deprecated(
@@ -211,7 +211,9 @@ def get_neighbor_sentence_ngrams(
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     """
-    get_neighbor_sentence_ngrams_in_textual(mention, d, attrib, n_min, n_max, lower)
+    return get_neighbor_sentence_ngrams_in_textual(
+        mention, d, attrib, n_min, n_max, lower
+    )
 
 
 def get_cell_ngrams(
