@@ -30,6 +30,7 @@ setup(
         "treedlib>=0.1.3, <0.2.0",
         "wand>=0.4.4, <0.6.0",
         "ipython",
+        "deprecation",
     ],
     extras_require={
         "spacy_ja": ["fugashi[unidic-lite]>=0.2.3"],

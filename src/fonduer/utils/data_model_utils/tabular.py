@@ -5,11 +5,18 @@ from functools import lru_cache
 from itertools import chain
 from typing import DefaultDict, Iterator, List, Optional, Set, Tuple, Union
 
+import deprecation
+
+from fonduer import __version__
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
 from fonduer.parser.models.sentence import Sentence
 from fonduer.parser.models.table import Cell, Table
-from fonduer.utils.data_model_utils.textual import get_left_ngrams, get_right_ngrams
+from fonduer.utils.data_model_utils.textual import (
+    get_neighbor_sentence_ngrams as get_neighbor_sentence_ngrams_in_textual,
+    get_sentence_ngrams as get_sentence_ngrams_in_textual,
+    same_sentence as same_sentence_in_textual,
+)
 from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
 from fonduer.utils.utils_table import (
@@ -79,16 +86,18 @@ def same_cell(c: Candidate) -> bool:
     )
 
 
+@deprecation.deprecated(
+    deprecated_in="0.8.3",
+    removed_in="0.9.0",
+    current_version=__version__,
+    details="Use :func:`textual.same_sentence()` instead",
+)
 def same_sentence(c: Candidate) -> bool:
     """Return True if all Mentions in the given candidate are from the same Sentence.
 
     :param c: The candidate whose Mentions are being compared
     """
-    return all(
-        _to_span(c[i]).sentence is not None
-        and _to_span(c[i]).sentence == _to_span(c[0]).sentence
-        for i in range(len(c))
-    )
+    return same_sentence_in_textual(c)
 
 
 def get_max_col_num(
@@ -151,6 +160,12 @@ def get_min_row_num(
         return None
 
 
+@deprecation.deprecated(
+    deprecated_in="0.8.3",
+    removed_in="0.9.0",
+    current_version=__version__,
+    details="Use :func:`textual.get_sentence_ngrams()` instead",
+)
 def get_sentence_ngrams(
     mention: Union[Candidate, Mention, TemporarySpanMention],
     attrib: str = "words",
@@ -169,18 +184,15 @@ def get_sentence_ngrams(
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     """
-    spans = _to_spans(mention)
-    for span in spans:
-        for ngram in get_left_ngrams(
-            span, window=100, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
-        ):
-            yield ngram
-        for ngram in get_right_ngrams(
-            span, window=100, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
-        ):
-            yield ngram
+    get_sentence_ngrams_in_textual(mention, attrib, n_min, n_max, lower)
 
 
+@deprecation.deprecated(
+    deprecated_in="0.8.3",
+    removed_in="0.9.0",
+    current_version=__version__,
+    details="Use :func:`textual.get_neighbor_sentence_ngrams()` instead",
+)
 def get_neighbor_sentence_ngrams(
     mention: Union[Candidate, Mention, TemporarySpanMention],
     d: int = 1,
@@ -199,19 +211,7 @@ def get_neighbor_sentence_ngrams(
     :param n_max: The maximum n of the ngrams that should be returned
     :param lower: If True, all ngrams will be returned in lower case
     """
-    spans = _to_spans(mention)
-    for span in spans:
-        for ngram in chain.from_iterable(
-            [
-                tokens_to_ngrams(
-                    getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
-                )
-                for sentence in span.sentence.document.sentences
-                if abs(sentence.position - span.sentence.position) <= d
-                and sentence != span.sentence
-            ]
-        ):
-            yield ngram
+    get_neighbor_sentence_ngrams_in_textual(mention, d, attrib, n_min, n_max, lower)
 
 
 def get_cell_ngrams(
