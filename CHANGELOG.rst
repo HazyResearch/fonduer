@@ -21,6 +21,9 @@ Added
 * `@HiromuHota`_: Add ``nullables`` to :func:`candidate_subclass()` to allow NULL mention in a candidate.
   (`#496 <https://github.com/HazyResearch/fonduer/issues/496>`_)
   (`#497 <https://github.com/HazyResearch/fonduer/pull/497>`_)
+* `@HiromuHota`_: Copy textual functions in :mod:`data_model_utils.tabular` to :mod:`data_model_utils.textual`.
+  (`#503 <https://github.com/HazyResearch/fonduer/issues/503>`_)
+  (`#505 <https://github.com/HazyResearch/fonduer/pull/505>`_)
 
 Changed
 ^^^^^^^
@@ -44,6 +47,9 @@ Deprecated
 * `@HiromuHota`_: Deprecated :func:`visualizer.get_box` in favor of :func:`span.get_bbox()`.
   (`#445 <https://github.com/HazyResearch/fonduer/issues/445>`_)
   (`#446 <https://github.com/HazyResearch/fonduer/pull/446>`_)
+* `@HiromuHota`_: Deprecate textual functions in :mod:`data_model_utils.tabular`.
+  (`#503 <https://github.com/HazyResearch/fonduer/issues/503>`_)
+  (`#505 <https://github.com/HazyResearch/fonduer/pull/505>`_)
 
 Fixed
 ^^^^^
