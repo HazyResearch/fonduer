@@ -10,6 +10,7 @@ from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF, SimpleParser
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
+    HOCRDocPreprocessor,
     HTMLDocPreprocessor,
     TextDocPreprocessor,
     TSVDocPreprocessor,
@@ -27,8 +28,6 @@ def get_parser_udf(
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
-    vizlink=None,
-    pdf_path=None,
 ):
     """Return an instance of ParserUDF."""
     parser_udf = ParserUDF(
@@ -41,8 +40,6 @@ def get_parser_udf(
         replacements=replacements,
         tabular=tabular,
         visual=visual,
-        vizlink=vizlink,
-        pdf_path=pdf_path,
         language=language,
     )
     return parser_udf
@@ -931,3 +928,23 @@ def test_various_file_path_formats(database_session):
     docs = corpus_parser.get_documents()
     assert len(docs) == 1
     assert docs[0].sentences[0].top is not None
+
+
+def test_parse_hocr():
+    """Test the parser with the md document."""
+    docs_path = "tests/data/hocr_simple/md.hocr"
+
+    # Preprocessor for the Docs
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(preprocessor.__iter__())
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        language="en",
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "md"
