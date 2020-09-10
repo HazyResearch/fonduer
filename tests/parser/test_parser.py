@@ -12,11 +12,12 @@ from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF, SimpleParser
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
+    HOCRDocPreprocessor,
     HTMLDocPreprocessor,
     TextDocPreprocessor,
     TSVDocPreprocessor,
 )
-from fonduer.parser.visual_parser import PdfVisualParser
+from fonduer.parser.visual_parser import HocrVisualParser, PdfVisualParser
 
 
 def get_parser_udf(
@@ -902,3 +903,58 @@ def test_various_pdf_path_formats(database_session, pdf_path):
     docs = parse(database_session, docs_path, pdf_path)
     assert len(docs) == 1
     assert docs[0].sentences[0].top is not None
+
+
+def test_parse_hocr():
+    """Test the parser with hOCR documents."""
+    docs_path = "tests/data/hocr_simple/md.hocr"
+
+    # Preprocessor for the Docs
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(iter(preprocessor))
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual_parser=HocrVisualParser(),
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "md"
+    assert doc.sentences[12].left == [
+        145,
+        245,
+        245,
+        366,
+        366,
+        513,
+        597,
+        705,
+        838,
+        927,
+        1032,
+        1032,
+    ]
+    assert doc.sentences[12].page == [1] * len(doc.sentences[12].words)
+
+    docs_path = "tests/data/hocr_simple/japan.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path, space=False)
+    doc = next(iter(preprocessor))
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        language="ja",
+        visual_parser=HocrVisualParser(sep=""),
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "japan"
+    sent = doc.sentences[0]
+    assert len(sent.words) == len(sent.left)
+    # "にっぽん" is tokenized into three: "に", "っ", "ぽん" in hOCR,
+    # but it is tokenized as an one token by spaCy.
+    assert sent.words[1] == "にっぽん"
+    assert sent.left[1] == 150  # this left comes from "に" in hOCR
+    assert sent.right[1] == 249  # this right comes from "ぽん" in hOCR
