@@ -58,8 +58,10 @@ class SpacyParser(LingualParser):
 
     """
 
-    languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
-    alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
+    languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx", "ja", "zh"]
+    # Keep alpha_languages for future alpha supported languages
+    # E.g., alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
+    alpha_languages: Dict[str, str] = {}
 
     def __init__(self, lang: Optional[str]) -> None:
         """Initialize SpacyParser."""
