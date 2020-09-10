@@ -9,6 +9,27 @@ from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 
 
+# Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check#L29-L38
+def get_prop(node, name):
+    title = node["title"]
+    if not title:
+        return None
+    props = title.split(";")
+    for prop in props:
+        (key, args) = prop.split(None, 1)
+        if key == name:
+            return args
+    return None
+
+
+# Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check#L41-L45
+def get_bbox(node):
+    bbox = get_prop(node, "bbox")
+    if not bbox:
+        return None
+    return tuple([x for x in bbox.split()])
+
+
 class HOCRDocPreprocessor(DocPreprocessor):
     """A ``Document`` generator for hOCR files."""
 
@@ -20,13 +41,45 @@ class HOCRDocPreprocessor(DocPreprocessor):
                 raise NotImplementedError(
                     f"Expecting exactly one html element per html file: {file_name}"
                 )
-            text = all_html_elements[0]
+            root = all_html_elements[0]
+            capabilities = root.find("meta", attrs={"name": "ocr-capabilities"})
+            if capabilities and "ocr_line" in capabilities["content"]:
+                for line in root.find_all(class_="ocr_line"):
+                    line.unwrap()
+            if capabilities and "ocrx_word" in capabilities["content"]:
+                for word in root.find_all(class_="ocrx_word"):
+                    parent = word.parent
+                    (left, top, right, bottom) = get_bbox(word)
+                    parent["left"] = (
+                        parent["left"] + " " + left if "left" in parent.attrs else left
+                    )
+                    parent["top"] = (
+                        parent["top"] + " " + top if "top" in parent.attrs else top
+                    )
+                    parent["right"] = (
+                        parent["right"] + " " + right
+                        if "right" in parent.attrs
+                        else right
+                    )
+                    parent["bottom"] = (
+                        parent["bottom"] + " " + bottom
+                        if "bottom" in parent.attrs
+                        else bottom
+                    )
+                    if "ocrp_wconf" in capabilities["content"]:
+                        x_wconf = get_prop(word, "x_wconf")
+                        parent["x_wconf"] = (
+                            parent["x_wconf"] + " " + x_wconf
+                            if "x_wconf" in parent.attrs
+                            else x_wconf
+                        )
+                    word.unwrap()
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
             stable_id = self._get_stable_id(name)
             yield Document(
                 name=name,
                 stable_id=stable_id,
-                text=str(text),
+                text=root.prettify(),
                 meta={"file_name": file_name},
             )
 
