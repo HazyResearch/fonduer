@@ -50,22 +50,16 @@ class HOCRDocPreprocessor(DocPreprocessor):
                 for word in root.find_all(class_="ocrx_word"):
                     parent = word.parent
                     (left, top, right, bottom) = get_bbox(word)
-                    parent["left"] = (
-                        parent["left"] + " " + left if "left" in parent.attrs else left
-                    )
-                    parent["top"] = (
-                        parent["top"] + " " + top if "top" in parent.attrs else top
-                    )
-                    parent["right"] = (
-                        parent["right"] + " " + right
-                        if "right" in parent.attrs
-                        else right
-                    )
-                    parent["bottom"] = (
-                        parent["bottom"] + " " + bottom
-                        if "bottom" in parent.attrs
-                        else bottom
-                    )
+                    if "left" in parent.attrs:
+                        parent["left"] += " " + left
+                        parent["top"] += " " + top
+                        parent["right"] += " " + right
+                        parent["bottom"] += " " + bottom
+                    else:
+                        parent["left"] = left
+                        parent["top"] = top
+                        parent["right"] = right
+                        parent["bottom"] = bottom
                     if "ocrp_wconf" in capabilities["content"]:
                         x_wconf = get_prop(word, "x_wconf")
                         parent["x_wconf"] = (
