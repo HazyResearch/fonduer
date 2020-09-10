@@ -2,7 +2,6 @@
 import itertools
 import logging
 import re
-import warnings
 from builtins import range
 from collections import defaultdict
 from typing import (
@@ -35,7 +34,6 @@ from fonduer.parser.models import (
     Table,
 )
 from fonduer.parser.models.utils import construct_stable_id
-from fonduer.parser.visual_linker import VisualLinker
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
@@ -64,10 +62,6 @@ class Parser(UDFRunner):
     :param tabular: Whether to include tabular information in the parse.
     :param visual: Whether to include visual information in the parse.
         Requires PDFs for each input document.
-    :param vizlink: A custom visual linker that inherits
-        :class:`VisualLinker <fonduer.parser.visual_linker.VisualLinker>`.
-        Unless otherwise specified, :class:`VisualLinker` will be used.
-    :param pdf_path: The path to the corresponding PDFs use for visual info.
     """
 
     def __init__(
@@ -89,8 +83,6 @@ class Parser(UDFRunner):
         ],
         tabular: bool = True,  # tabular information
         visual: bool = False,  # visual information
-        vizlink: Optional[VisualLinker] = None,  # visual linker
-        pdf_path: Optional[str] = None,
     ) -> None:
         """Initialize Parser."""
         super().__init__(
@@ -106,8 +98,6 @@ class Parser(UDFRunner):
             replacements=replacements,
             tabular=tabular,
             visual=visual,
-            vizlink=vizlink,
-            pdf_path=pdf_path,
             language=language,
         )
 
@@ -187,17 +177,12 @@ class ParserUDF(UDF):
         replacements: List[Tuple[str, str]],
         tabular: bool,
         visual: bool,
-        vizlink: Optional[VisualLinker],
-        pdf_path: Optional[str],
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
         """Initialize Parser UDF.
 
         :param visual: boolean, if True visual features are used in the model
-        :param pdf_path: directory where pdf are saved, if a pdf file is not
-            found, it will be created from the html document and saved in that
-            directory
         :param replacements: a list of (_pattern_, _replace_) tuples where
             _pattern_ isinstance a regex and _replace_ is a character string.
             All occurents of _pattern_ in the text will be replaced by
@@ -239,20 +224,6 @@ class ParserUDF(UDF):
 
         # visual setup
         self.visual = visual
-        self.vizlink = vizlink
-        if self.visual:
-            self.pdf_path = pdf_path
-            if not self.vizlink:
-                # Use the provided pdf_path if present
-                if not self.pdf_path:
-                    warnings.warn(
-                        "Visual parsing failed: pdf_path is required. "
-                        + "Proceeding without visual parsing.",
-                        RuntimeWarning,
-                    )
-                    self.visual = False
-                else:
-                    self.vizlink = VisualLinker(pdf_path)
 
     def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
@@ -264,26 +235,6 @@ class ParserUDF(UDF):
         """
         try:
             [y for y in self.parse(document, document.text)]
-            if self.visual:
-                # Use the provided pdf_path if present
-                self.pdf_path = pdf_path if pdf_path else self.pdf_path
-                if not self.vizlink.is_linkable(document.name, self.pdf_path):
-                    warnings.warn(
-                        (
-                            f"Visual parse failed. "
-                            f"{self.pdf_path + document.name} not a PDF. "
-                            f"Proceeding without visual parsing."
-                        ),
-                        RuntimeWarning,
-                    )
-                else:
-                    # Add visual attributes
-                    [
-                        y
-                        for y in self.vizlink.link(
-                            document.name, document.sentences, self.pdf_path
-                        )
-                    ]
             return document
         except Exception as e:
             logging.exception(
