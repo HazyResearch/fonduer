@@ -274,24 +274,22 @@ def test_spacy_japanese():
         "言わ",
         "れる",
     ]
-    # pos_tags is not available because the Japanese model only has "parser" and "ner"
-    # in the pipeline. Japanese model executes tagging during tokenization.
-    assert sent.pos_tags == [""] * len(sent.words)
     assert sent.lemmas == [
         "当時",
         "マルコ",
         "・",
         "ポーロ",
         "が",
-        "辿り",
-        "着い",
+        "辿る",
+        "着く",
         "た",
         "と",
-        "言わ",
+        "言う",
         "れる",
     ]
     # These tags are less stable (ie they change when a spacy model changes)
     # So just check that values other than "" are assigned.
+    assert all(sent.pos_tags)
     assert all(sent.ner_tags)
     assert all(sent.dep_labels)
 

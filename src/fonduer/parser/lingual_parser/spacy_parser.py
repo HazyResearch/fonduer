@@ -199,8 +199,11 @@ class SpacyParser(LingualParser):
                     )
                     parts["dep_parents"].append(head_idx)
                     parts["dep_labels"].append(token.dep_)
-                current_sentence_obj.pos_tags = parts["pos_tags"]
-                current_sentence_obj.lemmas = parts["lemmas"]
+                # Special case as Japanese model does not have "tagger" in pipeline
+                # Instead, Japanese model does tagging during tokenization.
+                if not self.lang == "ja":
+                    current_sentence_obj.pos_tags = parts["pos_tags"]
+                    current_sentence_obj.lemmas = parts["lemmas"]
                 current_sentence_obj.ner_tags = parts["ner_tags"]
                 current_sentence_obj.dep_parents = parts["dep_parents"]
                 current_sentence_obj.dep_labels = parts["dep_labels"]
