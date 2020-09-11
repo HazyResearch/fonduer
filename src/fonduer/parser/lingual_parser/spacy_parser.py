@@ -6,20 +6,16 @@ from pathlib import Path
 from string import whitespace
 from typing import Any, Collection, Dict, Iterator, List, Optional
 
+import spacy
+from spacy import util
+from spacy.cli import download
 from spacy.language import Language
+from spacy.tokens import Doc
 from spacy.util import is_package
 from spacy.vocab import Vocab
 
 from fonduer.parser.lingual_parser.lingual_parser import LingualParser
 from fonduer.parser.models.sentence import Sentence
-
-try:
-    import spacy
-    from spacy import util
-    from spacy.cli import download
-    from spacy.tokens import Doc
-except Exception:
-    raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 logger = logging.getLogger(__name__)
 
