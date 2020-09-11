@@ -1,6 +1,11 @@
 Unreleased_
 -----------
 
+Added
+^^^^^
+* `@HiromuHota`_: Support spaCy v2.3.
+  (`#506 <https://github.com/HazyResearch/fonduer/pull/506>`_)
+
 0.8.3_ - 2020-09-11
 -------------------
 
