@@ -138,14 +138,10 @@ def test_parse_md_details():
     assert header.bottom == [61, 61]
     assert header.right == [111, 231]
     assert header.left == [35, 117]
-
-    # Choose a sentence whose words get NER tags that are unlikely to change
-    # even when a lang model changes.
-    sent = sorted(doc.sentences, key=lambda x: x.position)[2]
-    assert sent.words == ["Second", "Heading"]
     # Test lingual attributes
-    assert sent.ner_tags[0] == "ORDINAL"
-    assert sent.dep_labels[0] == "compound"
+    # when lingual=True, some value other than "" should be filled-in.
+    assert all(sent.ner_tags)
+    assert all(sent.dep_labels)
 
     # Test whether nlp information corresponds to sentence words
     for sent in doc.sentences:
@@ -210,7 +206,7 @@ def test_spacy_german():
     doc = parser_udf.apply(doc)
 
     # Check that doc has sentences
-    assert len(doc.sentences) == 841
+    assert len(doc.sentences) == 824
     sent = sorted(doc.sentences, key=lambda x: x.position)[143]
     assert sent.ner_tags == [
         "O",
@@ -218,7 +214,7 @@ def test_spacy_german():
         "LOC",
         "O",
         "O",
-        "O",
+        "LOC",
         "O",
         "O",
         "O",
@@ -262,37 +258,42 @@ def test_spacy_japanese():
     )
     doc = parser_udf.apply(doc)
 
-    assert len(doc.sentences) == 289
-    sent = doc.sentences[42]
+    assert len(doc.sentences) == 308
+    sent = doc.sentences[45]
     assert sent.text == "当時マルコ・ポーロが辿り着いたと言われる"
-    assert sent.words == ["当時", "マルコ", "・", "ポーロ", "が", "辿り着い", "た", "と", "言わ", "れる"]
-    assert sent.pos_tags == [
-        "NOUN",
-        "PROPN",
-        "SYM",
-        "PROPN",
-        "ADP",
-        "VERB",
-        "AUX",
-        "ADP",
-        "VERB",
-        "AUX",
-    ]
-    assert sent.lemmas == [
+    assert sent.words == [
         "当時",
-        "マルコ-Marco",
+        "マルコ",
         "・",
-        "ポーロ-Polo",
+        "ポーロ",
         "が",
-        "辿り着く",
+        "辿り",
+        "着い",
         "た",
         "と",
-        "言う",
+        "言わ",
         "れる",
     ]
-    # Japanese sentences are only tokenized.
-    assert sent.ner_tags == [""] * len(sent.words)
-    assert sent.dep_labels == [""] * len(sent.words)
+    # pos_tags is not available because the Japanese model only has "parser" and "ner"
+    # in the pipeline. Japanese model executes tagging during tokenization.
+    assert sent.pos_tags == [""] * len(sent.words)
+    assert sent.lemmas == [
+        "当時",
+        "マルコ",
+        "・",
+        "ポーロ",
+        "が",
+        "辿り",
+        "着い",
+        "た",
+        "と",
+        "言わ",
+        "れる",
+    ]
+    # These tags are less stable (ie they change when a spacy model changes)
+    # So just check that values other than "" are assigned.
+    assert all(sent.ner_tags)
+    assert all(sent.dep_labels)
 
 
 @pytest.mark.skipif(
@@ -313,9 +314,10 @@ def test_spacy_chinese():
     sent = doc.sentences[1]
     assert sent.text == "我们和他对比谁更厉害!"
     assert sent.words == ["我们", "和", "他", "对比", "谁", "更", "厉害", "!"]
-    # Chinese sentences are only tokenized.
-    assert sent.ner_tags == ["", "", "", "", "", "", "", ""]
-    assert sent.dep_labels == ["", "", "", "", "", "", "", ""]
+    # These tags are less stable (ie they change when a spacy model changes)
+    # So just check that values other than "" are assigned.
+    assert all(sent.ner_tags)
+    assert all(sent.dep_labels)
 
 
 def test_warning_on_missing_pdf():
@@ -585,8 +587,9 @@ def test_parse_document_diseases():
     assert sentence.left == [318, 369, 318]
 
     # Test lingual attributes
-    assert sentence.ner_tags == ["O", "O", "GPE"]
-    assert sentence.dep_labels == ["ROOT", "prep", "pobj"]
+    # when lingual=True, some value other than "" should be filled-in.
+    assert all(sentence.ner_tags)
+    assert all(sentence.dep_labels)
 
     assert len(doc.sentences) == 37
 

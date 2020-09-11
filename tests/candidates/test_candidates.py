@@ -340,7 +340,7 @@ def test_ngrams():
 
     assert len(doc.persons) == 123
     mentions = doc.persons
-    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 41
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 44
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
@@ -353,7 +353,7 @@ def test_ngrams():
         [Person], [person_ngrams], [person_matcher]
     )
     doc = mention_extractor_udf.apply(doc)
-    assert len(doc.persons) == 82
+    assert len(doc.persons) == 79
     mentions = doc.persons
     assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
