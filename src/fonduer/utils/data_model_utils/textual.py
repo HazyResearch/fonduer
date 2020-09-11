@@ -1,10 +1,23 @@
 """Fonduer textual modality utilities."""
+from itertools import chain
 from typing import Iterator, Union
 
 from fonduer.candidates.models import Candidate, Mention
 from fonduer.candidates.models.span_mention import TemporarySpanMention
-from fonduer.utils.data_model_utils.utils import _to_span
+from fonduer.utils.data_model_utils.utils import _to_span, _to_spans
 from fonduer.utils.utils import tokens_to_ngrams
+
+
+def same_sentence(c: Candidate) -> bool:
+    """Return True if all Mentions in the given candidate are from the same Sentence.
+
+    :param c: The candidate whose Mentions are being compared
+    """
+    return all(
+        _to_span(c[i]).sentence is not None
+        and _to_span(c[i]).sentence == _to_span(c[0]).sentence
+        for i in range(len(c))
+    )
 
 
 def get_between_ngrams(
@@ -119,3 +132,66 @@ def get_right_ngrams(
         lower=lower,
     ):
         yield ngram
+
+
+def get_sentence_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
+    """Get the ngrams that are in the Sentence of the given Mention, not including itself.
+
+    Note that if a candidate is passed in, all of its Mentions will be
+    searched.
+
+    :param mention: The Mention whose Sentence is being searched
+    :param attrib: The token attribute type (e.g. words, lemmas, poses)
+    :param n_min: The minimum n of the ngrams that should be returned
+    :param n_max: The maximum n of the ngrams that should be returned
+    :param lower: If True, all ngrams will be returned in lower case
+    """
+    spans = _to_spans(mention)
+    for span in spans:
+        for ngram in get_left_ngrams(
+            span, window=100, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
+        ):
+            yield ngram
+        for ngram in get_right_ngrams(
+            span, window=100, attrib=attrib, n_min=n_min, n_max=n_max, lower=lower
+        ):
+            yield ngram
+
+
+def get_neighbor_sentence_ngrams(
+    mention: Union[Candidate, Mention, TemporarySpanMention],
+    d: int = 1,
+    attrib: str = "words",
+    n_min: int = 1,
+    n_max: int = 1,
+    lower: bool = True,
+) -> Iterator[str]:
+    """Get the ngrams that are in the neighoring Sentences of the given Mention.
+
+    Note that if a candidate is passed in, all of its Mentions will be searched.
+
+    :param mention: The Mention whose neighbor Sentences are being searched
+    :param attrib: The token attribute type (e.g. words, lemmas, poses)
+    :param n_min: The minimum n of the ngrams that should be returned
+    :param n_max: The maximum n of the ngrams that should be returned
+    :param lower: If True, all ngrams will be returned in lower case
+    """
+    spans = _to_spans(mention)
+    for span in spans:
+        for ngram in chain.from_iterable(
+            [
+                tokens_to_ngrams(
+                    getattr(sentence, attrib), n_min=n_min, n_max=n_max, lower=lower
+                )
+                for sentence in span.sentence.document.sentences
+                if abs(sentence.position - span.sentence.position) <= d
+                and sentence != span.sentence
+            ]
+        ):
+            yield ngram
