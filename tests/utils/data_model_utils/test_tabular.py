@@ -191,7 +191,7 @@ def test_get_cell_ngrams(mention_setup):
 
     # when a mention is not tabular
     assert mentions[0].get_span() == "Sample"
-    assert list(get_cell_ngrams(mentions[0])) == ["markdown"]
+    assert list(get_cell_ngrams(mentions[0])) == []
 
 
 def test_get_neighbor_cell_ngrams(mention_setup):
@@ -216,7 +216,7 @@ def test_get_neighbor_cell_ngrams(mention_setup):
 
     # when a mention is not tabular
     assert mentions[0].get_span() == "Sample"
-    assert list(get_neighbor_cell_ngrams(mentions[0])) == ["markdown"]
+    assert list(get_neighbor_cell_ngrams(mentions[0])) == []
 
 
 def test_get_row_ngrams(mention_setup):
@@ -228,6 +228,10 @@ def test_get_row_ngrams(mention_setup):
         "$",
         "11",
     ]
+
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_row_ngrams(mentions[0])) == []
 
 
 def test_get_col_ngrams(mention_setup):
@@ -256,6 +260,10 @@ def test_get_aligned_ngrams(mention_setup):
         "lamb",
         "madras",
     ]
+
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_aligned_ngrams(mentions[0])) == []
 
 
 def test_get_head_ngrams(mention_setup):
