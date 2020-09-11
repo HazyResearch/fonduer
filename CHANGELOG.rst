@@ -1,6 +1,9 @@
 Unreleased_
 -----------
 
+0.8.3_ - 2020-09-11
+-------------------
+
 Added
 ^^^^^
 * `@YasushiMiyata`_: Add :func:`get_max_row_num` to ``fonduer.utils.data_model_utils.tabular``.
@@ -1203,7 +1206,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.2...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.3...master
+.. _0.8.3: https://github.com/hazyresearch/fonduer/compare/v0.8.2...v0.8.3
 .. _0.8.2: https://github.com/hazyresearch/fonduer/compare/v0.8.1...v0.8.2
 .. _0.8.1: https://github.com/hazyresearch/fonduer/compare/v0.8.0...v0.8.1
 .. _0.8.0: https://github.com/hazyresearch/fonduer/compare/v0.7.1...v0.8.0
