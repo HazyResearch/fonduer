@@ -16,7 +16,7 @@ setup(
     install_requires=[
         "beautifulsoup4==4.7.1",
         "editdistance>=0.5.2, <0.6.0",
-        "snorkel>=0.9.5, <0.10.0",  # placed early due to stricter requirements
+        "snorkel>=0.9.5, <0.10.0",
         "emmental>=0.0.6, <0.1.0",
         "lxml>=4.2.5, <5.0.0",
         "mlflow>=1.1.0, <2.0.0",

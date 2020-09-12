@@ -1,18 +1,14 @@
-TESTDATA=tests/input
-
 dev:
 	pip install -r requirements-dev.txt
-	pip install -e .
+	pip install -e . --use-feature=2020-resolver
 	pre-commit install
 
 dev_extra:
 	pip install -r requirements-dev.txt
-	pip install -e .[spacy_ja]
-	pip install -e .[spacy_zh]
+	pip install -e .[spacy_ja,spacy_zh] --use-feature=2020-resolver
 	pre-commit install
 
 test: dev check docs
-	pip install -e .
 	pytest tests
 
 check:
