@@ -51,6 +51,12 @@ jobs:
       shell: bash -l {0}
       run: |
         make dev_extra
+        # model shortcuts are not available for models introduced recently.
+        # they were even deprecated by explosion/spaCy#5722
+        python -m spacy download ja_core_news_sm
+        python -m spacy link ja_core_news_sm ja
+        python -m spacy download zh_core_web_sm
+        python -m spacy link zh_core_web_sm zh
         pip install -q pytest-cov
     - name: Run preliminary checks
       shell: bash -l {0}

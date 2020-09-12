@@ -6,20 +6,16 @@ from pathlib import Path
 from string import whitespace
 from typing import Any, Collection, Dict, Iterator, List, Optional
 
+import spacy
+from spacy import util
+from spacy.cli import download
 from spacy.language import Language
+from spacy.tokens import Doc
 from spacy.util import is_package
 from spacy.vocab import Vocab
 
 from fonduer.parser.lingual_parser.lingual_parser import LingualParser
 from fonduer.parser.models.sentence import Sentence
-
-try:
-    import spacy
-    from spacy import util
-    from spacy.cli import download
-    from spacy.tokens import Doc
-except Exception:
-    raise Exception("spaCy not installed. Use `pip install spacy`.")
 
 logger = logging.getLogger(__name__)
 
@@ -27,39 +23,17 @@ logger = logging.getLogger(__name__)
 class SpacyParser(LingualParser):
     """Spacy parser class.
 
-    spaCy
-    https://spacy.io/
+    :param lang: Language. This can be one of
+        ``["en", "de", "es", "pt", "fr", "it", "nl", "xx", "ja", "zh"]``.
+        See here_ for details of languages supported by spaCy.
 
-    Models for each target language needs to be downloaded using the
-    following command:
-
-    python -m spacy download en
-
-    Default named entity types
-
-    PERSON      People, including fictional.
-    NORP        Nationalities or religious or political groups.
-    FACILITY    Buildings, airports, highways, bridges, etc.
-    ORG         Companies, agencies, institutions, etc.
-    GPE         Countries, cities, states.
-    LOC         Non-GPE locations, mountain ranges, bodies of water.
-    PRODUCT     Objects, vehicles, foods, etc. (Not services.)
-    EVENT       Named hurricanes, battles, wars, sports events, etc.
-    WORK_OF_ART Titles of books, songs, etc.
-    LANGUAGE    Any named language.
-
-    DATE        Absolute or relative dates or periods.
-    TIME        Times smaller than a day.
-    PERCENT     Percentage, including "%".
-    MONEY       Monetary values, including unit.
-    QUANTITY    Measurements, as of weight or distance.
-    ORDINAL     "first", "second", etc.
-    CARDINAL    Numerals that do not fall under another type.
-
+    .. _here: https://spacy.io/usage/models#languages.
     """
 
-    languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx"]
-    alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
+    languages = ["en", "de", "es", "pt", "fr", "it", "nl", "xx", "ja", "zh"]
+    # Keep alpha_languages for future alpha supported languages
+    # E.g., alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
+    alpha_languages: Dict[str, str] = {}
 
     def __init__(self, lang: Optional[str]) -> None:
         """Initialize SpacyParser."""
@@ -112,13 +86,6 @@ class SpacyParser(LingualParser):
         """Load spaCy language model.
 
         If a model is not installed, download it before loading it.
-
-        Currenty supported spaCy languages
-
-        en English (50MB)
-        de German (645MB)
-        fr French (1.33GB)
-        es Spanish (377MB)
 
         :return:
         """
@@ -197,8 +164,11 @@ class SpacyParser(LingualParser):
                     )
                     parts["dep_parents"].append(head_idx)
                     parts["dep_labels"].append(token.dep_)
-                current_sentence_obj.pos_tags = parts["pos_tags"]
-                current_sentence_obj.lemmas = parts["lemmas"]
+                # Special case as Japanese model does not have "tagger" in pipeline
+                # Instead, Japanese model does tagging during tokenization.
+                if not self.lang == "ja":
+                    current_sentence_obj.pos_tags = parts["pos_tags"]
+                    current_sentence_obj.lemmas = parts["lemmas"]
                 current_sentence_obj.ner_tags = parts["ner_tags"]
                 current_sentence_obj.dep_parents = parts["dep_parents"]
                 current_sentence_obj.dep_labels = parts["dep_labels"]
