@@ -1,6 +1,7 @@
 """Fonduer HTML document preprocessor."""
 import codecs
 import os
+import sys
 from typing import Iterator
 
 from bs4 import BeautifulSoup
@@ -31,7 +32,21 @@ def get_bbox(node):
 
 
 class HOCRDocPreprocessor(DocPreprocessor):
-    """A ``Document`` generator for hOCR files."""
+    """A ``Document`` generator for hOCR files.
+
+    :param space: boolean value indicating whether each word should have a subsequent
+       space. E.g., English sentence has spaces between words. Japanese one does not.
+    """
+
+    def __init__(
+        self,
+        path: str,
+        encoding: str = "utf-8",
+        max_docs: int = sys.maxsize,
+        space: bool = True,
+    ):
+        super().__init__(path, encoding, max_docs)
+        self.space = True
 
     def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         with codecs.open(fp, encoding=self.encoding) as f:
@@ -46,34 +61,43 @@ class HOCRDocPreprocessor(DocPreprocessor):
             if capabilities and "ocr_line" in capabilities["content"]:
                 for line in root.find_all(class_="ocr_line"):
                     line.unwrap()
+            parents = set()
             if capabilities and "ocrx_word" in capabilities["content"]:
                 for word in root.find_all(class_="ocrx_word"):
                     parent = word.parent
                     (left, top, right, bottom) = get_bbox(word)
-                    if "left" in parent.attrs:
-                        parent["left"] += " " + left
-                        parent["top"] += " " + top
-                        parent["right"] += " " + right
-                        parent["bottom"] += " " + bottom
+                    cut = len(word.text) + 1 if self.space else len(word.text)
+                    if "left" not in parent.attrs:
+                        parent["left"] = [left]
+                        parent["top"] = [top]
+                        parent["right"] = [right]
+                        parent["bottom"] = [bottom]
+                        parent["cuts"] = [str(cut)]
                     else:
-                        parent["left"] = left
-                        parent["top"] = top
-                        parent["right"] = right
-                        parent["bottom"] = bottom
+                        parent["left"].append(left)
+                        parent["top"].append(top)
+                        parent["right"].append(right)
+                        parent["bottom"].append(bottom)
+                        parent["cuts"].append(str(int(parent["cuts"][-1]) + cut))
                     if "ocrp_wconf" in capabilities["content"]:
                         x_wconf = get_prop(word, "x_wconf")
-                        parent["x_wconf"] = (
-                            parent["x_wconf"] + " " + x_wconf
-                            if "x_wconf" in parent.attrs
-                            else x_wconf
-                        )
+                        if "x_wconf" not in parent.attrs:
+                            parent["x_wconf"] = []
+                        parent["x_wconf"].append(x_wconf)
                     word.unwrap()
+                    parents.add(parent)
+            # Remove line breaks
+            for parent in parents:
+                if self.space:
+                    parent.string = parent.text.replace("\n", " ").strip()
+                else:
+                    parent.string = parent.text.replace("\n", "").strip()
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
             stable_id = self._get_stable_id(name)
             yield Document(
                 name=name,
                 stable_id=stable_id,
-                text=root.prettify(),
+                text=str(root),
                 meta={"file_name": file_name},
             )
 

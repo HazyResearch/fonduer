@@ -944,7 +944,6 @@ def test_parse_hocr():
         tabular=True,
         lingual=True,
         visual=True,
-        language="en",
     )
     doc = parser_udf.apply(doc)
     assert doc.name == "md"
