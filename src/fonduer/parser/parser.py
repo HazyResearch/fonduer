@@ -590,6 +590,7 @@ class ParserUDF(UDF):
                 sentence.bottom = []
                 sentence.page = []
                 for i, word in enumerate(sentence.words):
+                    # One-to-one mapping is NOT available
                     if s2h[ptr + i] == -1:
                         if ptr + i in s2h_multi:
                             left = lefts[s2h_multi[ptr + i]]
@@ -598,7 +599,19 @@ class ParserUDF(UDF):
                             bottom = bottoms[s2h_multi[ptr + i]]
                             ppageno = ppagenos[s2h_multi[ptr + i]]
                         else:
-                            raise RuntimeError("Words are not aligned!")
+                            h2s_multi_idx = [
+                                k for k, v in h2s_multi.items() if ptr + i == v
+                            ]
+                            if h2s_multi_idx:  # One hOCR word-to-multi spacy tokens
+                                # calculate a bbox that can include all
+                                left = min([lefts[_] for _ in h2s_multi_idx])
+                                top = min([tops[_] for _ in h2s_multi_idx])
+                                right = max([rights[_] for _ in h2s_multi_idx])
+                                bottom = max([bottoms[_] for _ in h2s_multi_idx])
+                                ppageno = ppagenos[h2s_multi_idx[0]]
+                            else:
+                                raise RuntimeError("Words are not aligned!")
+                    # One-to-one mapping is available
                     else:
                         left = lefts[s2h[ptr + i]]
                         top = tops[s2h[ptr + i]]

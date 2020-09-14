@@ -46,7 +46,7 @@ class HOCRDocPreprocessor(DocPreprocessor):
         space: bool = True,
     ):
         super().__init__(path, encoding, max_docs)
-        self.space = True
+        self.space = space
 
     def _parse_file(self, fp: str, file_name: str) -> Iterator[Document]:
         with codecs.open(fp, encoding=self.encoding) as f:

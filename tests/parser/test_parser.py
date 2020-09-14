@@ -962,3 +962,24 @@ def test_parse_hocr():
         1032,
     ]
     assert doc.sentences[12].page == [1] * len(doc.sentences[12].words)
+
+    docs_path = "tests/data/hocr_simple/japan.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path, space=False)
+    doc = next(preprocessor.__iter__())
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        language="ja",
+        visual=True,
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "japan"
+    sent = doc.sentences[0]
+    assert len(sent.words) == len(sent.left)
+    # "にっぽん" is tokenized into three: "に", "っ", "ぽん" in hOCR,
+    # but it is tokenized as an one token by spaCy.
+    assert sent.words[1] == "にっぽん"
+    assert sent.left[1] == 150  # this left comes from "に" in hOCR
+    assert sent.right[1] == 249  # this right comes from "ぽん" in hOCR
