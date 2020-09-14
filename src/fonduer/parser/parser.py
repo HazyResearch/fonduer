@@ -562,24 +562,28 @@ class ParserUDF(UDF):
             state["sentence"]["idx"] += 1
 
         if self.visual:
-            lefts = [int(_) for _ in node.attrib["left"].split()]
-            tops = [int(_) for _ in node.attrib["top"].split()]
-            rights = [int(_) for _ in node.attrib["right"].split()]
-            bottoms = [int(_) for _ in node.attrib["bottom"].split()]
-            ppagenos = [int(_) for _ in node.attrib["ppageno"].split()]
-            cuts = [int(_) for _ in node.attrib["cuts"].split()]
+
+            def attrib_parse(node: HtmlElement, attr: str) -> List[int]:
+                return [int(_) for _ in node.attrib[attr].split()]
+
+            # Get bbox from document
+            lefts = attrib_parse(node, "left")
+            tops = attrib_parse(node, "top")
+            rights = attrib_parse(node, "right")
+            bottoms = attrib_parse(node, "bottom")
+            ppagenos = attrib_parse(node, "ppageno")
+
+            # Get a list of all tokens represented by ocrx_word in hOCR
             start = 0
             hocr_tokens = []
-            for end in cuts:
+            for end in attrib_parse(node, "cuts"):
                 hocr_tokens.append(text[start:end])
                 start = end
 
-            spacy_tokens = []
-            spacy_tokens2sent = []
-            for i, sent in enumerate(sentences):
-                spacy_tokens += sent.words
-                spacy_tokens2sent += [i] * len(sent.words)
+            # Get a list of all tokens tokenized by spaCy.
+            spacy_tokens = [word for sent in sentences for word in sent.words]
 
+            # gold.align assumes that both tokenizations add up to the same string.
             cost, h2s, s2h, h2s_multi, s2h_multi = align(hocr_tokens, spacy_tokens)
 
             ptr = 0  # word pointer
@@ -592,7 +596,7 @@ class ParserUDF(UDF):
                 for i, word in enumerate(sentence.words):
                     # One-to-one mapping is NOT available
                     if s2h[ptr + i] == -1:
-                        if ptr + i in s2h_multi:
+                        if ptr + i in s2h_multi:  # One spacy token-to-multi hOCR words
                             left = lefts[s2h_multi[ptr + i]]
                             top = tops[s2h_multi[ptr + i]]
                             right = rights[s2h_multi[ptr + i]]
@@ -603,14 +607,16 @@ class ParserUDF(UDF):
                                 k for k, v in h2s_multi.items() if ptr + i == v
                             ]
                             if h2s_multi_idx:  # One hOCR word-to-multi spacy tokens
+                                start = h2s_multi_idx[0]
+                                end = h2s_multi_idx[-1] + 1
                                 # calculate a bbox that can include all
-                                left = min([lefts[_] for _ in h2s_multi_idx])
-                                top = min([tops[_] for _ in h2s_multi_idx])
-                                right = max([rights[_] for _ in h2s_multi_idx])
-                                bottom = max([bottoms[_] for _ in h2s_multi_idx])
-                                ppageno = ppagenos[h2s_multi_idx[0]]
+                                left = min(lefts[start:end])
+                                top = min(tops[start:end])
+                                right = max(rights[start:end])
+                                bottom = max(bottoms[start:end])
+                                ppageno = ppagenos[start]
                             else:
-                                raise RuntimeError("Words are not aligned!")
+                                raise RuntimeError("Tokens are not aligned!")
                     # One-to-one mapping is available
                     else:
                         left = lefts[s2h[ptr + i]]
