@@ -64,6 +64,7 @@ class HOCRDocPreprocessor(DocPreprocessor):
             parents = set()
             if capabilities and "ocrx_word" in capabilities["content"]:
                 for word in root.find_all(class_="ocrx_word"):
+                    ppageno = get_prop(word.find_parent(class_="ocr_page"), "ppageno")
                     parent = word.parent
                     (left, top, right, bottom) = get_bbox(word)
                     cut = len(word.text) + 1 if self.space else len(word.text)
@@ -72,12 +73,14 @@ class HOCRDocPreprocessor(DocPreprocessor):
                         parent["top"] = [top]
                         parent["right"] = [right]
                         parent["bottom"] = [bottom]
+                        parent["ppageno"] = [ppageno]
                         parent["cuts"] = [str(cut)]
                     else:
                         parent["left"].append(left)
                         parent["top"].append(top)
                         parent["right"].append(right)
                         parent["bottom"].append(bottom)
+                        parent["ppageno"].append(ppageno)
                         parent["cuts"].append(str(int(parent["cuts"][-1]) + cut))
                     if "ocrp_wconf" in capabilities["content"]:
                         x_wconf = get_prop(word, "x_wconf")

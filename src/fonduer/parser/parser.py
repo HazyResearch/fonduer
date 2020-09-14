@@ -19,6 +19,7 @@ from typing import (
 import lxml.etree
 import lxml.html
 from lxml.html import HtmlElement
+from spacy.gold import align
 from sqlalchemy.orm import Session
 
 from fonduer.parser.lingual_parser import LingualParser, SimpleParser, SpacyParser
@@ -467,6 +468,7 @@ class ParserUDF(UDF):
 
         # Lingual Parse
         document = state["document"]
+        sentences = []
         for parts in self.lingual_parser.split_sentences(text):
             abs_offset = state["sentence"]["abs_offset"]
             parts["abs_char_offsets"] = [
@@ -556,8 +558,63 @@ class ParserUDF(UDF):
                     parts["col_end"] = parent.cell.col_end
             else:
                 raise NotImplementedError("Sentence parent must be Paragraph.")
-            yield Sentence(**parts)
+            sentences.append(Sentence(**parts))
             state["sentence"]["idx"] += 1
+
+        if self.visual:
+            lefts = [int(_) for _ in node.attrib["left"].split()]
+            tops = [int(_) for _ in node.attrib["top"].split()]
+            rights = [int(_) for _ in node.attrib["right"].split()]
+            bottoms = [int(_) for _ in node.attrib["bottom"].split()]
+            ppagenos = [int(_) for _ in node.attrib["ppageno"].split()]
+            cuts = [int(_) for _ in node.attrib["cuts"].split()]
+            start = 0
+            hocr_tokens = []
+            for end in cuts:
+                hocr_tokens.append(text[start:end])
+                start = end
+
+            spacy_tokens = []
+            spacy_tokens2sent = []
+            for i, sent in enumerate(sentences):
+                spacy_tokens += sent.words
+                spacy_tokens2sent += [i] * len(sent.words)
+
+            cost, h2s, s2h, h2s_multi, s2h_multi = align(hocr_tokens, spacy_tokens)
+
+            ptr = 0  # word pointer
+            for sentence in sentences:
+                sentence.left = []
+                sentence.top = []
+                sentence.right = []
+                sentence.bottom = []
+                sentence.page = []
+                for i, word in enumerate(sentence.words):
+                    if s2h[ptr + i] == -1:
+                        if ptr + i in s2h_multi:
+                            left = lefts[s2h_multi[ptr + i]]
+                            top = tops[s2h_multi[ptr + i]]
+                            right = rights[s2h_multi[ptr + i]]
+                            bottom = bottoms[s2h_multi[ptr + i]]
+                            ppageno = ppagenos[s2h_multi[ptr + i]]
+                        else:
+                            raise RuntimeError("Words are not aligned!")
+                    else:
+                        left = lefts[s2h[ptr + i]]
+                        top = tops[s2h[ptr + i]]
+                        right = rights[s2h[ptr + i]]
+                        bottom = bottoms[s2h[ptr + i]]
+                        ppageno = ppagenos[s2h[ptr + i]]
+                    sentence.left.append(left)
+                    sentence.top.append(top)
+                    sentence.right.append(right)
+                    sentence.bottom.append(bottom)
+                    sentence.page.append(ppageno + 1)  # 1-based in Fonduer
+                ptr += len(sentence.words)
+                yield sentence
+        else:
+            for sentence in sentences:
+                yield sentence
 
     def _parse_paragraph(
         self, node: HtmlElement, state: Dict[str, Any]
