@@ -12,7 +12,14 @@ from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
 
 
 class HOCRDocPreprocessor(DocPreprocessor):
-    """A ``Document`` generator for hOCR files."""
+    """A ``Document`` generator for hOCR files.
+
+    hOCR should comply with `hOCR v1.2`_.
+    Note that *ppageno* property of *ocr_page* is optional by `hOCR v1.2`_,
+    but is required by Fonduer.
+
+    .. _hOCR v1.2: http://kba.cloud/hocr-spec/1.2/
+    """
 
     def __init__(
         self,
@@ -71,6 +78,10 @@ class HOCRDocPreprocessor(DocPreprocessor):
             if capabilities and "ocrx_word" in capabilities["content"]:
                 for word in root.find_all(class_="ocrx_word"):
                     ppageno = get_prop(word.find_parent(class_="ocr_page"), "ppageno")
+                    if not ppageno:
+                        raise RuntimeError(
+                            "No ppageno property is found at ocr_page element!"
+                        )
                     parent = word.parent
                     (left, top, right, bottom) = get_bbox(word)
                     cut = len(word.text) + 1 if self.space else len(word.text)
