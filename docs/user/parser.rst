@@ -3,6 +3,37 @@ Parsing
 The first stage of Fonduer_'s pipeline is to parse an input corpus of documents
 into the Fonduer_ data model.
 
+Fonduer supports different file formats: CSV/TSV, TXT, HTML, and hOCR.
+:class:`DocPreprocessor` transforms files in different formats into an uniform format that :class:`Parser` can parse.
+The diagram below illustrates example pipelines (up to :class:`Parser`) for each format:
+
+.. mermaid::
+
+    graph LR;
+        Image[(Image)]--OCR-->hOCR[(hOCR)];
+        CSV[(CSV)]-->CSVDoc;
+        TXT[(TXT)]-->TXTDoc;
+        HTML[(HTML)]-->HTMLDoc;
+        HTML2[(HTML)]-->HTMLDoc;
+        PDF[(PDF)]--Convert-->HTML2[(HTML)];
+        hOCR-->HOCRDoc;
+        PDF-->vizlink;
+    subgraph Fonduer
+        CSVDoc(CSVDocPreprocessor)-->parser;
+        TXTDoc(TXTDocPreprocessor)-->parser;
+        HTMLDoc(HTMLDocPreprocessor)-->parser;
+        HOCRDoc(HOCRDocPreprocessor)-->parser;
+        parser(Parser)-->others(..);
+        vizlink(VisualLinker) --- parser;
+    end
+    classDef source fill:#aaf;
+    classDef preproc fill:#afa;
+    class Image,CSV,TXT,HTML,PDF source;
+    class HOCRDoc,CSVDoc,TXTDoc,HTMLDoc preproc;
+
+Nodes in dark blue represent original source files.
+Some of them are converted into different files: an image (incl. non-searchable PDF) is OCRed and exported in hOCR, a (born-digital) PDF is converted into HTML using tools like `pdftotree`.
+
 Multimodal Data Model
 ---------------------
 
