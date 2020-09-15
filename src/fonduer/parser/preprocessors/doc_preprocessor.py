@@ -78,4 +78,7 @@ class DocPreprocessor(object):
         if len(fpaths) > 0:
             return sorted(fpaths)
         else:
-            raise IOError(f"File or directory not found: {path}")
+            raise IOError(
+                f"No readable file found at {path}. Check if {path} exists "
+                "and a filename ends with an allowable extension (e.g., .html)"
+            )
