@@ -18,7 +18,10 @@ from typing import (
 
 import lxml.etree
 import lxml.html
+import spacy
+import spacy.gold
 from lxml.html import HtmlElement
+from packaging import version
 from spacy.gold import align
 from sqlalchemy.orm import Session
 
@@ -37,6 +40,7 @@ from fonduer.parser.models import (
 from fonduer.parser.models.utils import construct_stable_id
 from fonduer.utils.udf import UDF, UDFRunner
 
+spacy.gold.USE_NEW_ALIGN = True
 logger = logging.getLogger(__name__)
 
 
@@ -225,6 +229,11 @@ class ParserUDF(UDF):
 
         # visual setup
         self.visual = visual
+        if self.visual and version.parse(spacy.__version__) < version.parse("2.2.2"):
+            raise ImportError(
+                f"You are using spaCy {spacy.__version__}, but it should be 2.2.2 or "
+                "later when visual=True."
+            )
 
     def apply(  # type: ignore
         self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
