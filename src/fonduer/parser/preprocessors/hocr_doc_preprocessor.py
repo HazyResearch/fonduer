@@ -74,7 +74,6 @@ class HOCRDocPreprocessor(DocPreprocessor):
             if capabilities and "ocr_line" in capabilities["content"]:
                 for line in root.find_all(class_="ocr_line"):
                     line.unwrap()
-            parents = set()
             if capabilities and "ocrx_word" in capabilities["content"]:
                 for word in root.find_all(class_="ocrx_word"):
                     ppageno = get_prop(word.find_parent(class_="ocr_page"), "ppageno")
@@ -104,14 +103,17 @@ class HOCRDocPreprocessor(DocPreprocessor):
                         if "x_wconf" not in parent.attrs:
                             parent["x_wconf"] = []
                         parent["x_wconf"].append(x_wconf)
+                    # Mark the parent element
+                    if "fonduer" not in parent.attrs:
+                        parent["fonduer"] = ["1"]
                     word.unwrap()
-                    parents.add(parent)
-            # Remove line breaks
-            for parent in parents:
-                if self.space:
-                    parent.string = parent.text.replace("\n", " ").strip()
-                else:
-                    parent.string = parent.text.replace("\n", "").strip()
+                for parent in root.find_all(attrs={"fonduer": "1"}):
+                    if self.space:
+                        parent.string = parent.text.replace("\n", " ").strip()
+                    else:
+                        parent.string = parent.text.replace("\n", "").strip()
+                    # Rmove the mark
+                    del parent["fonduer"]
             name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
             stable_id = self._get_stable_id(name)
             yield Document(
