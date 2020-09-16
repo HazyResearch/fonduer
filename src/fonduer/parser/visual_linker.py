@@ -37,12 +37,21 @@ HtmlWord = Tuple[HtmlWordId, str]
 
 
 class VisualLinker(object):
-    """Link visual information with sentences."""
+    """Link visual information, extracted from PDF, with parsed sentences.
+
+    This linker assumes the following conditions for expected results:
+
+    - The PDF file exists in a directory specified by `pdf_path`.
+    - The basename of the PDF file is same as the *document name*
+      and its extension is either ".pdf" or ".PDF".
+    - A PDF has a text layer.
+    """
 
     def __init__(self, pdf_path: str, verbose: bool = False) -> None:
         """Initialize VisualLinker.
 
-        :param pdf_path: directory path to PDFs.
+        :param pdf_path: a path to directory that contains PDF files.
+        :param verbose: whether to turn on verbose logging.
         """
         if not os.path.isdir(pdf_path):
             raise ValueError(f"No directory exists at {pdf_path}!")
@@ -126,34 +135,26 @@ class VisualLinker(object):
         if self.verbose:
             logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
-    def _get_linked_pdf_path(self, filename: str) -> str:
-        """Get the linked pdf file path, return None if it doesn't exist.
+    def _get_linked_pdf_path(self, document_name: str) -> str:
+        """Get the pdf file path, return None if it doesn't exist.
 
-        :param filename: The name to the PDF document.
+        :param document_name: a document name.
         """
-        path = self.pdf_path
-        # If path is file, but not PDF.
-        if os.path.isfile(path) and path.lower().endswith(".pdf"):
-            return path
-        else:
-            full_path = os.path.join(path, filename)
-            if os.path.isfile(full_path) and full_path.lower().endswith(".pdf"):
-                return full_path
-            full_path = os.path.join(path, filename + ".pdf")
-            if os.path.isfile(full_path):
-                return full_path
-            full_path = os.path.join(path, filename + ".PDF")
-            if os.path.isfile(full_path):
-                return full_path
+        full_path = os.path.join(self.pdf_path, document_name + ".pdf")
+        if os.path.isfile(full_path):
+            return full_path
+        full_path = os.path.join(self.pdf_path, document_name + ".PDF")
+        if os.path.isfile(full_path):
+            return full_path
 
         return None
 
-    def is_linkable(self, filename: str) -> bool:
+    def is_linkable(self, document_name: str) -> bool:
         """Verify that the file exists and has a PDF extension.
 
-        :param filename: The path to the PDF document.
+        :param document_name: The path to the PDF document.
         """
-        return False if self._get_linked_pdf_path(filename) is None else True
+        return False if self._get_linked_pdf_path(document_name) is None else True
 
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
