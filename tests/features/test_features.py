@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def test_unary_relation_feature_extraction():
     """Test extracting unary candidates from mentions from documents."""
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
 
     # Parsing
     doc = parse_doc(docs_path, "112823", pdf_path)
@@ -105,7 +105,7 @@ def test_unary_relation_feature_extraction():
 def test_binary_relation_feature_extraction():
     """Test extracting candidates from mentions from documents."""
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
 
     # Parsing
     doc = parse_doc(docs_path, "112823", pdf_path)
@@ -239,7 +239,7 @@ def test_binary_relation_feature_extraction():
 def test_multinary_relation_feature_extraction():
     """Test extracting candidates from mentions from documents."""
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
 
     # Parsing
     doc = parse_doc(docs_path, "112823", pdf_path)

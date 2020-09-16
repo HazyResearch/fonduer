@@ -12,6 +12,7 @@ from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_linker import VisualLinker
 from fonduer.supervision import Labeler
 from fonduer.supervision.labeler import ABSTAIN
 from fonduer.supervision.models import Label, LabelKey
@@ -46,7 +47,7 @@ def test_incremental(database_session):
     session = database_session
 
     docs_path = "tests/data/html/dtc114w.html"
-    pdf_path = "tests/data/pdf/dtc114w.pdf"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
@@ -56,7 +57,7 @@ def test_incremental(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        pdf_path=pdf_path,
+        vizlink=VisualLinker(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
 
@@ -140,11 +141,11 @@ def test_incremental(database_session):
     assert len(labeler.get_keys()) == 5
 
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser.apply(doc_preprocessor, pdf_path=pdf_path, clear=False)
+    corpus_parser.apply(doc_preprocessor, clear=False)
 
     assert len(corpus_parser.get_documents()) == 2
 

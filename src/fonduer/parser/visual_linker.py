@@ -42,7 +42,12 @@ class VisualLinker(object):
     def __init__(
         self, pdf_path: str, time: bool = False, verbose: bool = False
     ) -> None:
-        """Initialize VisualLinker."""
+        """Initialize VisualLinker.
+
+        :param pdf_path: directory path to PDFs.
+        """
+        if not os.path.isdir(pdf_path):
+            raise ValueError(f"No directory exists at {pdf_path}!")
         self.pdf_path = pdf_path
         self.pdf_file: Optional[str] = None
         self.verbose = verbose
@@ -70,21 +75,16 @@ class VisualLinker(object):
                 f"but should be 0.36.0 or above"
             )
 
-    def link(
-        self, document_name: str, sentences: List[Sentence], pdf_path: str = None
-    ) -> Iterator[Sentence]:
+    def link(self, document_name: str, sentences: List[Sentence]) -> Iterator[Sentence]:
         """Link visual information with sentences.
 
         :param document_name: the document name.
         :param sentences: sentences to be linked with visual information.
-        :param pdf_path: The path to the PDF documents, if any, defaults to None.
-            This path will override the one used in initialization, if provided.
         :return: A generator of ``Sentence``.
         """
         # sentences should be sorted as their order is not deterministic.
         self.sentences = sorted(sentences, key=attrgetter("position"))
-        self.pdf_path = pdf_path if pdf_path is not None else self.pdf_path
-        self.pdf_file = self._get_linked_pdf_path(document_name, self.pdf_path)
+        self.pdf_file = self._get_linked_pdf_path(document_name)
         try:
             self._extract_pdf_words()
         except RuntimeError as e:
@@ -129,13 +129,12 @@ class VisualLinker(object):
         if self.verbose:
             logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
-    def _get_linked_pdf_path(self, filename: str, pdf_path: str = None) -> str:
+    def _get_linked_pdf_path(self, filename: str) -> str:
         """Get the linked pdf file path, return None if it doesn't exist.
 
         :param filename: The name to the PDF document.
-        :param pdf_path: The path to the PDF documents, if any, defaults to None.
         """
-        path = pdf_path if pdf_path is not None else self.pdf_path
+        path = self.pdf_path
         # If path is file, but not PDF.
         if os.path.isfile(path) and path.lower().endswith(".pdf"):
             return path
@@ -152,13 +151,12 @@ class VisualLinker(object):
 
         return None
 
-    def is_linkable(self, filename: str, pdf_path: str = None) -> bool:
+    def is_linkable(self, filename: str) -> bool:
         """Verify that the file exists and has a PDF extension.
 
         :param filename: The path to the PDF document.
-        :param pdf_path: The path to the PDF documents, if any, defaults to None.
         """
-        return False if self._get_linked_pdf_path(filename, pdf_path) is None else True
+        return False if self._get_linked_pdf_path(filename) is None else True
 
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
