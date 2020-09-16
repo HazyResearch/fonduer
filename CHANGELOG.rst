@@ -6,6 +6,16 @@ Added
 * `@HiromuHota`_: Support spaCy v2.3.
   (`#506 <https://github.com/HazyResearch/fonduer/pull/506>`_)
 
+Changed
+^^^^^^^
+* `@HiromuHota`_: Renamed :class:`Parser`'s arg "vizlink" to "visual_linker", and
+  changed its meaning. As of v0.8.3, if not specified, :class:`VisualLinker` was used.
+  From now on, if not specified, :class:`Parser` parses visual information that is
+  assumed to be embedded in the input document like hOCR.
+  To use :class:`VisualLinker`, it should be explicitly specified.
+  (`#476 <https://github.com/HazyResearch/fonduer/issues/476>`_)
+  (`#509 <https://github.com/HazyResearch/fonduer/pull/509>`_)
+
 0.8.3_ - 2020-09-11
 -------------------
 
