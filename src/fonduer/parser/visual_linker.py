@@ -39,9 +39,7 @@ HtmlWord = Tuple[HtmlWordId, str]
 class VisualLinker(object):
     """Link visual information with sentences."""
 
-    def __init__(
-        self, pdf_path: str, time: bool = False, verbose: bool = False
-    ) -> None:
+    def __init__(self, pdf_path: str, verbose: bool = False) -> None:
         """Initialize VisualLinker.
 
         :param pdf_path: directory path to PDFs.
@@ -51,7 +49,6 @@ class VisualLinker(object):
         self.pdf_path = pdf_path
         self.pdf_file: Optional[str] = None
         self.verbose = verbose
-        self.time = time
         self.coordinate_map: Optional[Dict[PdfWordId, Bbox]] = None
         self.pdf_word_list: Optional[List[PdfWord]] = None
         self.html_word_list: Optional[List[HtmlWord]] = None
