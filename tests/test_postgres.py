@@ -66,7 +66,7 @@ def test_cand_gen_cascading_delete(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
@@ -153,7 +153,7 @@ def test_too_many_clients_error_should_not_happen(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     docs = session.query(Document).order_by(Document.name).all()

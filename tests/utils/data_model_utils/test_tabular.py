@@ -42,7 +42,7 @@ def mention_setup():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)

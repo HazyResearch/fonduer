@@ -28,7 +28,7 @@ def get_parser_udf(
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
-    vizlink=None,
+    visual_linker=None,
 ):
     """Return an instance of ParserUDF."""
     parser_udf = ParserUDF(
@@ -41,7 +41,7 @@ def get_parser_udf(
         replacements=replacements,
         tabular=tabular,
         visual=visual,
-        vizlink=vizlink,
+        visual_linker=visual_linker,
         language=language,
     )
     return parser_udf
@@ -73,7 +73,7 @@ def test_parse_md_details():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -166,7 +166,7 @@ def test_parse_wo_tabular():
         tabular=False,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -332,7 +332,7 @@ def test_warning_on_incorrect_filename():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
@@ -358,7 +358,7 @@ def test_parse_md_paragraphs():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -447,7 +447,7 @@ def test_simple_parser():
         structural=True,
         lingual=False,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
         lingual_parser=SimpleParser(delim="NoDelim"),
     )
     doc = parser_udf.apply(doc)
@@ -529,7 +529,7 @@ def test_parse_document_diseases():
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -599,7 +599,7 @@ def test_parse_style():
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -805,7 +805,7 @@ def test_parser_no_image():
         structural=True,
         lingual=False,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -828,7 +828,7 @@ def test_various_file_path_formats(database_session):
             structural=True,
             lingual=True,
             visual=True,
-            vizlink=VisualLinker(pdf_path),
+            visual_linker=VisualLinker(pdf_path),
         )
 
         corpus_parser.clear()
@@ -910,7 +910,7 @@ def test_parse_hocr():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=None,
+        visual_linker=None,
     )
     doc = parser_udf.apply(doc)
     assert doc.name == "md"
@@ -940,7 +940,7 @@ def test_parse_hocr():
         lingual=True,
         language="ja",
         visual=True,
-        vizlink=None,
+        visual_linker=None,
     )
     doc = parser_udf.apply(doc)
     assert doc.name == "japan"

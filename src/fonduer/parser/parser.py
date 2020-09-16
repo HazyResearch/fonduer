@@ -68,7 +68,7 @@ class Parser(UDFRunner):
         minus, etc.) with a standard ASCII hyphen.
     :param tabular: Whether to include tabular information in the parse.
     :param visual: Whether to include visual information in the parse.
-    :param vizlink: A visual linker that links visual information after parsing.
+    :param visual_linker: A visual linker that links visual information after parsing.
         If visual=True without a linker, it is assumed that visual information is
         embedded and parsed during parsing.
         If visual=True with a linker, visual information is linked after parsing.
@@ -93,7 +93,7 @@ class Parser(UDFRunner):
         ],
         tabular: bool = True,  # tabular information
         visual: bool = False,  # visual information
-        vizlink: Optional[VisualLinker] = None,  # visual linker
+        visual_linker: Optional[VisualLinker] = None,  # visual linker
     ) -> None:
         """Initialize Parser."""
         super().__init__(
@@ -109,7 +109,7 @@ class Parser(UDFRunner):
             replacements=replacements,
             tabular=tabular,
             visual=visual,
-            vizlink=vizlink,
+            visual_linker=visual_linker,
             language=language,
         )
 
@@ -182,7 +182,7 @@ class ParserUDF(UDF):
         replacements: List[Tuple[str, str]],
         tabular: bool,
         visual: bool,
-        vizlink: Optional[VisualLinker],
+        visual_linker: Optional[VisualLinker],
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
@@ -230,9 +230,9 @@ class ParserUDF(UDF):
 
         # visual setup
         self.visual = visual
-        self.vizlink = vizlink
+        self.visual_linker = visual_linker
         if (
-            self.visual and not self.vizlink
+            self.visual and not self.visual_linker
         ):  # visual is embedded and is parsed during parsing.
             if version.parse(spacy.__version__) < version.parse("2.2.2"):
                 raise ImportError(
@@ -249,8 +249,8 @@ class ParserUDF(UDF):
         """
         try:
             [y for y in self.parse(document, document.text)]
-            if self.visual and self.vizlink:
-                if not self.vizlink.is_linkable(document.name):
+            if self.visual and self.visual_linker:
+                if not self.visual_linker.is_linkable(document.name):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
@@ -261,7 +261,12 @@ class ParserUDF(UDF):
                     )
                 else:
                     # Add visual attributes
-                    [y for y in self.vizlink.link(document.name, document.sentences)]
+                    [
+                        y
+                        for y in self.visual_linker.link(
+                            document.name, document.sentences
+                        )
+                    ]
             return document
         except Exception as e:
             logging.exception(
@@ -587,7 +592,7 @@ class ParserUDF(UDF):
             sentences.append(Sentence(**parts))
             state["sentence"]["idx"] += 1
 
-        if self.visual and not self.vizlink:
+        if self.visual and not self.visual_linker:
 
             def attrib_parse(node: HtmlElement, attr: str) -> List[int]:
                 return [int(_) for _ in node.attrib[attr].split()]

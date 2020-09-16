@@ -57,7 +57,7 @@ def parse_doc(docs_path: str, file_name: str, pdf_path: Optional[str] = None):
         tabular=True,
         lingual=True,
         visual=True if pdf_path else False,
-        vizlink=VisualLinker(pdf_path) if pdf_path else None,
+        visual_linker=VisualLinker(pdf_path) if pdf_path else None,
         language="en",
     )
     doc = parser_udf.apply(doc)

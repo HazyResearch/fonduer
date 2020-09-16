@@ -90,7 +90,7 @@ def test_e2e(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_linker=VisualLinker(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
     assert session.query(Document).count() == max_docs
