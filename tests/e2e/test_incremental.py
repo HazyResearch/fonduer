@@ -116,8 +116,8 @@ def test_incremental(database_session):
     assert len(featurizer.get_keys()) == num_feature_keys
 
     # Test Dropping FeatureKey
-    featurizer.drop_keys(["CORE_e1_LENGTH_1"])
-    assert session.query(FeatureKey).count() == num_feature_keys
+    featurizer.drop_keys(["BASIC_e1_LENGTH_1"])
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     stg_temp_lfs = [
         LF_storage_row,
