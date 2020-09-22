@@ -63,7 +63,7 @@ class VisualLinker(object):
         version = subprocess.check_output(
             "pdfinfo -v", shell=True, stderr=subprocess.STDOUT, universal_newlines=True
         )
-        m = re.search(r"\d\.\d{2}\.\d", version)
+        m = re.search(r"\d{1,2}\.\d{2}\.\d", version)
         if int(m.group(0).replace(".", "")) < 360:
             raise RuntimeError(
                 f"Installed poppler-utils's version is {m.group(0)}, "
