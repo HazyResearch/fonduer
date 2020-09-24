@@ -1,2 +1,3 @@
 sqlalchemy
 sphinx_autodoc_typehints
+deprecation
