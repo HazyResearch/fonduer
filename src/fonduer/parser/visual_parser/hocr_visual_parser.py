@@ -1,3 +1,4 @@
+"""Fonduer visual parser that parses visual information from hOCR."""
 import itertools
 from typing import Dict, Iterable, Iterator, List
 
@@ -11,7 +12,16 @@ from fonduer.parser.visual_parser.visual_parser import VisualParser
 
 
 class HocrVisualParser(VisualParser):
+    """Visual Parser for hOCR."""
+
     def __init__(self, sep: str = " "):
+        """Initialize a visual parser.
+
+        :param sep: word separator, defaults to " " (single space).
+          This separator is used when joining words into a sentence.
+          Use a single space (" ") for English and no space ("") for CJK languages.
+        :raises ImportError: an error is raised when spaCy is not 2.2.2 or later.
+        """
         if version.parse(spacy.__version__) < version.parse("2.2.2"):
             raise ImportError(
                 f"You are using spaCy {spacy.__version__},"
@@ -23,6 +33,13 @@ class HocrVisualParser(VisualParser):
     def parse(
         self, document_name: str, sentences: Iterable[Sentence]
     ) -> Iterator[Sentence]:
+        """Parse visual information embedded in sentence's html_attrs.
+
+        :param document_name: the document name.
+        :param sentences: sentences to be linked with visual information.
+        :return: A generator of ``Sentence``.
+        """
+
         def attrib_parse(html_attrs: List[str]) -> Dict[str, List[int]]:
             ret = {}
             for attr in html_attrs:
@@ -107,5 +124,9 @@ class HocrVisualParser(VisualParser):
                 ptr += len(sent.words)
                 yield sent
 
-    def is_parsable(self, filename: str, pdf_path: str = None) -> bool:
+    def is_parsable(self, filename: str) -> bool:
+        """Whether bbox is embdded in sentence's html_attrs.
+
+        :param document_name: The path to the PDF document.
+        """
         return True

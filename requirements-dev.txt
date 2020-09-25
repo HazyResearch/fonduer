@@ -11,3 +11,4 @@ pytest-mock
 sphinx
 sphinx_rtd_theme
 sphinx_autodoc_typehints
+sphinxcontrib-mermaid
