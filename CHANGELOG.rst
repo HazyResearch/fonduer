@@ -6,6 +6,16 @@ Added
 * `@HiromuHota`_: Support spaCy v2.3.
   (`#506 <https://github.com/HazyResearch/fonduer/pull/506>`_)
 
+Changed
+^^^^^^^
+* `@HiromuHota`_: Renamed :class:`VisualLinker` to :class:`PdfVisualParser`,
+  which takes ``pdf_path``, and changed :class:`Parser`'s signature as follows:
+  (`#518 <https://github.com/HazyResearch/fonduer/pull/518>`_)
+
+    * Renamed ``vizlink`` to ``visual_parser``.
+    * Removed ``pdf_path``. Now this is required only by :class:`PdfVisualLinker`.
+    * Removed ``visual``. Provide ``visual_parser`` if visual information is to be parsed.
+
 0.8.3_ - 2020-09-11
 -------------------
 
