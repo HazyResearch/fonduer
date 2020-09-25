@@ -89,7 +89,6 @@ def test_e2e(database_session):
         parallelism=PARALLEL,
         structural=True,
         lingual=True,
-        visual=True,
         visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
