@@ -12,7 +12,7 @@ from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.visual_linker import VisualLinker
+from fonduer.parser.visual_parser import PdfVisualParser
 from fonduer.supervision import Labeler
 from fonduer.supervision.labeler import ABSTAIN
 from fonduer.supervision.models import Label, LabelKey
@@ -57,7 +57,7 @@ def test_incremental(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
 

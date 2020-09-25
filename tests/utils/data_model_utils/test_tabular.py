@@ -3,7 +3,7 @@ import pytest
 
 from fonduer.candidates import MentionNgrams
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.visual_linker import VisualLinker
+from fonduer.parser.visual_parser import PdfVisualParser
 from fonduer.utils.data_model_utils.tabular import (
     get_aligned_ngrams,
     get_cell_ngrams,
@@ -42,7 +42,7 @@ def mention_setup():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)

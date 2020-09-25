@@ -1,13 +1,13 @@
-"""Fonduer visual linker."""
+"""Fonduer visual parser."""
 import logging
 import os
 import re
 import shutil
 import subprocess
-from builtins import object, range, zip
+from builtins import range, zip
 from collections import OrderedDict, defaultdict
 from operator import attrgetter
-from typing import DefaultDict, Dict, Iterator, List, Optional, Tuple
+from typing import DefaultDict, Dict, Iterable, Iterator, List, Optional, Tuple
 
 import numpy as np
 from bs4 import BeautifulSoup
@@ -15,6 +15,7 @@ from bs4.element import Tag
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
 
 from fonduer.parser.models import Sentence
+from fonduer.parser.visual_parser.visual_parser import VisualParser
 from fonduer.utils.utils_visual import Bbox
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ HtmlWordId = Tuple[str, int]
 HtmlWord = Tuple[HtmlWordId, str]
 
 
-class VisualLinker(object):
+class PdfVisualParser(VisualParser):
     """Link visual information, extracted from PDF, with parsed sentences.
 
     This linker assumes the following conditions for expected results:
@@ -48,7 +49,7 @@ class VisualLinker(object):
     """
 
     def __init__(self, pdf_path: str, verbose: bool = False) -> None:
-        """Initialize VisualLinker.
+        """Initialize VisualParser.
 
         :param pdf_path: a path to directory that contains PDF files.
         :param verbose: whether to turn on verbose logging.
@@ -81,7 +82,9 @@ class VisualLinker(object):
                 f"but should be 0.36.0 or above"
             )
 
-    def link(self, document_name: str, sentences: List[Sentence]) -> Iterator[Sentence]:
+    def parse(
+        self, document_name: str, sentences: Iterable[Sentence]
+    ) -> Iterator[Sentence]:
         """Link visual information with sentences.
 
         :param document_name: the document name.
@@ -149,7 +152,7 @@ class VisualLinker(object):
 
         return None
 
-    def is_linkable(self, document_name: str) -> bool:
+    def is_parsable(self, document_name: str) -> bool:
         """Verify that the file exists and has a PDF extension.
 
         :param document_name: The path to the PDF document.

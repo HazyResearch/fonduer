@@ -7,13 +7,14 @@ import pytest
 from fonduer.parser import Parser
 from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
-from fonduer.parser.parser import ParserUDF, SimpleParser, VisualLinker
+from fonduer.parser.parser import ParserUDF, SimpleParser
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
     HTMLDocPreprocessor,
     TextDocPreprocessor,
     TSVDocPreprocessor,
 )
+from fonduer.parser.visual_parser import PdfVisualParser
 
 
 def get_parser_udf(
@@ -27,7 +28,7 @@ def get_parser_udf(
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
-    vizlink=None,
+    visual_parser=None,
 ):
     """Return an instance of ParserUDF."""
     parser_udf = ParserUDF(
@@ -40,7 +41,7 @@ def get_parser_udf(
         replacements=replacements,
         tabular=tabular,
         visual=visual,
-        vizlink=vizlink,
+        visual_parser=visual_parser,
         language=language,
     )
     return parser_udf
@@ -72,7 +73,7 @@ def test_parse_md_details():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -165,7 +166,7 @@ def test_parse_wo_tabular():
         tabular=False,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -318,16 +319,20 @@ def test_spacy_chinese():
 
 def test_warning_on_missing_pdf():
     """Test that a warning is issued on invalid pdf."""
-    docs_path = "tests/data/html_simple/md_para.html"
-    pdf_path = "tests/data/pdf_simple/md_para_nonexistant.pdf"
+    docs_path = "tests/data/html_simple/table_span.html"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor._parse_file(docs_path, "md_para"))
+    doc = next(iter(preprocessor))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
@@ -350,7 +355,7 @@ def test_warning_on_incorrect_filename():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
@@ -376,7 +381,7 @@ def test_parse_md_paragraphs():
         tabular=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -465,7 +470,7 @@ def test_simple_parser():
         structural=True,
         lingual=False,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
         lingual_parser=SimpleParser(delim="NoDelim"),
     )
     doc = parser_udf.apply(doc)
@@ -547,7 +552,7 @@ def test_parse_document_diseases():
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -617,7 +622,7 @@ def test_parse_style():
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -823,7 +828,7 @@ def test_parser_no_image():
         structural=True,
         lingual=False,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -846,7 +851,7 @@ def test_various_file_path_formats(database_session):
             structural=True,
             lingual=True,
             visual=True,
-            vizlink=VisualLinker(pdf_path),
+            visual_parser=PdfVisualParser(pdf_path),
         )
 
         corpus_parser.clear()

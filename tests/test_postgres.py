@@ -12,7 +12,7 @@ from fonduer.candidates.models import (
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
-from fonduer.parser.visual_linker import VisualLinker
+from fonduer.parser.visual_parser import PdfVisualParser
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,
@@ -66,7 +66,7 @@ def test_cand_gen_cascading_delete(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
@@ -153,7 +153,7 @@ def test_too_many_clients_error_should_not_happen(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        vizlink=VisualLinker(pdf_path),
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     docs = session.query(Document).order_by(Document.name).all()
