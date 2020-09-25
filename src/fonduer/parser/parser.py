@@ -67,7 +67,6 @@ class Parser(UDFRunner):
     :param vizlink: A custom visual linker that inherits
         :class:`VisualLinker <fonduer.parser.visual_linker.VisualLinker>`.
         Unless otherwise specified, :class:`VisualLinker` will be used.
-    :param pdf_path: The path to the corresponding PDFs use for visual info.
     """
 
     def __init__(
@@ -90,7 +89,6 @@ class Parser(UDFRunner):
         tabular: bool = True,  # tabular information
         visual: bool = False,  # visual information
         vizlink: Optional[VisualLinker] = None,  # visual linker
-        pdf_path: Optional[str] = None,
     ) -> None:
         """Initialize Parser."""
         super().__init__(
@@ -107,7 +105,6 @@ class Parser(UDFRunner):
             tabular=tabular,
             visual=visual,
             vizlink=vizlink,
-            pdf_path=pdf_path,
             language=language,
         )
 
@@ -117,14 +114,11 @@ class Parser(UDFRunner):
         clear: bool = True,
         parallelism: Optional[int] = None,
         progress_bar: bool = True,
-        pdf_path: Optional[str] = None,
     ) -> None:
         """Run the Parser.
 
         :param doc_loader: An iteratable of ``Documents`` to parse. Typically,
             one of Fonduer's document preprocessors.
-        :param pdf_path: The path to the PDF documents, if any. This path will
-            override the one used in initialization, if provided.
         :param clear: Whether or not to clear the labels table before applying
             these LFs.
         :param parallelism: How many threads to use for extraction. This will
@@ -135,7 +129,6 @@ class Parser(UDFRunner):
         """
         super().apply(
             doc_loader,
-            pdf_path=pdf_path,
             clear=clear,
             parallelism=parallelism,
             progress_bar=progress_bar,
@@ -146,11 +139,8 @@ class Parser(UDFRunner):
         if doc:
             self.session.add(doc)
 
-    def clear(self, pdf_path: Optional[str] = None) -> None:  # type: ignore
-        """Clear all of the ``Context`` objects in the database.
-
-        :param pdf_path: This parameter is ignored.
-        """
+    def clear(self) -> None:  # type: ignore
+        """Clear all of the ``Context`` objects in the database."""
         self.session.query(Context).delete(synchronize_session="fetch")
 
     def get_last_documents(self) -> List[Document]:
@@ -188,16 +178,12 @@ class ParserUDF(UDF):
         tabular: bool,
         visual: bool,
         vizlink: Optional[VisualLinker],
-        pdf_path: Optional[str],
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
         """Initialize Parser UDF.
 
         :param visual: boolean, if True visual features are used in the model
-        :param pdf_path: directory where pdf are saved, if a pdf file is not
-            found, it will be created from the html document and saved in that
-            directory
         :param replacements: a list of (_pattern_, _replace_) tuples where
             _pattern_ isinstance a regex and _replace_ is a character string.
             All occurents of _pattern_ in the text will be replaced by
@@ -240,50 +226,29 @@ class ParserUDF(UDF):
         # visual setup
         self.visual = visual
         self.vizlink = vizlink
-        if self.visual:
-            self.pdf_path = pdf_path
-            if not self.vizlink:
-                # Use the provided pdf_path if present
-                if not self.pdf_path:
-                    warnings.warn(
-                        "Visual parsing failed: pdf_path is required. "
-                        + "Proceeding without visual parsing.",
-                        RuntimeWarning,
-                    )
-                    self.visual = False
-                else:
-                    self.vizlink = VisualLinker(pdf_path)
 
     def apply(  # type: ignore
-        self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
+        self, document: Document, **kwargs: Any
     ) -> Optional[Document]:
         """Parse a text in an instance of Document.
 
         :param document: document to parse.
-        :param pdf_path: path of a pdf file that the document is visually linked with.
         """
         try:
             [y for y in self.parse(document, document.text)]
             if self.visual:
-                # Use the provided pdf_path if present
-                self.pdf_path = pdf_path if pdf_path else self.pdf_path
-                if not self.vizlink.is_linkable(document.name, self.pdf_path):
+                if not self.vizlink.is_linkable(document.name):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
-                            f"{self.pdf_path + document.name} not a PDF. "
+                            f"{document.name} not a PDF. "
                             f"Proceeding without visual parsing."
                         ),
                         RuntimeWarning,
                     )
                 else:
                     # Add visual attributes
-                    [
-                        y
-                        for y in self.vizlink.link(
-                            document.name, document.sentences, self.pdf_path
-                        )
-                    ]
+                    [y for y in self.vizlink.link(document.name, document.sentences)]
             return document
         except Exception as e:
             logging.exception(

@@ -2,6 +2,7 @@
 import random
 from operator import attrgetter
 
+import pytest
 from bs4 import BeautifulSoup
 
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
@@ -12,7 +13,7 @@ from tests.parser.test_parser import get_parser_udf
 def test_visual_linker_not_affected_by_order_of_sentences():
     """Test if visual_linker result is not affected by the order of sentences."""
     docs_path = "tests/data/html/2N6427.html"
-    pdf_path = "tests/data/pdf/2N6427.pdf"
+    pdf_path = "tests/data/pdf/"
 
     # Initialize preprocessor, parser, visual_linker.
     # Note that parser is initialized with `visual=False` and that visual_linker
@@ -26,18 +27,14 @@ def test_visual_linker_not_affected_by_order_of_sentences():
     doc = parser_udf.apply(next(preprocessor.__iter__()))
     # Sort sentences by sentence.position
     doc.sentences = sorted(doc.sentences, key=attrgetter("position"))
-    sentences0 = [
-        sent for sent in visual_linker.link(doc.name, doc.sentences, pdf_path)
-    ]
+    sentences0 = [sent for sent in visual_linker.link(doc.name, doc.sentences)]
     # Sort again in case visual_linker.link changes the order
     sentences0 = sorted(sentences0, key=attrgetter("position"))
 
     doc = parser_udf.apply(next(preprocessor.__iter__()))
     # Shuffle
     random.shuffle(doc.sentences)
-    sentences1 = [
-        sent for sent in visual_linker.link(doc.name, doc.sentences, pdf_path)
-    ]
+    sentences1 = [sent for sent in visual_linker.link(doc.name, doc.sentences)]
     # Sort sentences by sentence.position
     sentences1 = sorted(sentences1, key=attrgetter("position"))
 
@@ -56,6 +53,13 @@ def test_visual_linker_not_affected_by_order_of_sentences():
     )
 
 
+def test_non_existent_pdf_path_should_fail():
+    """Test if a non-existent raises an error."""
+    pdf_path = "dummy_path"
+    with pytest.raises(ValueError):
+        VisualLinker(pdf_path=pdf_path)
+
+
 def test_pdf_word_list_is_sorted():
     """Test if pdf_word_list is sorted as expected.
 
@@ -64,7 +68,7 @@ def test_pdf_word_list_is_sorted():
     pdf_word_list is sorted as expected.
     """
     docs_path = "tests/data/html_simple/no_image_unsorted.html"
-    pdf_path = "dummy_path"
+    pdf_path = "tests/data/pdf_simple"
     visual_linker = VisualLinker(pdf_path=pdf_path)
     with open(docs_path) as f:
         soup = BeautifulSoup(f, "html.parser")

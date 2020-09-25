@@ -23,6 +23,7 @@ from fonduer.learning.utils import collect_word_counter
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_linker import VisualLinker
 from fonduer.supervision import Labeler
 from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
@@ -89,7 +90,7 @@ def test_e2e(database_session):
         structural=True,
         lingual=True,
         visual=True,
-        pdf_path=pdf_path,
+        vizlink=VisualLinker(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
     assert session.query(Document).count() == max_docs

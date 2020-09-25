@@ -29,6 +29,7 @@ from fonduer.candidates.mentions import MentionExtractorUDF, Ngrams
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.parser.models import Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_linker import VisualLinker
 from fonduer.utils.data_model_utils import get_col_ngrams, get_row_ngrams
 from tests.parser.test_parser import get_parser_udf
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
@@ -56,7 +57,7 @@ def parse_doc(docs_path: str, file_name: str, pdf_path: Optional[str] = None):
         tabular=True,
         lingual=True,
         visual=True if pdf_path else False,
-        pdf_path=pdf_path,
+        vizlink=VisualLinker(pdf_path) if pdf_path else None,
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -211,7 +212,7 @@ def test_cand_gen():
         return True
 
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
     doc = parse_doc(docs_path, "112823", pdf_path)
 
     # Mention Extraction
@@ -546,7 +547,7 @@ def test_pickle_subclasses():
 def test_candidate_with_nullable_mentions():
     """Test if mentions can be NULL."""
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
     doc = parse_doc(docs_path, "112823", pdf_path)
 
     # Mention Extraction
