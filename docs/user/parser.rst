@@ -24,11 +24,6 @@ This is Fonduer_'s core Parser object.
     :inherited-members:
     :show-inheritance:
 
-.. automodule:: fonduer.parser.visual_linker
-    :members:
-    :inherited-members:
-    :show-inheritance:
-
 Lingual Parsers
 ---------------
 
@@ -36,6 +31,17 @@ The following docs describe various lingual parsers. They split text into senten
 and enrich them with NLP.
 
 .. automodule:: fonduer.parser.lingual_parser
+    :members:
+    :inherited-members:
+    :show-inheritance:
+
+Visual Parsers
+--------------
+
+The following docs describe various visual parsers. They parse visual information,
+e.g., bounding boxes of each word.
+
+.. automodule:: fonduer.parser.visual_parser
     :members:
     :inherited-members:
     :show-inheritance:
