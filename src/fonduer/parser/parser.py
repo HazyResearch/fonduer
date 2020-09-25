@@ -35,7 +35,7 @@ from fonduer.parser.models import (
     Table,
 )
 from fonduer.parser.models.utils import construct_stable_id
-from fonduer.parser.visual_linker import VisualLinker
+from fonduer.parser.visual_parser import VisualParser
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
@@ -63,10 +63,7 @@ class Parser(UDFRunner):
         minus, etc.) with a standard ASCII hyphen.
     :param tabular: Whether to include tabular information in the parse.
     :param visual: Whether to include visual information in the parse.
-        Requires PDFs for each input document.
-    :param vizlink: A custom visual linker that inherits
-        :class:`VisualLinker <fonduer.parser.visual_linker.VisualLinker>`.
-        Unless otherwise specified, :class:`VisualLinker` will be used.
+    :param visual_parser: A visual parser that parses visual information.
     """
 
     def __init__(
@@ -88,7 +85,7 @@ class Parser(UDFRunner):
         ],
         tabular: bool = True,  # tabular information
         visual: bool = False,  # visual information
-        vizlink: Optional[VisualLinker] = None,  # visual linker
+        visual_parser: Optional[VisualParser] = None,  # visual parser
     ) -> None:
         """Initialize Parser."""
         super().__init__(
@@ -104,7 +101,7 @@ class Parser(UDFRunner):
             replacements=replacements,
             tabular=tabular,
             visual=visual,
-            vizlink=vizlink,
+            visual_parser=visual_parser,
             language=language,
         )
 
@@ -177,7 +174,7 @@ class ParserUDF(UDF):
         replacements: List[Tuple[str, str]],
         tabular: bool,
         visual: bool,
-        vizlink: Optional[VisualLinker],
+        visual_parser: Optional[VisualParser],
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
@@ -225,7 +222,7 @@ class ParserUDF(UDF):
 
         # visual setup
         self.visual = visual
-        self.vizlink = vizlink
+        self.visual_parser = visual_parser
 
     def apply(  # type: ignore
         self, document: Document, **kwargs: Any
@@ -236,8 +233,8 @@ class ParserUDF(UDF):
         """
         try:
             [y for y in self.parse(document, document.text)]
-            if self.visual:
-                if not self.vizlink.is_linkable(document.name):
+            if self.visual and self.visual_parser:
+                if not self.visual_parser.is_parsable(document.name):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
@@ -248,7 +245,12 @@ class ParserUDF(UDF):
                     )
                 else:
                     # Add visual attributes
-                    [y for y in self.vizlink.link(document.name, document.sentences)]
+                    [
+                        y
+                        for y in self.visual_parser.parse(
+                            document.name, document.sentences
+                        )
+                    ]
             return document
         except Exception as e:
             logging.exception(
