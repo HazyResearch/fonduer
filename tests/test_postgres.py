@@ -65,7 +65,6 @@ def test_cand_gen_cascading_delete(database_session):
         session,
         structural=True,
         lingual=True,
-        visual=True,
         visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
@@ -152,7 +151,6 @@ def test_too_many_clients_error_should_not_happen(database_session):
         session,
         structural=True,
         lingual=True,
-        visual=True,
         visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)

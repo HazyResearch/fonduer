@@ -62,8 +62,8 @@ class Parser(UDFRunner):
         replaces various unicode variants of a hyphen (e.g. emdash, endash,
         minus, etc.) with a standard ASCII hyphen.
     :param tabular: Whether to include tabular information in the parse.
-    :param visual: Whether to include visual information in the parse.
     :param visual_parser: A visual parser that parses visual information.
+        Defaults to None (visual information is not parsed).
     """
 
     def __init__(
@@ -84,7 +84,6 @@ class Parser(UDFRunner):
             ("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")
         ],
         tabular: bool = True,  # tabular information
-        visual: bool = False,  # visual information
         visual_parser: Optional[VisualParser] = None,  # visual parser
     ) -> None:
         """Initialize Parser."""
@@ -100,7 +99,6 @@ class Parser(UDFRunner):
             strip=strip,
             replacements=replacements,
             tabular=tabular,
-            visual=visual,
             visual_parser=visual_parser,
             language=language,
         )
@@ -173,14 +171,12 @@ class ParserUDF(UDF):
         strip: bool,
         replacements: List[Tuple[str, str]],
         tabular: bool,
-        visual: bool,
         visual_parser: Optional[VisualParser],
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
         """Initialize Parser UDF.
 
-        :param visual: boolean, if True visual features are used in the model
         :param replacements: a list of (_pattern_, _replace_) tuples where
             _pattern_ isinstance a regex and _replace_ is a character string.
             All occurents of _pattern_ in the text will be replaced by
@@ -221,7 +217,6 @@ class ParserUDF(UDF):
         self.tabular = tabular
 
         # visual setup
-        self.visual = visual
         self.visual_parser = visual_parser
 
     def apply(  # type: ignore
@@ -233,7 +228,7 @@ class ParserUDF(UDF):
         """
         try:
             [y for y in self.parse(document, document.text)]
-            if self.visual and self.visual_parser:
+            if self.visual_parser:
                 if not self.visual_parser.is_parsable(document.name):
                     warnings.warn(
                         (

@@ -850,7 +850,6 @@ def test_various_file_path_formats(database_session):
             parallelism=1,
             structural=True,
             lingual=True,
-            visual=True,
             visual_parser=PdfVisualParser(pdf_path),
         )
 
