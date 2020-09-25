@@ -5,6 +5,10 @@ Added
 ^^^^^
 * `@HiromuHota`_: Support spaCy v2.3.
   (`#506 <https://github.com/HazyResearch/fonduer/pull/506>`_)
+* `@HiromuHota`_: Add :class:`HOCRDocPreprocessor` and :class:`HocrVisualLinker`
+  to support hOCR as input file.
+  (`#476 <https://github.com/HazyResearch/fonduer/issues/476>`_)
+  (`#509 <https://github.com/HazyResearch/fonduer/pull/509>`_)
 
 Changed
 ^^^^^^^
@@ -20,7 +24,7 @@ Changed
   (`#518 <https://github.com/HazyResearch/fonduer/pull/518>`_)
 
     * Renamed ``vizlink`` to ``visual_parser``.
-    * Removed ``pdf_path``. Now this is required only by :class:`PdfVisualLinker`.
+    * Removed ``pdf_path``. Now this is required only by :class:`PdfVisualParser`.
     * Removed ``visual``. Provide ``visual_parser`` if visual information is to be parsed.
 
 0.8.3_ - 2020-09-11

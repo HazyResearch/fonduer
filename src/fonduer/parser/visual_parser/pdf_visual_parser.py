@@ -1,4 +1,4 @@
-"""Fonduer visual parser."""
+"""Fonduer visual parser that parses visual information from PDF."""
 import logging
 import os
 import re
