@@ -70,6 +70,23 @@ class HocrVisualParser(VisualParser):
             bottoms = attribs["bottom"]
             ppagenos = attribs["ppageno"]
 
+            # Clear the hocr specific html_attrs
+            for sent in sents:
+                for attr in sent.html_attrs[:]:
+                    key, values = attr.split(
+                        "=", 1
+                    )  # split only at the first occurence
+                    if key in [
+                        "left",
+                        "top",
+                        "right",
+                        "bottom",
+                        "ppageno",
+                        "tokens",
+                        "x_wconf",
+                    ]:
+                        sent.html_attrs.remove(attr)
+
             # Get a list of all tokens represented by ocrx_word in hOCR
             hocr_tokens = attribs["tokens"]
 
