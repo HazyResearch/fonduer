@@ -41,7 +41,7 @@
    <div class='ocr_carea' id='block_1_4' title="bbox 221 601 684 644">
     <p class='ocr_par' id='par_1_4' lang='eng' title="bbox 221 601 684 644">
      <span class='ocr_line' id='line_1_4' title="bbox 221 601 684 644; baseline 0.002 -8; x_size 43; x_descenders 7; x_ascenders 11">
-      <span class='ocrx_word' id='word_1_11' title='bbox 221 615 236 630; x_wconf 89'>e</span>
+      <span class='ocrx_word' id='word_1_11' title='bbox 221 615 236 630; x_wconf 89'>=</span>
       <span class='ocrx_word' id='word_1_12' title='bbox 271 601 484 637; x_wconf 92'>Unordered</span>
       <span class='ocrx_word' id='word_1_13' title='bbox 498 601 586 644; x_wconf 96'>lists,</span>
       <span class='ocrx_word' id='word_1_14' title='bbox 604 601 684 637; x_wconf 96'>and:</span>

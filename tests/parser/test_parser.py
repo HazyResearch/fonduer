@@ -947,7 +947,7 @@ def test_parse_hocr():
         tabular=True,
         lingual=True,
         language="ja",
-        visual_parser=HocrVisualParser(sep=""),
+        visual_parser=HocrVisualParser(),
     )
     doc = parser_udf.apply(doc)
     assert doc.name == "japan"
