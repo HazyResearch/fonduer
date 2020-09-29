@@ -1,7 +1,7 @@
 """Fonduer visual parser that parses visual information from hOCR."""
 import itertools
 import re
-from typing import Dict, Iterable, Iterator, List, Pattern, Tuple
+from typing import Dict, Iterable, Iterator, List, Pattern, Tuple, Union
 
 import spacy
 import spacy.gold
@@ -45,8 +45,10 @@ class HocrVisualParser(VisualParser):
         :return: A generator of ``Sentence``.
         """
 
-        def attrib_parse(html_attrs: List[str]) -> Dict[str, List[int]]:
-            ret = {}
+        def attrib_parse(
+            html_attrs: List[str],
+        ) -> Dict[str, Union[List[int], List[str]]]:
+            ret: Dict[str, Union[List[int], List[str]]] = {}
 
             for attr in html_attrs:
                 key, values = attr.split("=", 1)  # split only at the first occurence
