@@ -967,3 +967,18 @@ def test_parse_hocr():
     assert sent.words[1] == "にっぽん"
     assert sent.left[1] == 150  # this left comes from "に" in hOCR
     assert sent.right[1] == 249  # this right comes from "ぽん" in hOCR
+
+
+def test_parse_hocr_with_tables():
+    """Test the parser with hOCR documents that have tables."""
+    docs_path = "tests/data/hocr_simple/1st.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(iter(preprocessor))
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual_parser=HocrVisualParser(),
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "1st"

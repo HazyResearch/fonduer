@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+  <html>
+    <head>
+      <meta content="Generated OCRed text" name="ocr-system"/>
+      <meta content="ocr_page ocr_table ocr_line ocrx_word" name="ocr-capabilities"/>
+    </head>
+    <body>
+      <div class="ocr_page" id="page_1" title="bbox 0 0 612 792">
+        <table class="ocr_table" id="table_1_3">
+          <tr>
+            <td id="cell_1_3" title="bbox 198 63 421 92">
+              <div class="ocr_line" id="line_1_13" title="bbox 242 67 300 80">
+                <span class="ocrx_word" id="word_1_61" title="bbox 242 67 256 80">uses</span>
+                <span class="ocrx_word" id="word_1_62" title="bbox 258 67 262 80">a</span>
+                <span class="ocrx_word" id="word_1_63" title="bbox 264 67 278 80">card</span>
+                <span class="ocrx_word" id="word_1_64" title="bbox 280 67 300 80">issued</span>
+              </div>
+              <div class="ocr_line" id="line_1_14" title="bbox 302 67 334 80">
+                <span class="ocrx_word" id="word_1_65" title="bbox 302 67 320 80">under</span>
+                <span class="ocrx_word" id="word_1_66" title="bbox 322 67 334 80">this</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+        <div class="ocr_line" id="line_1_2" title="bbox 211 36 398 55">
+          <span class="ocrx_word" id="word_1_6" title="bbox 211 36 237 55">VISA</span>
+          <span class="ocrx_word" id="word_1_7" title="bbox 240 36 283 55">Platinum</span>
+          <span class="ocrx_word" id="word_1_8" title="bbox 286 36 317 55">Credit</span>
+          <span class="ocrx_word" id="word_1_9" title="bbox 319 36 344 55">Card</span>
+          <span class="ocrx_word" id="word_1_10" title="bbox 346 36 398 55">Agreement</span>
+        </div>
+        <div class="ocr_line" id="line_1_3" title="bbox 548 16 593 27">
+          <span class="ocrx_word" id="word_1_11" title="bbox 548 16 593 27">M-123302</span>
+        </div>
+        <div class="ocr_line" id="line_1_4" title="bbox 549 15 591 32">
+          <span class="ocrx_word" id="word_1_12" title="bbox 549 15 591 32">M-100310</span>
+        </div>
+        <div class="ocr_line" id="line_1_5" title="bbox 537 42 586 60">
+          <span class="ocrx_word" id="word_1_13" title="bbox 537 42 586 60">M-123302</span>
+        </div>
+        <div class="ocr_line" id="line_1_6" title="bbox 549 51 591 68">
+          <span class="ocrx_word" id="word_1_14" title="bbox 549 51 591 68">M-100310</span>
+        </div>
+      </div>
+    </body>
+  </html>
