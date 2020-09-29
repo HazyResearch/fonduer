@@ -6,7 +6,7 @@ import sys
 from typing import Iterator, Optional, Tuple
 
 from bs4 import BeautifulSoup
-from bs4.element import NavigableString, Tag
+from bs4.element import Comment, NavigableString, Tag
 
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
@@ -126,7 +126,9 @@ class HOCRDocPreprocessor(DocPreprocessor):
                 # Remove linebreaks and excess spaces
                 # in reverse order b/c removing element from list in loop
                 for child in reversed(parent.contents):
-                    if isinstance(child, NavigableString):
+                    if isinstance(child, Comment):  # remove comments
+                        child.extract()
+                    elif isinstance(child, NavigableString):
                         if child.strip() == "":  # remove if space or linebreak
                             child.extract()
                         else:
