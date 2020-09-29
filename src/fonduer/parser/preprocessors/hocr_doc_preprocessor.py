@@ -112,15 +112,15 @@ class HOCRDocPreprocessor(DocPreprocessor):
                     # Concat words again with " " or "".
                     if len(tokens) > 1:
                         if self.space:
-                            word.string = " ".join(tokens)
+                            word.string.replace_with(" ".join(tokens))
                         else:
-                            word.string = "".join(tokens)
+                            word.string.replace_with("".join(tokens))
                     word.unwrap()
             for parent in root.find_all(attrs={"fonduer": "1"}):
                 if self.space:
-                    parent.string = parent.text.replace("\n", " ").strip()
+                    parent.string.replace_with(" ".join(parent.stripped_strings))
                 else:
-                    parent.string = parent.text.replace("\n", "").strip()
+                    parent.string.replace_with("".join(parent.stripped_strings))
                 # Rmove the mark
                 del parent["fonduer"]
         name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
