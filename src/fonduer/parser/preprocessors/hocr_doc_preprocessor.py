@@ -80,20 +80,26 @@ class HOCRDocPreprocessor(DocPreprocessor):
                 for word in page.find_all(class_="ocrx_word"):
                     parent = word.parent
                     (left, top, right, bottom) = get_bbox(word)
+
+                    # ocrx_word could have multiple words with one or more of spaces
+                    # in-between. This actually happens on Tesseract 4.00.
+                    # This is normalized by splitting and concatenating later.
+                    tokens = word.text.split()
+
                     if "left" not in parent.attrs:
-                        parent["left"] = [left]
-                        parent["top"] = [top]
-                        parent["right"] = [right]
-                        parent["bottom"] = [bottom]
-                        parent["ppageno"] = [ppageno]
-                        parent["tokens"] = [word.text]
-                    else:
-                        parent["left"].append(left)
-                        parent["top"].append(top)
-                        parent["right"].append(right)
-                        parent["bottom"].append(bottom)
-                        parent["ppageno"].append(ppageno)
-                        parent["tokens"].append(word.text)
+                        parent["left"] = []
+                        parent["top"] = []
+                        parent["right"] = []
+                        parent["bottom"] = []
+                        parent["ppageno"] = []
+                        parent["tokens"] = []
+                    parent["left"] += [left] * len(tokens)
+                    parent["top"] += [top] * len(tokens)
+                    parent["right"] += [right] * len(tokens)
+                    parent["bottom"] += [bottom] * len(tokens)
+                    parent["ppageno"] += [ppageno] * len(tokens)
+                    parent["tokens"] += tokens
+
                     if "ocrp_wconf" in capabilities["content"]:
                         x_wconf = get_prop(word, "x_wconf")
                         if "x_wconf" not in parent.attrs:
@@ -102,6 +108,13 @@ class HOCRDocPreprocessor(DocPreprocessor):
                     # Mark the parent element
                     if "fonduer" not in parent.attrs:
                         parent["fonduer"] = ["1"]
+
+                    # Concat words again with " " or "".
+                    if len(tokens) > 1:
+                        if self.space:
+                            word.string = " ".join(tokens)
+                        else:
+                            word.string = "".join(tokens)
                     word.unwrap()
             for parent in root.find_all(attrs={"fonduer": "1"}):
                 if self.space:
