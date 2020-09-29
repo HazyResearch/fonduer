@@ -938,6 +938,13 @@ def test_parse_hocr():
     ]
     assert doc.sentences[12].page == [1] * len(doc.sentences[12].words)
 
+    docs_path = "tests/data/hocr_simple/121.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(iter(preprocessor))
+
+    doc = parser_udf.apply(doc)
+    assert doc.name == "121"
+
     docs_path = "tests/data/hocr_simple/japan.hocr"
     preprocessor = HOCRDocPreprocessor(docs_path, space=False)
     doc = next(iter(preprocessor))
