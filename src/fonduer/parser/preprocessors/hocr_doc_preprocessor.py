@@ -1,11 +1,12 @@
 """Fonduer hOCR document preprocessor."""
 import codecs
 import os
+import re
 import sys
 from typing import Iterator, Optional, Tuple
 
 from bs4 import BeautifulSoup
-from bs4.element import Tag
+from bs4.element import NavigableString, Tag
 
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors.doc_preprocessor import DocPreprocessor
@@ -116,13 +117,24 @@ class HOCRDocPreprocessor(DocPreprocessor):
                         else:
                             word.string.replace_with("".join(tokens))
                     word.unwrap()
-            for parent in root.find_all(attrs={"fonduer": "1"}):
-                if self.space:
-                    parent.string.replace_with(" ".join(parent.stripped_strings))
-                else:
-                    parent.string.replace_with("".join(parent.stripped_strings))
-                # Rmove the mark
+
+            # Clean-up
+            for i, parent in enumerate(root.find_all(attrs={"fonduer": "1"})):
+                # Concat consecutive NavigableString
+                parent.smooth()  # beautifulsoup4 >= 4.8.0
+
+                # Remove linebreaks and excess spaces
+                # in reverse order b/c removing element from list in loop
+                for child in reversed(parent.contents):
+                    if isinstance(child, NavigableString):
+                        if child.strip() == "":  # remove if space or linebreak
+                            child.extract()
+                        else:
+                            tmp = re.sub(r"[\n\s]+", " " if self.space else "", child)
+                            n = NavigableString(tmp.strip())
+                            child.replace_with(n)
                 del parent["fonduer"]
+
         name = os.path.basename(fp)[: os.path.basename(fp).rfind(".")]
         stable_id = self._get_stable_id(name)
         yield Document(
