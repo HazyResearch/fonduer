@@ -935,7 +935,9 @@ def test_parse_hocr():
     doc = next(iter(preprocessor))
 
     doc = parser_udf.apply(doc)
-    assert doc.name == "121"
+    # The double spaces between "This" and "Consumer" should be replaced with a single
+    # space at HOCRDocPreprocessor.
+    assert doc.sentences[0].words[:3] == ["This", "Consumer", "Credit"]
 
     docs_path = "tests/data/hocr_simple/japan.hocr"
     preprocessor = HOCRDocPreprocessor(docs_path, space=False)
