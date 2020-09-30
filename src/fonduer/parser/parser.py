@@ -447,12 +447,13 @@ class ParserUDF(UDF):
                 # As a workaround, just ignore the outer Figure and allow processing
                 # of the individual images. We ignore the accompanying figcaption
                 # by marking it as visited.
-                captions = [child for child in node if child.tag == "figcaption"]
-                state["visited"].update(captions)
+                for child in node:
+                    if child.tag == "figcaption":
+                        child.set("visited", "true")
                 return state
 
             img = imgs[0]
-            state["visited"].add(img)
+            img.set("visited", "true")
 
             # Create the Figure entry in the DB
             parts["url"] = img.get("src")
@@ -505,7 +506,9 @@ class ParserUDF(UDF):
                 parts["xpath"] = tree.getpath(context_node)
                 parts["html_tag"] = context_node.tag
                 parts["html_attrs"] = [
-                    "=".join(x) for x in list(context_node.attrib.items())
+                    "=".join(x)
+                    for x in context_node.attrib.items()
+                    if x[0] != "visited"
                 ]
 
                 # Extending html style attribute with the styles
@@ -588,7 +591,16 @@ class ParserUDF(UDF):
         # Set name for Paragraph
         name = node.attrib["name"] if "name" in node.attrib else None
 
-        for field in ["text", "tail"]:
+        if len(node.getchildren()) == 0:  # leaf node
+            fields = ["text", "tail"]
+        elif node.get("visited") == "text":  # .text was parsed already
+            fields = ["tail"]
+            node.set("visited", "true")
+        else:
+            fields = ["text"]
+            node.set("visited", "text")
+            self.stack.append(node)  # will be visited again later for tail
+        for field in fields:
             text = getattr(node, field)
             text = text.strip() if text and self.strip else text
 
@@ -741,14 +753,15 @@ class ParserUDF(UDF):
         :return: a *generator* of Sentences
         """
         # Processing on entry of node
-        state = self._parse_section(node, state)
+        if node.get("visited") != "text":
+            state = self._parse_section(node, state)
 
-        state = self._parse_figure(node, state)
+            state = self._parse_figure(node, state)
 
-        if self.tabular:
-            state = self._parse_table(node, state)
+            if self.tabular:
+                state = self._parse_table(node, state)
 
-        state = self._parse_caption(node, state)
+            state = self._parse_caption(node, state)
 
         yield from self._parse_paragraph(node, state)
 
@@ -762,7 +775,7 @@ class ParserUDF(UDF):
         :param text: the structured text of the document (e.g. HTML)
         :return: a *generator* of Sentences.
         """
-        stack = []
+        self.stack = []
 
         root = lxml.html.fromstring(text)
 
@@ -779,7 +792,6 @@ class ParserUDF(UDF):
         # defined in parser/models. This contains the state necessary to create
         # the respective Contexts within the document.
         state = {
-            "visited": set(),
             "parent": {},  # map of parent[child] = node used to discover child
             "context": {},  # track the Context of each node (context['td'] = Cell)
             "root": root,
@@ -795,15 +807,14 @@ class ParserUDF(UDF):
         # rather than returning a modified copy.
 
         # Iterative Depth-First Search
-        stack.append(root)
+        self.stack.append(root)
         state["parent"][root] = document
         state["context"][root] = document
 
         tokenized_sentences: List[Sentence] = []
-        while stack:
-            node = stack.pop()
-            if node not in state["visited"]:
-                state["visited"].add(node)  # mark as visited
+        while self.stack:
+            node = self.stack.pop()
+            if node.get("visited") != "true":
 
                 # Process
                 if self.lingual:
@@ -814,21 +825,24 @@ class ParserUDF(UDF):
                 # NOTE: This reversed() order is to ensure that the iterative
                 # DFS matches the order that would be produced by a recursive
                 # DFS implementation.
-                for child in reversed(node):
-                    # Skip nodes that are blacklisted
-                    if self.blacklist and child.tag in self.blacklist:
-                        continue
+                if node.get("visited") != "true":
+                    for child in reversed(node):
+                        # Skip nodes that are blacklisted
+                        if self.blacklist and child.tag in self.blacklist:
+                            continue
 
-                    stack.append(child)
+                        self.stack.append(child)
 
-                    # store the parent of the node, which is either the parent
-                    # Context, or if the parent did not create a Context, then
-                    # use the node's parent Context.
-                    state["parent"][child] = (
-                        state["context"][node]
-                        if node in state["context"]
-                        else state["parent"][node]
-                    )
+                        # store the parent of the node, which is either the parent
+                        # Context, or if the parent did not create a Context, then
+                        # use the node's parent Context.
+                        state["parent"][child] = (
+                            state["context"][node]
+                            if node in state["context"]
+                            else state["parent"][node]
+                        )
+                else:
+                    node.set("visited", "true")  # mark as visited
 
         if self.lingual:
             yield from self.lingual_parser.enrich_sentences_with_NLP(

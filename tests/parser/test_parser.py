@@ -136,6 +136,14 @@ def test_parse_md_details():
     assert sent.cell.row_start == 0
     assert sent.cell.col_start == 2
 
+    # Check if the tail text is processed after inner elements (#333)
+    assert [sent.text for sent in doc.sentences[14:18]] == [
+        "italics and later",
+        "bold",
+        ".",
+        "Even",
+    ]
+
     # Check abs_char_offsets (#332)
     text = "".join([sent.text for sent in doc.sentences])
     for sent in doc.sentences:
