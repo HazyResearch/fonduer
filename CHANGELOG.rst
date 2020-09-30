@@ -8,7 +8,7 @@ Added
 * `@HiromuHota`_: Add :class:`HOCRDocPreprocessor` and :class:`HocrVisualLinker`
   to support hOCR as input file.
   (`#476 <https://github.com/HazyResearch/fonduer/issues/476>`_)
-  (`#509 <https://github.com/HazyResearch/fonduer/pull/509>`_)
+  (`#519 <https://github.com/HazyResearch/fonduer/pull/519>`_)
 
 Changed
 ^^^^^^^

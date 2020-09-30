@@ -148,9 +148,9 @@ class HocrVisualParser(VisualParser):
                 ptr += len(sent.words)
                 yield sent
 
-    def is_parsable(self, filename: str) -> bool:
-        """Whether bbox is embdded in sentence's html_attrs.
+    def is_parsable(self, document_name: str) -> bool:
+        """Whether visual information can be parsed. Currently always return True.
 
-        :param document_name: The path to the PDF document.
+        :param document_name: the document name.
         """
         return True
