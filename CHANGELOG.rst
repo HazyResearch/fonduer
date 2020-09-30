@@ -23,6 +23,12 @@ Changed
     * Removed ``pdf_path``. Now this is required only by :class:`PdfVisualLinker`.
     * Removed ``visual``. Provide ``visual_parser`` if visual information is to be parsed.
 
+Fixed
+^^^^^
+* `@HiromuHota`_: Process the tail text only after child elements.
+  (`#333 <https://github.com/HazyResearch/fonduer/issues/333>`_)
+  (`#520 <https://github.com/HazyResearch/fonduer/pull/520>`_)
+
 0.8.3_ - 2020-09-11
 -------------------
 

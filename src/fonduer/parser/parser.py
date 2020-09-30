@@ -599,7 +599,7 @@ class ParserUDF(UDF):
         else:
             fields = ["text"]
             node.set("visited", "text")
-            self.stack.append(node)  # will be visited again later for tail
+            self.stack.append(node)  # will visit again later for tail
         for field in fields:
             text = getattr(node, field)
             text = text.strip() if text and self.strip else text
@@ -753,7 +753,7 @@ class ParserUDF(UDF):
         :return: a *generator* of Sentences
         """
         # Processing on entry of node
-        if node.get("visited") != "text":
+        if node.get("visited") != "text":  # skip when .text has been parsed
             state = self._parse_section(node, state)
 
             state = self._parse_figure(node, state)
