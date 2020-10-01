@@ -9,7 +9,14 @@ Added
 Changed
 ^^^^^^^
 * `@HiromuHota`_: Renamed :class:`VisualLinker` to :class:`PdfVisualParser`,
-  which takes ``pdf_path``, and changed :class:`Parser`'s signature as follows:
+  which assumes the followings:
+  (`#518 <https://github.com/HazyResearch/fonduer/pull/518>`_)
+
+    * ``pdf_path`` should be a directory path, where PDF files exist, and cannot be a file path.
+    * The PDF file should have the same basename (:class:`os.path.basename`) as the document.
+      E.g., the PDF file should be either "123.pdf" or "123.PDF" for "123.html".
+
+* `@HiromuHota`_: Changed :class:`Parser`'s signature as follows:
   (`#518 <https://github.com/HazyResearch/fonduer/pull/518>`_)
 
     * Renamed ``vizlink`` to ``visual_parser``.
