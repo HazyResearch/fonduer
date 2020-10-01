@@ -1,8 +1,10 @@
 """Fonduer parser unit tests."""
 import logging
 import os
+from typing import List
 
 import pytest
+from sqlalchemy.orm import Session
 
 from fonduer.parser import Parser
 from fonduer.parser.lingual_parser import SpacyParser
@@ -45,6 +47,25 @@ def get_parser_udf(
         language=language,
     )
     return parser_udf
+
+
+def parse(session: Session, docs_path: str, pdf_path: str) -> List[Document]:
+    """Parse documents using Parser UDF Runner."""
+    # Preprocessor for the Docs
+    doc_preprocessor = HTMLDocPreprocessor(docs_path)
+
+    # Create an Parser and parse the documents
+    corpus_parser = Parser(
+        session,
+        parallelism=1,
+        structural=True,
+        lingual=True,
+        visual_parser=PdfVisualParser(pdf_path),
+    )
+
+    corpus_parser.clear()
+    corpus_parser.apply(doc_preprocessor)
+    return corpus_parser.get_documents()
 
 
 def test_parse_md_details():
@@ -836,42 +857,19 @@ def test_parser_no_image():
     assert len(doc.figures) == 0
 
 
-def test_various_file_path_formats(database_session):
-    """Test the parser with various file path formats."""
-    session = database_session
+@pytest.mark.parametrize(
+    "docs_path, pdf_path",
+    [
+        ("tests/data/html_simple/", "tests/data/pdf_simple/"),
+        ("tests/data/html_simple/", "tests/data/pdf_simple"),
+        ("tests/data/html_simple", "tests/data/pdf_simple/"),
+        ("tests/data/html_simple", "tests/data/pdf_simple"),
+    ],
+)
+def test_various_dir_path_formats(database_session, docs_path, pdf_path):
+    """Test the parser with various directory path formats."""
+    docs = parse(database_session, docs_path, pdf_path)
 
-    def parse(docs_path, pdf_path):
-        # Preprocessor for the Docs
-        doc_preprocessor = HTMLDocPreprocessor(docs_path)
-
-        # Create an Parser and parse the documents
-        corpus_parser = Parser(
-            session,
-            parallelism=1,
-            structural=True,
-            lingual=True,
-            visual_parser=PdfVisualParser(pdf_path),
-        )
-
-        corpus_parser.clear()
-        corpus_parser.apply(doc_preprocessor)
-        return corpus_parser
-
-    # Test that doc_path is a file path, and pdf_path is a file path
-    docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 1
-    assert docs[0].sentences[0].top is not None
-
-    # Test that doc_path is a file path, and pdf_path is a file path
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple/"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
     assert len(docs) == 6
     for doc in docs:
         # table_span.pdf and no_image_unsorted.pdf are not exist, so no
@@ -881,69 +879,18 @@ def test_various_file_path_formats(database_session):
         else:
             assert doc.sentences[0].top is not None
 
-    # Test that doc_path is a directory (no trailing slash), and pdf_path is a
-    # directory
-    docs_path = "tests/data/html_simple"
-    pdf_path = "tests/data/pdf_simple/"
 
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 6
-    for doc in docs:
-        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
-        # coordinate info available
-        if doc.name in ["table_span", "no_image_unsorted"]:
-            assert doc.sentences[0].top is None
-        else:
-            assert doc.sentences[0].top is not None
-
-    # Test that doc_path is a directory, and pdf_path is a directory (no trailing
-    # slash)
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 6
-    for doc in docs:
-        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
-        # coordinate info available
-        if doc.name in ["table_span", "no_image_unsorted"]:
-            assert doc.sentences[0].top is None
-        else:
-            assert doc.sentences[0].top is not None
-
-    # Test that doc_path is a directory (no trailing slash), and pdf_path is a
-    # directory (no trailing slash)
-    docs_path = "tests/data/html_simple"
-    pdf_path = "tests/data/pdf_simple"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 6
-    for doc in docs:
-        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
-        # coordinate info available
-        if doc.name in ["table_span", "no_image_unsorted"]:
-            assert doc.sentences[0].top is None
-        else:
-            assert doc.sentences[0].top is not None
-
-    # Test that doc_path is a file path, and pdf_path is a directory
+@pytest.mark.parametrize(
+    "pdf_path",
+    [
+        ("tests/data/pdf_extended/"),
+        ("tests/data/pdf_extended"),
+    ],
+)
+def test_various_pdf_path_formats(database_session, pdf_path):
+    """Test the parser with various pdf_path formats."""
     docs_path = "tests/data/html_extended/ext_diseases.html"
-    pdf_path = "tests/data/pdf_extended/"
 
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 1
-    assert docs[0].sentences[0].top is not None
-
-    # Test that doc_path is a file path, and pdf_path is a directory (no trailing
-    # slash)
-    docs_path = "tests/data/html_extended/ext_diseases.html"
-    pdf_path = "tests/data/pdf_extended"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
+    docs = parse(database_session, docs_path, pdf_path)
     assert len(docs) == 1
     assert docs[0].sentences[0].top is not None
