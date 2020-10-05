@@ -4,20 +4,24 @@ The first stage of Fonduer_'s pipeline is to parse an input corpus of documents
 into the Fonduer_ data model.
 
 Fonduer supports different file formats: CSV/TSV, TXT, HTML, and hOCR.
-The diagram below illustrates how files in each format are preprocessed and consumed by :class:`Parser`.
-Nodes in dark blue represent original source files.
+The diagram below illustrates how files in each format are preprocessed and consumed by
+:class:`Parser`. Nodes in dark blue represent original source files.
 You have to convert some of them into the formats that Fonduer can consume:
 a scanned document (incl. non-searchable PDF) is OCRed and exported in hOCR,
 a (born-digital) PDF is converted into hOCR using tools like pdftotree_.
+It is also possible to convert PDF into HTML using third-party tools,
+but not recommended (see `Visual Parsers`_).
 
 .. mermaid::
 
     graph LR;
-        Scan[(Scan)]--OCR-->hOCR[(hOCR)];
         CSV[(CSV)]-->CSVDoc;
         TXT[(TXT)]-->TXTDoc;
         HTML[(HTML)]-->HTMLDoc;
-        PDF[(PDF)]--Convert-->hOCR2[(hOCR)];
+        PDF[(PDF)]--Convert-->HTML2[(HTML)];
+        HTML2-->HTMLDoc;
+        PDF--Convert-->hOCR2[(hOCR)];
+        Scan[(Scan)]--OCR-->hOCR[(hOCR)];
         hOCR-->HOCRDoc;
         hOCR2-->HOCRDoc;
     subgraph Fonduer
@@ -72,8 +76,8 @@ e.g., bounding boxes of each word.
 Fonduer can parse visual information only for hOCR and HTML files
 with help of :class:`HocrVisualParser` and :class:`PdfVisualParser`, respectively.
 It is recommended to provide documents in hOCR instead of HTML,
-because :class:`PdfVisualParser` is not always accurate by its nature and assigns
-a wrong bounding box to a word.
+because :class:`PdfVisualParser` is not always accurate by its nature and could
+assign a wrong bounding box to a word.
 (see `#12 <https://github.com/HazyResearch/fonduer/issues/12>`_).
 
 .. mermaid::
