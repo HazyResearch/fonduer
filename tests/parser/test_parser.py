@@ -922,20 +922,7 @@ def test_parse_hocr():
     )
     doc = parser_udf.apply(doc)
     assert doc.name == "md"
-    assert doc.sentences[12].left == [
-        145,
-        245,
-        245,
-        366,
-        366,
-        513,
-        597,
-        705,
-        838,
-        927,
-        1032,
-        1032,
-    ]
+    assert doc.sentences[12].left == [372, 384, 405, 418, 418]
     assert doc.sentences[12].page == [1] * len(doc.sentences[12].words)
 
     docs_path = "tests/data/hocr_simple/121.hocr"

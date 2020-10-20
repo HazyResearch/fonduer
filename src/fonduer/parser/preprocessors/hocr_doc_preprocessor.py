@@ -72,9 +72,15 @@ class HOCRDocPreprocessor(DocPreprocessor):
             )
         root = all_html_elements[0]
         capabilities = root.find("meta", attrs={"name": "ocr-capabilities"})
+
+        # Unwrap ocr_line/ocrx_line as Fonduer has no data model for lines.
         if capabilities and "ocr_line" in capabilities["content"]:
             for line in root.find_all(class_="ocr_line"):
                 line.unwrap()
+        elif capabilities and "ocrx_line" in capabilities["content"]:
+            for line in root.find_all(class_="ocrx_line"):
+                line.unwrap()
+
         if capabilities and "ocrx_word" in capabilities["content"]:
             for p, page in enumerate(root.find_all(class_="ocr_page")):
                 ppageno = str(p)  # 0-based
