@@ -1,7 +1,7 @@
 black>=18.9b0
 flake8>=3.8.0
 flake8-docstrings
-mypy
+mypy==0.782
 nltk
 isort>=5.0.0
 pre-commit
