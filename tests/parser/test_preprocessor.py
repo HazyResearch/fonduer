@@ -13,7 +13,7 @@ def test_hocrpreprocessor():
     # the intermidiate attribute: "fonduer" should be removed.
     assert "fonduer" not in doc.text
     # number of "left" attribute is equal to that of "ppageno" - 1 (at ocr_page)
-    assert doc.text.count("left") == doc.text.count("ppageno") - 1 == 33
+    assert doc.text.count("left") == doc.text.count("ppageno") - 1 == 24
 
 
 def test_hocrpreprocessor_space_false():
