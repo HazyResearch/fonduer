@@ -51,7 +51,8 @@
           <span class="ocrx_word" id="word_1_67" title="bbox 358 193 366 201">of</span>
           <span class="ocrx_word" id="word_1_68" title="bbox 369 193 384 201">this</span>
           <span class="ocrx_word" id="word_1_69" title="bbox 387 193 426 201">Account.</span>
-          <span class="ocrx_word" id="word_1_70" title="bbox 430 193 453 202">“We,”</span>
+          <!--Use two single-quotes to see if #527 happens-->
+          <span class="ocrx_word" id="word_1_70" title="bbox 430 193 453 202">''We,''</span>
           <span class="ocrx_word" id="word_1_71" title="bbox 457 193 478 202">“Us,”</span>
           <span class="ocrx_word" id="word_1_72" title="bbox 482 193 504 201">“Our”</span>
           <span class="ocrx_word" id="word_1_73" title="bbox 508 193 524 201">and</span>
