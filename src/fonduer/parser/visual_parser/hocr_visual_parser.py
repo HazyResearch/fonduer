@@ -23,14 +23,13 @@ class HocrVisualParser(VisualParser):
     ):
         """Initialize a visual parser.
 
-        :raises ImportError: an error is raised when spaCy is not 2.2.2 or later.
+        :raises ImportError: an error is raised when spaCy is not 2.3.0 or later.
         """
-        if version.parse(spacy.__version__) < version.parse("2.2.2"):
+        if version.parse(spacy.__version__) < version.parse("2.3.0"):
             raise ImportError(
-                f"You are using spaCy {spacy.__version__},"
-                f"but it should be 2.2.2 or later."
+                f"You are using spaCy {spacy.__version__}, "
+                f"but it should be 2.3.0 or later to use HocrVisualParser."
             )
-        spacy.gold.USE_NEW_ALIGN = True
         self.replacements: List[Tuple[Pattern, str]] = []
         for (pattern, replace) in replacements:
             self.replacements.append((re.compile(pattern, flags=re.UNICODE), replace))
