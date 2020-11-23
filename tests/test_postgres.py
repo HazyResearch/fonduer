@@ -1,8 +1,6 @@
 """Unit tests that involve postgres access."""
 import logging
-import os
 
-from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor, MentionFigures
 from fonduer.candidates.matchers import LambdaFunctionFigureMatcher
 from fonduer.candidates.models import (
@@ -14,6 +12,7 @@ from fonduer.candidates.models import (
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_parser import PdfVisualParser
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
 from tests.shared.hardware_spaces import (
     MentionNgramsPart,
@@ -23,20 +22,12 @@ from tests.shared.hardware_spaces import (
 from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
-DB = "pg_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
-def test_preprocessor_parse_file_called_once(mocker):
+def test_preprocessor_parse_file_called_once(database_session, mocker):
     """Test if DocPreprocessor._parse_file is called only once during parser.apply."""
     max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
+    session = database_session
     docs_path = "tests/data/html/"
     # Set up preprocessor, parser, and spy on preprocessor
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
@@ -55,14 +46,14 @@ def test_preprocessor_parse_file_called_once(mocker):
     spy.assert_called_once()
 
 
-def test_cand_gen_cascading_delete():
+def test_cand_gen_cascading_delete(database_session):
     """Test cascading the deletion of candidates."""
     # GitHub Actions gives 2 cores
     # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
     PARALLEL = 2
 
     max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
+    session = database_session
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -71,7 +62,10 @@ def test_cand_gen_cascading_delete():
     logger.info("Parsing...")
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
     corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        session,
+        structural=True,
+        lingual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     assert session.query(Document).count() == max_docs
@@ -136,7 +130,7 @@ def test_cand_gen_cascading_delete():
     assert session.query(Candidate).count() == 0
 
 
-def test_too_many_clients_error_should_not_happen():
+def test_too_many_clients_error_should_not_happen(database_session):
     """Too many clients error should not happens."""
     PARALLEL = 32
     logger.info("Parallel: {PARALLEL}")
@@ -145,7 +139,7 @@ def test_too_many_clients_error_should_not_happen():
         return True
 
     max_docs = 1
-    session = Meta.init(CONN_STRING).Session()
+    session = database_session
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -154,7 +148,10 @@ def test_too_many_clients_error_should_not_happen():
     logger.info("Parsing...")
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
     corpus_parser = Parser(
-        session, structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        session,
+        structural=True,
+        lingual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor, parallelism=PARALLEL)
     docs = session.query(Document).order_by(Document.name).all()
@@ -200,11 +197,11 @@ def test_too_many_clients_error_should_not_happen():
     candidate_extractor.apply(docs, split=0, parallelism=PARALLEL)
 
 
-def test_parse_error_doc_skipping():
+def test_parse_error_doc_skipping(database_session):
     """Test skipping of faulty htmls."""
     faulty_doc_path = "tests/data/html_faulty/ext_diseases_missing_table_tag.html"
     preprocessor = HTMLDocPreprocessor(faulty_doc_path)
-    session = Meta.init(CONN_STRING).Session()
+    session = database_session
     corpus_parser = Parser(session)
     corpus_parser.apply(preprocessor)
     # This returns documents that apply() was called on

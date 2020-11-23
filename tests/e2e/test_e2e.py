@@ -23,6 +23,7 @@ from fonduer.learning.utils import collect_word_counter
 from fonduer.parser import Parser
 from fonduer.parser.models import Document, Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_parser import PdfVisualParser
 from fonduer.supervision import Labeler
 from fonduer.supervision.models import GoldLabel, Label, LabelKey
 from tests.shared.hardware_lfs import (
@@ -60,18 +61,10 @@ from tests.shared.hardware_utils import entity_level_f1, gold
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "e2e_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 @pytest.mark.skipif("CI" not in os.environ, reason="Only run e2e on GitHub Actions")
-def test_e2e():
+def test_e2e(database_session):
     """Run an end-to-end test on documents of the hardware domain."""
     # GitHub Actions gives 2 cores
     # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
@@ -84,7 +77,7 @@ def test_e2e():
         level=logging.INFO,
     )
 
-    session = fonduer.Meta.init(CONN_STRING).Session()
+    session = database_session
 
     docs_path = "tests/data/html/"
     pdf_path = "tests/data/pdf/"
@@ -96,8 +89,7 @@ def test_e2e():
         parallelism=PARALLEL,
         structural=True,
         lingual=True,
-        visual=True,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
     assert session.query(Document).count() == max_docs
@@ -188,7 +180,7 @@ def test_e2e():
     featurizer.apply(split=1, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == 214
     num_feature_keys = session.query(FeatureKey).count()
-    assert num_feature_keys == 1281
+    assert num_feature_keys == 1278
 
     # Test Dropping FeatureKey
     # Should force a row deletion
@@ -233,7 +225,7 @@ def test_e2e():
     num_features = session.query(Feature).count()
     assert num_features == len(train_cands[0]) + len(train_cands[1])
     num_feature_keys = session.query(FeatureKey).count()
-    assert num_feature_keys == 4577
+    assert num_feature_keys == 4629
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
     assert F_train[1].shape == (len(train_cands[1]), num_feature_keys)

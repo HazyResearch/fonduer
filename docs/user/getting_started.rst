@@ -5,10 +5,10 @@ This document will show you how to get up and running with Fonduer. We'll show
 you how to get everything installed and your machine so that you can walk
 through real examples by checking out our Tutorials_.
 
-Installing External Dependencies
---------------------------------
+Installing Non-Python Dependencies
+----------------------------------
 
-Fonduer relies on a couple of external applications. You'll need to install
+Fonduer relies on a couple of non-Python applications. You'll need to install
 these and be sure are on your ``PATH``.
 
 For OS X using homebrew_::
@@ -68,6 +68,16 @@ Then, install Fonduer by running::
 
       $ deactivate
 
+Downloading spaCy language models
+---------------------------------
+
+Language models introduced recently cannot be downloaded by Fonduer.
+Those models should be downloaded and their shortcuts should be created as below::
+
+    $ python -m spacy download ja_core_news_sm
+    $ python -m spacy link ja_core_news_sm ja
+    $ python -m spacy download zh_core_web_sm
+    $ python -m spacy link zh_core_web_sm zh
 
 The Fonduer Pipeline
 --------------------

@@ -5,15 +5,7 @@ We use pytest_ to run our tests. Our tests are all located in the ``tests``
 directory in the repo, and are meant to be run *after* installing_ Fonduer
 locally.
 
-In order to run the tests, you will need to create the local databases used
-by the tests::
-
-    $ createdb meta_test
-    $ createdb parser_test
-    $ createdb e2e_test
-    $ createdb inc_test
-    $ createdb pg_test
-
+You need PostgreSQL running locally with `trust authentication`_ enabled.
 You'll also need to download the external test data::
 
     $ cd tests/
@@ -26,3 +18,4 @@ Then, you'll be able to run our tests::
 
 .. _pytest: https://docs.pytest.org/en/latest/
 .. _installing: install.html
+.. _trust authentication: https://www.postgresql.org/docs/current/static/auth-methods.html#AUTH-TRUST

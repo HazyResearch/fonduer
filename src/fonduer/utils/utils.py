@@ -61,7 +61,7 @@ def get_set_of_stable_ids(
         set_of_stable_ids.update(
             set(
                 [
-                    tuple(m.context.get_stable_id() for m in c)
+                    tuple(m.context.get_stable_id() for m in c) if c else None
                     for c in getattr(doc, candidate_class.__tablename__ + "s")
                 ]
             )

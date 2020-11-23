@@ -21,10 +21,9 @@ def test_spacy_support():
     assert lingual_parser.has_tokenizer_support()
     assert lingual_parser.has_NLP_support()
 
-    # Alpha-supported language
     lingual_parser = SpacyParser("ja")
     assert lingual_parser.has_tokenizer_support()
-    assert not lingual_parser.has_NLP_support()
+    assert lingual_parser.has_NLP_support()
 
     # Non supported language
     lingual_parser = SpacyParser("non-supported-lang")

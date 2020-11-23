@@ -265,8 +265,11 @@ class CandidateExtractorUDF(UDF):
                     enumerate(
                         # a list of mentions for each mention subclass within a doc
                         getattr(doc, mention.__tablename__ + "s")
+                        + ([None] if nullable else [])
                     )
-                    for mention in candidate_class.mentions
+                    for mention, nullable in zip(
+                        candidate_class.mentions, candidate_class.nullables
+                    )
                 ]
             )
             # Get a set of stable_ids of candidates.
@@ -286,15 +289,16 @@ class CandidateExtractorUDF(UDF):
 
                 # TODO: Make this work for higher-order relations
                 if self.arities[i] == 2:
-                    ai, a = (cand[0][0], cand[0][1].context)
-                    bi, b = (cand[1][0], cand[1][1].context)
+                    ai, a = (cand[0][0], cand[0][1].context if cand[0][1] else None)
+                    bi, b = (cand[1][0], cand[1][1].context if cand[1][1] else None)
 
                     # Check for self-joins, "nested" joins (joins from context to
                     # its subcontext), and flipped duplicate "symmetric" relations
                     if not self.self_relations and a == b:
                         logger.debug(f"Skipping self-joined candidate {cand}")
                         continue
-                    if not self.nested_relations and (a in b or b in a):
+                    # Skip the check if either is None as None is not iterable.
+                    if not self.nested_relations and (a and b) and (a in b or b in a):
                         logger.debug(f"Skipping nested candidate {cand}")
                         continue
                     if not self.symmetric_relations and ai > bi:
@@ -306,7 +310,8 @@ class CandidateExtractorUDF(UDF):
                     candidate_args[arg_name] = cand[j][1]
 
                 stable_ids = tuple(
-                    cand[j][1].context.get_stable_id() for j in range(self.arities[i])
+                    cand[j][1].context.get_stable_id() if cand[j][1] else None
+                    for j in range(self.arities[i])
                 )
                 # Skip if this (temporary) candidate is used by this candidate class.
                 if (

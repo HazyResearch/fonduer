@@ -1,29 +1,23 @@
 """Fonduer parser unit tests."""
 import logging
 import os
+from typing import List
 
 import pytest
+from sqlalchemy.orm import Session
 
-import fonduer
 from fonduer.parser import Parser
 from fonduer.parser.lingual_parser import SpacyParser
 from fonduer.parser.models import Document
 from fonduer.parser.parser import ParserUDF, SimpleParser
 from fonduer.parser.preprocessors import (
     CSVDocPreprocessor,
+    HOCRDocPreprocessor,
     HTMLDocPreprocessor,
     TextDocPreprocessor,
     TSVDocPreprocessor,
 )
-
-DB = "parser_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
+from fonduer.parser.visual_parser import HocrVisualParser, PdfVisualParser
 
 
 def get_parser_udf(
@@ -37,8 +31,7 @@ def get_parser_udf(
     replacements=[("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")],
     tabular=True,  # tabular information
     visual=False,  # visual information
-    vizlink=None,
-    pdf_path=None,
+    visual_parser=None,
 ):
     """Return an instance of ParserUDF."""
     parser_udf = ParserUDF(
@@ -51,11 +44,29 @@ def get_parser_udf(
         replacements=replacements,
         tabular=tabular,
         visual=visual,
-        vizlink=vizlink,
-        pdf_path=pdf_path,
+        visual_parser=visual_parser,
         language=language,
     )
     return parser_udf
+
+
+def parse(session: Session, docs_path: str, pdf_path: str) -> List[Document]:
+    """Parse documents using Parser UDF Runner."""
+    # Preprocessor for the Docs
+    doc_preprocessor = HTMLDocPreprocessor(docs_path)
+
+    # Create an Parser and parse the documents
+    corpus_parser = Parser(
+        session,
+        parallelism=1,
+        structural=True,
+        lingual=True,
+        visual_parser=PdfVisualParser(pdf_path),
+    )
+
+    corpus_parser.clear()
+    corpus_parser.apply(doc_preprocessor)
+    return corpus_parser.get_documents()
 
 
 def test_parse_md_details():
@@ -63,7 +74,7 @@ def test_parse_md_details():
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/md.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -84,7 +95,7 @@ def test_parse_md_details():
         tabular=True,
         lingual=True,
         visual=True,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -126,6 +137,14 @@ def test_parse_md_details():
     assert sent.cell.row_start == 0
     assert sent.cell.col_start == 2
 
+    # Check if the tail text is processed after inner elements (#333)
+    assert [sent.text for sent in doc.sentences[14:18]] == [
+        "italics and later",
+        "bold",
+        ".",
+        "Even",
+    ]
+
     # Check abs_char_offsets (#332)
     text = "".join([sent.text for sent in doc.sentences])
     for sent in doc.sentences:
@@ -148,14 +167,10 @@ def test_parse_md_details():
     assert header.bottom == [61, 61]
     assert header.right == [111, 231]
     assert header.left == [35, 117]
-
-    # Choose a sentence whose words get NER tags that are unlikely to change
-    # even when a lang model changes.
-    sent = sorted(doc.sentences, key=lambda x: x.position)[2]
-    assert sent.words == ["Second", "Heading"]
     # Test lingual attributes
-    assert sent.ner_tags[0] == "ORDINAL"
-    assert sent.dep_labels[0] == "compound"
+    # when lingual=True, some value other than "" should be filled-in.
+    assert all(sent.ner_tags)
+    assert all(sent.dep_labels)
 
     # Test whether nlp information corresponds to sentence words
     for sent in doc.sentences:
@@ -169,7 +184,7 @@ def test_parse_md_details():
 def test_parse_wo_tabular():
     """Test the parser without extracting tabular information."""
     docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/md.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -181,7 +196,7 @@ def test_parse_wo_tabular():
         tabular=False,
         lingual=True,
         visual=True,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -220,7 +235,7 @@ def test_spacy_german():
     doc = parser_udf.apply(doc)
 
     # Check that doc has sentences
-    assert len(doc.sentences) == 841
+    assert len(doc.sentences) == 824
     sent = sorted(doc.sentences, key=lambda x: x.position)[143]
     assert sent.ner_tags == [
         "O",
@@ -228,7 +243,7 @@ def test_spacy_german():
         "LOC",
         "O",
         "O",
-        "O",
+        "LOC",
         "O",
         "O",
         "O",
@@ -272,37 +287,40 @@ def test_spacy_japanese():
     )
     doc = parser_udf.apply(doc)
 
-    assert len(doc.sentences) == 289
-    sent = doc.sentences[42]
+    assert len(doc.sentences) == 308
+    sent = doc.sentences[45]
     assert sent.text == "当時マルコ・ポーロが辿り着いたと言われる"
-    assert sent.words == ["当時", "マルコ", "・", "ポーロ", "が", "辿り着い", "た", "と", "言わ", "れる"]
-    assert sent.pos_tags == [
-        "NOUN",
-        "PROPN",
-        "SYM",
-        "PROPN",
-        "ADP",
-        "VERB",
-        "AUX",
-        "ADP",
-        "VERB",
-        "AUX",
+    assert sent.words == [
+        "当時",
+        "マルコ",
+        "・",
+        "ポーロ",
+        "が",
+        "辿り",
+        "着い",
+        "た",
+        "と",
+        "言わ",
+        "れる",
     ]
     assert sent.lemmas == [
         "当時",
-        "マルコ-Marco",
+        "マルコ",
         "・",
-        "ポーロ-Polo",
+        "ポーロ",
         "が",
-        "辿り着く",
+        "辿る",
+        "着く",
         "た",
         "と",
         "言う",
         "れる",
     ]
-    # Japanese sentences are only tokenized.
-    assert sent.ner_tags == [""] * len(sent.words)
-    assert sent.dep_labels == [""] * len(sent.words)
+    # These tags are less stable (ie they change when a spacy model changes)
+    # So just check that values other than "" are assigned.
+    assert all(sent.pos_tags)
+    assert all(sent.ner_tags)
+    assert all(sent.dep_labels)
 
 
 @pytest.mark.skipif(
@@ -323,23 +341,28 @@ def test_spacy_chinese():
     sent = doc.sentences[1]
     assert sent.text == "我们和他对比谁更厉害!"
     assert sent.words == ["我们", "和", "他", "对比", "谁", "更", "厉害", "!"]
-    # Chinese sentences are only tokenized.
-    assert sent.ner_tags == ["", "", "", "", "", "", "", ""]
-    assert sent.dep_labels == ["", "", "", "", "", "", "", ""]
+    # These tags are less stable (ie they change when a spacy model changes)
+    # So just check that values other than "" are assigned.
+    assert all(sent.ner_tags)
+    assert all(sent.dep_labels)
 
 
 def test_warning_on_missing_pdf():
     """Test that a warning is issued on invalid pdf."""
-    docs_path = "tests/data/html_simple/md_para.html"
-    pdf_path = "tests/data/pdf_simple/md_para_nonexistant.pdf"
+    docs_path = "tests/data/html_simple/table_span.html"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
-    doc = next(preprocessor._parse_file(docs_path, "md_para"))
+    doc = next(iter(preprocessor))
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
@@ -350,7 +373,7 @@ def test_warning_on_missing_pdf():
 def test_warning_on_incorrect_filename():
     """Test that a warning is issued on invalid pdf."""
     docs_path = "tests/data/html_simple/md_para.html"
-    pdf_path = "tests/data/html_simple/md_para.html"
+    pdf_path = "tests/data/html_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -358,7 +381,11 @@ def test_warning_on_incorrect_filename():
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
@@ -369,7 +396,7 @@ def test_warning_on_incorrect_filename():
 def test_parse_md_paragraphs():
     """Unit test of Paragraph parsing."""
     docs_path = "tests/data/html_simple/md_para.html"
-    pdf_path = "tests/data/pdf_simple/md_para.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -380,7 +407,11 @@ def test_parse_md_paragraphs():
 
     # Create an Parser and parse the md document
     parser_udf = get_parser_udf(
-        structural=True, tabular=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -455,7 +486,7 @@ def test_simple_parser():
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/md.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -469,7 +500,7 @@ def test_simple_parser():
         structural=True,
         lingual=False,
         visual=True,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path),
         lingual_parser=SimpleParser(delim="NoDelim"),
     )
     doc = parser_udf.apply(doc)
@@ -537,7 +568,7 @@ def test_parse_document_diseases():
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_simple/diseases.html"
-    pdf_path = "tests/data/pdf_simple/diseases.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -548,7 +579,10 @@ def test_parse_document_diseases():
 
     # Create an Parser and parse the diseases document
     parser_udf = get_parser_udf(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        lingual=True,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -595,8 +629,9 @@ def test_parse_document_diseases():
     assert sentence.left == [318, 369, 318]
 
     # Test lingual attributes
-    assert sentence.ner_tags == ["O", "O", "GPE"]
-    assert sentence.dep_labels == ["ROOT", "prep", "pobj"]
+    # when lingual=True, some value other than "" should be filled-in.
+    assert all(sentence.ner_tags)
+    assert all(sentence.dep_labels)
 
     assert len(doc.sentences) == 37
 
@@ -606,7 +641,7 @@ def test_parse_style():
     logger = logging.getLogger(__name__)
 
     docs_path = "tests/data/html_extended/ext_diseases.html"
-    pdf_path = "tests/data/pdf_extended/ext_diseases.pdf"
+    pdf_path = "tests/data/pdf_extended/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -614,7 +649,10 @@ def test_parse_style():
 
     # Create an Parser and parse the diseases document
     parser_udf = get_parser_udf(
-        structural=True, lingual=True, visual=True, pdf_path=pdf_path
+        structural=True,
+        lingual=True,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -806,7 +844,7 @@ def test_parser_skips_and_flattens():
 def test_parser_no_image():
     """Unit test of Parser on a single document that has a figure without image."""
     docs_path = "tests/data/html_simple/no_image.html"
-    pdf_path = "tests/data/pdf_simple/no_image.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -817,7 +855,10 @@ def test_parser_no_image():
 
     # Create an Parser and parse the no_image document
     parser_udf = get_parser_udf(
-        structural=True, lingual=False, visual=True, pdf_path=pdf_path,
+        structural=True,
+        lingual=False,
+        visual=True,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     doc = parser_udf.apply(doc)
 
@@ -825,43 +866,19 @@ def test_parser_no_image():
     assert len(doc.figures) == 0
 
 
-def test_various_file_path_formats():
-    """Test the parser with various file path formats."""
-    session = fonduer.Meta.init(CONN_STRING).Session()
+@pytest.mark.parametrize(
+    "docs_path, pdf_path",
+    [
+        ("tests/data/html_simple/", "tests/data/pdf_simple/"),
+        ("tests/data/html_simple/", "tests/data/pdf_simple"),
+        ("tests/data/html_simple", "tests/data/pdf_simple/"),
+        ("tests/data/html_simple", "tests/data/pdf_simple"),
+    ],
+)
+def test_various_dir_path_formats(database_session, docs_path, pdf_path):
+    """Test the parser with various directory path formats."""
+    docs = parse(database_session, docs_path, pdf_path)
 
-    def parse(docs_path, pdf_path):
-        # Preprocessor for the Docs
-        doc_preprocessor = HTMLDocPreprocessor(docs_path)
-
-        # Create an Parser and parse the documents
-        corpus_parser = Parser(
-            session,
-            parallelism=1,
-            structural=True,
-            lingual=True,
-            visual=True,
-            pdf_path=pdf_path,
-        )
-
-        corpus_parser.clear()
-        corpus_parser.apply(doc_preprocessor)
-        return corpus_parser
-
-    # Test that doc_path is a file path, and pdf_path is a file path
-    docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/md.pdf"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 1
-    assert docs[0].sentences[0].top is not None
-
-    # Test that doc_path is a file path, and pdf_path is a file path
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple/"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
     assert len(docs) == 6
     for doc in docs:
         # table_span.pdf and no_image_unsorted.pdf are not exist, so no
@@ -871,69 +888,84 @@ def test_various_file_path_formats():
         else:
             assert doc.sentences[0].top is not None
 
-    # Test that doc_path is a directory (no trailing slash), and pdf_path is a
-    # directory
-    docs_path = "tests/data/html_simple"
-    pdf_path = "tests/data/pdf_simple/"
 
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 6
-    for doc in docs:
-        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
-        # coordinate info available
-        if doc.name in ["table_span", "no_image_unsorted"]:
-            assert doc.sentences[0].top is None
-        else:
-            assert doc.sentences[0].top is not None
-
-    # Test that doc_path is a directory, and pdf_path is a directory (no trailing
-    # slash)
-    docs_path = "tests/data/html_simple/"
-    pdf_path = "tests/data/pdf_simple"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 6
-    for doc in docs:
-        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
-        # coordinate info available
-        if doc.name in ["table_span", "no_image_unsorted"]:
-            assert doc.sentences[0].top is None
-        else:
-            assert doc.sentences[0].top is not None
-
-    # Test that doc_path is a directory (no trailing slash), and pdf_path is a
-    # directory (no trailing slash)
-    docs_path = "tests/data/html_simple"
-    pdf_path = "tests/data/pdf_simple"
-
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 6
-    for doc in docs:
-        # table_span.pdf and no_image_unsorted.pdf are not exist, so no
-        # coordinate info available
-        if doc.name in ["table_span", "no_image_unsorted"]:
-            assert doc.sentences[0].top is None
-        else:
-            assert doc.sentences[0].top is not None
-
-    # Test that doc_path is a file path, and pdf_path is a directory
+@pytest.mark.parametrize(
+    "pdf_path",
+    [
+        ("tests/data/pdf_extended/"),
+        ("tests/data/pdf_extended"),
+    ],
+)
+def test_various_pdf_path_formats(database_session, pdf_path):
+    """Test the parser with various pdf_path formats."""
     docs_path = "tests/data/html_extended/ext_diseases.html"
-    pdf_path = "tests/data/pdf_extended/"
 
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
+    docs = parse(database_session, docs_path, pdf_path)
     assert len(docs) == 1
     assert docs[0].sentences[0].top is not None
 
-    # Test that doc_path is a file path, and pdf_path is a directory (no trailing
-    # slash)
-    docs_path = "tests/data/html_extended/ext_diseases.html"
-    pdf_path = "tests/data/pdf_extended"
 
-    corpus_parser = parse(docs_path, pdf_path)
-    docs = corpus_parser.get_documents()
-    assert len(docs) == 1
-    assert docs[0].sentences[0].top is not None
+def test_parse_hocr():
+    """Test the parser with hOCR documents."""
+    docs_path = "tests/data/hocr_simple/md.hocr"
+
+    # Preprocessor for the Docs
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(iter(preprocessor))
+
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual_parser=HocrVisualParser(),
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "md"
+    assert doc.sentences[12].left == [372, 384, 405, 418, 418]
+    assert doc.sentences[12].page == [1] * len(doc.sentences[12].words)
+
+    docs_path = "tests/data/hocr_simple/121.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(iter(preprocessor))
+
+    doc = parser_udf.apply(doc)
+    # The double spaces between "This" and "Consumer" should be replaced with a single
+    # space at HOCRDocPreprocessor.
+    assert doc.sentences[0].words[:3] == ["This", "Consumer", "Credit"]
+
+    docs_path = "tests/data/hocr_simple/japan.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path, space=False)
+    doc = next(iter(preprocessor))
+    # Create an Parser and parse the md document
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        language="ja",
+        visual_parser=HocrVisualParser(),
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "japan"
+    sent = doc.sentences[0]
+    assert len(sent.words) == len(sent.left)
+    # "にっぽん" is tokenized into three: "に", "っ", "ぽん" in hOCR,
+    # but it is tokenized as an one token by spaCy.
+    assert sent.words[1] == "にっぽん"
+    assert sent.left[1] == 150  # this left comes from "に" in hOCR
+    assert sent.right[1] == 249  # this right comes from "ぽん" in hOCR
+
+
+def test_parse_hocr_with_tables():
+    """Test the parser with hOCR documents that have tables."""
+    docs_path = "tests/data/hocr_simple/1st.hocr"
+    preprocessor = HOCRDocPreprocessor(docs_path)
+    doc = next(iter(preprocessor))
+    parser_udf = get_parser_udf(
+        structural=True,
+        tabular=True,
+        lingual=True,
+        visual_parser=HocrVisualParser(),
+    )
+    doc = parser_udf.apply(doc)
+    assert doc.name == "1st"

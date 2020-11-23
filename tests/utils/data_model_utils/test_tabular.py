@@ -3,6 +3,7 @@ import pytest
 
 from fonduer.candidates import MentionNgrams
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_parser import PdfVisualParser
 from fonduer.utils.data_model_utils.tabular import (
     get_aligned_ngrams,
     get_cell_ngrams,
@@ -29,7 +30,7 @@ from tests.parser.test_parser import get_parser_udf
 def mention_setup():
     """Set up mentions."""
     docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/md.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Preprocessor for the Docs
     preprocessor = HTMLDocPreprocessor(docs_path)
@@ -41,7 +42,7 @@ def mention_setup():
         tabular=True,
         lingual=True,
         visual=True,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path),
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -191,7 +192,7 @@ def test_get_cell_ngrams(mention_setup):
 
     # when a mention is not tabular
     assert mentions[0].get_span() == "Sample"
-    assert list(get_cell_ngrams(mentions[0])) == ["markdown"]
+    assert list(get_cell_ngrams(mentions[0])) == []
 
 
 def test_get_neighbor_cell_ngrams(mention_setup):
@@ -216,7 +217,7 @@ def test_get_neighbor_cell_ngrams(mention_setup):
 
     # when a mention is not tabular
     assert mentions[0].get_span() == "Sample"
-    assert list(get_neighbor_cell_ngrams(mentions[0])) == ["markdown"]
+    assert list(get_neighbor_cell_ngrams(mentions[0])) == []
 
 
 def test_get_row_ngrams(mention_setup):
@@ -228,6 +229,10 @@ def test_get_row_ngrams(mention_setup):
         "$",
         "11",
     ]
+
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_row_ngrams(mentions[0])) == []
 
 
 def test_get_col_ngrams(mention_setup):
@@ -256,6 +261,10 @@ def test_get_aligned_ngrams(mention_setup):
         "lamb",
         "madras",
     ]
+
+    # when a mention is not tabular
+    assert mentions[0].get_span() == "Sample"
+    assert list(get_aligned_ngrams(mentions[0])) == []
 
 
 def test_get_head_ngrams(mention_setup):

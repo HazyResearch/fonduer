@@ -5,7 +5,6 @@ import os
 import pytest
 from snorkel.labeling import labeling_function
 
-from fonduer import Meta
 from fonduer.candidates import CandidateExtractor, MentionExtractor
 from fonduer.candidates.models import Candidate
 from fonduer.features import Featurizer
@@ -13,6 +12,7 @@ from fonduer.features.models import Feature, FeatureKey
 from fonduer.parser import Parser
 from fonduer.parser.models import Document
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_parser import PdfVisualParser
 from fonduer.supervision import Labeler
 from fonduer.supervision.labeler import ABSTAIN
 from fonduer.supervision.models import Label, LabelKey
@@ -31,20 +31,12 @@ from tests.shared.hardware_throttlers import temp_throttler
 
 logger = logging.getLogger(__name__)
 ATTRIBUTE = "stg_temp_max"
-DB = "inc_test"
-if "CI" in os.environ:
-    CONN_STRING = (
-        f"postgresql://{os.environ['PGUSER']}:{os.environ['PGPASSWORD']}"
-        + f"@{os.environ['POSTGRES_HOST']}:{os.environ['POSTGRES_PORT']}/{DB}"
-    )
-else:
-    CONN_STRING = f"postgresql://127.0.0.1:5432/{DB}"
 
 
 @pytest.mark.skipif(
     "CI" not in os.environ, reason="Only run incremental on GitHub Actions"
 )
-def test_incremental():
+def test_incremental(database_session):
     """Run an end-to-end test on incremental additions."""
     # GitHub Actions gives 2 cores
     # help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
@@ -52,10 +44,10 @@ def test_incremental():
 
     max_docs = 1
 
-    session = Meta.init(CONN_STRING).Session()
+    session = database_session
 
     docs_path = "tests/data/html/dtc114w.html"
-    pdf_path = "tests/data/pdf/dtc114w.pdf"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
@@ -64,8 +56,7 @@ def test_incremental():
         parallelism=PARALLEL,
         structural=True,
         lingual=True,
-        visual=True,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path),
     )
     corpus_parser.apply(doc_preprocessor)
 
@@ -118,15 +109,15 @@ def test_incremental():
     featurizer.apply(split=0, train=True, parallelism=PARALLEL)
     assert session.query(Feature).count() == len(train_cands[0])
     num_feature_keys = session.query(FeatureKey).count()
-    assert num_feature_keys == 526
+    assert num_feature_keys == 514
 
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
     assert len(featurizer.get_keys()) == num_feature_keys
 
     # Test Dropping FeatureKey
-    featurizer.drop_keys(["CORE_e1_LENGTH_1"])
-    assert session.query(FeatureKey).count() == num_feature_keys
+    featurizer.drop_keys(["BASIC_e1_LENGTH_1"])
+    assert session.query(FeatureKey).count() == num_feature_keys - 1
 
     stg_temp_lfs = [
         LF_storage_row,
@@ -149,11 +140,11 @@ def test_incremental():
     assert len(labeler.get_keys()) == 5
 
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
 
     doc_preprocessor = HTMLDocPreprocessor(docs_path, max_docs=max_docs)
 
-    corpus_parser.apply(doc_preprocessor, pdf_path=pdf_path, clear=False)
+    corpus_parser.apply(doc_preprocessor, clear=False)
 
     assert len(corpus_parser.get_documents()) == 2
 
@@ -190,7 +181,7 @@ def test_incremental():
     featurizer.update(new_docs, parallelism=PARALLEL)
     assert session.query(Feature).count() == len(train_cands[0])
     num_feature_keys = session.query(FeatureKey).count()
-    assert num_feature_keys == 2526
+    assert num_feature_keys == 2608
     F_train = featurizer.get_feature_matrices(train_cands)
     assert F_train[0].shape == (len(train_cands[0]), num_feature_keys)
     assert len(featurizer.get_keys()) == num_feature_keys

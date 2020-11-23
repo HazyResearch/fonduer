@@ -1,13 +1,13 @@
-"""Fonduer visual linker."""
+"""Fonduer visual parser that parses visual information from PDF."""
 import logging
 import os
 import re
 import shutil
 import subprocess
-from builtins import object, range, zip
+from builtins import range, zip
 from collections import OrderedDict, defaultdict
 from operator import attrgetter
-from typing import DefaultDict, Dict, Iterator, List, Optional, Tuple
+from typing import DefaultDict, Dict, Iterable, Iterator, List, Optional, Tuple
 
 import numpy as np
 from bs4 import BeautifulSoup
@@ -15,6 +15,7 @@ from bs4.element import Tag
 from editdistance import eval as editdist  # Alternative library: python-levenshtein
 
 from fonduer.parser.models import Sentence
+from fonduer.parser.visual_parser.visual_parser import VisualParser
 from fonduer.utils.utils_visual import Bbox
 
 logger = logging.getLogger(__name__)
@@ -36,17 +37,28 @@ HtmlWordId = Tuple[str, int]
 HtmlWord = Tuple[HtmlWordId, str]
 
 
-class VisualLinker(object):
-    """Link visual information with sentences."""
+class PdfVisualParser(VisualParser):
+    """Link visual information, extracted from PDF, with parsed sentences.
 
-    def __init__(
-        self, pdf_path: str, time: bool = False, verbose: bool = False
-    ) -> None:
-        """Initialize VisualLinker."""
+    This linker assumes the following conditions for expected results:
+
+    - The PDF file exists in a directory specified by `pdf_path`.
+    - The basename of the PDF file is same as the *document name*
+      and its extension is either ".pdf" or ".PDF".
+    - A PDF has a text layer.
+    """
+
+    def __init__(self, pdf_path: str, verbose: bool = False) -> None:
+        """Initialize VisualParser.
+
+        :param pdf_path: a path to directory that contains PDF files.
+        :param verbose: whether to turn on verbose logging.
+        """
+        if not os.path.isdir(pdf_path):
+            raise ValueError(f"No directory exists at {pdf_path}!")
         self.pdf_path = pdf_path
         self.pdf_file: Optional[str] = None
         self.verbose = verbose
-        self.time = time
         self.coordinate_map: Optional[Dict[PdfWordId, Bbox]] = None
         self.pdf_word_list: Optional[List[PdfWord]] = None
         self.html_word_list: Optional[List[HtmlWord]] = None
@@ -63,28 +75,25 @@ class VisualLinker(object):
         version = subprocess.check_output(
             "pdfinfo -v", shell=True, stderr=subprocess.STDOUT, universal_newlines=True
         )
-        m = re.search(r"\d\.\d{2}\.\d", version)
+        m = re.search(r"\d{1,2}\.\d{2}\.\d", version)
         if int(m.group(0).replace(".", "")) < 360:
             raise RuntimeError(
                 f"Installed poppler-utils's version is {m.group(0)}, "
                 f"but should be 0.36.0 or above"
             )
 
-    def link(
-        self, document_name: str, sentences: List[Sentence], pdf_path: str = None
+    def parse(
+        self, document_name: str, sentences: Iterable[Sentence]
     ) -> Iterator[Sentence]:
         """Link visual information with sentences.
 
         :param document_name: the document name.
         :param sentences: sentences to be linked with visual information.
-        :param pdf_path: The path to the PDF documents, if any, defaults to None.
-            This path will override the one used in initialization, if provided.
         :return: A generator of ``Sentence``.
         """
         # sentences should be sorted as their order is not deterministic.
         self.sentences = sorted(sentences, key=attrgetter("position"))
-        self.pdf_path = pdf_path if pdf_path is not None else self.pdf_path
-        self.pdf_file = self._get_linked_pdf_path(document_name, self.pdf_path)
+        self.pdf_file = self._get_linked_pdf_path(document_name)
         try:
             self._extract_pdf_words()
         except RuntimeError as e:
@@ -129,42 +138,30 @@ class VisualLinker(object):
         if self.verbose:
             logger.info(f"Extracted {len(self.pdf_word_list)} pdf words")
 
-    def _get_linked_pdf_path(self, filename: str, pdf_path: str = None) -> str:
-        """Get the linked pdf file path, return None if it doesn't exist.
+    def _get_linked_pdf_path(self, document_name: str) -> str:
+        """Get the pdf file path, return None if it doesn't exist.
 
-        :param filename: The name to the PDF document.
-        :param pdf_path: The path to the PDF documents, if any, defaults to None.
+        :param document_name: a document name.
         """
-        path = pdf_path if pdf_path is not None else self.pdf_path
-        # If path is file, but not PDF.
-        if os.path.isfile(path) and path.lower().endswith(".pdf"):
-            return path
-        else:
-            full_path = os.path.join(path, filename)
-            if os.path.isfile(full_path) and full_path.lower().endswith(".pdf"):
-                return full_path
-            full_path = os.path.join(path, filename + ".pdf")
-            if os.path.isfile(full_path):
-                return full_path
-            full_path = os.path.join(path, filename + ".PDF")
-            if os.path.isfile(full_path):
-                return full_path
+        full_path = os.path.join(self.pdf_path, document_name + ".pdf")
+        if os.path.isfile(full_path):
+            return full_path
+        full_path = os.path.join(self.pdf_path, document_name + ".PDF")
+        if os.path.isfile(full_path):
+            return full_path
 
         return None
 
-    def is_linkable(self, filename: str, pdf_path: str = None) -> bool:
+    def is_parsable(self, document_name: str) -> bool:
         """Verify that the file exists and has a PDF extension.
 
-        :param filename: The path to the PDF document.
-        :param pdf_path: The path to the PDF documents, if any, defaults to None.
+        :param document_name: The path to the PDF document.
         """
-        return False if self._get_linked_pdf_path(filename, pdf_path) is None else True
+        return False if self._get_linked_pdf_path(document_name) is None else True
 
     def _coordinates_from_HTML(
         self, page: Tag, page_num: int
-    ) -> Tuple[
-        List[PdfWord], Dict[PdfWordId, Bbox],
-    ]:
+    ) -> Tuple[List[PdfWord], Dict[PdfWordId, Bbox]]:
         pdf_word_list: List[PdfWord] = []
         coordinate_map: Dict[PdfWordId, Bbox] = {}
         block_coordinates: Dict[PdfWordId, Tuple[int, int]] = {}
@@ -186,7 +183,11 @@ class VisualLinker(object):
                             word_id: PdfWordId = (page_num, i)
                             pdf_word_list.append((word_id, content))
                             coordinate_map[word_id] = Bbox(
-                                page_num, y_min_line, y_max_line, xmin, xmax,
+                                page_num,
+                                y_min_line,
+                                y_max_line,
+                                xmin,
+                                xmax,
                             )
                             block_coordinates[word_id] = (y_min_block, x_min_block)
                             i += 1

@@ -1,0 +1,201 @@
+<?xml version="1.0" ?>
+<html>
+	<head>
+		<meta content="Converted from PDF by pdftotree 0.5.1+dev" name="ocr-system"/>
+		<meta content="ocr_page ocr_table ocrx_block ocrx_line ocrx_word" name="ocr-capabilities"/>
+		<meta content="1" name="ocr-number-of-pages"/>
+	</head>
+	<body>
+		<div class="ocr_page" id="page_1" title="bbox 0 0 612 792; ppageno 0">
+			<div class="ocrx_block" pdftotree="header" title="bbox 35 37 231 61">
+				<span class="ocrx_line" title="bbox 35 37 231 61">
+					<span class="ocrx_word" title="bbox 35 37 111 61">Sample</span>
+					<span class="ocrx_word" title="bbox 117 37 231 61">Markdown</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 79 220 91">
+				<span class="ocrx_line" title="bbox 35 79 220 91">
+					<span class="ocrx_word" title="bbox 35 79 56 91">This</span>
+					<span class="ocrx_word" title="bbox 59 79 67 91">is</span>
+					<span class="ocrx_word" title="bbox 70 79 95 91">some</span>
+					<span class="ocrx_word" title="bbox 98 79 126 91">basic,</span>
+					<span class="ocrx_word" title="bbox 129 79 163 91">sample</span>
+					<span class="ocrx_word" title="bbox 166 79 220 91">markdown.</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 108 159 126">
+				<span class="ocrx_line" title="bbox 35 108 159 126">
+					<span class="ocrx_word" title="bbox 35 108 90 126">Second</span>
+					<span class="ocrx_word" title="bbox 94 108 159 126">Heading</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 65 143 165 155">
+				<span class="ocrx_line" title="bbox 65 143 165 155">
+					<span class="ocrx_word" title="bbox 65 143 116 155">Unordered</span>
+					<span class="ocrx_word" title="bbox 119 143 141 155">lists,</span>
+					<span class="ocrx_word" title="bbox 144 143 165 155">and:</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="paragraph" title="bbox 83 156 122 195">
+				<span class="ocrx_line" title="bbox 83 156 114 168">
+					<span class="ocrx_word" title="bbox 83 156 92 168">1.</span>
+					<span class="ocrx_word" title="bbox 95 156 114 168">One</span>
+				</span>
+				<span class="ocrx_line" title="bbox 83 170 116 182">
+					<span class="ocrx_word" title="bbox 83 170 92 182">2.</span>
+					<span class="ocrx_word" title="bbox 95 170 116 182">Two</span>
+				</span>
+				<span class="ocrx_line" title="bbox 83 183 122 195">
+					<span class="ocrx_word" title="bbox 83 183 92 195">3.</span>
+					<span class="ocrx_word" title="bbox 95 183 122 195">Three</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 65 197 90 209">
+				<span class="ocrx_line" title="bbox 65 197 90 209">
+					<span class="ocrx_word" title="bbox 65 197 90 209">More</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 65 222 120 234">
+				<span class="ocrx_line" title="bbox 65 222 120 234">
+					<span class="ocrx_word" title="bbox 65 222 120 234">Blockquote</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 248 475 260">
+				<span class="ocrx_line" title="bbox 35 248 475 260">
+					<span class="ocrx_word" title="bbox 35 248 55 260">And</span>
+					<span class="ocrx_word" title="bbox 58 248 84 260">bold,</span>
+					<span class="ocrx_word" title="bbox 87 248 119 260">italics,</span>
+					<span class="ocrx_word" title="bbox 122 248 139 260">and</span>
+					<span class="ocrx_word" title="bbox 142 248 165 260">even</span>
+					<span class="ocrx_word" title="bbox 168 248 197 260">italics</span>
+					<span class="ocrx_word" title="bbox 200 248 218 260">and</span>
+					<span class="ocrx_word" title="bbox 221 248 244 260">later</span>
+					<span class="ocrx_word" title="bbox 247 248 271 260">bold.</span>
+					<span class="ocrx_word" title="bbox 274 248 299 260">Even</span>
+					<span class="ocrx_word" title="bbox 302 248 369 260">strikethrough.</span>
+					<span class="ocrx_word" title="bbox 372 248 381 260">A</span>
+					<span class="ocrx_word" title="bbox 384 248 402 260">link</span>
+					<span class="ocrx_word" title="bbox 405 248 415 260">to</span>
+					<span class="ocrx_word" title="bbox 418 248 475 260">somewhere.</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 276 120 290">
+				<span class="ocrx_line" title="bbox 35 276 120 290">
+					<span class="ocrx_word" title="bbox 35 276 64 290">Here</span>
+					<span class="ocrx_word" title="bbox 67 276 77 290">is</span>
+					<span class="ocrx_word" title="bbox 80 276 87 290">a</span>
+					<span class="ocrx_word" title="bbox 91 276 120 290">table</span>
+				</span>
+			</div>
+			<table class="ocr_table" title="bbox 37 309 209 370">
+				<tr>
+					<td title="bbox 37 311 136 318">
+						<span class="ocrx_line" title="bbox 37 309 135 321">
+							<span class="ocrx_word" title="bbox 37 309 67 321">Name</span>
+							<span class="ocrx_word" title="bbox 70 309 103 321">Lunch</span>
+							<span class="ocrx_word" title="bbox 106 309 135 321">order</span>
+						</span>
+					</td>
+					<td title="bbox 144 311 173 318">
+						<span class="ocrx_line" title="bbox 144 309 172 321">
+							<span class="ocrx_word" title="bbox 144 309 172 321">Spicy</span>
+						</span>
+					</td>
+					<td title="bbox 181 311 205 318">
+						<span class="ocrx_line" title="bbox 181 309 209 321">
+							<span class="ocrx_word" title="bbox 181 309 209 321">Owes</span>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td title="bbox 37 328 128 334">
+						<span class="ocrx_line" title="bbox 37 325 59 337">
+							<span class="ocrx_word" title="bbox 37 325 59 337">Joan</span>
+						</span>
+						<span class="ocrx_line" title="bbox 70 325 126 337">
+							<span class="ocrx_word" title="bbox 70 325 91 337">saag</span>
+							<span class="ocrx_word" title="bbox 94 325 126 337">paneer</span>
+						</span>
+					</td>
+					<td title="bbox 138 328 179 334">
+						<span class="ocrx_line" title="bbox 138 325 177 337">
+							<span class="ocrx_word" title="bbox 138 325 177 337">medium</span>
+						</span>
+					</td>
+					<td title="bbox 192 328 209 334">
+						<span class="ocrx_line" title="bbox 192 325 209 337">
+							<span class="ocrx_word" title="bbox 192 325 209 337">$11</span>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td title="bbox 37 344 113 351">
+						<span class="ocrx_line" title="bbox 37 342 61 354">
+							<span class="ocrx_word" title="bbox 37 342 61 354">Sally</span>
+						</span>
+						<span class="ocrx_line" title="bbox 70 342 112 354">
+							<span class="ocrx_word" title="bbox 70 342 112 354">vindaloo</span>
+						</span>
+					</td>
+					<td title="bbox 138 344 162 351">
+						<span class="ocrx_line" title="bbox 138 342 160 354">
+							<span class="ocrx_word" title="bbox 138 342 160 354">mild</span>
+						</span>
+					</td>
+					<td title="bbox 191 344 209 351">
+						<span class="ocrx_line" title="bbox 191 342 209 354">
+							<span class="ocrx_word" title="bbox 191 342 209 354">$14</span>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td title="bbox 37 361 133 367">
+						<span class="ocrx_line" title="bbox 37 358 57 370">
+							<span class="ocrx_word" title="bbox 37 358 57 370">Erin</span>
+						</span>
+					</td>
+					<td/>
+					<td title="bbox 197 361 209 367">
+						<span class="ocrx_line" title="bbox 197 358 209 370">
+							<span class="ocrx_word" title="bbox 197 358 209 370">$5</span>
+						</span>
+					</td>
+				</tr>
+			</table>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 386 224 398">
+				<span class="ocrx_line" title="bbox 35 386 224 398">
+					<span class="ocrx_word" title="bbox 35 386 47 398">Or</span>
+					<span class="ocrx_word" title="bbox 50 386 77 398">inline</span>
+					<span class="ocrx_word" title="bbox 80 386 103 398">code</span>
+					<span class="ocrx_word" title="bbox 106 386 124 398">like</span>
+					<span class="ocrx_word" title="bbox 127 388 145 398">var</span>
+					<span class="ocrx_word" title="bbox 151 388 168 398">foo</span>
+					<span class="ocrx_word" title="bbox 174 388 180 398">=</span>
+					<span class="ocrx_word" title="bbox 186 386 224 398">&amp;#x27;bar&amp;#x27;;.</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 411 135 423">
+				<span class="ocrx_line" title="bbox 35 411 135 423">
+					<span class="ocrx_word" title="bbox 35 411 47 423">Or</span>
+					<span class="ocrx_word" title="bbox 50 411 61 423">an</span>
+					<span class="ocrx_word" title="bbox 64 411 94 423">image</span>
+					<span class="ocrx_word" title="bbox 97 411 107 423">of</span>
+					<span class="ocrx_word" title="bbox 110 411 135 423">bears</span>
+				</span>
+			</div>
+			<figure title="bbox 35 436 185 586"/>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 599 85 611">
+				<span class="ocrx_line" title="bbox 35 599 85 611">
+					<span class="ocrx_word" title="bbox 35 599 53 611">The</span>
+					<span class="ocrx_word" title="bbox 56 599 73 611">end</span>
+					<span class="ocrx_word" title="bbox 76 599 85 611">...</span>
+				</span>
+			</div>
+			<div class="ocrx_block" pdftotree="section_header" title="bbox 35 624 76 636">
+				<span class="ocrx_line" title="bbox 35 624 76 636">
+					<span class="ocrx_word" title="bbox 35 624 76 636">δ13Corg</span>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

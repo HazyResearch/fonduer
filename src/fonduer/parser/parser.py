@@ -35,7 +35,7 @@ from fonduer.parser.models import (
     Table,
 )
 from fonduer.parser.models.utils import construct_stable_id
-from fonduer.parser.visual_linker import VisualLinker
+from fonduer.parser.visual_parser import VisualParser
 from fonduer.utils.udf import UDF, UDFRunner
 
 logger = logging.getLogger(__name__)
@@ -62,12 +62,8 @@ class Parser(UDFRunner):
         replaces various unicode variants of a hyphen (e.g. emdash, endash,
         minus, etc.) with a standard ASCII hyphen.
     :param tabular: Whether to include tabular information in the parse.
-    :param visual: Whether to include visual information in the parse.
-        Requires PDFs for each input document.
-    :param vizlink: A custom visual linker that inherits
-        :class:`VisualLinker <fonduer.parser.visual_linker.VisualLinker>`.
-        Unless otherwise specified, :class:`VisualLinker` will be used.
-    :param pdf_path: The path to the corresponding PDFs use for visual info.
+    :param visual_parser: A visual parser that parses visual information.
+        Defaults to None (visual information is not parsed).
     """
 
     def __init__(
@@ -88,9 +84,7 @@ class Parser(UDFRunner):
             ("[\u2010\u2011\u2012\u2013\u2014\u2212]", "-")
         ],
         tabular: bool = True,  # tabular information
-        visual: bool = False,  # visual information
-        vizlink: Optional[VisualLinker] = None,  # visual linker
-        pdf_path: Optional[str] = None,
+        visual_parser: Optional[VisualParser] = None,  # visual parser
     ) -> None:
         """Initialize Parser."""
         super().__init__(
@@ -105,9 +99,7 @@ class Parser(UDFRunner):
             strip=strip,
             replacements=replacements,
             tabular=tabular,
-            visual=visual,
-            vizlink=vizlink,
-            pdf_path=pdf_path,
+            visual_parser=visual_parser,
             language=language,
         )
 
@@ -117,14 +109,11 @@ class Parser(UDFRunner):
         clear: bool = True,
         parallelism: Optional[int] = None,
         progress_bar: bool = True,
-        pdf_path: Optional[str] = None,
     ) -> None:
         """Run the Parser.
 
         :param doc_loader: An iteratable of ``Documents`` to parse. Typically,
             one of Fonduer's document preprocessors.
-        :param pdf_path: The path to the PDF documents, if any. This path will
-            override the one used in initialization, if provided.
         :param clear: Whether or not to clear the labels table before applying
             these LFs.
         :param parallelism: How many threads to use for extraction. This will
@@ -135,7 +124,6 @@ class Parser(UDFRunner):
         """
         super().apply(
             doc_loader,
-            pdf_path=pdf_path,
             clear=clear,
             parallelism=parallelism,
             progress_bar=progress_bar,
@@ -146,11 +134,8 @@ class Parser(UDFRunner):
         if doc:
             self.session.add(doc)
 
-    def clear(self, pdf_path: Optional[str] = None) -> None:  # type: ignore
-        """Clear all of the ``Context`` objects in the database.
-
-        :param pdf_path: This parameter is ignored.
-        """
+    def clear(self) -> None:  # type: ignore
+        """Clear all of the ``Context`` objects in the database."""
         self.session.query(Context).delete(synchronize_session="fetch")
 
     def get_last_documents(self) -> List[Document]:
@@ -186,18 +171,12 @@ class ParserUDF(UDF):
         strip: bool,
         replacements: List[Tuple[str, str]],
         tabular: bool,
-        visual: bool,
-        vizlink: Optional[VisualLinker],
-        pdf_path: Optional[str],
+        visual_parser: Optional[VisualParser],
         language: Optional[str],
         **kwargs: Any,
     ) -> None:
         """Initialize Parser UDF.
 
-        :param visual: boolean, if True visual features are used in the model
-        :param pdf_path: directory where pdf are saved, if a pdf file is not
-            found, it will be created from the html document and saved in that
-            directory
         :param replacements: a list of (_pattern_, _replace_) tuples where
             _pattern_ isinstance a regex and _replace_ is a character string.
             All occurents of _pattern_ in the text will be replaced by
@@ -238,40 +217,23 @@ class ParserUDF(UDF):
         self.tabular = tabular
 
         # visual setup
-        self.visual = visual
-        self.vizlink = vizlink
-        if self.visual:
-            self.pdf_path = pdf_path
-            if not self.vizlink:
-                # Use the provided pdf_path if present
-                if not self.pdf_path:
-                    warnings.warn(
-                        "Visual parsing failed: pdf_path is required. "
-                        + "Proceeding without visual parsing.",
-                        RuntimeWarning,
-                    )
-                    self.visual = False
-                else:
-                    self.vizlink = VisualLinker(pdf_path)
+        self.visual_parser = visual_parser
 
     def apply(  # type: ignore
-        self, document: Document, pdf_path: Optional[str] = None, **kwargs: Any
+        self, document: Document, **kwargs: Any
     ) -> Optional[Document]:
         """Parse a text in an instance of Document.
 
         :param document: document to parse.
-        :param pdf_path: path of a pdf file that the document is visually linked with.
         """
         try:
             [y for y in self.parse(document, document.text)]
-            if self.visual:
-                # Use the provided pdf_path if present
-                self.pdf_path = pdf_path if pdf_path else self.pdf_path
-                if not self.vizlink.is_linkable(document.name, self.pdf_path):
+            if self.visual_parser:
+                if not self.visual_parser.is_parsable(document.name):
                     warnings.warn(
                         (
                             f"Visual parse failed. "
-                            f"{self.pdf_path + document.name} not a PDF. "
+                            f"{document.name} not a PDF. "
                             f"Proceeding without visual parsing."
                         ),
                         RuntimeWarning,
@@ -280,8 +242,8 @@ class ParserUDF(UDF):
                     # Add visual attributes
                     [
                         y
-                        for y in self.vizlink.link(
-                            document.name, document.sentences, self.pdf_path
+                        for y in self.visual_parser.parse(
+                            document.name, document.sentences
                         )
                     ]
             return document
@@ -485,12 +447,13 @@ class ParserUDF(UDF):
                 # As a workaround, just ignore the outer Figure and allow processing
                 # of the individual images. We ignore the accompanying figcaption
                 # by marking it as visited.
-                captions = [child for child in node if child.tag == "figcaption"]
-                state["visited"].update(captions)
+                for child in node:
+                    if child.tag == "figcaption":
+                        child.set("visited", "true")
                 return state
 
             img = imgs[0]
-            state["visited"].add(img)
+            img.set("visited", "true")
 
             # Create the Figure entry in the DB
             parts["url"] = img.get("src")
@@ -543,7 +506,9 @@ class ParserUDF(UDF):
                 parts["xpath"] = tree.getpath(context_node)
                 parts["html_tag"] = context_node.tag
                 parts["html_attrs"] = [
-                    "=".join(x) for x in list(context_node.attrib.items())
+                    "=".join(x)
+                    for x in context_node.attrib.items()
+                    if x[0] != "visited"
                 ]
 
                 # Extending html style attribute with the styles
@@ -626,7 +591,16 @@ class ParserUDF(UDF):
         # Set name for Paragraph
         name = node.attrib["name"] if "name" in node.attrib else None
 
-        for field in ["text", "tail"]:
+        if len(node.getchildren()) == 0:  # leaf node
+            fields = ["text", "tail"]
+        elif node.get("visited") == "text":  # .text was parsed already
+            fields = ["tail"]
+            node.set("visited", "true")
+        else:
+            fields = ["text"]
+            node.set("visited", "text")
+            self.stack.append(node)  # will visit again later for tail
+        for field in fields:
             text = getattr(node, field)
             text = text.strip() if text and self.strip else text
 
@@ -779,14 +753,15 @@ class ParserUDF(UDF):
         :return: a *generator* of Sentences
         """
         # Processing on entry of node
-        state = self._parse_section(node, state)
+        if node.get("visited") != "text":  # skip when .text has been parsed
+            state = self._parse_section(node, state)
 
-        state = self._parse_figure(node, state)
+            state = self._parse_figure(node, state)
 
-        if self.tabular:
-            state = self._parse_table(node, state)
+            if self.tabular:
+                state = self._parse_table(node, state)
 
-        state = self._parse_caption(node, state)
+            state = self._parse_caption(node, state)
 
         yield from self._parse_paragraph(node, state)
 
@@ -800,7 +775,7 @@ class ParserUDF(UDF):
         :param text: the structured text of the document (e.g. HTML)
         :return: a *generator* of Sentences.
         """
-        stack = []
+        self.stack = []
 
         root = lxml.html.fromstring(text)
 
@@ -817,7 +792,6 @@ class ParserUDF(UDF):
         # defined in parser/models. This contains the state necessary to create
         # the respective Contexts within the document.
         state = {
-            "visited": set(),
             "parent": {},  # map of parent[child] = node used to discover child
             "context": {},  # track the Context of each node (context['td'] = Cell)
             "root": root,
@@ -833,15 +807,14 @@ class ParserUDF(UDF):
         # rather than returning a modified copy.
 
         # Iterative Depth-First Search
-        stack.append(root)
+        self.stack.append(root)
         state["parent"][root] = document
         state["context"][root] = document
 
         tokenized_sentences: List[Sentence] = []
-        while stack:
-            node = stack.pop()
-            if node not in state["visited"]:
-                state["visited"].add(node)  # mark as visited
+        while self.stack:
+            node = self.stack.pop()
+            if node.get("visited") != "true":
 
                 # Process
                 if self.lingual:
@@ -852,21 +825,24 @@ class ParserUDF(UDF):
                 # NOTE: This reversed() order is to ensure that the iterative
                 # DFS matches the order that would be produced by a recursive
                 # DFS implementation.
-                for child in reversed(node):
-                    # Skip nodes that are blacklisted
-                    if self.blacklist and child.tag in self.blacklist:
-                        continue
+                if node.get("visited") != "true":
+                    for child in reversed(node):
+                        # Skip nodes that are blacklisted
+                        if self.blacklist and child.tag in self.blacklist:
+                            continue
 
-                    stack.append(child)
+                        self.stack.append(child)
 
-                    # store the parent of the node, which is either the parent
-                    # Context, or if the parent did not create a Context, then
-                    # use the node's parent Context.
-                    state["parent"][child] = (
-                        state["context"][node]
-                        if node in state["context"]
-                        else state["parent"][node]
-                    )
+                        # store the parent of the node, which is either the parent
+                        # Context, or if the parent did not create a Context, then
+                        # use the node's parent Context.
+                        state["parent"][child] = (
+                            state["context"][node]
+                            if node in state["context"]
+                            else state["parent"][node]
+                        )
+                else:
+                    node.set("visited", "true")  # mark as visited
 
         if self.lingual:
             yield from self.lingual_parser.enrich_sentences_with_NLP(

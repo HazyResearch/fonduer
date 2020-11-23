@@ -1,0 +1,109 @@
+<?xml version="1.0" ?>
+  <html>
+    <head>
+      <meta content="Generated OCRed text" name="ocr-system"/>
+      <meta content="ocr_page ocr_carea ocr_table ocr_line ocrx_word" name="ocr-capabilities"/>
+    </head>
+    <body>
+      <div class="ocr_page" id="page_1" title="bbox 0 0 612 792">
+        <div class="ocr_carea">
+          <!--multi-words with double spaces. This could happen on Tesseract 4.00-->
+          <span class="ocrx_word" id="word_1_26" title="bbox 36 170 105 178">This  Consumer</span>
+          <span class="ocrx_word" id="word_1_28" title="bbox 110 170 136 178">Credit</span>
+          <span class="ocrx_word" id="word_1_29" title="bbox 142 170 162 178">Card</span>
+          <span class="ocrx_word" id="word_1_30" title="bbox 167 170 216 180">Agreement</span>
+          <span class="ocrx_word" id="word_1_31" title="bbox 221 170 237 178">and</span>
+          <span class="ocrx_word" id="word_1_32" title="bbox 243 170 288 178">Disclosure</span>
+          <span class="ocrx_word" id="word_1_33" title="bbox 294 170 330 180">together</span>
+          <span class="ocrx_word" id="word_1_34" title="bbox 335 170 352 178">with</span>
+          <span class="ocrx_word" id="word_1_35" title="bbox 358 170 371 178">the</span>
+          <span class="ocrx_word" id="word_1_36" title="bbox 376 170 412 178">Account</span>
+          <span class="ocrx_word" id="word_1_37" title="bbox 417 170 454 180">Opening</span>
+          <span class="ocrx_word" id="word_1_38" title="bbox 460 170 505 178">Disclosure</span>
+          <span class="ocrx_word" id="word_1_39" title="bbox 511 170 526 178">and</span>
+          <span class="ocrx_word" id="word_1_40" title="bbox 532 172 548 180">any</span>
+          <span class="ocrx_word" id="word_1_41" title="bbox 553 170 576 178">other</span>
+          <span class="ocrx_word" id="word_1_42" title="bbox 36 182 71 189">Account</span>
+          <span class="ocrx_word" id="word_1_43" title="bbox 78 182 113 191">opening</span>
+          <span class="ocrx_word" id="word_1_44" title="bbox 120 182 168 189">documents</span>
+          <span class="ocrx_word" id="word_1_45" title="bbox 175 184 184 189">or</span>
+          <span class="ocrx_word" id="word_1_46" title="bbox 190 184 206 191">any</span>
+          <span class="ocrx_word" id="word_1_47" title="bbox 212 182 264 191">subsequent</span>
+          <span class="ocrx_word" id="word_1_48" title="bbox 270 182 319 189">documents</span>
+          <span class="ocrx_word" id="word_1_49" title="bbox 326 182 363 191">provided</span>
+          <span class="ocrx_word" id="word_1_50" title="bbox 370 182 378 189">to</span>
+          <span class="ocrx_word" id="word_1_51" title="bbox 384 182 402 189">You</span>
+          <span class="ocrx_word" id="word_1_52" title="bbox 409 182 438 189">related</span>
+          <span class="ocrx_word" id="word_1_53" title="bbox 446 182 454 189">to</span>
+          <span class="ocrx_word" id="word_1_54" title="bbox 460 182 475 189">this</span>
+          <span class="ocrx_word" id="word_1_55" title="bbox 482 182 518 189">Account</span>
+          <span class="ocrx_word" id="word_1_56" title="bbox 525 182 576 191">(hereinafter</span>
+          <span class="ocrx_word" id="word_1_57" title="bbox 36 193 84 203">collectively</span>
+          <span class="ocrx_word" id="word_1_58" title="bbox 87 193 121 201">referred</span>
+          <span class="ocrx_word" id="word_1_59" title="bbox 125 194 133 201">to</span>
+          <span class="ocrx_word" id="word_1_60" title="bbox 136 195 146 201">as</span>
+          <span class="ocrx_word" id="word_1_61" title="bbox 150 193 208 203">“Agreement”)</span>
+          <span class="ocrx_word" id="word_1_62" title="bbox 212 195 241 203">govern</span>
+          <span class="ocrx_word" id="word_1_63" title="bbox 245 193 259 201">the</span>
+          <span class="ocrx_word" id="word_1_64" title="bbox 262 194 286 201">terms</span>
+          <span class="ocrx_word" id="word_1_65" title="bbox 290 193 306 201">and</span>
+          <span class="ocrx_word" id="word_1_66" title="bbox 310 193 354 201">conditions</span>
+          <span class="ocrx_word" id="word_1_67" title="bbox 358 193 366 201">of</span>
+          <span class="ocrx_word" id="word_1_68" title="bbox 369 193 384 201">this</span>
+          <span class="ocrx_word" id="word_1_69" title="bbox 387 193 426 201">Account.</span>
+          <!--Use two single-quotes to see if #527 happens-->
+          <span class="ocrx_word" id="word_1_70" title="bbox 430 193 453 202">''We,''</span>
+          <span class="ocrx_word" id="word_1_71" title="bbox 457 193 478 202">“Us,”</span>
+          <span class="ocrx_word" id="word_1_72" title="bbox 482 193 504 201">“Our”</span>
+          <span class="ocrx_word" id="word_1_73" title="bbox 508 193 524 201">and</span>
+          <span class="ocrx_word" id="word_1_74" title="bbox 528 193 555 201">“Ours”</span>
+          <span class="ocrx_word" id="word_1_75" title="bbox 559 193 575 201">and</span>
+          <span class="ocrx_word" id="word_1_76" title="bbox 36 205 65 212">“Credit</span>
+          <span class="ocrx_word" id="word_1_77" title="bbox 69 205 97 212">Union”</span>
+          <span class="ocrx_word" id="word_1_78" title="bbox 101 205 126 212">refers</span>
+          <span class="ocrx_word" id="word_1_79" title="bbox 129 205 137 212">to</span>
+          <span class="ocrx_word" id="word_1_80" title="bbox 141 205 155 212">121</span>
+          <span class="ocrx_word" id="word_1_81" title="bbox 160 205 199 212">Financial</span>
+          <span class="ocrx_word" id="word_1_82" title="bbox 203 205 229 212">Credit</span>
+          <span class="ocrx_word" id="word_1_83" title="bbox 232 205 257 212">Union</span>
+          <span class="ocrx_word" id="word_1_84" title="bbox 261 205 278 212">with</span>
+          <span class="ocrx_word" id="word_1_85" title="bbox 281 205 306 212">which</span>
+          <span class="ocrx_word" id="word_1_86" title="bbox 310 205 325 212">this</span>
+          <span class="ocrx_word" id="word_1_87" title="bbox 328 205 377 214">Agreement</span>
+          <span class="ocrx_word" id="word_1_88" title="bbox 380 205 386 212">is</span>
+          <span class="ocrx_word" id="word_1_89" title="bbox 390 205 417 212">made.</span>
+          <span class="ocrx_word" id="word_1_90" title="bbox 420 205 447 214">“You,”</span>
+          <span class="ocrx_word" id="word_1_91" title="bbox 450 205 480 214">“Your,”</span>
+          <span class="ocrx_word" id="word_1_92" title="bbox 484 205 499 212">and</span>
+          <span class="ocrx_word" id="word_1_93" title="bbox 503 205 535 212">“Yours”</span>
+          <span class="ocrx_word" id="word_1_94" title="bbox 539 205 564 212">refers</span>
+          <span class="ocrx_word" id="word_1_95" title="bbox 567 205 575 212">to</span>
+          <span class="ocrx_word" id="word_1_96" title="bbox 36 216 57 224">each</span>
+          <span class="ocrx_word" id="word_1_97" title="bbox 63 216 102 226">applicant</span>
+          <span class="ocrx_word" id="word_1_98" title="bbox 108 216 124 224">and</span>
+          <span class="ocrx_word" id="word_1_99" title="bbox 130 216 183 226">co-applicant</span>
+          <span class="ocrx_word" id="word_1_100" title="bbox 189 216 201 224">for</span>
+          <span class="ocrx_word" id="word_1_101" title="bbox 206 216 219 224">the</span>
+          <span class="ocrx_word" id="word_1_102" title="bbox 225 216 263 225">Account;</span>
+          <span class="ocrx_word" id="word_1_103" title="bbox 269 218 285 226">any</span>
+          <span class="ocrx_word" id="word_1_104" title="bbox 291 218 320 226">person</span>
+          <span class="ocrx_word" id="word_1_105" title="bbox 327 216 377 226">responsible</span>
+          <span class="ocrx_word" id="word_1_106" title="bbox 383 216 395 224">for</span>
+          <span class="ocrx_word" id="word_1_107" title="bbox 400 216 428 226">paying</span>
+          <span class="ocrx_word" id="word_1_108" title="bbox 434 216 448 224">the</span>
+          <span class="ocrx_word" id="word_1_109" title="bbox 453 216 491 225">Account;</span>
+          <span class="ocrx_word" id="word_1_110" title="bbox 498 216 513 224">and</span>
+          <span class="ocrx_word" id="word_1_111" title="bbox 520 218 552 226">anyone</span>
+          <span class="ocrx_word" id="word_1_112" title="bbox 558 216 575 224">You</span>
+          <span class="ocrx_word" id="word_1_113" title="bbox 36 228 76 235">authorize</span>
+          <span class="ocrx_word" id="word_1_114" title="bbox 81 228 89 235">to</span>
+          <span class="ocrx_word" id="word_1_115" title="bbox 95 230 112 236">use,</span>
+          <span class="ocrx_word" id="word_1_116" title="bbox 118 230 148 235">access</span>
+          <span class="ocrx_word" id="word_1_117" title="bbox 153 230 162 235">or</span>
+          <span class="ocrx_word" id="word_1_118" title="bbox 167 228 198 235">service</span>
+          <span class="ocrx_word" id="word_1_119" title="bbox 203 228 216 235">the</span>
+          <span class="ocrx_word" id="word_1_120" title="bbox 222 228 259 235">Account.</span>
+        </div>
+      </div>
+    </body>
+  </html>

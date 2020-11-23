@@ -4,146 +4,73 @@ env:
   CI: true
 
 jobs:
-  ubuntu-test:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         python-version: [3.6, 3.7]
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+    - name: Cache conda
+      uses: actions/cache@v1
+      env:
+        # Increase this value to reset cache
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}
+    - name: Install miniconda and python version ${{ matrix.python-version }}
+      uses: goanpeca/setup-miniconda@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies for Ubuntu
+        channels: conda-forge
+        channel-priority: strict
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    - name: Install dependencies
+      shell: bash -l {0}
       run: |
-        sudo apt-get install neofetch
-        # Install ImageMagick library for Wand
-        sudo apt-get install libmagickwand-dev ghostscript
-        # Remove the policy file to allow the visualizer test to open the PDF.
-        # See: https://github.com/HazyResearch/fonduer/issues/170
-        sudo rm -rf /etc/ImageMagick-6/policy.xml
-        sudo apt-get install -q -y poppler-utils
-        pip install --upgrade pip setuptools
-    - name: Print Version Info
-      run: |
-        neofetch
-        pdfinfo -v
-        psql --version
-        python --version
-        pip --version
-    - name: Install Fonduer
-      run: |
-        make dev_extra
-        pip install -q pytest-cov
-    - name: Run preliminary checks
-      run: |
-        make check
-        make docs
-    - name: Set up test databases and test data
-      run: |
-        createdb e2e_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb inc_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb meta_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb parser_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb pg_test -p 5432 -h 127.0.0.1 -w -U postgres
-        cd tests && ./download_data.sh && cd ..
-        python -m spacy download en
-      env:
-        PGPASSWORD: postgres
-    - name: Test with pytest
-      run: |
-        pytest --cov=./ --cov-report=xml
-      env:
-        PGPASSWORD: postgres
-        PGUSER: postgres
-        POSTGRES_PORT: 5432
-        # Use 127.0.0.1 instead of localhost (#351)
-        POSTGRES_HOST: 127.0.0.1
-    - name: Upload to codecov.io
-      uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: true
-  macos-test:
-    runs-on: macos-latest
-    timeout-minutes: 60
-    strategy:
-      matrix:
-        python-version: [3.6.10, 3.7.7]
-    steps:
-    - uses: actions/checkout@v2
-    # actions/setup-python@v1 cannot be used on macos (see #386)
-    - name: Install python version ${{ matrix.python-version }}
-      uses: gabrielfalcao/pyenv-action@v5
-      with:
-        default: "${{ matrix.python-version }}"
-        command: |
-          pip install -U pip  # upgrade pip after installing python
-          echo "::add-path::`pyenv root`/shims"
-    - name: Install dependencies for macOS
-      run: |
-        brew update
-        # Install ImageMagick for Wand.
-        brew install imagemagick
-
-        brew install poppler
-
-        brew install neofetch
-        # - name: Install postgres for macOS
-        #   run: |
-        # Install PostgreSQL 10 (12 not compatible with Fonduer)
-        # See https://github.com/HazyResearch/fonduer/issues/371
-        brew install postgresql@10
-        export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
-        echo "::add-path::/usr/local/opt/postgresql@10/bin"
-
-        # https://github.com/brianmario/mysql2/issues/795
-        echo "::set-env name=LIBRARY_PATH::$LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib/"
-
-        # Start postgresql for osx
-        rm -rf /usr/local/var/postgresql@10
-        initdb /usr/local/var/postgresql@10
-        pg_ctl -D /usr/local/var/postgresql@10 start; sleep 5
+        conda install imagemagick poppler postgresql
+        # Start postgresql
+        initdb -D mylocal_db
+        pg_ctl -D mylocal_db start; sleep 5
         createuser -s postgres
     - name: Set up test databases and test data
+      shell: bash -l {0}
       run: |
-        createdb e2e_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb inc_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb meta_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb parser_test -p 5432 -h 127.0.0.1 -w -U postgres
-        createdb pg_test -p 5432 -h 127.0.0.1 -w -U postgres
         cd tests && ./download_data.sh && cd ..
     - name: Print Version Info
+      shell: bash -l {0}
       run: |
         pdfinfo -v
         psql --version
         python --version
         pip --version
-        neofetch
     - name: Install Fonduer
+      shell: bash -l {0}
       run: |
         make dev_extra
+        # model shortcuts are not available for models introduced recently.
+        # they were even deprecated by explosion/spaCy#5722
+        python -m spacy download ja_core_news_sm
+        python -m spacy link ja_core_news_sm ja
+        python -m spacy download zh_core_web_sm
+        python -m spacy link zh_core_web_sm zh
         pip install -q pytest-cov
     - name: Run preliminary checks
+      shell: bash -l {0}
       run: |
+        isort --version
+        black --version
+        flake8 --version
+        mypy --version
         make check
         make docs
       env:
         PGPASSWORD: postgres
     - name: Test with pytest
+      shell: bash -l {0}
       run: |
         python -m spacy download en
         pytest --cov=./ --cov-report=xml
@@ -166,7 +93,7 @@ jobs:
   build-and-publish:
     name: Build and Publish Fonduer to PyPI
     runs-on: ubuntu-latest
-    needs: [ubuntu-test, macos-test]
+    needs: test
     strategy:
       matrix:
         python-version: [3.7]

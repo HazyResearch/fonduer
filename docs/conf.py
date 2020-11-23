@@ -15,6 +15,7 @@
 import os
 import sys
 
+exec(open("../src/fonduer/_version.py").read())
 sys.path.insert(0, os.path.abspath("../src/"))
 
 autodoc_mock_imports = [
@@ -43,9 +44,9 @@ copyright = "2018, HazyResearch"
 author = "HazyResearch"
 
 # The short X.Y version
-version = ""
+version = __version__.split("+")[0]
 # The full version, including alpha/beta/rc tags
-release = ""
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -60,6 +61,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx_autodoc_typehints",
+    "sphinxcontrib.mermaid",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

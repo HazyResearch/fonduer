@@ -29,6 +29,7 @@ from fonduer.candidates.mentions import MentionExtractorUDF, Ngrams
 from fonduer.candidates.models import candidate_subclass, mention_subclass
 from fonduer.parser.models import Sentence
 from fonduer.parser.preprocessors import HTMLDocPreprocessor
+from fonduer.parser.visual_parser import PdfVisualParser
 from fonduer.utils.data_model_utils import get_col_ngrams, get_row_ngrams
 from tests.parser.test_parser import get_parser_udf
 from tests.shared.hardware_matchers import part_matcher, temp_matcher, volt_matcher
@@ -56,7 +57,7 @@ def parse_doc(docs_path: str, file_name: str, pdf_path: Optional[str] = None):
         tabular=True,
         lingual=True,
         visual=True if pdf_path else False,
-        pdf_path=pdf_path,
+        visual_parser=PdfVisualParser(pdf_path) if pdf_path else None,
         language="en",
     )
     doc = parser_udf.apply(doc)
@@ -211,7 +212,7 @@ def test_cand_gen():
         return True
 
     docs_path = "tests/data/html/112823.html"
-    pdf_path = "tests/data/pdf/112823.pdf"
+    pdf_path = "tests/data/pdf/"
     doc = parse_doc(docs_path, "112823", pdf_path)
 
     # Mention Extraction
@@ -340,7 +341,7 @@ def test_ngrams():
 
     assert len(doc.persons) == 123
     mentions = doc.persons
-    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 41
+    assert len([x for x in mentions if x.context.get_num_words() == 1]) == 44
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
 
     # Test for unigram exclusion
@@ -353,7 +354,7 @@ def test_ngrams():
         [Person], [person_ngrams], [person_matcher]
     )
     doc = mention_extractor_udf.apply(doc)
-    assert len(doc.persons) == 82
+    assert len(doc.persons) == 79
     mentions = doc.persons
     assert len([x for x in mentions if x.context.get_num_words() == 1]) == 0
     assert len([x for x in mentions if x.context.get_num_words() > 3]) == 0
@@ -541,3 +542,34 @@ def test_pickle_subclasses():
     pickle.loads(pickle.dumps(part))
     pickle.loads(pickle.dumps(temp))
     pickle.loads(pickle.dumps(parttemp))
+
+
+def test_candidate_with_nullable_mentions():
+    """Test if mentions can be NULL."""
+    docs_path = "tests/data/html/112823.html"
+    pdf_path = "tests/data/pdf/"
+    doc = parse_doc(docs_path, "112823", pdf_path)
+
+    # Mention Extraction
+    MentionTemp = mention_subclass("MentionTemp")
+    temp_ngrams = MentionNgramsTemp(n_max=2)
+    mention_extractor_udf = MentionExtractorUDF(
+        [MentionTemp],
+        [temp_ngrams],
+        [temp_matcher],
+    )
+    doc = mention_extractor_udf.apply(doc)
+
+    assert len(doc.mention_temps) == 23
+
+    # Candidate Extraction
+    CandidateTemp = candidate_subclass("CandidateTemp", [MentionTemp], nullables=[True])
+    candidate_extractor_udf = CandidateExtractorUDF(
+        [CandidateTemp], [None], False, False, True
+    )
+
+    doc = candidate_extractor_udf.apply(doc, split=0)
+    # The number of extracted candidates should be that of mentions + 1 (NULL)
+    assert len(doc.candidate_temps) == len(doc.mention_temps) + 1
+    # Extracted candidates should include one with NULL mention.
+    assert None in [c[0] for c in doc.candidate_temps]

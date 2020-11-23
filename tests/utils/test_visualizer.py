@@ -12,7 +12,7 @@ def test_visualizer():
     from fonduer.utils.visualizer import Visualizer, get_box  # noqa
 
     docs_path = "tests/data/html_simple/md.html"
-    pdf_path = "tests/data/pdf_simple/md.pdf"
+    pdf_path = "tests/data/pdf_simple/"
 
     # Grab the md document
     doc = parse_doc(docs_path, "md", pdf_path)

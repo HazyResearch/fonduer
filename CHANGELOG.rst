@@ -3,6 +3,41 @@ Unreleased_
 
 Added
 ^^^^^
+* `@HiromuHota`_: Support spaCy v2.3.
+  (`#506 <https://github.com/HazyResearch/fonduer/pull/506>`_)
+* `@HiromuHota`_: Add :class:`HOCRDocPreprocessor` and :class:`HocrVisualLinker`
+  to support hOCR as input file.
+  (`#476 <https://github.com/HazyResearch/fonduer/issues/476>`_)
+  (`#519 <https://github.com/HazyResearch/fonduer/pull/519>`_)
+
+Changed
+^^^^^^^
+* `@HiromuHota`_: Renamed :class:`VisualLinker` to :class:`PdfVisualParser`,
+  which assumes the followings:
+  (`#518 <https://github.com/HazyResearch/fonduer/pull/518>`_)
+
+    * ``pdf_path`` should be a directory path, where PDF files exist, and cannot be a file path.
+    * The PDF file should have the same basename (:class:`os.path.basename`) as the document.
+      E.g., the PDF file should be either "123.pdf" or "123.PDF" for "123.html".
+
+* `@HiromuHota`_: Changed :class:`Parser`'s signature as follows:
+  (`#518 <https://github.com/HazyResearch/fonduer/pull/518>`_)
+
+    * Renamed ``vizlink`` to ``visual_parser``.
+    * Removed ``pdf_path``. Now this is required only by :class:`PdfVisualParser`.
+    * Removed ``visual``. Provide ``visual_parser`` if visual information is to be parsed.
+
+Fixed
+^^^^^
+* `@HiromuHota`_: Process the tail text only after child elements.
+  (`#333 <https://github.com/HazyResearch/fonduer/issues/333>`_)
+  (`#520 <https://github.com/HazyResearch/fonduer/pull/520>`_)
+
+0.8.3_ - 2020-09-11
+-------------------
+
+Added
+^^^^^
 * `@YasushiMiyata`_: Add :func:`get_max_row_num` to ``fonduer.utils.data_model_utils.tabular``.
   (`#469 <https://github.com/HazyResearch/fonduer/issues/469>`_)
   (`#480 <https://github.com/HazyResearch/fonduer/pull/480>`_)
@@ -18,6 +53,12 @@ Added
 * `@wajdikhattel`_: Add multinary candidates.
   (`#455 <https://github.com/HazyResearch/fonduer/issues/455>`_)
   (`#456 <https://github.com/HazyResearch/fonduer/pull/456>`_)
+* `@HiromuHota`_: Add ``nullables`` to :func:`candidate_subclass()` to allow NULL mention in a candidate.
+  (`#496 <https://github.com/HazyResearch/fonduer/issues/496>`_)
+  (`#497 <https://github.com/HazyResearch/fonduer/pull/497>`_)
+* `@HiromuHota`_: Copy textual functions in :mod:`data_model_utils.tabular` to :mod:`data_model_utils.textual`.
+  (`#503 <https://github.com/HazyResearch/fonduer/issues/503>`_)
+  (`#505 <https://github.com/HazyResearch/fonduer/pull/505>`_)
 
 Changed
 ^^^^^^^
@@ -33,6 +74,10 @@ Changed
 * `@HiromuHota`_: Log a stack trace on parsing error for better debug experience.
   (`#478 <https://github.com/HazyResearch/fonduer/issues/478>`_)
   (`#479 <https://github.com/HazyResearch/fonduer/pull/479>`_)
+* `@HiromuHota`_: :func:`get_cell_ngrams` and :func:`get_neighbor_cell_ngrams` yield
+  nothing when the mention is not tabular.
+  (`#471 <https://github.com/HazyResearch/fonduer/issues/471>`_)
+  (`#504 <https://github.com/HazyResearch/fonduer/pull/504>`_)
 
 Deprecated
 ^^^^^^^^^^
@@ -41,6 +86,9 @@ Deprecated
 * `@HiromuHota`_: Deprecated :func:`visualizer.get_box` in favor of :func:`span.get_bbox()`.
   (`#445 <https://github.com/HazyResearch/fonduer/issues/445>`_)
   (`#446 <https://github.com/HazyResearch/fonduer/pull/446>`_)
+* `@HiromuHota`_: Deprecate textual functions in :mod:`data_model_utils.tabular`.
+  (`#503 <https://github.com/HazyResearch/fonduer/issues/503>`_)
+  (`#505 <https://github.com/HazyResearch/fonduer/pull/505>`_)
 
 Fixed
 ^^^^^
@@ -1190,7 +1238,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.2...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.3...master
+.. _0.8.3: https://github.com/hazyresearch/fonduer/compare/v0.8.2...v0.8.3
 .. _0.8.2: https://github.com/hazyresearch/fonduer/compare/v0.8.1...v0.8.2
 .. _0.8.1: https://github.com/hazyresearch/fonduer/compare/v0.8.0...v0.8.1
 .. _0.8.0: https://github.com/hazyresearch/fonduer/compare/v0.7.1...v0.8.0
