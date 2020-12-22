@@ -192,7 +192,7 @@ def get_vert_ngrams(
     lower: bool = True,
     from_sentence: bool = True,
 ) -> Iterator[str]:
-    """Return all ngrams which are visually vertivally aligned with the Mention.
+    """Return all ngrams which are visually vertically aligned with the Mention.
 
     Note that if a candidate is passed in, all of its Mentions will be searched.
 
