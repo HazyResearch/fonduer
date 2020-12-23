@@ -201,7 +201,9 @@ class SpacyParser(LingualParser):
             self.model.remove_pipe(name="sentence_boundary_detector")
 
         if not self.model.has_pipe("sentencizer"):
-            sentencizer = self.model.create_pipe("sentencizer")  # add sentencizer
+            sentencizer = self.model.create_pipe(
+                "sentencizer", {"punct_chars": [".", "!", "?"]}
+            )
             self.model.add_pipe(sentencizer)
         try:
             doc = self.model(text, disable=["parser", "tagger", "ner"])
