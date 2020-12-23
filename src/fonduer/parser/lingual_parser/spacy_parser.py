@@ -10,7 +10,6 @@ import spacy
 from spacy import util
 from spacy.cli import download
 from spacy.language import Language
-from spacy.pipeline import Sentencizer
 from spacy.tokens import Doc
 from spacy.util import is_package
 from spacy.vocab import Vocab
@@ -35,12 +34,6 @@ class SpacyParser(LingualParser):
     # Keep alpha_languages for future alpha supported languages
     # E.g., alpha_languages = {"ja": "Japanese", "zh": "Chinese"}
     alpha_languages: Dict[str, str] = {}
-
-    # Use the default_punct_chars as of v2.3.2 for backward compatibility
-    default_punct_chars = Sentencizer.default_punct_chars
-    default_punct_chars.remove(":")
-    default_punct_chars.remove(";")
-    default_punct_chars.remove("؟")
 
     def __init__(self, lang: Optional[str]) -> None:
         """Initialize SpacyParser."""
@@ -208,9 +201,7 @@ class SpacyParser(LingualParser):
             self.model.remove_pipe(name="sentence_boundary_detector")
 
         if not self.model.has_pipe("sentencizer"):
-            sentencizer = self.model.create_pipe(
-                "sentencizer", {"punct_chars": self.default_punct_chars}
-            )
+            sentencizer = self.model.create_pipe("sentencizer")  # add sentencizer
             self.model.add_pipe(sentencizer)
         try:
             doc = self.model(text, disable=["parser", "tagger", "ner"])
