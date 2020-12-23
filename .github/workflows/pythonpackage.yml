@@ -50,6 +50,8 @@ jobs:
     - name: Install Fonduer
       run: |
         make dev_extra
+        # Use v2.3.2 for tests as v2.3.3+ has a different set of default punctuations.
+        pip install spacy==2.3.2
         # model shortcuts are not available for models introduced recently.
         # they were even deprecated by explosion/spaCy#5722
         python -m spacy download ja_core_news_sm
