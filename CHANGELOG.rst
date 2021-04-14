@@ -29,6 +29,9 @@ Changed
 
 Fixed
 ^^^^^
+* `@YasushiMiyata`_: Add multiline Japanese strings support to :class:`fonduer.parser.visual_parser.hocr_visual_parser`.
+  (`#534 <https://github.com/HazyResearch/fonduer/issues/534>`_)
+  (`#537 <https://github.com/HazyResearch/fonduer/pull/537>`_)
 * `@HiromuHota`_: Process the tail text only after child elements.
   (`#333 <https://github.com/HazyResearch/fonduer/issues/333>`_)
   (`#520 <https://github.com/HazyResearch/fonduer/pull/520>`_)
