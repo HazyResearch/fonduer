@@ -75,6 +75,16 @@
      </span>
     </p>
    </div>
+   <div class='ocr_carea' id='block_1_2' title="bbox 145 175 245 185">
+    <p class='ocr_par' id='par_1_2' lang='jpn' title="bbox 145 175 245 185">
+     <span class="ocr_line" id="line_1_2" title="bbox 145 175 225 180">
+      <span class="ocrx_word" id="word_1_60" title="bbox 145 175 225 180; x_wconf 92">チェーン店</span>
+     </span>
+     <span class="ocr_line" id="line_1_3" title="bbox 226 181 245 185">
+      <span class="ocrx_word" id="word_1_61" title="bbox 226 181 245 185; x_wconf 92">本・支店</span>
+     </span>
+    </p>
+   </div>  
   </div>
  </body>
 </html>
