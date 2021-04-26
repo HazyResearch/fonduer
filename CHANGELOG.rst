@@ -29,6 +29,9 @@ Changed
 
 Fixed
 ^^^^^
+* `@YasushiMiyata`_: Fix test code `test_postgres.py::test_cand_gen_cascading_delete`.
+  (`#538 <https://github.com/HazyResearch/fonduer/issues/538>`_)
+  (`#539 <https://github.com/HazyResearch/fonduer/pull/539>`_)
 * `@HiromuHota`_: Process the tail text only after child elements.
   (`#333 <https://github.com/HazyResearch/fonduer/issues/333>`_)
   (`#520 <https://github.com/HazyResearch/fonduer/pull/520>`_)
