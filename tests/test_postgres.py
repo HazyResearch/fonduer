@@ -116,8 +116,13 @@ def test_cand_gen_cascading_delete(database_session):
 
     # Test that deletion of a Candidate does not delete the Mention
     x = session.query(PartTemp).first()
+<<<<<<< HEAD
     candidate = session.query(PartTemp).filter_by(id=x.id).first()
     session.delete(candidate)
+=======
+    d = session.query(PartTemp).filter_by(id=x.id).first()
+    session.delete(d)
+>>>>>>> Fix test code test_postgres.py::test_cand_gen_cascading_delete (Fix #538)
     assert session.query(PartTemp).count() == 1429
     assert session.query(Temp).count() == 23
     assert session.query(Part).count() == 70
