@@ -366,7 +366,7 @@ def test_warning_on_missing_pdf():
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
-    assert len(record) == 1
+    assert isinstance(record, type(pytest.warns(RuntimeWarning)))
     assert "Visual parse failed" in record[0].message.args[0]
 
 
@@ -389,7 +389,7 @@ def test_warning_on_incorrect_filename():
     )
     with pytest.warns(RuntimeWarning) as record:
         doc = parser_udf.apply(doc)
-    assert len(record) == 1
+    assert isinstance(record, type(pytest.warns(RuntimeWarning)))
     assert "Visual parse failed" in record[0].message.args[0]
 
 
