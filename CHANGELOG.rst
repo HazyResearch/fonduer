@@ -12,6 +12,9 @@ Added
 * `@YasushiMiyata`_: Add multiline Japanese strings support to :class:`fonduer.parser.visual_parser.hocr_visual_parser`.
   (`#534 <https://github.com/HazyResearch/fonduer/issues/534>`_)
   (`#540 <https://github.com/HazyResearch/fonduer/pull/540>`_)
+* `@YasushiMiyata`_: Add commit process immediately after add to :class:`fonduer.parser.Parser`.
+  (`#494 <https://github.com/HazyResearch/fonduer/issues/494>`_)
+  (`#541 <https://github.com/HazyResearch/fonduer/pull/541>`_)
 
 Changed
 ^^^^^^^
