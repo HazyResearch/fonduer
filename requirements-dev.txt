@@ -8,7 +8,7 @@ pre-commit
 pytest
 pytest-dependency
 pytest-mock
-sphinx
+sphinx<4.0.0
 sphinx_rtd_theme
 sphinx_autodoc_typehints
 sphinxcontrib-mermaid
