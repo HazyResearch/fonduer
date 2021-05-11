@@ -117,21 +117,19 @@ class HocrVisualParser(VisualParser):
                             h2s_multi_idx = [
                                 k for k, v in h2s_multi.items() if ptr + i == v
                             ]
-                            if h2s_multi_idx:  # One hOCR word-to-multi spacy tokens
+                            start, end = 0, 0
+                            if h2s_multi_idx:  # One hOCR word-to-multi spacy tokens
                                 start = h2s_multi_idx[0]
                                 end = h2s_multi_idx[-1] + 1
-                                # calculate a bbox that can include all
-                                left = min(lefts[start:end])
-                                top = min(tops[start:end])
-                                right = max(rights[start:end])
-                                bottom = max(bottoms[start:end])
-                                ppageno = ppagenos[start]
                             else:
-                                raise RuntimeError(
-                                    "Tokens are not aligned!",
-                                    f"hocr tokens: {hocr_tokens}",
-                                    f"spacy tokens: {spacy_tokens}",
-                                )
+                                start = s2h_multi[i - 1 if i > 0 else 0]
+                                end = s2h_multi[i + 1] + 1
+                            # calculate a bbox that can include all
+                            left = min(lefts[start:end])
+                            top = min(tops[start:end])
+                            right = max(rights[start:end])
+                            bottom = max(bottoms[start:end])
+                            ppageno = ppagenos[start]
                     # One-to-one mapping is available
                     else:
                         left = lefts[s2h[ptr + i]]
