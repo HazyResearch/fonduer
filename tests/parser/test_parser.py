@@ -953,6 +953,14 @@ def test_parse_hocr():
     assert sent.left[1] == 150  # this left comes from "に" in hOCR
     assert sent.right[1] == 249  # this right comes from "ぽん" in hOCR
 
+    sent = doc.sentences[2]
+    assert len(sent.words) == len(sent.left)
+    # "チェーン店\n本・支店" is tokenized into three: "チェーン店", "本・支店" in hOCR,
+    # but it is tokenized as "チェーン", "店本", "・", "支店" by spaCy.
+    assert sent.words[1] == "店本"
+    assert sent.left[1] == 145  # comes from left min of "チェーン店\n本・支店" in hOCR
+    assert sent.right[1] == 245  # comes from right min of "チェーン店\n本・支店" in hOCR
+
 
 def test_parse_hocr_with_tables():
     """Test the parser with hOCR documents that have tables."""
