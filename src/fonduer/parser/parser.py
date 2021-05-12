@@ -133,6 +133,7 @@ class Parser(UDFRunner):
         # Persist the object if no error happens during parsing.
         if doc:
             self.session.add(doc)
+            self.session.commit()
 
     def clear(self) -> None:  # type: ignore
         """Clear all of the ``Context`` objects in the database."""
