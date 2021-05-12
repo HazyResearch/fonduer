@@ -9,10 +9,10 @@ Added
   to support hOCR as input file.
   (`#476 <https://github.com/HazyResearch/fonduer/issues/476>`_)
   (`#519 <https://github.com/HazyResearch/fonduer/pull/519>`_)
-  * `@YasushiMiyata`_: Add multiline Japanese strings support to :class:`fonduer.parser.visual_parser.hocr_visual_parser`.
+* `@YasushiMiyata`_: Add multiline Japanese strings support to :class:`fonduer.parser.visual_parser.hocr_visual_parser`.
   (`#534 <https://github.com/HazyResearch/fonduer/issues/534>`_)
   (`#542 <https://github.com/HazyResearch/fonduer/pull/542>`_)
-  * `@YasushiMiyata`_: Add commit process immediately after add to :class:`fonduer.parser.Parser`.
+* `@YasushiMiyata`_: Add commit process immediately after add to :class:`fonduer.parser.Parser`.
   (`#494 <https://github.com/HazyResearch/fonduer/issues/494>`_)
   (`#544 <https://github.com/HazyResearch/fonduer/pull/544>`_)
 
