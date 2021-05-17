@@ -145,8 +145,7 @@ class UDFRunner(object):
         ) and count_parsed < total_count:
             # Get doc from the out_queue and persist the result into postgres
             try:
-                (doc_name, y) = out_queue.get()  # block until an item is available
-                self._add(y)
+                doc_name = out_queue.get()  # block until an item is available
                 self.last_docs.add(doc_name)
                 # Update progress bar whenever an item has been processed
                 count_parsed += 1
@@ -215,7 +214,10 @@ class UDF(Process):
             if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
             y = self.apply(doc, **self.apply_kwargs)
-            self.out_queue.put((doc.name, y))
+            if y:
+                session.add(y)
+                session.commit()
+            self.out_queue.put(doc.name)
         session.commit()
         session.close()
 
