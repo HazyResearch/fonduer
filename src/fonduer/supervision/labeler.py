@@ -306,9 +306,9 @@ class Labeler(UDFRunner):
 
         drop_keys(self.session, LabelKey, key_map)
 
-    def _add(self, records_list: List[List[Dict[str, Any]]]) -> None:
+    def _add(self, session: Session, records_list: List[List[Dict[str, Any]]]) -> None:
         for records in records_list:
-            batch_upsert_records(self.session, self.table, records)
+            batch_upsert_records(session, self.table, records)
 
     def clear(  # type: ignore
         self,

@@ -6,7 +6,7 @@ from threading import Thread
 from typing import Any, Collection, Dict, List, Optional, Set, Type, Union
 
 from sqlalchemy import inspect
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from fonduer.meta import Meta, new_sessionmaker
 from fonduer.parser.models.document import Document
@@ -94,7 +94,7 @@ class UDFRunner(object):
         """Execute this method by a single process after apply."""
         pass
 
-    def _add(self, instance: Any) -> None:
+    def _add(self, session: Session, instance: Any) -> None:
         pass
 
     def _apply(
@@ -114,9 +114,13 @@ class UDFRunner(object):
         # Clear the last documents parsed by the last run
         self.last_docs = set()
 
+        # Create DB session factory for insert data on each UDF (#545)
+        session_factory = new_sessionmaker()
         # Create UDF Processes
         for i in range(parallelism):
             udf = self.udf_class(
+                session_factory=session_factory,
+                runner=self,
                 in_queue=in_queue,
                 out_queue=out_queue,
                 worker_id=i,
@@ -164,8 +168,6 @@ class UDFRunner(object):
         # Flush the processes
         self.udfs = []
 
-        self.session.commit()
-
 
 class UDF(Process):
     """UDF class."""
@@ -174,6 +176,8 @@ class UDF(Process):
 
     def __init__(
         self,
+        session_factory: sessionmaker = None,
+        runner: UDFRunner = None,
         in_queue: Optional[Queue] = None,
         out_queue: Optional[Queue] = None,
         worker_id: int = 0,
@@ -187,6 +191,8 @@ class UDF(Process):
         """
         super().__init__()
         self.daemon = True
+        self.session_factory = session_factory
+        self.runner = runner
         self.in_queue = in_queue
         self.out_queue = out_queue
         self.worker_id = worker_id
@@ -201,9 +207,9 @@ class UDF(Process):
         multiprocess setting The basic routine is: get from JoinableQueue,
         apply, put / add outputs, loop
         """
-        # Each UDF starts its own Engine
-        # See SQLalchemy, using connection pools with multiprocessing.
-        Session = new_sessionmaker()
+        # Each UDF get thread local (scoped) session from connection pools
+        # See SQLalchemy, using scoped sesion with multiprocessing.
+        Session = scoped_session(self.session_factory)
         session = Session()
         while True:
             doc = self.in_queue.get()  # block until an item is available
@@ -214,12 +220,11 @@ class UDF(Process):
             if not inspect(doc).transient:
                 doc = session.merge(doc, load=False)
             y = self.apply(doc, **self.apply_kwargs)
-            if y:
-                session.add(y)
-                session.commit()
+            self.runner._add(session, y)
             self.out_queue.put(doc.name)
         session.commit()
         session.close()
+        Session.remove()
 
     def apply(
         self, doc: Document, **kwargs: Any
