@@ -129,11 +129,11 @@ class Parser(UDFRunner):
             progress_bar=progress_bar,
         )
 
-    def _add(self, doc: Union[Document, None]) -> None:
+    def _add(self, session: Session, doc: Union[Document, None]) -> None:
         # Persist the object if no error happens during parsing.
         if doc:
-            self.session.add(doc)
-            self.session.commit()
+            session.add(doc)
+            session.commit()
 
     def clear(self) -> None:  # type: ignore
         """Clear all of the ``Context`` objects in the database."""
@@ -156,6 +156,12 @@ class Parser(UDFRunner):
 
         :return: A list of all ``Documents`` in the database ordered by name.
         """
+        # return (
+        #     self.session.query(Document, Sentence)
+        #     .join(Sentence, Document.id == Sentence.document_id)
+        #     .all()
+        # )
+        # return self.session.query(Sentence).order_by(Sentence.name).all()
         return self.session.query(Document).order_by(Document.name).all()
 
 

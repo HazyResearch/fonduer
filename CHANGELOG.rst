@@ -36,8 +36,8 @@ Changed
 * `@YasushiMiyata`_: Changed :class:`UDFRunner`'s and :class:`UDF`'s data commit process as follows:
   (`#545 <https://github.com/HazyResearch/fonduer/pull/545>`_)
 
-    * Removed ``add`` process in :func:`_apply` in :class:`UDFRunner`.
-    * Added ``add`` and ``commit`` of ``y`` to :class:`UDF`.
+    * Removed ``add`` process on single-thread in :func:`_apply` in :class:`UDFRunner`.
+    * Added ``UDFRunner._add`` of ``y`` on multi-threads to :class:`Parser`, :class:`Labeler` and :class:`Featurizer`.
     * Removed ``y`` of document parsed result from ``out_queue`` in :class:`UDF`.
 
 Fixed

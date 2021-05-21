@@ -245,11 +245,11 @@ class Featurizer(UDFRunner):
         """
         return list(get_sparse_matrix_keys(self.session, FeatureKey))
 
-    def _add(self, records_list: List[List[Dict[str, Any]]]) -> None:
+    def _add(self, session: Session, records_list: List[List[Dict[str, Any]]]) -> None:
         # Make a flat list of all records from the list of list of records.
         # This helps reduce the number of queries needed to update.
         all_records = list(itertools.chain.from_iterable(records_list))
-        batch_upsert_records(self.session, Feature, all_records)
+        batch_upsert_records(session, Feature, all_records)
 
     def clear(self, train: bool = False, split: int = 0) -> None:  # type: ignore
         """Delete Features of each class from the database.
