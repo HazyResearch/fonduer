@@ -1,6 +1,9 @@
 Unreleased_
 -----------
 
+0.9.0_ - 2021-06-22
+-------------------
+
 Added
 ^^^^^
 * `@HiromuHota`_: Support spaCy v2.3.
@@ -1254,7 +1257,8 @@ Added
 ^^^^^
 * `@lukehsiao`_: Deploy Fonduer to PyPi using Travis-CI
 
-.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.8.3...master
+.. _Unreleased: https://github.com/hazyresearch/fonduer/compare/v0.9.0...master
+.. _0.9.0: https://github.com/hazyresearch/fonduer/compare/v0.8.3...v0.9.0
 .. _0.8.3: https://github.com/hazyresearch/fonduer/compare/v0.8.2...v0.8.3
 .. _0.8.2: https://github.com/hazyresearch/fonduer/compare/v0.8.1...v0.8.2
 .. _0.8.1: https://github.com/hazyresearch/fonduer/compare/v0.8.0...v0.8.1
